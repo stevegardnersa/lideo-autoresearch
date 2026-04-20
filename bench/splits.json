@@ -1,0 +1,110 @@
+{
+  "seed": 42,
+  "split_mode": "balanced_genre",
+  "stratify_field": "genre_macro",
+  "development": [
+    "example-systems-book"
+  ],
+  "gate": [
+    "example-experiments-book"
+  ],
+  "holdout": [
+    "example-smoke-book"
+  ],
+  "coverage": {
+    "overall_counts": {
+      "n_books": 3,
+      "genre_macro": {
+        "business_economics_productivity": 1,
+        "explanatory_science_technology_environment": 1,
+        "psychology_health_self_development": 1
+      },
+      "benchmark_pool": {
+        "balanced": 3
+      }
+    },
+    "by_split": {
+      "development": {
+        "book_ids": [
+          "example-systems-book"
+        ],
+        "n_books": 1,
+        "genre_macro": {
+          "business_economics_productivity": 1
+        },
+        "genre_micro": {
+          "systems_thinking": 1
+        },
+        "benchmark_pool": {
+          "balanced": 1
+        },
+        "narrative_vs_expository": {
+          "expository": 1
+        },
+        "prescriptive_vs_analytical": {
+          "mixed": 1
+        },
+        "quantitative_density": {
+          "medium": 1
+        },
+        "chapter_length_profile": {
+          "medium": 1
+        }
+      },
+      "gate": {
+        "book_ids": [
+          "example-experiments-book"
+        ],
+        "n_books": 1,
+        "genre_macro": {
+          "explanatory_science_technology_environment": 1
+        },
+        "genre_micro": {
+          "research_methods": 1
+        },
+        "benchmark_pool": {
+          "balanced": 1
+        },
+        "narrative_vs_expository": {
+          "expository": 1
+        },
+        "prescriptive_vs_analytical": {
+          "analytical": 1
+        },
+        "quantitative_density": {
+          "medium": 1
+        },
+        "chapter_length_profile": {
+          "medium": 1
+        }
+      },
+      "holdout": {
+        "book_ids": [
+          "example-smoke-book"
+        ],
+        "n_books": 1,
+        "genre_macro": {
+          "psychology_health_self_development": 1
+        },
+        "genre_micro": {
+          "learning_and_habits": 1
+        },
+        "benchmark_pool": {
+          "balanced": 1
+        },
+        "narrative_vs_expository": {
+          "mixed": 1
+        },
+        "prescriptive_vs_analytical": {
+          "prescriptive": 1
+        },
+        "quantitative_density": {
+          "low": 1
+        },
+        "chapter_length_profile": {
+          "short": 1
+        }
+      }
+    }
+  }
+}

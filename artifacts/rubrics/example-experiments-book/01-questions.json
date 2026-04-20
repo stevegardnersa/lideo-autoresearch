@@ -1,0 +1,47 @@
+{
+  "headings": [
+    "Questions",
+    "Decision linkage",
+    "Mechanism before metric"
+  ],
+  "core_concepts": [
+    "Questions",
+    "The book begins by arguing that experiments fail early when the question is vague",
+    "Decision linkage",
+    "The chapter says every experiment should answer a downstream decision",
+    "Mechanism before metric",
+    "The author also insists on mechanism before metric",
+    "Questions The book begins by arguing that experiments fail early when the question is vague",
+    "A useful question names the decision it is meant to improve, the behavior it is expected to change, and the mechanism that supposedly links the intervention to the outcome",
+    "If no decision changes when the result arrives, the project is probably collecting trivia rather than evidence",
+    "This does not mean exploratory work is useless",
+    "It means exploratory work should be labeled honestly and judged by whether it generates sharper later questions",
+    "That order is backwards"
+  ],
+  "mechanisms_or_explanations": [
+    "Questions The book begins by arguing that experiments fail early when the question is vague",
+    "A useful question names the decision it is meant to improve, the behavior it is expected to change, and the mechanism that supposedly links the intervention to the outcome",
+    "If no decision changes when the result arrives, the project is probably collecting trivia rather than evidence",
+    "Mechanism before metric The author also insists on mechanism before metric",
+    "When the mechanism is explicit, the team can tell whether the chosen metric is central, merely convenient, or badly misaligned with the real hypothesis"
+  ],
+  "critical_qualifiers": [
+    "Teams often choose a measurable output first and then invent a story around it",
+    "When the mechanism is explicit, the team can tell whether the chosen metric is central, merely convenient, or badly misaligned with the real hypothesis"
+  ],
+  "important_examples": [],
+  "key_entities_or_numbers": [],
+  "key_terms": [
+    "Questions",
+    "Decision linkage",
+    "Mechanism before metric",
+    "Questions The",
+    "Decision",
+    "The",
+    "This",
+    "Mechanism",
+    "Teams",
+    "That",
+    "When"
+  ]
+}

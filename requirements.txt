@@ -1,0 +1,2 @@
+# The core scaffold uses only the Python standard library.
+# Install nothing for the basic workflow.

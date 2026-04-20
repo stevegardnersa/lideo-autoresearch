@@ -1,0 +1,30 @@
+{
+  "book_id": "example-smoke-book",
+  "book_title": "Example Smoke Book",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "01-foundations",
+      "title": "Foundations",
+      "source_path": "chapters/01-foundations.md"
+    },
+    {
+      "chapter_id": "02-method",
+      "title": "Method",
+      "source_path": "chapters/02-method.md"
+    },
+    {
+      "chapter_id": "03-limits",
+      "title": "Limits",
+      "source_path": "chapters/03-limits.md"
+    }
+  ],
+  "genre_macro": "psychology_health_self_development",
+  "genre_micro": "learning_and_habits",
+  "narrative_vs_expository": "mixed",
+  "prescriptive_vs_analytical": "prescriptive",
+  "quantitative_density": "low",
+  "chapter_length_profile": "short",
+  "benchmark_pool": "balanced"
+}

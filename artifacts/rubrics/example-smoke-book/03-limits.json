@@ -1,0 +1,46 @@
+{
+  "headings": [
+    "Limits",
+    "Common failure modes",
+    "Practical caution"
+  ],
+  "core_concepts": [
+    "Limits",
+    "The framework has limits, and the chapter insists that users state them clearly",
+    "Common failure modes",
+    "One failure mode is false precision",
+    "Practical caution",
+    "The author offers a practical caution",
+    "Limits The framework has limits, and the chapter insists that users state them clearly",
+    "Common failure modes One failure mode is false precision",
+    "A neat diagram can make weak evidence look stronger than it is",
+    "Another is summary drift, where repeated compression strips away qualifiers until a tentative statement sounds universal",
+    "A third is category error: readers sometimes apply a framework built for diagnosis to a context that requires negotiation or experimentation instead",
+    "The method is most reliable when the subject has enough stability for concepts to transfer across cases"
+  ],
+  "mechanisms_or_explanations": [
+    "A structured process can reduce confusion, but it cannot remove disagreement when people have different values, incentives, or risk tolerances",
+    "The method is most reliable when the subject has enough stability for concepts to transfer across cases",
+    "It is less reliable when the environment changes quickly, because the relationships that explained yesterday's result may not explain tomorrow's"
+  ],
+  "critical_qualifiers": [
+    "A structured process can reduce confusion, but it cannot remove disagreement when people have different values, incentives, or risk tolerances",
+    "A neat diagram can make weak evidence look stronger than it is",
+    "It is less reliable when the environment changes quickly, because the relationships that explained yesterday's result may not explain tomorrow's",
+    "However, this does not make the framework useless"
+  ],
+  "important_examples": [],
+  "key_entities_or_numbers": [],
+  "key_terms": [
+    "Limits",
+    "Common failure modes",
+    "Practical caution",
+    "Limits The",
+    "Common",
+    "One",
+    "Another",
+    "Practical",
+    "The",
+    "However"
+  ]
+}
