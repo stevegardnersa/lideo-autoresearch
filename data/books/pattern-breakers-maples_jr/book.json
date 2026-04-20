@@ -1,0 +1,157 @@
+{
+  "book_id": "pattern-breakers-jr",
+  "book_title": "Pattern Breakers",
+  "genre_macro": "unknown",
+  "genre_micro": "unknown",
+  "narrative_vs_expository": "unknown",
+  "prescriptive_vs_analytical": "unknown",
+  "quantitative_density": "low",
+  "chapter_length_profile": "medium",
+  "benchmark_pool": "balanced",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "000",
+      "title": "Chapter 1",
+      "source_path": "chapters/0.md"
+    },
+    {
+      "chapter_id": "001",
+      "title": "Chapter 2",
+      "source_path": "chapters/1.md"
+    },
+    {
+      "chapter_id": "002",
+      "title": "Chapter 3",
+      "source_path": "chapters/2.md"
+    },
+    {
+      "chapter_id": "003",
+      "title": "CONTENTS",
+      "source_path": "chapters/3.md"
+    },
+    {
+      "chapter_id": "004",
+      "title": "INTRODUCTION",
+      "source_path": "chapters/4.md"
+    },
+    {
+      "chapter_id": "005",
+      "title": "Part I",
+      "source_path": "chapters/5.md"
+    },
+    {
+      "chapter_id": "006",
+      "title": "1",
+      "source_path": "chapters/6.md"
+    },
+    {
+      "chapter_id": "007",
+      "title": "2",
+      "source_path": "chapters/7.md"
+    },
+    {
+      "chapter_id": "008",
+      "title": "3",
+      "source_path": "chapters/8.md"
+    },
+    {
+      "chapter_id": "009",
+      "title": "4",
+      "source_path": "chapters/9.md"
+    },
+    {
+      "chapter_id": "010",
+      "title": "5",
+      "source_path": "chapters/10.md"
+    },
+    {
+      "chapter_id": "011",
+      "title": "6",
+      "source_path": "chapters/11.md"
+    },
+    {
+      "chapter_id": "012",
+      "title": "7",
+      "source_path": "chapters/12.md"
+    },
+    {
+      "chapter_id": "013",
+      "title": "Part II",
+      "source_path": "chapters/13.md"
+    },
+    {
+      "chapter_id": "014",
+      "title": "8",
+      "source_path": "chapters/14.md"
+    },
+    {
+      "chapter_id": "015",
+      "title": "9",
+      "source_path": "chapters/15.md"
+    },
+    {
+      "chapter_id": "016",
+      "title": "10",
+      "source_path": "chapters/16.md"
+    },
+    {
+      "chapter_id": "017",
+      "title": "11",
+      "source_path": "chapters/17.md"
+    },
+    {
+      "chapter_id": "018",
+      "title": "12",
+      "source_path": "chapters/18.md"
+    },
+    {
+      "chapter_id": "019",
+      "title": "13",
+      "source_path": "chapters/19.md"
+    },
+    {
+      "chapter_id": "020",
+      "title": "14",
+      "source_path": "chapters/20.md"
+    },
+    {
+      "chapter_id": "021",
+      "title": "15",
+      "source_path": "chapters/21.md"
+    },
+    {
+      "chapter_id": "022",
+      "title": "CONCLUSION",
+      "source_path": "chapters/22.md"
+    },
+    {
+      "chapter_id": "023",
+      "title": "ACKNOWLEDGMENTS",
+      "source_path": "chapters/23.md"
+    },
+    {
+      "chapter_id": "024",
+      "title": "Footnotes",
+      "source_path": "chapters/24.md"
+    },
+    {
+      "chapter_id": "025",
+      "title": "INDEX",
+      "source_path": "chapters/25.md"
+    },
+    {
+      "chapter_id": "026",
+      "title": "About the Authors",
+      "source_path": "chapters/26.md"
+    },
+    {
+      "chapter_id": "027",
+      "title": "Chapter 28",
+      "source_path": "chapters/27.md"
+    }
+  ],
+  "toc_json_path": "toc.json",
+  "isbn_13": "9781035055104"
+}
