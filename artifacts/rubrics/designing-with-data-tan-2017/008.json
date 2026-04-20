@@ -1,0 +1,74 @@
+{
+  "headings": [
+    "Depth: Communicating Across Levels"
+  ],
+  "core_concepts": [
+    "Depth: Communicating Across Levels One of the goals of designing with data is to avoid or diminish the necessity of “gut” decision making",
+    "This data is best when collected using any number of techniques (not just A/B testing, but also ethnographic field research, field deployments of prototypes, surveys, lab studies, usability research, etc.)",
+    "The underlying principle in this quotation from Ronny Kohavi is how data is an effective way to resolve conflicts in decision making without relying on rank, hierarchy, or company politics",
+    "Within the tech industry, Netflix has a reputation for being particularly effective at leveraging data",
+    "One of the things that made the data-driven approach so successful at Netflix was that the practice of leveraging data was well established and universally accepted throughout the company",
+    "While at some companies the CEO might get to do whatever he wants, at Netflix Patty says it’s different",
+    "Patty highlights a common tendency, that any employee, including executives, can get caught up in thinking they know the answer",
+    "If you are trying to shift into a data-aware framework, it will be critical to look at the way product and design decisions have been made to date",
+    "Such grounded and carefully gathered user data can drive your decisions, and is a less risky prospect than relying on hunches from individual executives working from a “gut feeling.” An early paper that focused on A/B",
+    "Patty points out how having a mechanism to measure whether you are doing the right thing for your customers allows for more people to have a voice in the development of the product",
+    "One of the reasons that embracing A/B testing can help to mitigate a top-down approach to problem solving is that everyone can learn from experimentation",
+    "This is a good point to check with yourself as well — are you also comfortable and willing to see how incorporating data will change the weight of your own opinion within the design and product development process?"
+  ],
+  "mechanisms_or_explanations": [
+    "This data is best when collected using any number of techniques (not just A/B testing, but also ethnographic field research, field deployments of prototypes, surveys, lab studies, usability research, etc.)",
+    "John Ciancutti also shared some thoughts with us about how data can resolve conflicts in decision making within a company",
+    "He worked at Netflix for a number of years, eventually as VP of Product Engineering, and illustrates how data literacy across all roles at Netflix became a source of freedom and innovation within the company",
+    "She currently runs her own consulting business and has a great way of showing how an environment that embraces data can help its employees",
+    "Patty points out how having a mechanism to measure whether you are doing the right thing for your customers allows for more people to have a voice in the development of the product",
+    "For example, when Reed would engage in product testing and had a strong idea for what he wanted to see in the product, he would submit his ideas to the same rigor of A/B testing as everyone else in the product team",
+    "If it didn’t win, then it didn’t get launched",
+    "Having the upper-level management hold themselves accountable to the same process as the individual teams therefore reinforced the practice of subjecting ideas, prototypes, features, and flows to grounded review throu",
+    "This value was central to a view of how the company should work",
+    "If you are trying to shift into a data-aware framework, it will be critical to look at the way product and design decisions have been made to date",
+    "If these decisions were largely in the hands of one or two individuals, then it’s worth taking the time to make sure that those people can understand and recognize the value of bringing in user/customer data into the",
+    "This is a good point to check with yourself as well — are you also comfortable and willing to see how incorporating data will change the weight of your own opinion within the design and product development process?"
+  ],
+  "critical_qualifiers": [
+    "Consequently,, it can break hierarchical decision-making structures",
+    "This data is best when collected using any number of techniques (not just A/B testing, but also ethnographic field research, field deployments of prototypes, surveys, lab studies, usability research, etc.)",
+    "Such grounded and carefully gathered user data can drive your decisions, and is a less risky prospect than relying on hunches from individual executives working from a “gut feeling.” An early paper that focused on A/B",
+    "John Ciancutti also shared some thoughts with us about how data can resolve conflicts in decision making within a company",
+    "She currently runs her own consulting business and has a great way of showing how an environment that embraces data can help its employees",
+    "It may have started at the top with Reed Hastings and Neil Hunt (Netflix CEO and CPO) driving and believing in the value of leveraging data, but it was also embraced by everyone through management to the individual co",
+    "While at some companies the CEO might get to do whatever he wants, at Netflix Patty says it’s different: Patty highlights a common tendency, that any employee, including executives, can get caught up in thinking they",
+    "One of the reasons that embracing A/B testing can help to mitigate a top-down approach to problem solving is that everyone can learn from experimentation",
+    "On rare occasions, Reed might dictate the exact way that a product idea would work, but he would do this on “his test cell”; that is, on the experimental group in the test that he was backing",
+    "If these decisions were largely in the hands of one or two individuals, then it’s worth taking the time to make sure that those people can understand and recognize the value of bringing in user/customer data into the"
+  ],
+  "important_examples": [
+    "For example, when Reed would engage in product testing and had a strong idea for what he wanted to see in the product, he would submit his ideas to the same rigor of A/B testing as everyone else in the product team"
+  ],
+  "key_entities_or_numbers": [
+    "Throughout this chapter, we share a number of stories from Patty McCord who for over 12 years was the Chief Talent Officer at Netflix, where she oversaw talent acquisition and HR",
+    "2007"
+  ],
+  "key_terms": [
+    "Depth: Communicating Across Levels",
+    "Depth",
+    "Communicating Across Levels",
+    "Communicating Across Levels One",
+    "Consequently",
+    "The",
+    "Rather",
+    "This",
+    "Such",
+    "Ron Kohavi",
+    "Randal Henne",
+    "Dan Sommerfield",
+    "Practical Guide",
+    "Controlled Experiments",
+    "Web",
+    "Listen",
+    "Your Customers",
+    "Ronny Kohavi",
+    "John Ciancutti",
+    "Netflix"
+  ]
+}

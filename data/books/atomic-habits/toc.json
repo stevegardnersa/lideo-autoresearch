@@ -1,0 +1,231 @@
+[
+  {
+    "title": "Cover",
+    "level": 1,
+    "href": "cover.xhtml"
+  },
+  {
+    "title": "Contents",
+    "level": 1,
+    "href": "contents.xhtml#toc001"
+  },
+  {
+    "title": "About the Book",
+    "level": 1,
+    "href": "about_book.xhtml"
+  },
+  {
+    "title": "About the Author",
+    "level": 1,
+    "href": "about_author.xhtml"
+  },
+  {
+    "title": "Title Page",
+    "level": 1,
+    "href": "title_page.xhtml#ato00022"
+  },
+  {
+    "title": "Epigraph",
+    "level": 1,
+    "href": "preface002.xhtml"
+  },
+  {
+    "title": "Introduction: My Story",
+    "level": 1,
+    "href": "introduction.xhtml"
+  },
+  {
+    "title": "The Fundamentals: Why Tiny Changes Make a Big Difference",
+    "level": 1,
+    "href": "part001.xhtml",
+    "children": [
+      {
+        "title": "1: The Surprising Power of Atomic Habits",
+        "level": 2,
+        "href": "chapter001.xhtml"
+      },
+      {
+        "title": "2: How Your Habits Shape Your Identity (and Vice Versa)",
+        "level": 2,
+        "href": "chapter002.xhtml"
+      },
+      {
+        "title": "3: How to Build Better Habits in 4 Simple Steps",
+        "level": 2,
+        "href": "chapter003.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "The 1st Law: Make It Obvious",
+    "level": 1,
+    "href": "part002.xhtml",
+    "children": [
+      {
+        "title": "4: The Man Who Didn’t Look Right",
+        "level": 2,
+        "href": "chapter004.xhtml"
+      },
+      {
+        "title": "5: The Best Way to Start a New Habit",
+        "level": 2,
+        "href": "chapter005.xhtml"
+      },
+      {
+        "title": "6: Motivation is Overrated; Environment Often Matters More",
+        "level": 2,
+        "href": "chapter006.xhtml"
+      },
+      {
+        "title": "7: The Secret to Self-Control",
+        "level": 2,
+        "href": "chapter007.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "The 2nd Law: Make It Attractive",
+    "level": 1,
+    "href": "part003.xhtml",
+    "children": [
+      {
+        "title": "8: How to Make a Habit Irresistible",
+        "level": 2,
+        "href": "chapter008.xhtml"
+      },
+      {
+        "title": "9: The Role of Family and Friends in Shaping Your Habits",
+        "level": 2,
+        "href": "chapter009.xhtml"
+      },
+      {
+        "title": "10: How to Find and Fix the Causes of Your Bad Habits",
+        "level": 2,
+        "href": "chapter010.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "The 3rd Law: Make It Easy",
+    "level": 1,
+    "href": "part004.xhtml",
+    "children": [
+      {
+        "title": "11: Walk Slowly, but Never Backward",
+        "level": 2,
+        "href": "chapter011.xhtml"
+      },
+      {
+        "title": "12: The Law of Least Effort",
+        "level": 2,
+        "href": "chapter012.xhtml"
+      },
+      {
+        "title": "13: How to Stop Procrastinating by Using the Two-Minute Rule",
+        "level": 2,
+        "href": "chapter013.xhtml"
+      },
+      {
+        "title": "14: How to Make Good Habits Inevitable and Bad Habits Impossible",
+        "level": 2,
+        "href": "chapter014.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "The 4th Law: Make It Satisfying",
+    "level": 1,
+    "href": "part005.xhtml",
+    "children": [
+      {
+        "title": "15: The Cardinal Rule of Behavior Change",
+        "level": 2,
+        "href": "chapter015.xhtml"
+      },
+      {
+        "title": "16: How to Stick with Good Habits Every Day",
+        "level": 2,
+        "href": "chapter016.xhtml"
+      },
+      {
+        "title": "17: How an Accountability Partner Can Change Everything",
+        "level": 2,
+        "href": "chapter017.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Advanced Tactics: How to Go from Being Merely Good to Being Truly Great",
+    "level": 1,
+    "href": "part006.xhtml",
+    "children": [
+      {
+        "title": "18: The Truth About Talent (When Genes Matter and When They Don’t)",
+        "level": 2,
+        "href": "chapter018.xhtml"
+      },
+      {
+        "title": "19: The Goldilocks Rule: How to Stay Motivated in Life and Work",
+        "level": 2,
+        "href": "chapter019.xhtml"
+      },
+      {
+        "title": "20: The Downside of Creating Good Habits",
+        "level": 2,
+        "href": "chapter020.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Conclusion: The Secret to Results That Last",
+    "level": 1,
+    "href": "conclusion.xhtml"
+  },
+  {
+    "title": "Appendix",
+    "level": 1,
+    "href": "part007.xhtml",
+    "children": [
+      {
+        "title": "What Should You Read Next?",
+        "level": 2,
+        "href": "appendix001.xhtml"
+      },
+      {
+        "title": "Little Lessons from the Four Laws",
+        "level": 2,
+        "href": "appendix002.xhtml"
+      },
+      {
+        "title": "How to Apply These Ideas to Business",
+        "level": 2,
+        "href": "appendix003.xhtml"
+      },
+      {
+        "title": "How to Apply These Ideas to Parenting",
+        "level": 2,
+        "href": "appendix004.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Acknowledgments",
+    "level": 1,
+    "href": "acknowledgments.xhtml"
+  },
+  {
+    "title": "Notes",
+    "level": 1,
+    "href": "introduction_notes.xhtml"
+  },
+  {
+    "title": "Index",
+    "level": 1,
+    "href": "index.xhtml"
+  },
+  {
+    "title": "Copyright",
+    "level": 1,
+    "href": "copyright.xhtml"
+  }
+]

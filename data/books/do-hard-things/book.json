@@ -1,0 +1,158 @@
+{
+  "book_id": "do-hard-things-magness-2022",
+  "book_title": "Do Hard Things",
+  "genre_macro": "psychology_health_self_development",
+  "genre_micro": "performance_and_resilience",
+  "narrative_vs_expository": "expository",
+  "prescriptive_vs_analytical": "prescriptive",
+  "quantitative_density": "high",
+  "chapter_length_profile": "mixed",
+  "benchmark_pool": "balanced",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "000",
+      "title": "Dedication",
+      "source_path": "original/2.md"
+    },
+    {
+      "chapter_id": "001",
+      "title": "Contents",
+      "source_path": "original/3.md"
+    },
+    {
+      "chapter_id": "002",
+      "title": "Introduction",
+      "source_path": "original/4.md"
+    },
+    {
+      "chapter_id": "003",
+      "title": "Chapter 1",
+      "source_path": "original/5.md"
+    },
+    {
+      "chapter_id": "004",
+      "title": "Chapter 2",
+      "source_path": "original/6.md"
+    },
+    {
+      "chapter_id": "005",
+      "title": "The First Pillar of Toughness",
+      "source_path": "original/7.md"
+    },
+    {
+      "chapter_id": "006",
+      "title": "Chapter 3",
+      "source_path": "original/8.md"
+    },
+    {
+      "chapter_id": "007",
+      "title": "Chapter 4",
+      "source_path": "original/9.md"
+    },
+    {
+      "chapter_id": "008",
+      "title": "Chapter 5",
+      "source_path": "original/10.md"
+    },
+    {
+      "chapter_id": "009",
+      "title": "The Second Pillar of Toughness",
+      "source_path": "original/11.md"
+    },
+    {
+      "chapter_id": "010",
+      "title": "Chapter 6",
+      "source_path": "original/12.md"
+    },
+    {
+      "chapter_id": "011",
+      "title": "Chapter 7",
+      "source_path": "original/13.md"
+    },
+    {
+      "chapter_id": "012",
+      "title": "The Third Pillar of Toughness",
+      "source_path": "original/14.md"
+    },
+    {
+      "chapter_id": "013",
+      "title": "Chapter 8",
+      "source_path": "original/15.md"
+    },
+    {
+      "chapter_id": "014",
+      "title": "Chapter 9",
+      "source_path": "original/16.md"
+    },
+    {
+      "chapter_id": "015",
+      "title": "The Fourth Pillar of Toughness",
+      "source_path": "original/17.md"
+    },
+    {
+      "chapter_id": "016",
+      "title": "Chapter 10",
+      "source_path": "original/18.md"
+    },
+    {
+      "chapter_id": "017",
+      "title": "Chapter 11",
+      "source_path": "original/19.md"
+    },
+    {
+      "chapter_id": "018",
+      "title": "Acknowledgments",
+      "source_path": "original/20.md"
+    },
+    {
+      "chapter_id": "019",
+      "title": "Read an excerpt from bestselling author Steve Magness’s book Win the Inside Game: How to Move from Surviving to Thriving, and Free Yourself Up to Perform",
+      "source_path": "original/21.md"
+    },
+    {
+      "chapter_id": "020",
+      "title": "Chapter 1",
+      "source_path": "original/22.md"
+    },
+    {
+      "chapter_id": "021",
+      "title": "Notes",
+      "source_path": "original/23.md"
+    },
+    {
+      "chapter_id": "022",
+      "title": "Index",
+      "source_path": "original/24.md"
+    },
+    {
+      "chapter_id": "023",
+      "title": "About the Author",
+      "source_path": "original/25.md"
+    },
+    {
+      "chapter_id": "024",
+      "title": "Advance Praise for Do Hard Things",
+      "source_path": "original/26.md"
+    },
+    {
+      "chapter_id": "025",
+      "title": "Also by Steve Magness",
+      "source_path": "original/27.md"
+    },
+    {
+      "chapter_id": "026",
+      "title": "Copyright",
+      "source_path": "original/28.md"
+    },
+    {
+      "chapter_id": "027",
+      "title": "About the Publisher",
+      "source_path": "original/29.md"
+    }
+  ],
+  "toc_json_path": "toc.json",
+  "google_books_volume_id": "cTREEAAAQBAJ",
+  "isbn_13": "9780063098633"
+}

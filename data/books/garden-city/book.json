@@ -1,0 +1,98 @@
+{
+  "book_id": "garden-city-comer-2015",
+  "book_title": "Garden City",
+  "genre_macro": "psychology_health_self_development",
+  "genre_micro": "purpose_and_work",
+  "narrative_vs_expository": "mixed",
+  "prescriptive_vs_analytical": "prescriptive",
+  "quantitative_density": "high",
+  "chapter_length_profile": "mixed",
+  "benchmark_pool": "balanced",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "001",
+      "title": "The Path / Genesis 1\u20132",
+      "source_path": "original/3.md"
+    },
+    {
+      "chapter_id": "002",
+      "title": "Welcome to the Art of Being Human",
+      "source_path": "original/5.md"
+    },
+    {
+      "chapter_id": "003",
+      "title": "Kings and Queens",
+      "source_path": "original/7.md"
+    },
+    {
+      "chapter_id": "004",
+      "title": "A Place Called Delight",
+      "source_path": "original/8.md"
+    },
+    {
+      "chapter_id": "005",
+      "title": "The Unearthing of a Calling",
+      "source_path": "original/9.md"
+    },
+    {
+      "chapter_id": "006",
+      "title": "Everything Is Spiritual",
+      "source_path": "original/10.md"
+    },
+    {
+      "chapter_id": "007",
+      "title": "Kavod",
+      "source_path": "original/11.md"
+    },
+    {
+      "chapter_id": "008",
+      "title": "Kazam! Machine",
+      "source_path": "original/12.md"
+    },
+    {
+      "chapter_id": "009",
+      "title": "Cursed Is the Ground",
+      "source_path": "original/13.md"
+    },
+    {
+      "chapter_id": "010",
+      "title": "Part 2: Rest / I Am Not a Machine",
+      "source_path": "original/15.md"
+    },
+    {
+      "chapter_id": "011",
+      "title": "The Anti-Pharaoh",
+      "source_path": "original/16.md"
+    },
+    {
+      "chapter_id": "012",
+      "title": "The Lord of the Sabbath",
+      "source_path": "original/17.md"
+    },
+    {
+      "chapter_id": "013",
+      "title": "Part 3: The Garden City / Life After Heaven",
+      "source_path": "original/19.md"
+    },
+    {
+      "chapter_id": "014",
+      "title": "The People of the Future",
+      "source_path": "original/20.md"
+    },
+    {
+      "chapter_id": "015",
+      "title": "Epilogue: Redefining Greatness",
+      "source_path": "original/21.md"
+    },
+    {
+      "chapter_id": "016",
+      "title": "Revelation 21\u201322",
+      "source_path": "original/22.md"
+    }
+  ],
+  "toc_json_path": "toc.json",
+  "google_books_volume_id": "zJ4pBQAAQBAJ",
+  "isbn_13": "9780310337324"
+}

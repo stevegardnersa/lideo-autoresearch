@@ -1,0 +1,85 @@
+{
+  "headings": [
+    "Chapter 9",
+    "The Final Religion"
+  ],
+  "core_concepts": [
+    "Chapter 9 The Final Religion In 1997, Deep Blue, a supercomputer developed by IBM, beat Garry Kasparov, the world’s best chess player",
+    "Since the beginning of computing, chess has been a favorite means to test artificial intelligence.1 That’s because chess possesses a near-infinite number of permutations: there are more possible chess games than there",
+    "For a computer to match a human player, not only must it be capable of calculating an incredible number of possible outcomes, but it must also have solid algorithms to help it decide what’s worth calculating",
+    "Since that day in 1997, computers have continued to improve at chess at a staggering rate",
+    "The undisputed champion of the chess software world for the past few years has been an open-source program called Stockfish",
+    "Stockfish was happily going along being the king of the computerized chess mountain, being the gold standard of all chess analysis worldwide, until 2018, when Google showed up to the party",
+    "Then shit got weird",
+    "Google has a program called AlphaZero",
+    "Early in 2018, Stockfish faced off against Google’s AlphaZero",
+    "But it gets even weirder: the day of the match, AlphaZero didn’t even know how to play chess",
+    "Imagine the scenario",
+    "Good luck"
+  ],
+  "mechanisms_or_explanations": [
+    "Since the beginning of computing, chess has been a favorite means to test artificial intelligence.1 That’s because chess possesses a near-infinite number of permutations: there are more possible chess games than there",
+    "In any board position, if one looks only three or four moves ahead, there are already hundreds of millions of variations",
+    "Stockfish was happily going along being the king of the computerized chess mountain, being the gold standard of all chess analysis worldwide, until 2018, when Google showed up to the party",
+    "But it gets even weirder: the day of the match, AlphaZero didn’t even know how to play chess",
+    "One, Peter Heine Nielsen, gushed, “I always wondered how it would be if a superior species landed on earth and showed us how they play chess",
+    "I feel now I know.”5 When AlphaZero was done with Stockfish, it didn’t take a break",
+    "(In this case, it could calculate forty thousand moves per second compared to Elmo’s thirty-five million.) And once again, AlphaZero hadn’t even known how to play the game the previous day",
+    "Because here is where the bananas will really hit the fan: the day an AI can write AI software better than we can",
+    "When that day comes, when an AI can essentially spawn better versions of itself, at will, then buckle your seatbelt, amigo, because it’s going to be a wild ride and we will no longer have control over where we’re going",
+    "If you wear this, the algorithms will favor you",
+    "If you wake at a certain hour and say the right thing and show up at the right place, the machines will bless you with great fortune",
+    "If you are honest and you don’t hurt others and you take care of yourself and your family, the AI gods will protect you"
+  ],
+  "critical_qualifiers": [
+    "But today, it is but a quaint memory: of course a computer would beat the world champion at chess",
+    "For a computer to match a human player, not only must it be capable of calculating an incredible number of possible outcomes, but it must also have solid algorithms to help it decide what’s worth calculating",
+    "Humans are not only excluded from these tournaments, but they’d likely not even place high enough for it to matter anyway",
+    "Not only is it a chess engine, but it can analyze any game, any position, giving grandmaster-level feedback within seconds of each move a player makes",
+    "Instead of being programmed to play chess or another game, the software is programmed to learn—and not just chess, but any game",
+    "AlphaZero can calculate “only” eighty thousand board positions per second",
+    "But it gets even weirder: the day of the match, AlphaZero didn’t even know how to play chess",
+    "Shogi is often referred to as Japanese chess, but many argue that it’s more complex than chess.6 Whereas Kasparov lost to a computer in 1997, top Shogi players didn’t begin to lose to computers until 2013",
+    "You’ll watch movies created by AI, and discuss them on websites or mobile platforms built by AI, moderated by AI, and it might even turn out that the “person” you’ll argue with will be an AI",
+    "But as crazy as that sounds, it’s just the beginning"
+  ],
+  "important_examples": [
+    "These are all examples of exceptional information-processing capabilities, and that ability to receive and process information is linked to these creatures’ ability to survive and reproduce"
+  ],
+  "key_entities_or_numbers": [
+    "Chapter 9 The Final Religion In 1997, Deep Blue, a supercomputer developed by IBM, beat Garry Kasparov, the world’s best chess player",
+    "Since the beginning of computing, chess has been a favorite means to test artificial intelligence.1 That’s because chess possesses a near-infinite number of permutations: there are more possible chess games than there",
+    "Over the following fifteen years, the top human players regularly got pummeled by chess software, sometimes by embarrassing margins.3 Today, it’s not even close",
+    "Kasparov himself recently joked that the chess app that comes installed on most smartphones “is far more powerful than Deep Blue was.”4 These days, chess software developers hold tournaments for their programs to see",
+    "Stockfish has either won or been the runner-up in almost every significant chess software tournament since 2014",
+    "Stockfish was happily going along being the king of the computerized chess mountain, being the gold standard of all chess analysis worldwide, until 2018, when Google showed up to the party",
+    "Early in 2018, Stockfish faced off against Google’s AlphaZero",
+    "I feel now I know.”5 When AlphaZero was done with Stockfish, it didn’t take a break",
+    "Shogi is often referred to as Japanese chess, but many argue that it’s more complex than chess.6 Whereas Kasparov lost to a computer in 1997, top Shogi players didn’t begin to lose to computers until 2013",
+    "well, you and I and everyone else will probably find ourselves out of a job.7 Already, AI programs have invented their own languages that humans can’t decipher, become more effective than doctors at diagnosing pneumon",
+    "Indeed, it will be impossible to imagine life without them.10 These algorithms make our lives better",
+    "We are weak, slow, and frail, and we tire easily.11 But we are nature’s ultimate information processors"
+  ],
+  "key_terms": [
+    "Chapter 9",
+    "The Final Religion",
+    "The Final Religion In",
+    "Deep Blue",
+    "Garry Kasparov",
+    "But",
+    "Why",
+    "Since",
+    "That",
+    "For",
+    "Put",
+    "Thinking Brain",
+    "Feeling Brain",
+    "Over",
+    "Today",
+    "Kasparov",
+    "These",
+    "Humans",
+    "The",
+    "Stockfish"
+  ]
+}

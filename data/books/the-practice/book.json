@@ -1,0 +1,108 @@
+{
+  "book_id": "the-practice-godin-2020",
+  "book_title": "The Practice",
+  "genre_macro": "business_economics_productivity",
+  "genre_micro": "creativity_marketing",
+  "narrative_vs_expository": "expository",
+  "prescriptive_vs_analytical": "prescriptive",
+  "quantitative_density": "low",
+  "chapter_length_profile": "mixed",
+  "benchmark_pool": "balanced",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "000",
+      "title": "About the Author",
+      "source_path": "original/2.md"
+    },
+    {
+      "chapter_id": "001",
+      "title": "More from Seth Godin",
+      "source_path": "original/3.md"
+    },
+    {
+      "chapter_id": "002",
+      "title": "Chapter 3",
+      "source_path": "original/4.md"
+    },
+    {
+      "chapter_id": "003",
+      "title": "A genius is the one most like himself.",
+      "source_path": "original/5.md"
+    },
+    {
+      "chapter_id": "004",
+      "title": "1. It’s Possible",
+      "source_path": "original/6.md"
+    },
+    {
+      "chapter_id": "005",
+      "title": "35. You Have the Right to Remain Silent",
+      "source_path": "original/7.md"
+    },
+    {
+      "chapter_id": "006",
+      "title": "81. The Lifeguard Who Wasn’t Sure",
+      "source_path": "original/8.md"
+    },
+    {
+      "chapter_id": "007",
+      "title": "97. Our Intent Matters",
+      "source_path": "original/9.md"
+    },
+    {
+      "chapter_id": "008",
+      "title": "129. Credentialing Is a Roadblock",
+      "source_path": "original/10.md"
+    },
+    {
+      "chapter_id": "009",
+      "title": "182. An Assertion Is Not a Guarantee",
+      "source_path": "original/11.md"
+    },
+    {
+      "chapter_id": "010",
+      "title": "191. The Truth about Getting Better",
+      "source_path": "original/12.md"
+    },
+    {
+      "chapter_id": "011",
+      "title": "204.Constraints Create the Possibility of Art",
+      "source_path": "original/13.md"
+    },
+    {
+      "chapter_id": "012",
+      "title": "Where Do Ideas Come from?",
+      "source_path": "original/14.md"
+    },
+    {
+      "chapter_id": "013",
+      "title": "If You Had Tomorrow to Do Over Again, Would You?",
+      "source_path": "original/15.md"
+    },
+    {
+      "chapter_id": "014",
+      "title": "Unquenchable",
+      "source_path": "original/16.md"
+    },
+    {
+      "chapter_id": "015",
+      "title": "The magic is that there is no magic.",
+      "source_path": "original/17.md"
+    },
+    {
+      "chapter_id": "016",
+      "title": "Acknowledgments",
+      "source_path": "original/18.md"
+    },
+    {
+      "chapter_id": "017",
+      "title": "Chapter 18",
+      "source_path": "original/19.md"
+    }
+  ],
+  "toc_json_path": "toc.json",
+  "google_books_volume_id": "qtHZDwAAQBAJ",
+  "isbn_13": "9780241470053"
+}

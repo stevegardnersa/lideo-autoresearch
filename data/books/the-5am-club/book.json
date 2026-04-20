@@ -1,0 +1,143 @@
+{
+  "book_id": "the-5-am-club-own-your-morning-elevate-your-life-sharma-2018",
+  "book_title": "The 5 AM Club: Own Your Morning. Elevate Your Life.",
+  "genre_macro": "business_economics_productivity",
+  "genre_micro": "habits_and_productivity",
+  "narrative_vs_expository": "mixed",
+  "prescriptive_vs_analytical": "prescriptive",
+  "quantitative_density": "medium",
+  "chapter_length_profile": "mixed",
+  "benchmark_pool": "balanced",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "000",
+      "title": "COPYRIGHT",
+      "source_path": "original/1.md"
+    },
+    {
+      "chapter_id": "001",
+      "title": "MESSAGE FROM THE AUTHOR + DEDICATION",
+      "source_path": "original/2.md"
+    },
+    {
+      "chapter_id": "002",
+      "title": "EPIGRAPH",
+      "source_path": "original/3.md"
+    },
+    {
+      "chapter_id": "003",
+      "title": "CONTENTS",
+      "source_path": "original/4.md"
+    },
+    {
+      "chapter_id": "004",
+      "title": "CHAPTER 1",
+      "source_path": "original/5.md"
+    },
+    {
+      "chapter_id": "005",
+      "title": "CHAPTER 2",
+      "source_path": "original/6.md"
+    },
+    {
+      "chapter_id": "006",
+      "title": "CHAPTER 3",
+      "source_path": "original/7.md"
+    },
+    {
+      "chapter_id": "007",
+      "title": "CHAPTER 4",
+      "source_path": "original/8.md"
+    },
+    {
+      "chapter_id": "008",
+      "title": "CHAPTER 5",
+      "source_path": "original/9.md"
+    },
+    {
+      "chapter_id": "009",
+      "title": "CHAPTER 6",
+      "source_path": "original/10.md"
+    },
+    {
+      "chapter_id": "010",
+      "title": "CHAPTER 7",
+      "source_path": "original/11.md"
+    },
+    {
+      "chapter_id": "011",
+      "title": "CHAPTER 8",
+      "source_path": "original/12.md"
+    },
+    {
+      "chapter_id": "012",
+      "title": "CHAPTER 9",
+      "source_path": "original/13.md"
+    },
+    {
+      "chapter_id": "013",
+      "title": "CHAPTER 10",
+      "source_path": "original/14.md"
+    },
+    {
+      "chapter_id": "014",
+      "title": "CHAPTER 11",
+      "source_path": "original/15.md"
+    },
+    {
+      "chapter_id": "015",
+      "title": "CHAPTER 12",
+      "source_path": "original/16.md"
+    },
+    {
+      "chapter_id": "016",
+      "title": "CHAPTER 13",
+      "source_path": "original/17.md"
+    },
+    {
+      "chapter_id": "017",
+      "title": "CHAPTER 14",
+      "source_path": "original/18.md"
+    },
+    {
+      "chapter_id": "018",
+      "title": "CHAPTER 15",
+      "source_path": "original/19.md"
+    },
+    {
+      "chapter_id": "019",
+      "title": "CHAPTER 16",
+      "source_path": "original/20.md"
+    },
+    {
+      "chapter_id": "020",
+      "title": "CHAPTER 17",
+      "source_path": "original/21.md"
+    },
+    {
+      "chapter_id": "021",
+      "title": "EPILOGUE",
+      "source_path": "original/22.md"
+    },
+    {
+      "chapter_id": "022",
+      "title": "ABOUT THE AUTHOR",
+      "source_path": "original/23.md"
+    },
+    {
+      "chapter_id": "023",
+      "title": "ALSO BY ROBIN SHARMA",
+      "source_path": "original/24.md"
+    },
+    {
+      "chapter_id": "024",
+      "title": "ABOUT THE PUBLISHER",
+      "source_path": "original/25.md"
+    }
+  ],
+  "toc_json_path": "toc.json",
+  "google_books_volume_id": "7W9bDwAAQBAJ",
+  "isbn_13": "9780008312855"
+}

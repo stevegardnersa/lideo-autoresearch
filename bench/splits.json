@@ -3,7 +3,7 @@
   "split_mode": "balanced_genre",
   "stratify_field": "genre_macro",
   "development": [
-    "example-systems-book"
+    "pattern-breakers-jr-2024"
   ],
   "gate": [
     "example-experiments-book"
@@ -26,14 +26,14 @@
     "by_split": {
       "development": {
         "book_ids": [
-          "example-systems-book"
+          "pattern-breakers-jr-2024"
         ],
         "n_books": 1,
         "genre_macro": {
           "business_economics_productivity": 1
         },
         "genre_micro": {
-          "systems_thinking": 1
+          "startup_strategy": 1
         },
         "benchmark_pool": {
           "balanced": 1
@@ -42,10 +42,10 @@
           "expository": 1
         },
         "prescriptive_vs_analytical": {
-          "mixed": 1
+          "prescriptive": 1
         },
         "quantitative_density": {
-          "medium": 1
+          "low": 1
         },
         "chapter_length_profile": {
           "medium": 1

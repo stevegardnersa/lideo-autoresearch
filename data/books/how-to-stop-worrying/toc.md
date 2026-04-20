@@ -1,0 +1,56 @@
+# Table of contents
+
+- Preface: How This Book Was Written—and Why
+- Part I Fundamental Facts You Should Know About Worry
+  - Chapter 1 Live in “Day-tight Compartments”
+  - Chapter 2 A Magic Formula for Solving Worry Situations
+  - Chapter 3 What Worry May Do to You
+  - Part One: In A Nutshell
+- Part II Basic Techniques in Analysing Worry
+  - Chapter 4 How to Analyse and Solve Worry Problems
+  - Chapter 5 How to Eliminate Fifty Per Cent of Tour Business Worries
+  - Part Two: In A Nutshell
+- Part III How to Break the Worry Habit Before It Breaks You
+  - Chapter 6 How to Crowd Worry Out of Tour Mind
+  - Chapter 7 Don’t Let the Beetles Get You Down
+  - Chapter 8 A Law That Will Outlaw Many of Tour Worries
+  - Chapter 9 Co-Operate with the Inevitable
+  - Chapter 10 Put a “Stop-Loss” Order on Your Worries
+  - Chapter 11 Don’t Try to Saw Sawdust
+  - Part Three: In A Nutshell: How to Break the Worry Habit Before It Breaks You
+- Part IV Seven Ways to Cultivate a Mental Attitude that Will Bring You Peace and Happiness
+  - Chapter 12 Eight Words that Can Transform Your Life
+  - Chapter 13 The High Cost of Getting Even
+  - Chapter 14 If You Do This, You Will Never Worry About Ingratitude
+  - Chapter 15 Would You Take a Million Dollars for What You Have?
+  - Chapter 16 Find Yourself and Be Yourself: Remember There Is No One Else on Earth Like You
+  - Chapter 17 If You Have a Lemon, Make a Lemonade
+  - Chapter 18 How to Cure Melancholy in Fourteen Days
+  - Part Four: In A Nutshell: Seven Ways to Cultivate a Mental Attitude that Will Bring You Peace and Happiness
+- Part V The Golden Rule for Conquering Worry
+  - Chapter 19 How My Mother and Father Conquered Worry
+- Part VI How to Keep from Worrying About Criticism
+  - Chapter 20 Remember that No One Ever Kicks a Dead Dog
+  - Chapter 21 Do This—and Criticism Can’t Hurt You
+  - Chapter 22 Fool Things I Have Done
+  - Part Six: In a Nutshell: How to Keep from Worrying About Criticism
+- Part VII Six Ways to Prevent Fatigue and Worry and Keep Your Energy and Spirits High
+  - Chapter 23 How to Add 6One Hour a Day to Tour Waking Life
+  - Chapter 24 What Makes You Tired-and What You Can Do About It
+  - Chapter 25 How the Housewife Can Avoid Fatigue-and Keep Looking Young
+  - Chapter 26 Four Good Working Habits That Will Help Prevent Fatigue and Worry
+  - Chapter 27: How to Banish the Boredom that Produces Fatigue, Worry, and Resentment
+  - Chapter 28 How to Keep from Worrying About Insomnia
+  - Part Seven: In A Nutshell: Six Ways to Prevent Fatigue and Worry and Keep Your Energy and Spirits High
+- Part VIII How to Find the Kind of Work in Which You May Be Happy and Successful
+  - Chapter 29 The Major Decision of Tour Life
+- Part IX How To Lessen Your Financial Worries
+  - Chapter 30 “Seventy Per Cent of All Our Worries ...”
+- Part X “How I Conquered Worry”
+  - Chapter 32 True Stories
+
+## Excluded from benchmark corpus
+
+- Cover
+- Title Page
+- Table of Contents

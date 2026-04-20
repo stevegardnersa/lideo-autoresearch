@@ -1,0 +1,102 @@
+[
+  {
+    "title": "Cover",
+    "level": 1,
+    "href": "cover.xhtml"
+  },
+  {
+    "title": "Title Page",
+    "level": 1,
+    "href": "title.xhtml#sec-titlepage001"
+  },
+  {
+    "title": "About the Author",
+    "level": 1,
+    "href": "about_the_author.xhtml"
+  },
+  {
+    "title": "By the Same Author",
+    "level": 1,
+    "href": "also_by.xhtml"
+  },
+  {
+    "title": "Dedication",
+    "level": 1,
+    "href": "dedication.xhtml"
+  },
+  {
+    "title": "Epigraph",
+    "level": 1,
+    "href": "epigraph_01.xhtml"
+  },
+  {
+    "title": "Trust Your Self",
+    "level": 1,
+    "href": "chapter001.xhtml"
+  },
+  {
+    "title": "Generous",
+    "level": 1,
+    "href": "chapter002.xhtml"
+  },
+  {
+    "title": "The Professional",
+    "level": 1,
+    "href": "chapter003.xhtml"
+  },
+  {
+    "title": "Intent",
+    "level": 1,
+    "href": "chapter004.xhtml"
+  },
+  {
+    "title": "No Such Thing As Writer’s Block",
+    "level": 1,
+    "href": "chapter005.xhtml"
+  },
+  {
+    "title": "Make Assertions",
+    "level": 1,
+    "href": "chapter006.xhtml"
+  },
+  {
+    "title": "Earn Your Skills",
+    "level": 1,
+    "href": "chapter007.xhtml"
+  },
+  {
+    "title": "Seek Out Constraints",
+    "level": 1,
+    "href": "chapter008.xhtml"
+  },
+  {
+    "title": "Where Do Ideas Come from?",
+    "level": 1,
+    "href": "appendix001.xhtml"
+  },
+  {
+    "title": "If You Had Tomorrow to Do Over Again, Would You?",
+    "level": 1,
+    "href": "appendix002.xhtml"
+  },
+  {
+    "title": "Unquenchable",
+    "level": 1,
+    "href": "appendix003.xhtml"
+  },
+  {
+    "title": "Epigraph",
+    "level": 1,
+    "href": "epigraph_02.xhtml"
+  },
+  {
+    "title": "Acknowledgments",
+    "level": 1,
+    "href": "acknowledgments.xhtml"
+  },
+  {
+    "title": "Copyright",
+    "level": 1,
+    "href": "copyright.xhtml"
+  }
+]

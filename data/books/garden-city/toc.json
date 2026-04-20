@@ -1,0 +1,138 @@
+[
+  {
+    "title": "Cover Page",
+    "level": 1,
+    "href": "cover.xhtml"
+  },
+  {
+    "title": "Title Page",
+    "level": 1,
+    "href": "titlepage.xhtml#ncx_1"
+  },
+  {
+    "title": "Copyright Page",
+    "level": 1,
+    "href": "copyright-page.xhtml"
+  },
+  {
+    "title": "The Path",
+    "level": 1,
+    "href": "contents.xhtml"
+  },
+  {
+    "title": "Genesis 1 – 2",
+    "level": 1,
+    "href": "chapter01.xhtml"
+  },
+  {
+    "title": "Welcome to the Art of Being Human",
+    "level": 1,
+    "href": "chapter02.xhtml"
+  },
+  {
+    "title": "Part 1: Work",
+    "level": 1,
+    "href": "part01.xhtml",
+    "children": [
+      {
+        "title": "Kings and Queens",
+        "level": 2,
+        "href": "chapter03.xhtml"
+      },
+      {
+        "title": "A Place Called Delight",
+        "level": 2,
+        "href": "chapter04.xhtml"
+      },
+      {
+        "title": "The Unearthing of a Calling",
+        "level": 2,
+        "href": "chapter05.xhtml"
+      },
+      {
+        "title": "Everything Is Spiritual",
+        "level": 2,
+        "href": "chapter06.xhtml"
+      },
+      {
+        "title": "Kavod",
+        "level": 2,
+        "href": "chapter07.xhtml"
+      },
+      {
+        "title": "Kazam! Machine",
+        "level": 2,
+        "href": "chapter08.xhtml"
+      },
+      {
+        "title": "Cursed Is the Ground",
+        "level": 2,
+        "href": "chapter09.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part 2: Rest",
+    "level": 1,
+    "href": "part02.xhtml",
+    "children": [
+      {
+        "title": "I Am Not a Machine",
+        "level": 2,
+        "href": "chapter10.xhtml"
+      },
+      {
+        "title": "The Anti-Pharaoh",
+        "level": 2,
+        "href": "chapter10a.xhtml"
+      },
+      {
+        "title": "The Lord of the Sabbath",
+        "level": 2,
+        "href": "chapter10aa.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part 3: The Garden City",
+    "level": 1,
+    "href": "part03.xhtml",
+    "children": [
+      {
+        "title": "Life After Heaven",
+        "level": 2,
+        "href": "chapter11.xhtml"
+      },
+      {
+        "title": "The People of the Future",
+        "level": 2,
+        "href": "chapter12.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Epilogue: Redefining Greatness",
+    "level": 1,
+    "href": "chapter13.xhtml"
+  },
+  {
+    "title": "Revelation 21-22",
+    "level": 1,
+    "href": "chapter14.xhtml"
+  },
+  {
+    "title": "Notes",
+    "level": 1,
+    "href": "chapter15.xhtml"
+  },
+  {
+    "title": "Thanks",
+    "level": 1,
+    "href": "chapter16.xhtml"
+  },
+  {
+    "title": "About the Author",
+    "level": 1,
+    "href": "chapter17.xhtml"
+  }
+]
