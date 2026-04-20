@@ -1,0 +1,311 @@
+{
+  "run_id": "20260420t112949z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1",
+  "created_at_utc": "2026-04-20T11:29:49.063837+00:00",
+  "status": "running",
+  "run_manifest": {
+    "run_id": "20260420t112949z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1",
+    "created_at_utc": "2026-04-20T11:29:49.063837+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v2",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m",
+    "bench": "chapter_fast",
+    "bench_path": "bench/chapter_fast.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "baseline_30m_dense_recall_then_compose_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "6d49d26718620b388af5f2602e239d027a0373704d369dce02992e5aded6cb45",
+    "chapter_model": "deepseek/deepseek-v3.2",
+    "composer_model": "openai/gpt-5-mini",
+    "judge_model": "",
+    "provider_preferences": {
+      "chapter": {
+        "order": [],
+        "allow_fallbacks": false
+      },
+      "composer": {
+        "order": [],
+        "allow_fallbacks": false
+      }
+    },
+    "prompt_hashes": {
+      "candidate_dict_sha256": "e350cff4b2bd87b6bc245160115ed4659fa86c8ba30f7e50b7723fbd9865346d",
+      "chapter_stage_sha256": "b15d8b55df3361296b798d54b0009cbdd9cc71c1cc2ee9da175421b6f8231c99",
+      "composer_stage_sha256": "bc86d8b0c640e4b69c08546f4e53a8c383aa3f08d14c6b44ea65ffc9d766dfa0",
+      "length_control_sha256": "8ec4dc536f51bf408f45df046f82417cfd4e57192d016295f4eb7650a1378d1d",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "73cf2a314cd430c46c888732b6538af7f7437802ed9a32e5a516fb6844aeb073",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "82ae4bd00fe54bf615243c077d3d49e4c7d27f49ff94d1d0ad23d1d7ca92f872",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "d7d0b3f7a575b67c2de1def08923fd3fc2376339dfbf56c1d5803702b98398bc",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260420T112949Z__booksum-v2.json",
+    "price_snapshot": "snapshots/pricing/20260420T112949Z__booksum-v2.json",
+    "hypothesis": "",
+    "notes": ""
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v2",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-19T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "Genre-aware benchmark version. Increment benchmark_version whenever the corpus, split membership logic, rubric builder, scoring rules, judge prompt/model, logging schema, or visible-word-count behavior changes."
+  },
+  "bench_rows": [
+    {
+      "sample_id": "accelerate-forsgren-2018:018",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "018",
+      "chapter_title": "Chapter 16 - High-Performance Leadership and Management",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:003",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "003",
+      "chapter_title": "Chapter 1 - Accelerate",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:004",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "004",
+      "chapter_title": "Chapter 2 - Measuring Performance",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:022",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "022",
+      "chapter_title": "Appendix C: Statistical Methods Used in Our Research",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ],
+  "completed_sample_ids": [
+    "accelerate-forsgren-2018:018"
+  ],
+  "completed_count": 1,
+  "n_total_samples": 4,
+  "current_item": {
+    "kind": "chapter",
+    "phase": "stage",
+    "item_key": "accelerate-forsgren-2018:003",
+    "item": {
+      "sample_id": "accelerate-forsgren-2018:003",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "003",
+      "chapter_title": "Chapter 1 - Accelerate",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    "book_id": "accelerate-forsgren-2018",
+    "chapter_id": "003",
+    "sample_id": "accelerate-forsgren-2018:003",
+    "target_words": 292,
+    "stage_state": {
+      "summary_md": "## The Need for Acceleration\nSoftware is the core competitive differentiator across all industries, requiring acceleration in four areas: delivery of goods/services, market engagement, anticipation of compliance/regulatory changes, and response to risks like security threats. This shift moves from large, long-lead-time projects to small teams using short cycles and user feedback. Technology drives revenue and productivity gains more than mergers/acquisitions or entrepreneurship.\n\n## The DevOps Context and Industry State\nThe enabling practices emerge from the DevOps movement, which solves the problem of building secure, resilient, evolving distributed systems at scale. While notable successes exist (e.g., Netflix, Amazon, Capital One, US Digital Service), significant work remains. Industry surveys indicate: 31% are not using key DevOps practices (continuous integration, Lean, collaborative culture); 47% of CEOs face board pressure to digitally transform. Executives often overestimate DevOps progress compared to practitioners, creating a disconnect. Accurate measurement and communication of capabilities to leadership is essential for strategy.\n\n## Capabilities Over Maturity Models\nSuccessful change requires measuring capabilities, not maturity. Maturity models are inappropriate due to four factors: 1) They imply a final 'mature' state, contrary to continuous improvement; 2) They prescribe a linear, lock-step progression, ignoring team/context differences; 3) They measure vanity metrics (technical proficiency, tooling) without linking to business outcomes; 4) They are static, not accounting for the ever-changing technology landscape. Capability models are multidimensional, dynamic, outcome-based, and allow customized improvement paths focused on the levers that drive key outcomes.\n\n## Evidence-Based Key Capabilities\nResearch identified 24 key capabilities that drive software delivery performance and organizational performance (profitability, productivity, market share). The approach is evidence-based, countering vendor/consultant bias or analysis paralysis. Factors that did NOT predict performance include: application age and technology type (e.g., mainframe vs. greenfield); which team (operations vs. development) performs deployments; the presence of a change approval board (CAB).\n\n## DevOps Performance Impact and Levers\nHigh performers exhibit vastly superior metrics versus low performers: 46x more frequent deployments, 440x faster lead time (commit to deploy), 170x faster mean time to recover (MTTR), and a 5x lower change failure rate. From 2016 to 2017, the gap in stability metrics (MTTR, failure rate) widened, suggesting low performers increased speed without building in quality, leading to larger failures. High performers achieve both speed and stability by building quality in. The 24 evidence-based capabilities are the levers to achieve this performance, applicable to organizations of all sizes, industries, and technology stacks.",
+      "first_pass_summary_md": "## The Need for Acceleration\nSoftware is the core differentiator for competitive advantage across all industries (finance, retail, government). Organizations must accelerate delivery, market engagement, compliance anticipation, and risk response. This requires moving from large, long-cycle projects to small teams using short cycles and user feedback.\n\n## The DevOps Context\nThe practices enabling this acceleration emerge from the DevOps movement, which solves problems of building secure, resilient, evolving distributed systems at scale. Benefits apply to both web-scale giants (Netflix, Amazon) and traditional large enterprises (Capital One, Target). Industry surveys indicate significant work remains: 31% not using key DevOps practices (continuous integration, Lean, collaborative culture), and 47% of CEOs face board pressure to digitally transform. A disconnect exists where executives often overestimate DevOps progress compared to practitioners.\n\n## Capabilities Over Maturity\nSuccessful change requires measuring capabilities, not maturity. Maturity models are inappropriate for four reasons: 1) They imply a final \"arrival\" state, whereas continuous improvement is needed in a changing landscape. 2) They prescribe a linear, one-size-fits-all progression, ignoring team context, goals, and constraints. 3) They often measure technical proficiency or tooling (vanity metrics) without linking to business outcomes. 4) They are static, not accounting for evolving technology and business environments. Capability models are multidimensional, dynamic, outcome-based, and allow customized improvement paths.\n\n## Evidence-Based Capabilities\nDisagreement exists on which capabilities to focus on, often biased by vendor products or consultant offerings. The book provides an evidence-based solution. Research identified 24 key capabilities that drive software delivery and organizational performance (profitability, productivity, market share). Factors that did NOT predict performance include: application age/technology type (mainframe vs. greenfield), whether ops or dev teams perform deployments, and the presence of a change approval board (CAB).\n\n## DevOps Performance Impact\nThe value of adopting DevOps is large and growing. In 2017, high performers exhibited vastly superior metrics versus low performers: 46x more frequent deployments, 440x faster lead time (commit to deploy), 170x faster mean time to recover (MTTR), and a 5x lower change failure rate. Compared to 2016, the tempo gap (deployment frequency, lead time) narrowed, while the stability gap (MTTR, failure rate) widened. This suggests low performers increased speed without building in quality, leading to larger failures. High performers achieve both speed and stability by building in quality. The 24 capabilities, applicable to all organization types and sizes, are the levers for this performance.",
+      "passes_used": 3,
+      "generation_cost": 0.0045353,
+      "uncached_generation_cost": 0.0045353,
+      "raw_responses": [
+        {
+          "id": "gen-1776684653-VdZ0CRDRIIEDflHxe955",
+          "object": "chat.completion",
+          "created": 1776684653,
+          "model": "deepseek/deepseek-v3.2-20251201",
+          "provider": "AtlasCloud",
+          "system_fingerprint": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\n    \"summary_md\": \"## The Need for Acceleration\\nSoftware is the core differentiator for competitive advantage across all industries (finance, retail, government). Organizations must accelerate delivery, market engagement, compliance anticipation, and risk response. This requires moving from large, long-cycle projects to small teams using short cycles and user feedback.\\n\\n## The DevOps Context\\nThe practices enabling this acceleration emerge from the DevOps movement, which solves problems of building secure, resilient, evolving distributed systems at scale. Benefits apply to both web-scale giants (Netflix, Amazon) and traditional large enterprises (Capital One, Target). Industry surveys indicate significant work remains: 31% not using key DevOps practices (continuous integration, Lean, collaborative culture), and 47% of CEOs face board pressure to digitally transform. A disconnect exists where executives often overestimate DevOps progress compared to practitioners.\\n\\n## Capabilities Over Maturity\\nSuccessful change requires measuring capabilities, not maturity. Maturity models are inappropriate for four reasons: 1) They imply a final \\\"arrival\\\" state, whereas continuous improvement is needed in a changing landscape. 2) They prescribe a linear, one-size-fits-all progression, ignoring team context, goals, and constraints. 3) They often measure technical proficiency or tooling (vanity metrics) without linking to business outcomes. 4) They are static, not accounting for evolving technology and business environments. Capability models are multidimensional, dynamic, outcome-based, and allow customized improvement paths.\\n\\n## Evidence-Based Capabilities\\nDisagreement exists on which capabilities to focus on, often biased by vendor products or consultant offerings. The book provides an evidence-based solution. Research identified 24 key capabilities that drive software delivery and organizational performance (profitability, productivity, market share). Factors that did NOT predict performance include: application age/technology type (mainframe vs. greenfield), whether ops or dev teams perform deployments, and the presence of a change approval board (CAB).\\n\\n## DevOps Performance Impact\\nThe value of adopting DevOps is large and growing. In 2017, high performers exhibited vastly superior metrics versus low performers: 46x more frequent deployments, 440x faster lead time (commit to deploy), 170x faster mean time to recover (MTTR), and a 5x lower change failure rate. Compared to 2016, the tempo gap (deployment frequency, lead time) narrowed, while the stability gap (MTTR, failure rate) widened. This suggests low performers increased speed without building in quality, leading to larger failures. High performers achieve both speed and stability by building in quality. The 24 capabilities, applicable to all organization types and sizes, are the levers for this performance.\",\n    \"estimated_visible_words\": 298\n}",
+                "refusal": null,
+                "reasoning": null
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 3414,
+            "completion_tokens": 566,
+            "total_tokens": 3980,
+            "cost": 0.00110272,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.00110272,
+              "upstream_inference_prompt_cost": 0.00088764,
+              "upstream_inference_completions_cost": 0.00021508
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        },
+        {
+          "id": "gen-1776684671-yt77D3AEEKsn5eg5W0Lm",
+          "object": "chat.completion",
+          "created": 1776684671,
+          "model": "deepseek/deepseek-v3.2-20251201",
+          "provider": "Google",
+          "system_fingerprint": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\n  \"estimated_visible_words\": 295,\n  \"summary_md\": \"## The Need for Acceleration\\nSoftware is the core differentiator for competitive advantage across all industries. Organizations must accelerate delivery, market engagement, compliance anticipation, and risk response. This requires moving from large, long-cycle projects to small teams using short cycles and user feedback.\\n\\n## The DevOps Context\\nThe enabling practices emerge from the DevOps movement, which solves problems of building secure, resilient, evolving distributed systems at scale. Industry surveys indicate significant work remains: 31% not using key DevOps practices, and 47% of CEOs face board pressure to digitally transform. Executives often overestimate DevOps progress compared to practitioners.\\n\\n## Capabilities Over Maturity\\nSuccessful change requires measuring capabilities, not maturity. Maturity models are inappropriate because they imply a final state, prescribe a linear progression, measure vanity metrics without linking to outcomes, and are static. Capability models are multidimensional, dynamic, outcome-based, and allow customized improvement paths for continuous improvement.\\n\\n## Evidence-Based Capabilities\\nResearch identified 24 key capabilities that drive software delivery and organizational performance (profitability, productivity, market share). Factors that did NOT predict performance include: application age/technology type, which team performs deployments, and the presence of a change approval board.\\n\\n## DevOps Performance Impact\\nHigh performers exhibit vastly superior metrics versus low performers: 46x more frequent deployments, 440x faster lead time, 170x faster mean time to recover, and a 5x lower change failure rate. The gap in stability metrics widened, suggesting low performers increased speed without building in quality. High performers achieve both speed and stability. The 24 capabilities are the levers for this performance.\"\n}",
+                "refusal": null,
+                "reasoning": null
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 3230,
+            "completion_tokens": 358,
+            "total_tokens": 3588,
+            "cost": 0.00241024,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.00241024,
+              "upstream_inference_prompt_cost": 0.0018088,
+              "upstream_inference_completions_cost": 0.00060144
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        },
+        {
+          "id": "gen-1776684683-NPMjI4CU7oWw9BnC5kHo",
+          "object": "chat.completion",
+          "created": 1776684683,
+          "model": "deepseek/deepseek-v3.2-20251201",
+          "provider": "AtlasCloud",
+          "system_fingerprint": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\n    \"summary_md\": \"## The Need for Acceleration\\nSoftware is the core competitive differentiator across all industries, requiring acceleration in four areas: delivery of goods/services, market engagement, anticipation of compliance/regulatory changes, and response to risks like security threats. This shift moves from large, long-lead-time projects to small teams using short cycles and user feedback. Technology drives revenue and productivity gains more than mergers/acquisitions or entrepreneurship.\\n\\n## The DevOps Context and Industry State\\nThe enabling practices emerge from the DevOps movement, which solves the problem of building secure, resilient, evolving distributed systems at scale. While notable successes exist (e.g., Netflix, Amazon, Capital One, US Digital Service), significant work remains. Industry surveys indicate: 31% are not using key DevOps practices (continuous integration, Lean, collaborative culture); 47% of CEOs face board pressure to digitally transform. Executives often overestimate DevOps progress compared to practitioners, creating a disconnect. Accurate measurement and communication of capabilities to leadership is essential for strategy.\\n\\n## Capabilities Over Maturity Models\\nSuccessful change requires measuring capabilities, not maturity. Maturity models are inappropriate due to four factors: 1) They imply a final 'mature' state, contrary to continuous improvement; 2) They prescribe a linear, lock-step progression, ignoring team/context differences; 3) They measure vanity metrics (technical proficiency, tooling) without linking to business outcomes; 4) They are static, not accounting for the ever-changing technology landscape. Capability models are multidimensional, dynamic, outcome-based, and allow customized improvement paths focused on the levers that drive key outcomes.\\n\\n## Evidence-Based Key Capabilities\\nResearch identified 24 key capabilities that drive software delivery performance and organizational performance (profitability, productivity, market share). The approach is evidence-based, countering vendor/consultant bias or analysis paralysis. Factors that did NOT predict performance include: application age and technology type (e.g., mainframe vs. greenfield); which team (operations vs. development) performs deployments; the presence of a change approval board (CAB).\\n\\n## DevOps Performance Impact and Levers\\nHigh performers exhibit vastly superior metrics versus low performers: 46x more frequent deployments, 440x faster lead time (commit to deploy), 170x faster mean time to recover (MTTR), and a 5x lower change failure rate. From 2016 to 2017, the gap in stability metrics (MTTR, failure rate) widened, suggesting low performers increased speed without building in quality, leading to larger failures. High performers achieve both speed and stability by building quality in. The 24 evidence-based capabilities are the levers to achieve this performance, applicable to organizations of all sizes, industries, and technology stacks.\",\n    \"estimated_visible_words\": 298\n}",
+                "refusal": null,
+                "reasoning": null
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 3240,
+            "completion_tokens": 583,
+            "total_tokens": 3823,
+            "cost": 0.00102234,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 320,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.00102234,
+              "upstream_inference_prompt_cost": 0.0008008,
+              "upstream_inference_completions_cost": 0.00022154
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "latest_error": null,
+  "resume_events_utc": [],
+  "state_path": "runs/booksum-v2/20260420t112949z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1.state.json",
+  "samples_path": "runs/booksum-v2/20260420t112949z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1.samples.jsonl",
+  "out_path": "runs/booksum-v2/20260420t112949z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1.json",
+  "updated_at_utc": "2026-04-20T11:31:41.753469+00:00"
+}
