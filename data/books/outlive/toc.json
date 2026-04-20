@@ -1,0 +1,168 @@
+[
+  {
+    "title": "Cover",
+    "level": 1,
+    "href": "titlepage.xhtml"
+  },
+  {
+    "title": "About the Author",
+    "level": 1,
+    "href": "EPUB/xhtml/about_the_author.xhtml"
+  },
+  {
+    "title": "Title Page",
+    "level": 1,
+    "href": "EPUB/xhtml/title.xhtml"
+  },
+  {
+    "title": "Dedication",
+    "level": 1,
+    "href": "EPUB/xhtml/dedication.xhtml"
+  },
+  {
+    "title": "Author’s Note",
+    "level": 1,
+    "href": "EPUB/xhtml/preface001.xhtml"
+  },
+  {
+    "title": "Introduction",
+    "level": 1,
+    "href": "EPUB/xhtml/introduction.xhtml"
+  },
+  {
+    "title": "Part I",
+    "level": 1,
+    "href": "EPUB/xhtml/part001.xhtml",
+    "children": [
+      {
+        "title": "CHAPTER 1: The Long Game: From Fast Death to Slow Death",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter001.xhtml"
+      },
+      {
+        "title": "CHAPTER 2: Medicine 3.0: Rethinking Medicine for the Age of Chronic Disease",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter002.xhtml"
+      },
+      {
+        "title": "CHAPTER 3: Objective, Strategy, Tactics: A Road Map for Reading This Book",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter003.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part II",
+    "level": 1,
+    "href": "EPUB/xhtml/part002.xhtml",
+    "children": [
+      {
+        "title": "CHAPTER 4: Centenarians: The Older You Get, the Healthier You Have Been",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter004.xhtml"
+      },
+      {
+        "title": "CHAPTER 5: Eat Less, Live Longer: The Science of Hunger and Health",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter005.xhtml"
+      },
+      {
+        "title": "CHAPTER 6: The Crisis of Abundance: Can Our Ancient Genes Cope with Our Modern Diet?",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter006.xhtml"
+      },
+      {
+        "title": "CHAPTER 7: The Ticker: Confronting—and Preventing—Heart Disease, the Deadliest Killer on the Planet",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter007.xhtml"
+      },
+      {
+        "title": "CHAPTER 8: The Runaway Cell: New Ways to Address the Killer That Is Cancer",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter008.xhtml"
+      },
+      {
+        "title": "CHAPTER 9: Chasing Memory: Understanding Alzheimer’s Disease and Other Neurodegenerative Diseases",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter009.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part III",
+    "level": 1,
+    "href": "EPUB/xhtml/part003.xhtml",
+    "children": [
+      {
+        "title": "CHAPTER 10: Thinking Tactically: Building a Framework of Principles That Work for You",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter010.xhtml"
+      },
+      {
+        "title": "CHAPTER 11: Exercise: The Most Powerful Longevity Drug",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter011.xhtml"
+      },
+      {
+        "title": "CHAPTER 12: Training 101: How to Prepare for the Centenarian Decathlon",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter012.xhtml"
+      },
+      {
+        "title": "CHAPTER 13: The Gospel of Stability: Relearning How to Move to Prevent Injury",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter013.xhtml"
+      },
+      {
+        "title": "CHAPTER 14: Nutrition 3.0: You Say Potato, I Say “Nutritional Biochemistry”",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter014.xhtml"
+      },
+      {
+        "title": "CHAPTER 15: Putting Nutritional Biochemistry into Practice: How to Find the Right Eating Pattern for You",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter015.xhtml"
+      },
+      {
+        "title": "CHAPTER 16: The Awakening: How to Learn to Love Sleep, the Best Medicine for Your Brain",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter016.xhtml"
+      },
+      {
+        "title": "CHAPTER 17: Work in Progress: The High Price of Ignoring Emotional Health",
+        "level": 2,
+        "href": "EPUB/xhtml/chapter017.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Epilogue",
+    "level": 1,
+    "href": "EPUB/xhtml/epilogue.xhtml"
+  },
+  {
+    "title": "Acknowledgments",
+    "level": 1,
+    "href": "EPUB/xhtml/acknowledgements.xhtml"
+  },
+  {
+    "title": "Notes",
+    "level": 1,
+    "href": "EPUB/xhtml/notes.xhtml"
+  },
+  {
+    "title": "References",
+    "level": 1,
+    "href": "EPUB/xhtml/appendix001.xhtml"
+  },
+  {
+    "title": "Index",
+    "level": 1,
+    "href": "EPUB/xhtml/index.xhtml"
+  },
+  {
+    "title": "Copyright",
+    "level": 1,
+    "href": "EPUB/xhtml/copyright.xhtml"
+  }
+]

@@ -1,0 +1,1242 @@
+[
+  {
+    "title": "Praise for Designing with Data",
+    "level": 1,
+    "href": "text/part0000.html"
+  },
+  {
+    "title": "Foreword",
+    "level": 1,
+    "href": "text/part0003.html"
+  },
+  {
+    "title": "Preface",
+    "level": 1,
+    "href": "text/part0004_split_000.html",
+    "children": [
+      {
+        "title": "Design and Data: A Perfect Synergy",
+        "level": 2,
+        "href": "text/part0004_split_001.html"
+      },
+      {
+        "title": "Our Focus: A/B Testing",
+        "level": 2,
+        "href": "text/part0004_split_002.html"
+      },
+      {
+        "title": "Some Orienting Principles",
+        "level": 2,
+        "href": "text/part0004_split_003.html"
+      },
+      {
+        "title": "Who Is This Book For?",
+        "level": 2,
+        "href": "text/part0004_split_003.html#who_is_this_book_forquestion_mark"
+      },
+      {
+        "title": "Scope",
+        "level": 2,
+        "href": "text/part0004_split_005.html"
+      },
+      {
+        "title": "About Us",
+        "level": 2,
+        "href": "text/part0004_split_006.html",
+        "children": [
+          {
+            "title": "A Word from Rochelle",
+            "level": 3,
+            "href": "text/part0004_split_007.html"
+          },
+          {
+            "title": "A Word from Elizabeth",
+            "level": 3,
+            "href": "text/part0004_split_008.html"
+          },
+          {
+            "title": "A Word from Caitlin",
+            "level": 3,
+            "href": "text/part0004_split_009.html"
+          }
+        ]
+      },
+      {
+        "title": "How This Book Is Organized",
+        "level": 2,
+        "href": "text/part0004_split_009.html#how_this_book_is_organized"
+      },
+      {
+        "title": "How to Read This Book",
+        "level": 2,
+        "href": "text/part0004_split_011.html",
+        "children": [
+          {
+            "title": "Introducing our “Running a Camp” Metaphor",
+            "level": 3,
+            "href": "text/part0004_split_012.html"
+          }
+        ]
+      },
+      {
+        "title": "O’Reilly Safari",
+        "level": 2,
+        "href": "text/part0004_split_013.html"
+      },
+      {
+        "title": "How to Contact Us",
+        "level": 2,
+        "href": "text/part0004_split_014.html"
+      },
+      {
+        "title": "Acknowledgments",
+        "level": 2,
+        "href": "text/part0004_split_015.html",
+        "children": [
+          {
+            "title": "Rochelle",
+            "level": 3,
+            "href": "text/part0004_split_016.html"
+          },
+          {
+            "title": "Elizabeth",
+            "level": 3,
+            "href": "text/part0004_split_017.html"
+          },
+          {
+            "title": "Caitlin",
+            "level": 3,
+            "href": "text/part0004_split_018.html"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "1. Introducing a Data Mindset",
+    "level": 1,
+    "href": "text/part0005_split_000.html",
+    "children": [
+      {
+        "title": "Data as a Trend",
+        "level": 2,
+        "href": "text/part0005_split_001.html"
+      },
+      {
+        "title": "Three Ways to Think About Data",
+        "level": 2,
+        "href": "text/part0005_split_002.html"
+      },
+      {
+        "title": "What Does This Mean for You as a Designer?",
+        "level": 2,
+        "href": "text/part0005_split_003.html"
+      },
+      {
+        "title": "Data Can Help to Align Design with Business",
+        "level": 2,
+        "href": "text/part0005_split_004.html",
+        "children": [
+          {
+            "title": "On Data Quality",
+            "level": 3,
+            "href": "text/part0005_split_005.html"
+          }
+        ]
+      },
+      {
+        "title": "With a Little Help from Your Friends...",
+        "level": 2,
+        "href": "text/part0005_split_006.html",
+        "children": [
+          {
+            "title": "Data Producers",
+            "level": 3,
+            "href": "text/part0005_split_007.html"
+          },
+          {
+            "title": "Data Consumers",
+            "level": 3,
+            "href": "text/part0005_split_008.html"
+          }
+        ]
+      },
+      {
+        "title": "What If You Don’t Have Data Friends (Yet)?",
+        "level": 2,
+        "href": "text/part0005_split_009.html"
+      },
+      {
+        "title": "Themes You’ll See in This Book",
+        "level": 2,
+        "href": "text/part0005_split_010.html"
+      },
+      {
+        "title": "Summary",
+        "level": 2,
+        "href": "text/part0005_split_011.html"
+      },
+      {
+        "title": "Questions to Ask Yourself",
+        "level": 2,
+        "href": "text/part0005_split_012.html"
+      }
+    ]
+  },
+  {
+    "title": "2. The ABCs of Using Data",
+    "level": 1,
+    "href": "text/part0006_split_000.html",
+    "children": [
+      {
+        "title": "The Diversity of Data",
+        "level": 2,
+        "href": "text/part0006_split_001.html",
+        "children": [
+          {
+            "title": "Many Dimensions of Data",
+            "level": 3,
+            "href": "text/part0006_split_002.html"
+          },
+          {
+            "title": "Why are you collecting data?",
+            "level": 3,
+            "href": "text/part0006_split_003.html"
+          }
+        ]
+      },
+      {
+        "title": "When is the data collected?",
+        "level": 2,
+        "href": "text/part0006_split_004.html"
+      },
+      {
+        "title": "How is the data collected?",
+        "level": 2,
+        "href": "text/part0006_split_005.html",
+        "children": [
+          {
+            "title": "How much data to collect?",
+            "level": 3,
+            "href": "text/part0006_split_006.html"
+          }
+        ]
+      },
+      {
+        "title": "Why Experiment?",
+        "level": 2,
+        "href": "text/part0006_split_007.html",
+        "children": [
+          {
+            "title": "Learning About Causality",
+            "level": 3,
+            "href": "text/part0006_split_008.html"
+          },
+          {
+            "title": "Statistically Significant, not Anecdotal",
+            "level": 3,
+            "href": "text/part0006_split_009.html"
+          },
+          {
+            "title": "Informed Opinions about what will happen in the Wild",
+            "level": 3,
+            "href": "text/part0006_split_010.html"
+          }
+        ]
+      },
+      {
+        "title": "Basics of Experimentation",
+        "level": 2,
+        "href": "text/part0006_split_011.html",
+        "children": [
+          {
+            "title": "Language and Concepts",
+            "level": 3,
+            "href": "text/part0006_split_012.html"
+          },
+          {
+            "title": "Race to the Campsite!",
+            "level": 3,
+            "href": "text/part0006_split_013.html"
+          },
+          {
+            "title": "Experimentation in the Internet Age",
+            "level": 3,
+            "href": "text/part0006_split_014.html"
+          }
+        ]
+      },
+      {
+        "title": "A/B Testing: Online Experiments",
+        "level": 2,
+        "href": "text/part0006_split_015.html",
+        "children": [
+          {
+            "title": "Sampling Your Users Online",
+            "level": 3,
+            "href": "text/part0006_split_016.html"
+          },
+          {
+            "title": "Cohorts and segments",
+            "level": 3,
+            "href": "text/part0006_split_017.html"
+          },
+          {
+            "title": "Demographic information",
+            "level": 3,
+            "href": "text/part0006_split_018.html"
+          }
+        ]
+      },
+      {
+        "title": "New users versus existing users",
+        "level": 2,
+        "href": "text/part0006_split_019.html",
+        "children": [
+          {
+            "title": "Metrics: The Dependent Variable of A/B Testing",
+            "level": 3,
+            "href": "text/part0006_split_020.html"
+          },
+          {
+            "title": "Detecting a Difference in Your Groups",
+            "level": 3,
+            "href": "text/part0006_split_021.html"
+          },
+          {
+            "title": "How big is the difference you want to measure?",
+            "level": 3,
+            "href": "text/part0006_split_022.html"
+          }
+        ]
+      },
+      {
+        "title": "A big enough sample to power your test",
+        "level": 2,
+        "href": "text/part0006_split_023.html",
+        "children": [
+          {
+            "title": "Significance level",
+            "level": 3,
+            "href": "text/part0006_split_024.html"
+          }
+        ]
+      },
+      {
+        "title": "Your Hypothesis and Why It Matters",
+        "level": 2,
+        "href": "text/part0006_split_025.html",
+        "children": [
+          {
+            "title": "Defining a Hypothesis or Hypotheses",
+            "level": 3,
+            "href": "text/part0006_split_026.html"
+          },
+          {
+            "title": "Know What You Want to Learn",
+            "level": 3,
+            "href": "text/part0006_split_027.html"
+          }
+        ]
+      },
+      {
+        "title": "Running Creative A/B Tests",
+        "level": 2,
+        "href": "text/part0006_split_028.html",
+        "children": [
+          {
+            "title": "Data Triangulation: Strength in Mixed Methods",
+            "level": 3,
+            "href": "text/part0006_split_029.html"
+          },
+          {
+            "title": "The Landscape of Design Activities",
+            "level": 3,
+            "href": "text/part0006_split_030.html"
+          },
+          {
+            "title": "Exploring and evaluating Ideas",
+            "level": 3,
+            "href": "text/part0006_split_031.html"
+          },
+          {
+            "title": "Thinking Global and Thinking Local",
+            "level": 3,
+            "href": "text/part0006_split_032.html"
+          }
+        ]
+      },
+      {
+        "title": "Summary",
+        "level": 2,
+        "href": "text/part0006_split_033.html"
+      },
+      {
+        "title": "Questions to Ask Yourself",
+        "level": 2,
+        "href": "text/part0006_split_034.html"
+      }
+    ]
+  },
+  {
+    "title": "3. A Framework for Experimentation",
+    "level": 1,
+    "href": "text/part0007_split_000.html",
+    "children": [
+      {
+        "title": "Introducing Our Framework",
+        "level": 2,
+        "href": "text/part0007_split_001.html",
+        "children": [
+          {
+            "title": "Working with Data Should Feel Familiar...",
+            "level": 3,
+            "href": "text/part0007_split_002.html"
+          }
+        ]
+      },
+      {
+        "title": "Three Phases: Definition, Execution, and Analysis",
+        "level": 2,
+        "href": "text/part0007_split_003.html",
+        "children": [
+          {
+            "title": "The Definition Phase",
+            "level": 3,
+            "href": "text/part0007_split_004.html"
+          },
+          {
+            "title": "The Execution Phase",
+            "level": 3,
+            "href": "text/part0007_split_005.html"
+          },
+          {
+            "title": "The Analysis Phase",
+            "level": 3,
+            "href": "text/part0007_split_006.html"
+          }
+        ]
+      },
+      {
+        "title": "Examples: Data and Design in Action",
+        "level": 2,
+        "href": "text/part0007_split_007.html"
+      },
+      {
+        "title": "Summary",
+        "level": 2,
+        "href": "text/part0007_split_008.html"
+      },
+      {
+        "title": "Questions to Ask Yourself",
+        "level": 2,
+        "href": "text/part0007_split_009.html"
+      }
+    ]
+  },
+  {
+    "title": "4. The Definition Phase (How to Frame Your Experiments)",
+    "level": 1,
+    "href": "text/part0008_split_000.html",
+    "children": [
+      {
+        "title": "Getting Started: Defining Your Goal",
+        "level": 2,
+        "href": "text/part0008_split_001.html",
+        "children": [
+          {
+            "title": "Defining Your Metric of Interest",
+            "level": 3,
+            "href": "text/part0008_split_002.html"
+          },
+          {
+            "title": "Metric sensitivity",
+            "level": 3,
+            "href": "text/part0008_split_003.html"
+          },
+          {
+            "title": "Tracking multiple metrics",
+            "level": 3,
+            "href": "text/part0008_split_004.html"
+          },
+          {
+            "title": "Getting the full picture",
+            "level": 3,
+            "href": "text/part0008_split_005.html"
+          },
+          {
+            "title": "Your metrics may change over time",
+            "level": 3,
+            "href": "text/part0008_split_006.html"
+          }
+        ]
+      },
+      {
+        "title": "Competing metrics",
+        "level": 2,
+        "href": "text/part0008_split_007.html",
+        "children": [
+          {
+            "title": "Refining Your Goals with Data",
+            "level": 3,
+            "href": "text/part0008_split_008.html"
+          }
+        ]
+      },
+      {
+        "title": "Identifying the Problem You Are Solving",
+        "level": 2,
+        "href": "text/part0008_split_009.html",
+        "children": [
+          {
+            "title": "Remember Where You Are",
+            "level": 3,
+            "href": "text/part0008_split_010.html"
+          }
+        ]
+      },
+      {
+        "title": "Building Hypotheses for the Problem at Hand",
+        "level": 2,
+        "href": "text/part0008_split_011.html",
+        "children": [
+          {
+            "title": "Example: A Summer Camp Hypothesis",
+            "level": 3,
+            "href": "text/part0008_split_012.html"
+          },
+          {
+            "title": "Example: Netflix—transitioning from DVD rentals to Streaming",
+            "level": 3,
+            "href": "text/part0008_split_013.html"
+          }
+        ]
+      },
+      {
+        "title": "The Importance of Going Broad",
+        "level": 2,
+        "href": "text/part0008_split_014.html",
+        "children": [
+          {
+            "title": "Multiple Ways to Influence a Metric",
+            "level": 3,
+            "href": "text/part0008_split_015.html"
+          },
+          {
+            "title": "Focus on New and Existing Users",
+            "level": 3,
+            "href": "text/part0008_split_016.html"
+          },
+          {
+            "title": "Revisit the Scope of Your Problem",
+            "level": 3,
+            "href": "text/part0008_split_017.html"
+          },
+          {
+            "title": "Example: Netflix on the PlayStation 3",
+            "level": 3,
+            "href": "text/part0008_split_018.html"
+          },
+          {
+            "title": "Involve Your Team and Your Data Friends",
+            "level": 3,
+            "href": "text/part0008_split_019.html"
+          }
+        ]
+      },
+      {
+        "title": "Which Hypotheses to Choose?",
+        "level": 2,
+        "href": "text/part0008_split_020.html",
+        "children": [
+          {
+            "title": "Consider Potential Impact",
+            "level": 3,
+            "href": "text/part0008_split_021.html"
+          },
+          {
+            "title": "Using What You Already Know",
+            "level": 3,
+            "href": "text/part0008_split_022.html"
+          },
+          {
+            "title": "Using Other Methods to Evaluate Your Hypotheses",
+            "level": 3,
+            "href": "text/part0008_split_023.html"
+          },
+          {
+            "title": "Consider the Reality of Your Test",
+            "level": 3,
+            "href": "text/part0008_split_024.html"
+          },
+          {
+            "title": "How much measurable impact do you believe your hypothesis can make?",
+            "level": 3,
+            "href": "text/part0008_split_025.html"
+          },
+          {
+            "title": "Can you draw all the conclusions you want to draw from your test?",
+            "level": 3,
+            "href": "text/part0008_split_026.html"
+          },
+          {
+            "title": "Balancing learning and speed",
+            "level": 3,
+            "href": "text/part0008_split_027.html"
+          },
+          {
+            "title": "Keep Your Old Hypotheses in Your Back Pocket",
+            "level": 3,
+            "href": "text/part0008_split_028.html"
+          }
+        ]
+      },
+      {
+        "title": "Summary",
+        "level": 2,
+        "href": "text/part0008_split_029.html"
+      },
+      {
+        "title": "Questions to Ask Yourself",
+        "level": 2,
+        "href": "text/part0008_split_030.html"
+      }
+    ]
+  },
+  {
+    "title": "5. The Execution Phase (How to Put Your Experiments into Action)",
+    "level": 1,
+    "href": "text/part0009_split_000.html",
+    "children": [
+      {
+        "title": "Designing to Learn",
+        "level": 2,
+        "href": "text/part0009_split_001.html",
+        "children": [
+          {
+            "title": "Engaging Your Users in a Conversation",
+            "level": 3,
+            "href": "text/part0009_split_002.html"
+          },
+          {
+            "title": "Having Quality Conversations",
+            "level": 3,
+            "href": "text/part0009_split_003.html"
+          },
+          {
+            "title": "Designing to extremes to learn about your users",
+            "level": 3,
+            "href": "text/part0009_split_004.html"
+          }
+        ]
+      },
+      {
+        "title": "Revisiting the minimum detectable effect",
+        "level": 2,
+        "href": "text/part0009_split_005.html"
+      },
+      {
+        "title": "Designing the Best Representation of Your Hypothesis",
+        "level": 2,
+        "href": "text/part0009_split_006.html",
+        "children": [
+          {
+            "title": "Understanding Your Variables",
+            "level": 3,
+            "href": "text/part0009_split_007.html"
+          }
+        ]
+      },
+      {
+        "title": "Not all variables are visible",
+        "level": 2,
+        "href": "text/part0009_split_008.html",
+        "children": [
+          {
+            "title": "Your Design Can Influence Your Data",
+            "level": 3,
+            "href": "text/part0009_split_009.html"
+          },
+          {
+            "title": "Example: Netflix Wii",
+            "level": 3,
+            "href": "text/part0009_split_010.html"
+          },
+          {
+            "title": "Revisiting the Space of Design Activities",
+            "level": 3,
+            "href": "text/part0009_split_011.html"
+          },
+          {
+            "title": "Avoiding Local Maxima",
+            "level": 3,
+            "href": "text/part0009_split_012.html"
+          }
+        ]
+      },
+      {
+        "title": "Different problems for summer camp",
+        "level": 2,
+        "href": "text/part0009_split_013.html",
+        "children": [
+          {
+            "title": "Directional testing: “Painted door” tests",
+            "level": 3,
+            "href": "text/part0009_split_014.html"
+          },
+          {
+            "title": "Picking the right level of granularity for your experiment",
+            "level": 3,
+            "href": "text/part0009_split_015.html"
+          },
+          {
+            "title": "Example: Netflix on Playstation 3",
+            "level": 3,
+            "href": "text/part0009_split_016.html"
+          },
+          {
+            "title": "Example: Spotify Navigation",
+            "level": 3,
+            "href": "text/part0009_split_017.html"
+          },
+          {
+            "title": "Experiment 1: Defining the hypothesis to get early directional feedback",
+            "level": 3,
+            "href": "text/part0009_split_018.html"
+          },
+          {
+            "title": "Experiment 1: Designing the hypotheses",
+            "level": 3,
+            "href": "text/part0009_split_019.html"
+          },
+          {
+            "title": "Interlude: Quick explorations using prototypes and usability testing",
+            "level": 3,
+            "href": "text/part0009_split_020.html"
+          },
+          {
+            "title": "Experiment 2: Refining the “tabbed” navigation",
+            "level": 3,
+            "href": "text/part0009_split_021.html"
+          },
+          {
+            "title": "“Designing” your tests",
+            "level": 3,
+            "href": "text/part0009_split_022.html"
+          },
+          {
+            "title": "Other Considerations When Designing to Learn",
+            "level": 3,
+            "href": "text/part0009_split_023.html"
+          },
+          {
+            "title": "Polishing your design too much, too early",
+            "level": 3,
+            "href": "text/part0009_split_024.html"
+          },
+          {
+            "title": "Edge cases and “worst-case” scenarios",
+            "level": 3,
+            "href": "text/part0009_split_025.html"
+          },
+          {
+            "title": "Taking advantage of other opportunities to learn about your design",
+            "level": 3,
+            "href": "text/part0009_split_026.html"
+          },
+          {
+            "title": "Identifying the Right Level of Testing for Different Stages of Experimentation",
+            "level": 3,
+            "href": "text/part0009_split_027.html"
+          }
+        ]
+      },
+      {
+        "title": "Running parallel experiments",
+        "level": 2,
+        "href": "text/part0009_split_028.html"
+      },
+      {
+        "title": "Thinking about “Experiment 0”",
+        "level": 2,
+        "href": "text/part0009_split_029.html"
+      },
+      {
+        "title": "Summary",
+        "level": 2,
+        "href": "text/part0009_split_030.html"
+      },
+      {
+        "title": "Questions to Ask Yourself",
+        "level": 2,
+        "href": "text/part0009_split_031.html"
+      }
+    ]
+  },
+  {
+    "title": "6. The Analysis Phase (Getting Answers From Your Experiments)",
+    "level": 1,
+    "href": "text/part0010_split_000.html",
+    "children": [
+      {
+        "title": "Vetting Your Designs Ahead of Launch",
+        "level": 2,
+        "href": "text/part0010_split_001.html",
+        "children": [
+          {
+            "title": "Lab Studies: Interviews and Usability Testing",
+            "level": 3,
+            "href": "text/part0010_split_002.html"
+          },
+          {
+            "title": "Surveys",
+            "level": 3,
+            "href": "text/part0010_split_003.html"
+          },
+          {
+            "title": "Working with Your Peers in Data",
+            "level": 3,
+            "href": "text/part0010_split_004.html"
+          }
+        ]
+      },
+      {
+        "title": "Launching Your Design",
+        "level": 2,
+        "href": "text/part0010_split_005.html",
+        "children": [
+          {
+            "title": "Balancing Trade Offs to Power Your Test",
+            "level": 3,
+            "href": "text/part0010_split_006.html"
+          },
+          {
+            "title": "Weighing sample size and significance level",
+            "level": 3,
+            "href": "text/part0010_split_007.html"
+          },
+          {
+            "title": "Getting the sample that you need (rollout % versus test time)",
+            "level": 3,
+            "href": "text/part0010_split_008.html"
+          },
+          {
+            "title": "Who are you including in your sample?",
+            "level": 3,
+            "href": "text/part0010_split_009.html"
+          },
+          {
+            "title": "Practical Implementation Details",
+            "level": 3,
+            "href": "text/part0010_split_010.html"
+          }
+        ]
+      },
+      {
+        "title": "Is your experience “normal” right now?",
+        "level": 2,
+        "href": "text/part0010_split_011.html",
+        "children": [
+          {
+            "title": "Sanity check: Questions to ask yourself",
+            "level": 3,
+            "href": "text/part0010_split_012.html"
+          }
+        ]
+      },
+      {
+        "title": "Evaluating Your Results",
+        "level": 2,
+        "href": "text/part0010_split_013.html",
+        "children": [
+          {
+            "title": "Revisiting Statistical Significance",
+            "level": 3,
+            "href": "text/part0010_split_014.html"
+          }
+        ]
+      },
+      {
+        "title": "What Does the Data Say?",
+        "level": 2,
+        "href": "text/part0010_split_015.html",
+        "children": [
+          {
+            "title": "Expected (“Positive”) Results",
+            "level": 3,
+            "href": "text/part0010_split_016.html"
+          },
+          {
+            "title": "Unexpected and Undesirable (“Negative”) Results",
+            "level": 3,
+            "href": "text/part0010_split_017.html"
+          },
+          {
+            "title": "When the World is Flat",
+            "level": 3,
+            "href": "text/part0010_split_018.html"
+          },
+          {
+            "title": "Errors",
+            "level": 3,
+            "href": "text/part0010_split_019.html"
+          },
+          {
+            "title": "Replication",
+            "level": 3,
+            "href": "text/part0010_split_020.html"
+          },
+          {
+            "title": "Using secondary metrics",
+            "level": 3,
+            "href": "text/part0010_split_021.html"
+          },
+          {
+            "title": "Using multiple test cells",
+            "level": 3,
+            "href": "text/part0010_split_022.html"
+          },
+          {
+            "title": "Rolling out to more users",
+            "level": 3,
+            "href": "text/part0010_split_023.html"
+          }
+        ]
+      },
+      {
+        "title": "Revisiting “thick” data",
+        "level": 2,
+        "href": "text/part0010_split_024.html",
+        "children": [
+          {
+            "title": "Getting Trustworthy Data",
+            "level": 3,
+            "href": "text/part0010_split_025.html"
+          },
+          {
+            "title": "Novelty effect",
+            "level": 3,
+            "href": "text/part0010_split_026.html"
+          }
+        ]
+      },
+      {
+        "title": "Seasonality bias",
+        "level": 2,
+        "href": "text/part0010_split_027.html"
+      },
+      {
+        "title": "Rolling Out Your Experience, or Not",
+        "level": 2,
+        "href": "text/part0010_split_028.html",
+        "children": [
+          {
+            "title": "What’s Next for Your Designs?",
+            "level": 3,
+            "href": "text/part0010_split_029.html"
+          },
+          {
+            "title": "Were you exploring or evaluating?",
+            "level": 3,
+            "href": "text/part0010_split_030.html"
+          },
+          {
+            "title": "Was your problem global or local?",
+            "level": 3,
+            "href": "text/part0010_split_031.html"
+          },
+          {
+            "title": "Knowing when to stop",
+            "level": 3,
+            "href": "text/part0010_split_032.html"
+          },
+          {
+            "title": "Ramp Up",
+            "level": 3,
+            "href": "text/part0010_split_033.html"
+          },
+          {
+            "title": "Holdback Groups",
+            "level": 3,
+            "href": "text/part0010_split_034.html"
+          },
+          {
+            "title": "Taking Communication into Account",
+            "level": 3,
+            "href": "text/part0010_split_035.html"
+          }
+        ]
+      },
+      {
+        "title": "Case Study: Netflix on PlayStation 3",
+        "level": 2,
+        "href": "text/part0010_split_036.html",
+        "children": [
+          {
+            "title": "Many Treatments of the Four Hypotheses",
+            "level": 3,
+            "href": "text/part0010_split_037.html"
+          },
+          {
+            "title": "Evolving the Design Through Iterative Tests",
+            "level": 3,
+            "href": "text/part0010_split_038.html"
+          },
+          {
+            "title": "What If You Still Believe?",
+            "level": 3,
+            "href": "text/part0010_split_039.html"
+          }
+        ]
+      },
+      {
+        "title": "Summary",
+        "level": 2,
+        "href": "text/part0010_split_040.html"
+      },
+      {
+        "title": "Questions to Ask Yourself",
+        "level": 2,
+        "href": "text/part0010_split_041.html"
+      }
+    ]
+  },
+  {
+    "title": "7. Creating the Right Environment for Data-Aware Design",
+    "level": 1,
+    "href": "text/part0011_split_000.html",
+    "children": [
+      {
+        "title": "Principle 1: Shared Company Culture and Values",
+        "level": 2,
+        "href": "text/part0011_split_001.html",
+        "children": [
+          {
+            "title": "Depth: Communicating Across Levels",
+            "level": 3,
+            "href": "text/part0011_split_002.html"
+          },
+          {
+            "title": "Breadth: Beyond Design and Product",
+            "level": 3,
+            "href": "text/part0011_split_003.html"
+          },
+          {
+            "title": "The Importance of a Learning Culture",
+            "level": 3,
+            "href": "text/part0011_split_004.html"
+          },
+          {
+            "title": "The rewards of taking risks: Redefining “failure”",
+            "level": 3,
+            "href": "text/part0011_split_005.html"
+          },
+          {
+            "title": "The value of developing your customer instinct",
+            "level": 3,
+            "href": "text/part0011_split_006.html"
+          }
+        ]
+      },
+      {
+        "title": "Principle 2: Hiring and Growing the Right People",
+        "level": 2,
+        "href": "text/part0011_split_007.html",
+        "children": [
+          {
+            "title": "Establishing a Data-Aware Environment Through Your Peers",
+            "level": 3,
+            "href": "text/part0011_split_008.html"
+          },
+          {
+            "title": "Hiring for Success",
+            "level": 3,
+            "href": "text/part0011_split_009.html"
+          },
+          {
+            "title": "Building the team with data involved from the start",
+            "level": 3,
+            "href": "text/part0011_split_010.html"
+          }
+        ]
+      },
+      {
+        "title": "Principle 3: Processes to Support and Align",
+        "level": 2,
+        "href": "text/part0011_split_011.html",
+        "children": [
+          {
+            "title": "Establishing a Knowledge Baseline",
+            "level": 3,
+            "href": "text/part0011_split_012.html"
+          },
+          {
+            "title": "Establishing a Common Vocabulary",
+            "level": 3,
+            "href": "text/part0011_split_013.html"
+          },
+          {
+            "title": "Developing a Rhythm Around Data Collection and Sharing",
+            "level": 3,
+            "href": "text/part0011_split_014.html"
+          },
+          {
+            "title": "Project review meetings",
+            "level": 3,
+            "href": "text/part0011_split_015.html"
+          }
+        ]
+      },
+      {
+        "title": "Spreading data across the organization",
+        "level": 2,
+        "href": "text/part0011_split_016.html",
+        "children": [
+          {
+            "title": "Creating a Presence in the Office",
+            "level": 3,
+            "href": "text/part0011_split_017.html"
+          },
+          {
+            "title": "Learning from the Past",
+            "level": 3,
+            "href": "text/part0011_split_018.html"
+          }
+        ]
+      },
+      {
+        "title": "Summary",
+        "level": 2,
+        "href": "text/part0011_split_019.html"
+      },
+      {
+        "title": "Questions to Ask Yourself",
+        "level": 2,
+        "href": "text/part0011_split_020.html"
+      }
+    ]
+  },
+  {
+    "title": "8. Conclusion",
+    "level": 1,
+    "href": "text/part0012_split_000.html",
+    "children": [
+      {
+        "title": "Ethical Considerations",
+        "level": 2,
+        "href": "text/part0012_split_001.html",
+        "children": [
+          {
+            "title": "Ethics in Online Experimentation",
+            "level": 3,
+            "href": "text/part0012_split_002.html"
+          },
+          {
+            "title": "Design Experimentation Versus Social Experimentation",
+            "level": 3,
+            "href": "text/part0012_split_003.html"
+          },
+          {
+            "title": "Two “Power of Suggestion” Experiments",
+            "level": 3,
+            "href": "text/part0012_split_004.html"
+          },
+          {
+            "title": "Toward Ethical A/B Testing",
+            "level": 3,
+            "href": "text/part0012_split_005.html"
+          },
+          {
+            "title": "Key Concepts",
+            "level": 3,
+            "href": "text/part0012_split_006.html"
+          },
+          {
+            "title": "Asking Questions, Thinking Ethically",
+            "level": 3,
+            "href": "text/part0012_split_007.html"
+          }
+        ]
+      },
+      {
+        "title": "Last Words",
+        "level": 2,
+        "href": "text/part0012_split_008.html"
+      }
+    ]
+  },
+  {
+    "title": "A. Resources",
+    "level": 1,
+    "href": "text/part0013_split_000.html",
+    "children": [
+      {
+        "title": "Keywords",
+        "level": 2,
+        "href": "text/part0013_split_001.html",
+        "children": [
+          {
+            "title": "Chapter 1",
+            "level": 3,
+            "href": "text/part0013_split_001.html#chapter_1"
+          },
+          {
+            "title": "Chapter 2",
+            "level": 3,
+            "href": "text/part0013_split_002.html#chapter_2"
+          },
+          {
+            "title": "Chapter 3",
+            "level": 3,
+            "href": "text/part0013_split_003.html#chapter_3"
+          },
+          {
+            "title": "Chapters 4, 5, and 6",
+            "level": 3,
+            "href": "text/part0013_split_005.html"
+          },
+          {
+            "title": "Chapter 7",
+            "level": 3,
+            "href": "text/part0013_split_005.html#chapter_7"
+          },
+          {
+            "title": "Chapter 8",
+            "level": 3,
+            "href": "text/part0013_split_006.html#chapter_8"
+          }
+        ]
+      },
+      {
+        "title": "Books",
+        "level": 2,
+        "href": "text/part0013_split_008.html"
+      },
+      {
+        "title": "Online Articles, Papers, and Blogs",
+        "level": 2,
+        "href": "text/part0013_split_009.html"
+      },
+      {
+        "title": "Courses",
+        "level": 2,
+        "href": "text/part0013_split_010.html"
+      },
+      {
+        "title": "Tools",
+        "level": 2,
+        "href": "text/part0013_split_011.html"
+      },
+      {
+        "title": "Professional Groups, Meetups, and Societies",
+        "level": 2,
+        "href": "text/part0013_split_012.html"
+      }
+    ]
+  },
+  {
+    "title": "Index",
+    "level": 1,
+    "href": "text/part0014.html"
+  }
+]

@@ -1,0 +1,158 @@
+{
+  "book_id": "the-spy-and-the-traitor-macintyre-2018",
+  "book_title": "The Spy and the Traitor",
+  "genre_macro": "history_biography_politics_social_analysis",
+  "genre_micro": "espionage_history",
+  "narrative_vs_expository": "narrative",
+  "prescriptive_vs_analytical": "analytical",
+  "quantitative_density": "medium",
+  "chapter_length_profile": "mixed",
+  "benchmark_pool": "balanced",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "000",
+      "title": "Dedication",
+      "source_path": "original/1.md"
+    },
+    {
+      "chapter_id": "001",
+      "title": "List of Illustrations",
+      "source_path": "original/2.md"
+    },
+    {
+      "chapter_id": "002",
+      "title": "Introduction: 18 May 1985",
+      "source_path": "original/3.md"
+    },
+    {
+      "chapter_id": "003",
+      "title": "Part One",
+      "source_path": "original/4.md"
+    },
+    {
+      "chapter_id": "004",
+      "title": "1. The KGB",
+      "source_path": "original/5.md"
+    },
+    {
+      "chapter_id": "005",
+      "title": "2. Uncle Gormsson",
+      "source_path": "original/7.md"
+    },
+    {
+      "chapter_id": "006",
+      "title": "3. SUNBEAM",
+      "source_path": "original/8.md"
+    },
+    {
+      "chapter_id": "007",
+      "title": "4. Green Ink and Microfilm",
+      "source_path": "original/9.md"
+    },
+    {
+      "chapter_id": "008",
+      "title": "5. A Plastic Bag and a Mars Bar",
+      "source_path": "original/10.md"
+    },
+    {
+      "chapter_id": "009",
+      "title": "6. Agent BOOT",
+      "source_path": "original/11.md"
+    },
+    {
+      "chapter_id": "010",
+      "title": "Part Two",
+      "source_path": "original/12.md"
+    },
+    {
+      "chapter_id": "011",
+      "title": "7. The Safe House",
+      "source_path": "original/14.md"
+    },
+    {
+      "chapter_id": "012",
+      "title": "8. Operation RYAN",
+      "source_path": "original/15.md"
+    },
+    {
+      "chapter_id": "013",
+      "title": "9. Koba",
+      "source_path": "original/16.md"
+    },
+    {
+      "chapter_id": "014",
+      "title": "10. Mr Collins and Mrs Thatcher",
+      "source_path": "original/17.md"
+    },
+    {
+      "chapter_id": "015",
+      "title": "11. Russian Roulette",
+      "source_path": "original/18.md"
+    },
+    {
+      "chapter_id": "016",
+      "title": "Part Three",
+      "source_path": "original/20.md"
+    },
+    {
+      "chapter_id": "017",
+      "title": "12. Cat and Mouse",
+      "source_path": "original/21.md"
+    },
+    {
+      "chapter_id": "018",
+      "title": "13. The Dry-Cleaner",
+      "source_path": "original/22.md"
+    },
+    {
+      "chapter_id": "019",
+      "title": "14. Friday, 19 July",
+      "source_path": "original/23.md"
+    },
+    {
+      "chapter_id": "020",
+      "title": "15. Finlandia",
+      "source_path": "original/25.md"
+    },
+    {
+      "chapter_id": "021",
+      "title": "Epilogue",
+      "source_path": "original/26.md"
+    },
+    {
+      "chapter_id": "022",
+      "title": "16. Passport for PIMLICO",
+      "source_path": "original/27.md"
+    },
+    {
+      "chapter_id": "023",
+      "title": "17. Afterword",
+      "source_path": "original/28.md"
+    },
+    {
+      "chapter_id": "024",
+      "title": "Illustrations",
+      "source_path": "original/29.md"
+    },
+    {
+      "chapter_id": "025",
+      "title": "Codenames and Aliases",
+      "source_path": "original/30.md"
+    },
+    {
+      "chapter_id": "026",
+      "title": "Select Bibliography",
+      "source_path": "original/31.md"
+    },
+    {
+      "chapter_id": "027",
+      "title": "Copyright Page",
+      "source_path": "original/32.md"
+    }
+  ],
+  "toc_json_path": "toc.json",
+  "google_books_volume_id": "xGJODwAAQBAJ",
+  "isbn_13": "9780241186671"
+}

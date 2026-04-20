@@ -1,0 +1,133 @@
+{
+  "book_id": "accelerate-forsgren-2018",
+  "book_title": "Accelerate",
+  "genre_macro": "science_technology_environment",
+  "genre_micro": "software_engineering_and_devops",
+  "narrative_vs_expository": "expository",
+  "prescriptive_vs_analytical": "analytical",
+  "quantitative_density": "high",
+  "chapter_length_profile": "mixed",
+  "benchmark_pool": "balanced",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "000",
+      "title": "Foreword by Martin Fowler",
+      "source_path": "original/7.md"
+    },
+    {
+      "chapter_id": "001",
+      "title": "Foreword by Courtney Kissler",
+      "source_path": "original/8.md"
+    },
+    {
+      "chapter_id": "002",
+      "title": "Preface",
+      "source_path": "original/10.md"
+    },
+    {
+      "chapter_id": "003",
+      "title": "Chapter 1 - Accelerate",
+      "source_path": "original/12.md"
+    },
+    {
+      "chapter_id": "004",
+      "title": "Chapter 2 - Measuring Performance",
+      "source_path": "original/13.md"
+    },
+    {
+      "chapter_id": "005",
+      "title": "Chapter 3 - Measuring and Changing Culture",
+      "source_path": "original/14.md"
+    },
+    {
+      "chapter_id": "006",
+      "title": "Chapter 4 - Technical Practices",
+      "source_path": "original/15.md"
+    },
+    {
+      "chapter_id": "007",
+      "title": "Chapter 5 - Architecture",
+      "source_path": "original/16.md"
+    },
+    {
+      "chapter_id": "008",
+      "title": "Chapter 6 - Integrating Infosec into the Delivery Lifecycle",
+      "source_path": "original/17.md"
+    },
+    {
+      "chapter_id": "009",
+      "title": "Chapter 7 - Management Practices for Software",
+      "source_path": "original/18.md"
+    },
+    {
+      "chapter_id": "010",
+      "title": "Chapter 8 - Product Development",
+      "source_path": "original/19.md"
+    },
+    {
+      "chapter_id": "011",
+      "title": "Chapter 9 - Making Work Sustainable",
+      "source_path": "original/20.md"
+    },
+    {
+      "chapter_id": "012",
+      "title": "Chapter 10 - Employee Satisfaction, Identity, and Engagement",
+      "source_path": "original/21.md"
+    },
+    {
+      "chapter_id": "013",
+      "title": "Chapter 11 - Leaders and Managers",
+      "source_path": "original/22.md"
+    },
+    {
+      "chapter_id": "014",
+      "title": "Chapter 12 - The Science Behind This Book",
+      "source_path": "original/24.md"
+    },
+    {
+      "chapter_id": "015",
+      "title": "Chapter 13 - Introduction to Psychometrics",
+      "source_path": "original/25.md"
+    },
+    {
+      "chapter_id": "016",
+      "title": "Chapter 14 - Why Use a Survey",
+      "source_path": "original/26.md"
+    },
+    {
+      "chapter_id": "017",
+      "title": "Chapter 15 - The Data for the Project",
+      "source_path": "original/27.md"
+    },
+    {
+      "chapter_id": "018",
+      "title": "Chapter 16 - High-Performance Leadership and Management",
+      "source_path": "original/30.md"
+    },
+    {
+      "chapter_id": "019",
+      "title": "Conclusion",
+      "source_path": "original/31.md"
+    },
+    {
+      "chapter_id": "020",
+      "title": "Appendix A: Capabilities to Drive Improvement",
+      "source_path": "original/32.md"
+    },
+    {
+      "chapter_id": "021",
+      "title": "Appendix B: The Stats",
+      "source_path": "original/34.md"
+    },
+    {
+      "chapter_id": "022",
+      "title": "Appendix C: Statistical Methods Used in Our Research",
+      "source_path": "original/35.md"
+    }
+  ],
+  "toc_json_path": "toc.json",
+  "google_books_volume_id": "85XHAQAACAAJ",
+  "isbn_13": "9781942788331"
+}

@@ -1,0 +1,173 @@
+{
+  "book_id": "how-to-stop-worrying-and-start-living-carnegie-2022",
+  "book_title": "How To Stop Worrying And Start Living",
+  "genre_macro": "psychology_health_self_development",
+  "genre_micro": "self_help_mindset",
+  "narrative_vs_expository": "expository",
+  "prescriptive_vs_analytical": "prescriptive",
+  "quantitative_density": "low",
+  "chapter_length_profile": "mixed",
+  "benchmark_pool": "balanced",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "000",
+      "title": "Preface",
+      "source_path": "original/1.md"
+    },
+    {
+      "chapter_id": "001",
+      "title": "Chapter 1: Live in \u201cDay-tight Compartments\u201d",
+      "source_path": "original/3.md"
+    },
+    {
+      "chapter_id": "002",
+      "title": "Chapter 2: A Magic Formula for Solving Worry Situations",
+      "source_path": "original/5.md"
+    },
+    {
+      "chapter_id": "003",
+      "title": "Chapter 3: What Worry May Do to You",
+      "source_path": "original/6.md"
+    },
+    {
+      "chapter_id": "004",
+      "title": "Chapter 4: How to Analyse and Solve Worry Problems",
+      "source_path": "original/7.md"
+    },
+    {
+      "chapter_id": "005",
+      "title": "Chapter 5: How to Eliminate Fifty Per Cent of Your Business Worries",
+      "source_path": "original/8.md"
+    },
+    {
+      "chapter_id": "006",
+      "title": "Chapter 6: How to Crowd Worry Out of Your Mind",
+      "source_path": "original/10.md"
+    },
+    {
+      "chapter_id": "007",
+      "title": "Chapter 7: Don\u2019t Let the Beetles Get You Down",
+      "source_path": "original/11.md"
+    },
+    {
+      "chapter_id": "008",
+      "title": "Chapter 8: A Law That Will Outlaw Many of Your Worries",
+      "source_path": "original/12.md"
+    },
+    {
+      "chapter_id": "009",
+      "title": "Chapter 9: Co-Operate with the Inevitable",
+      "source_path": "original/14.md"
+    },
+    {
+      "chapter_id": "010",
+      "title": "Chapter 10: Put a \u201cStop-Loss\u201d Order on Your Worries",
+      "source_path": "original/15.md"
+    },
+    {
+      "chapter_id": "011",
+      "title": "Chapter 11: Don\u2019t Try to Saw Sawdust",
+      "source_path": "original/16.md"
+    },
+    {
+      "chapter_id": "012",
+      "title": "Chapter 12: Eight Words that Can Transform Your Life",
+      "source_path": "original/17.md"
+    },
+    {
+      "chapter_id": "013",
+      "title": "Chapter 13: The High Cost of Getting Even",
+      "source_path": "original/18.md"
+    },
+    {
+      "chapter_id": "014",
+      "title": "Chapter 14: If You Do This, You Will Never Worry About Ingratitude",
+      "source_path": "original/19.md"
+    },
+    {
+      "chapter_id": "015",
+      "title": "Chapter 15: Would You Take a Million Dollars for What You Have?",
+      "source_path": "original/20.md"
+    },
+    {
+      "chapter_id": "016",
+      "title": "Chapter 16: Find Yourself and Be Yourself",
+      "source_path": "original/22.md"
+    },
+    {
+      "chapter_id": "017",
+      "title": "Chapter 17: If You Have a Lemon, Make a Lemonade",
+      "source_path": "original/23.md"
+    },
+    {
+      "chapter_id": "018",
+      "title": "Chapter 18: How to Cure Melancholy in Fourteen Days",
+      "source_path": "original/24.md"
+    },
+    {
+      "chapter_id": "019",
+      "title": "Chapter 19: How My Mother and Father Conquered Worry",
+      "source_path": "original/25.md"
+    },
+    {
+      "chapter_id": "020",
+      "title": "Chapter 20: Remember that No One Ever Kicks a Dead Dog",
+      "source_path": "original/26.md"
+    },
+    {
+      "chapter_id": "021",
+      "title": "Chapter 21: Do This\u2014and Criticism Can\u2019t Hurt You",
+      "source_path": "original/27.md"
+    },
+    {
+      "chapter_id": "022",
+      "title": "Chapter 22: Fool Things I Have Done",
+      "source_path": "original/28.md"
+    },
+    {
+      "chapter_id": "023",
+      "title": "Chapter 23: How to Add One Hour a Day to Your Waking Life",
+      "source_path": "original/29.md"
+    },
+    {
+      "chapter_id": "024",
+      "title": "Chapter 24: What Makes You Tired-and What You Can Do About It",
+      "source_path": "original/31.md"
+    },
+    {
+      "chapter_id": "025",
+      "title": "Chapter 25: How the Housewife Can Avoid Fatigue",
+      "source_path": "original/33.md"
+    },
+    {
+      "chapter_id": "026",
+      "title": "Chapter 26: Four Good Working Habits",
+      "source_path": "original/34.md"
+    },
+    {
+      "chapter_id": "027",
+      "title": "Chapter 27: How to Banish Boredom",
+      "source_path": "original/35.md"
+    },
+    {
+      "chapter_id": "028",
+      "title": "Chapter 28: How to Keep from Worrying About Insomnia",
+      "source_path": "original/36.md"
+    },
+    {
+      "chapter_id": "029",
+      "title": "Chapter 29: The Major Decision of Your Life",
+      "source_path": "original/38.md"
+    },
+    {
+      "chapter_id": "030",
+      "title": "Chapter 30: Seventy Per Cent of All Our Worries",
+      "source_path": "original/39.md"
+    }
+  ],
+  "toc_json_path": "toc.json",
+  "google_books_volume_id": "n0TbzwEACAAJ",
+  "isbn_13": "9781774531204"
+}

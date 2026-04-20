@@ -1,0 +1,47 @@
+{
+  "headings": [
+    "Chapter 3.A Framework for Experimentation"
+  ],
+  "core_concepts": [
+    "Chapter 3.A Framework for Experimentation IN THIS CHAPTER, WE move from the theoretical to the practical by introducing the framework that we’ll be using over the next three chapters to dive into the practical integra",
+    "What is the relationship between data, design, and user experience?",
+    "Furthermore, a user experience that is useful, usable, and elegant — and that offers your users a consistent and reliable experience — is a critical foundation for a great business",
+    "Many of you already have a design process that you are comfortable using on a regular basis",
+    "This framework is our own particular take on how to think about A/B testing",
+    "You’ll find that many people use similar ways of thinking about A/B testing design and implementation, and we hope that you will find your own ways to adapt our framework to suit your needs",
+    "There are three phases that we’ll go into more detail on: definition, execution, and analysis",
+    "We’ll dedicate a chapter to each of these and go into much more detail about applying the concepts in Chapter 4–Chapter 6",
+    "We believe that data capture, data validation, data curation and management, and data analysis for insights are central to design practice",
+    "We believe that design practice is central to effective data design",
+    "The best way to assure you are meeting these goals is to gather data, learn from it, and iterate on your designs to enhance the elements that have a positive impact on the user experience while diminishing those that",
+    "We want to reiterate that experimentation is a mindset"
+  ],
+  "mechanisms_or_explanations": [
+    "This framework is our own particular take on how to think about A/B testing",
+    "A data-aware approach to design enables you to be more systematic and more ambitious about your design and product development process, helps you understand how to determine different user types and their needs and ex",
+    "Many of you already have a design process that you are comfortable using on a regular basis",
+    "In the upcoming chapters, we want to show you how data can easily fit with and help augment your existing design process",
+    "It’s iterative, just like your existing design process, and encourages you to constantly focus on improvement by questioning your assumptions about your users and your design, which you do by seeking out evidence abou"
+  ],
+  "critical_qualifiers": [
+    "In the upcoming chapters, we want to show you how data can easily fit with and help augment your existing design process"
+  ],
+  "important_examples": [],
+  "key_entities_or_numbers": [
+    "Chapter 3.A Framework for Experimentation IN THIS CHAPTER, WE move from the theoretical to the practical by introducing the framework that we’ll be using over the next three chapters to dive into the practical integra",
+    "We’ll dedicate a chapter to each of these and go into much more detail about applying the concepts in Chapter 4–Chapter 6"
+  ],
+  "key_terms": [
+    "Chapter 3.A Framework for Experimentation",
+    "Framework",
+    "Experimentation",
+    "This",
+    "You",
+    "There",
+    "What",
+    "Furthermore",
+    "The",
+    "Many",
+    "Taking"
+  ]
+}

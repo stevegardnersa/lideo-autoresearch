@@ -1,0 +1,111 @@
+[
+  {
+    "title": "Cover",
+    "level": 1,
+    "href": "9780062888471_Cover.xhtml#cover"
+  },
+  {
+    "title": "Title Page",
+    "level": 1,
+    "href": "9780062888471_Titlepage.xhtml#title"
+  },
+  {
+    "title": "Dedication",
+    "level": 1,
+    "href": "9780062888471_Dedication.xhtml#_idParaDest-1"
+  },
+  {
+    "title": "Contents",
+    "level": 1,
+    "href": "9780062888471_Contents.xhtml"
+  },
+  {
+    "title": "Part I: Hope",
+    "level": 1,
+    "href": "9780062888471_Part_I.xhtml#_idParaDest-3",
+    "children": [
+      {
+        "title": "Chapter 1: The Uncomfortable Truth",
+        "level": 2,
+        "href": "9780062888471_Chapter_1.xhtml#_idParaDest-5"
+      },
+      {
+        "title": "Chapter 2: Self-Control Is an Illusion",
+        "level": 2,
+        "href": "9780062888471_Chapter_2.xhtml#_idParaDest-7"
+      },
+      {
+        "title": "Chapter 3: Newton’s Laws of Emotion",
+        "level": 2,
+        "href": "9780062888471_Chapter_3.xhtml#_idParaDest-9"
+      },
+      {
+        "title": "Chapter 4: How to Make All Your Dreams Come True",
+        "level": 2,
+        "href": "9780062888471_Chapter_4.xhtml#_idParaDest-11"
+      },
+      {
+        "title": "Chapter 5: Hope Is Fucked",
+        "level": 2,
+        "href": "9780062888471_Chapter_5.xhtml#_idParaDest-13"
+      }
+    ]
+  },
+  {
+    "title": "Part II: Everything Is Fucked",
+    "level": 1,
+    "href": "9780062888471_Part_II.xhtml#_idParaDest-15",
+    "children": [
+      {
+        "title": "Chapter 6: The Formula of Humanity",
+        "level": 2,
+        "href": "9780062888471_Chapter_6.xhtml#_idParaDest-17"
+      },
+      {
+        "title": "Chapter 7: Pain Is the Universal Constant",
+        "level": 2,
+        "href": "9780062888471_Chapter_7.xhtml#_idParaDest-19"
+      },
+      {
+        "title": "Chapter 8: The Feelings Economy",
+        "level": 2,
+        "href": "9780062888471_Chapter_8.xhtml#_idParaDest-21"
+      },
+      {
+        "title": "Chapter 9: The Final Religion",
+        "level": 2,
+        "href": "9780062888471_Chapter_9.xhtml#_idParaDest-23"
+      }
+    ]
+  },
+  {
+    "title": "Acknowledgments",
+    "level": 1,
+    "href": "9780062888471_Acknowledgments.xhtml#_idParaDest-25"
+  },
+  {
+    "title": "Notes",
+    "level": 1,
+    "href": "9780062888471_Notes.xhtml#_idParaDest-26"
+  },
+  {
+    "title": "About the Author",
+    "level": 1,
+    "href": "About_the_Author.xhtml#_idParaDest-27"
+  },
+  {
+    "title": "Also by Mark Manson",
+    "level": 1,
+    "href": "9780062888471_Also_by.xhtml#_idParaDest-28"
+  },
+  {
+    "title": "Copyright",
+    "level": 1,
+    "href": "9780062888471_Copyright.xhtml#_idParaDest-29"
+  },
+  {
+    "title": "About the Publisher",
+    "level": 1,
+    "href": "About_the_Publisher.xhtml#_idParaDest-30"
+  }
+]

@@ -1,0 +1,188 @@
+{
+  "book_id": "atomic-habits-clear-2018",
+  "book_title": "Atomic Habits",
+  "genre_macro": "psychology_health_self_development",
+  "genre_micro": "habits_and_productivity",
+  "narrative_vs_expository": "expository",
+  "prescriptive_vs_analytical": "prescriptive",
+  "quantitative_density": "high",
+  "chapter_length_profile": "mixed",
+  "benchmark_pool": "balanced",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "000",
+      "title": "About the Book",
+      "source_path": "original/1.md"
+    },
+    {
+      "chapter_id": "001",
+      "title": "Epigraph",
+      "source_path": "original/2.md"
+    },
+    {
+      "chapter_id": "002",
+      "title": "Introduction: My Story",
+      "source_path": "original/3.md"
+    },
+    {
+      "chapter_id": "003",
+      "title": "The Fundamentals: Why Tiny Changes Make a Big Difference",
+      "source_path": "original/5.md"
+    },
+    {
+      "chapter_id": "004",
+      "title": "1: The Surprising Power of Atomic Habits",
+      "source_path": "original/6.md"
+    },
+    {
+      "chapter_id": "005",
+      "title": "2: How Your Habits Shape Your Identity (and Vice Versa)",
+      "source_path": "original/8.md"
+    },
+    {
+      "chapter_id": "006",
+      "title": "3: How to Build Better Habits in 4 Simple Steps",
+      "source_path": "original/9.md"
+    },
+    {
+      "chapter_id": "007",
+      "title": "The 1st Law: Make It Obvious",
+      "source_path": "original/10.md"
+    },
+    {
+      "chapter_id": "008",
+      "title": "4: The Man Who Didn’t Look Right",
+      "source_path": "original/12.md"
+    },
+    {
+      "chapter_id": "009",
+      "title": "5: The Best Way to Start a New Habit",
+      "source_path": "original/13.md"
+    },
+    {
+      "chapter_id": "010",
+      "title": "6: Motivation is Overrated; Environment Often Matters More",
+      "source_path": "original/14.md"
+    },
+    {
+      "chapter_id": "011",
+      "title": "7: The Secret to Self-Control",
+      "source_path": "original/15.md"
+    },
+    {
+      "chapter_id": "012",
+      "title": "The 2nd Law: Make It Attractive",
+      "source_path": "original/17.md"
+    },
+    {
+      "chapter_id": "013",
+      "title": "8: How to Make a Habit Irresistible",
+      "source_path": "original/18.md"
+    },
+    {
+      "chapter_id": "014",
+      "title": "9: The Role of Family and Friends in Shaping Your Habits",
+      "source_path": "original/19.md"
+    },
+    {
+      "chapter_id": "015",
+      "title": "10: How to Find and Fix the Causes of Your Bad Habits",
+      "source_path": "original/21.md"
+    },
+    {
+      "chapter_id": "016",
+      "title": "The 3rd Law: Make It Easy",
+      "source_path": "original/22.md"
+    },
+    {
+      "chapter_id": "017",
+      "title": "11: Walk Slowly, but Never Backward",
+      "source_path": "original/23.md"
+    },
+    {
+      "chapter_id": "018",
+      "title": "12: The Law of Least Effort",
+      "source_path": "original/24.md"
+    },
+    {
+      "chapter_id": "019",
+      "title": "13: How to Stop Procrastinating by Using the Two-Minute Rule",
+      "source_path": "original/26.md"
+    },
+    {
+      "chapter_id": "020",
+      "title": "14: How to Make Good Habits Inevitable and Bad Habits Impossible",
+      "source_path": "original/27.md"
+    },
+    {
+      "chapter_id": "021",
+      "title": "The 4th Law: Make It Satisfying",
+      "source_path": "original/28.md"
+    },
+    {
+      "chapter_id": "022",
+      "title": "15: The Cardinal Rule of Behavior Change",
+      "source_path": "original/30.md"
+    },
+    {
+      "chapter_id": "023",
+      "title": "16: How to Stick with Good Habits Every Day",
+      "source_path": "original/31.md"
+    },
+    {
+      "chapter_id": "024",
+      "title": "17: How an Accountability Partner Can Change Everything",
+      "source_path": "original/32.md"
+    },
+    {
+      "chapter_id": "025",
+      "title": "Advanced Tactics: How to Go from Being Merely Good to Being Truly Great",
+      "source_path": "original/33.md"
+    },
+    {
+      "chapter_id": "026",
+      "title": "18: The Truth About Talent (When Genes Matter and When They Don’t)",
+      "source_path": "original/35.md"
+    },
+    {
+      "chapter_id": "027",
+      "title": "19: The Goldilocks Rule: How to Stay Motivated in Life and Work",
+      "source_path": "original/36.md"
+    },
+    {
+      "chapter_id": "028",
+      "title": "20: The Downside of Creating Good Habits",
+      "source_path": "original/37.md"
+    },
+    {
+      "chapter_id": "029",
+      "title": "Conclusion: The Secret to Results That Last",
+      "source_path": "original/38.md"
+    },
+    {
+      "chapter_id": "030",
+      "title": "What Should You Read Next?",
+      "source_path": "original/39.md"
+    },
+    {
+      "chapter_id": "031",
+      "title": "Little Lessons from the Four Laws",
+      "source_path": "original/40.md"
+    },
+    {
+      "chapter_id": "032",
+      "title": "How to Apply These Ideas to Business",
+      "source_path": "original/41.md"
+    },
+    {
+      "chapter_id": "033",
+      "title": "How to Apply These Ideas to Parenting",
+      "source_path": "original/42.md"
+    }
+  ],
+  "toc_json_path": "toc.json",
+  "google_books_volume_id": "fFCjDQAAQBAJ",
+  "isbn_13": "9781473537804"
+}

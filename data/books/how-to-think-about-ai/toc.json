@@ -1,0 +1,498 @@
+[
+  {
+    "title": "Cover page",
+    "level": 1,
+    "href": "000_ACover.xhtml"
+  },
+  {
+    "title": "Praise for How To Think About AI",
+    "level": 1,
+    "href": "002_FM_endorsement.xhtml"
+  },
+  {
+    "title": "Title page",
+    "level": 1,
+    "href": "003_FM_titlepage.xhtml"
+  },
+  {
+    "title": "Copyright page",
+    "level": 1,
+    "href": "004_FM_titleverso.xhtml"
+  },
+  {
+    "title": "Dedication page",
+    "level": 1,
+    "href": "005_FM_dedication.xhtml"
+  },
+  {
+    "title": "Epigraph",
+    "level": 1,
+    "href": "006_FM_epigraph.xhtml"
+  },
+  {
+    "title": "Acknowledgements",
+    "level": 1,
+    "href": "007_FM_acknowledgements.xhtml"
+  },
+  {
+    "title": "Contents",
+    "level": 1,
+    "href": "008_FM_contents.xhtml"
+  },
+  {
+    "title": "Personal Note",
+    "level": 1,
+    "href": "009_FM_other.xhtml"
+  },
+  {
+    "title": "Introduction",
+    "level": 1,
+    "href": "010_chapter.xhtml"
+  },
+  {
+    "title": "Part One Understanding AI",
+    "level": 1,
+    "href": "011_part1.xhtml",
+    "children": [
+      {
+        "title": "Chapter 1. The Summer of AI",
+        "level": 2,
+        "href": "012_part1_chapter.xhtml",
+        "children": [
+          {
+            "title": "What AI Can Do",
+            "level": 3,
+            "href": "012_part1_chapter.xhtml#oso-9780198941927-chapter-2-titleGroup-3"
+          },
+          {
+            "title": "A Very Short History of AI",
+            "level": 3,
+            "href": "012_part1_chapter.xhtml#oso-9780198941927-chapter-2-titleGroup-4"
+          },
+          {
+            "title": "Later Breakthroughs",
+            "level": 3,
+            "href": "012_part1_chapter.xhtml#oso-9780198941927-chapter-2-titleGroup-5"
+          }
+        ]
+      },
+      {
+        "title": "Chapter 2. On Technology",
+        "level": 2,
+        "href": "013_part1_chapter.xhtml",
+        "children": [
+          {
+            "title": "Digital Technology",
+            "level": 3,
+            "href": "013_part1_chapter.xhtml#oso-9780198941927-chapter-3-titleGroup-2"
+          },
+          {
+            "title": "Four, Five, or Even Six Stages of Human Progress",
+            "level": 3,
+            "href": "013_part1_chapter.xhtml#oso-9780198941927-chapter-3-titleGroup-3"
+          },
+          {
+            "title": "Some Biases",
+            "level": 3,
+            "href": "013_part1_chapter.xhtml#oso-9780198941927-chapter-3-titleGroup-4"
+          },
+          {
+            "title": "Future Capability",
+            "level": 3,
+            "href": "013_part1_chapter.xhtml#oso-9780198941927-chapter-3-titleGroup-5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Part Two Thinking Differently",
+    "level": 1,
+    "href": "014_part2.xhtml",
+    "children": [
+      {
+        "title": "Chapter 3. Process-Thinking and Outcome-Thinking",
+        "level": 2,
+        "href": "015_part2_chapter.xhtml",
+        "children": [
+          {
+            "title": "Two Cultures of AI",
+            "level": 3,
+            "href": "015_part2_chapter.xhtml#oso-9780198941927-chapter-4-titleGroup-3"
+          },
+          {
+            "title": "Thinking Differently",
+            "level": 3,
+            "href": "015_part2_chapter.xhtml#oso-9780198941927-chapter-4-titleGroup-4"
+          },
+          {
+            "title": "Reflections",
+            "level": 3,
+            "href": "015_part2_chapter.xhtml#oso-9780198941927-chapter-4-titleGroup-5"
+          }
+        ]
+      },
+      {
+        "title": "Chapter 4. Confusions",
+        "level": 2,
+        "href": "016_part2_chapter.xhtml",
+        "children": [
+          {
+            "title": "Muddled Thinking about the Threat of AI",
+            "level": 3,
+            "href": "016_part2_chapter.xhtml#oso-9780198941927-chapter-5-titleGroup-2"
+          },
+          {
+            "title": "Not-Us Thinking",
+            "level": 3,
+            "href": "016_part2_chapter.xhtml#oso-9780198941927-chapter-5-titleGroup-3"
+          },
+          {
+            "title": "AI and Professional Work",
+            "level": 3,
+            "href": "016_part2_chapter.xhtml#oso-9780198941927-chapter-5-titleGroup-4"
+          },
+          {
+            "title": "AI Fallacy",
+            "level": 3,
+            "href": "016_part2_chapter.xhtml#oso-9780198941927-chapter-5-titleGroup-5"
+          },
+          {
+            "title": "What Machines Cannot Do",
+            "level": 3,
+            "href": "016_part2_chapter.xhtml#oso-9780198941927-chapter-5-titleGroup-6"
+          }
+        ]
+      },
+      {
+        "title": "Chapter 5. We Don’t Have the Words",
+        "level": 2,
+        "href": "017_part2_chapter.xhtml",
+        "children": [
+          {
+            "title": "Language",
+            "level": 3,
+            "href": "017_part2_chapter.xhtml#oso-9780198941927-chapter-6-titleGroup-2"
+          },
+          {
+            "title": "Judgement and Quasi-Judgement",
+            "level": 3,
+            "href": "017_part2_chapter.xhtml#oso-9780198941927-chapter-6-titleGroup-3"
+          },
+          {
+            "title": "Empathy and Quasi-Empathy",
+            "level": 3,
+            "href": "017_part2_chapter.xhtml#oso-9780198941927-chapter-6-titleGroup-4"
+          },
+          {
+            "title": "Creativity and Quasi-Creativity",
+            "level": 3,
+            "href": "017_part2_chapter.xhtml#oso-9780198941927-chapter-6-titleGroup-5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Part Three Making AI Work",
+    "level": 1,
+    "href": "018_part3.xhtml",
+    "children": [
+      {
+        "title": "Chapter 6. Automation, Innovation, Elimination",
+        "level": 2,
+        "href": "019_part3_chapter.xhtml",
+        "children": [
+          {
+            "title": "Automation",
+            "level": 3,
+            "href": "019_part3_chapter.xhtml#oso-9780198941927-chapter-7-titleGroup-3"
+          },
+          {
+            "title": "Innovation",
+            "level": 3,
+            "href": "019_part3_chapter.xhtml#oso-9780198941927-chapter-7-titleGroup-4"
+          },
+          {
+            "title": "Elimination",
+            "level": 3,
+            "href": "019_part3_chapter.xhtml#oso-9780198941927-chapter-7-titleGroup-5"
+          },
+          {
+            "title": "Examples",
+            "level": 3,
+            "href": "019_part3_chapter.xhtml#oso-9780198941927-chapter-7-titleGroup-6"
+          }
+        ]
+      },
+      {
+        "title": "Chapter 7. Radical Structural Change",
+        "level": 2,
+        "href": "020_part3_chapter.xhtml",
+        "children": [
+          {
+            "title": "Transformation",
+            "level": 3,
+            "href": "020_part3_chapter.xhtml#oso-9780198941927-chapter-8-titleGroup-2"
+          },
+          {
+            "title": "Vision-Based Restructuring",
+            "level": 3,
+            "href": "020_part3_chapter.xhtml#oso-9780198941927-chapter-8-titleGroup-3"
+          },
+          {
+            "title": "New Vehicles",
+            "level": 3,
+            "href": "020_part3_chapter.xhtml#oso-9780198941927-chapter-8-titleGroup-4"
+          },
+          {
+            "title": "Research and Development (R&D)",
+            "level": 3,
+            "href": "020_part3_chapter.xhtml#oso-9780198941927-chapter-8-titleGroup-5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Part Four Confronting the Risks",
+    "level": 1,
+    "href": "021_part4.xhtml",
+    "children": [
+      {
+        "title": "Chapter 8. Categories of Risk",
+        "level": 2,
+        "href": "022_part4_chapter.xhtml",
+        "children": [
+          {
+            "title": "A Classification of Risks",
+            "level": 3,
+            "href": "022_part4_chapter.xhtml#oso-9780198941927-chapter-9-titleGroup-3"
+          },
+          {
+            "title": "Initial Reflections",
+            "level": 3,
+            "href": "022_part4_chapter.xhtml#oso-9780198941927-chapter-9-titleGroup-11"
+          }
+        ]
+      },
+      {
+        "title": "Chapter 9. Harnessing AI",
+        "level": 2,
+        "href": "023_part4_chapter.xhtml",
+        "children": [
+          {
+            "title": "Why Have We Waited So Long?",
+            "level": 3,
+            "href": "023_part4_chapter.xhtml#oso-9780198941927-chapter-10-titleGroup-2"
+          },
+          {
+            "title": "Preparing for Much Worse",
+            "level": 3,
+            "href": "023_part4_chapter.xhtml#oso-9780198941927-chapter-10-titleGroup-3"
+          },
+          {
+            "title": "On AI Ethics",
+            "level": 3,
+            "href": "023_part4_chapter.xhtml#oso-9780198941927-chapter-10-titleGroup-4"
+          },
+          {
+            "title": "On Law and Regulation",
+            "level": 3,
+            "href": "023_part4_chapter.xhtml#oso-9780198941927-chapter-10-titleGroup-5"
+          },
+          {
+            "title": "Upgrading Our Justice System",
+            "level": 3,
+            "href": "023_part4_chapter.xhtml#oso-9780198941927-chapter-10-titleGroup-6"
+          },
+          {
+            "title": "A Multidisciplinary Approach",
+            "level": 3,
+            "href": "023_part4_chapter.xhtml#oso-9780198941927-chapter-10-titleGroup-7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Part Five Contemplating the Future",
+    "level": 1,
+    "href": "024_part5.xhtml",
+    "children": [
+      {
+        "title": "Chapter 10. Conscious Machines?",
+        "level": 2,
+        "href": "025_part5_chapter.xhtml",
+        "children": [
+          {
+            "title": "Human Consciousness",
+            "level": 3,
+            "href": "025_part5_chapter.xhtml#oso-9780198941927-chapter-11-titleGroup-3"
+          },
+          {
+            "title": "AI and Consciousness",
+            "level": 3,
+            "href": "025_part5_chapter.xhtml#oso-9780198941927-chapter-11-titleGroup-4"
+          },
+          {
+            "title": "Recollecting an Evening in the Mid-1980s",
+            "level": 3,
+            "href": "025_part5_chapter.xhtml#oso-9780198941927-chapter-11-titleGroup-5"
+          }
+        ]
+      },
+      {
+        "title": "Chapter 11. Coming Soon",
+        "level": 2,
+        "href": "026_part5_chapter.xhtml",
+        "children": [
+          {
+            "title": "Brain–Computer Interface",
+            "level": 3,
+            "href": "026_part5_chapter.xhtml#oso-9780198941927-chapter-12-titleGroup-2"
+          },
+          {
+            "title": "Virtual Reality",
+            "level": 3,
+            "href": "026_part5_chapter.xhtml#oso-9780198941927-chapter-12-titleGroup-3"
+          },
+          {
+            "title": "Reality?",
+            "level": 3,
+            "href": "026_part5_chapter.xhtml#oso-9780198941927-chapter-12-titleGroup-4"
+          }
+        ]
+      },
+      {
+        "title": "Chapter 12. The Great Schism",
+        "level": 2,
+        "href": "027_part5_chapter.xhtml",
+        "children": [
+          {
+            "title": "Evolution and AI",
+            "level": 3,
+            "href": "027_part5_chapter.xhtml#oso-9780198941927-chapter-13-titleGroup-2"
+          },
+          {
+            "title": "Options for Our Future",
+            "level": 3,
+            "href": "027_part5_chapter.xhtml#oso-9780198941927-chapter-13-titleGroup-3"
+          },
+          {
+            "title": "Duties to the Future",
+            "level": 3,
+            "href": "027_part5_chapter.xhtml#oso-9780198941927-chapter-13-titleGroup-4"
+          },
+          {
+            "title": "Verdict",
+            "level": 3,
+            "href": "027_part5_chapter.xhtml#oso-9780198941927-chapter-13-titleGroup-5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Conclusion",
+    "level": 1,
+    "href": "028_chapter.xhtml"
+  },
+  {
+    "title": "Notes",
+    "level": 1,
+    "href": "029_BM_endNotes.xhtml",
+    "children": [
+      {
+        "title": "Personal Note",
+        "level": 2,
+        "href": "029_BM_endNotes.xhtml#oso-9780198941927-miscMatter-9-titleGroup-2"
+      },
+      {
+        "title": "Introduction",
+        "level": 2,
+        "href": "029_BM_endNotes.xhtml#oso-9780198941927-miscMatter-9-titleGroup-3"
+      },
+      {
+        "title": "Chapter 1",
+        "level": 2,
+        "href": "029_BM_endNotes.xhtml#oso-9780198941927-miscMatter-9-titleGroup-4"
+      },
+      {
+        "title": "Chapter 2",
+        "level": 2,
+        "href": "029_BM_endNotes.xhtml#oso-9780198941927-miscMatter-9-titleGroup-5"
+      },
+      {
+        "title": "Chapter 3",
+        "level": 2,
+        "href": "029_BM_endNotes.xhtml#oso-9780198941927-miscMatter-9-titleGroup-6"
+      },
+      {
+        "title": "Chapter 4",
+        "level": 2,
+        "href": "029_BM_endNotes.xhtml#oso-9780198941927-miscMatter-9-titleGroup-7"
+      },
+      {
+        "title": "Chapter 5",
+        "level": 2,
+        "href": "029_BM_endNotes.xhtml#oso-9780198941927-miscMatter-9-titleGroup-8"
+      },
+      {
+        "title": "Chapter 6",
+        "level": 2,
+        "href": "029_BM_endNotes.xhtml#oso-9780198941927-miscMatter-9-titleGroup-9"
+      },
+      {
+        "title": "Chapter 7",
+        "level": 2,
+        "href": "029_BM_endNotes.xhtml#oso-9780198941927-miscMatter-9-titleGroup-10"
+      },
+      {
+        "title": "Chapter 8",
+        "level": 2,
+        "href": "029_BM_endNotes.xhtml#oso-9780198941927-miscMatter-9-titleGroup-11"
+      },
+      {
+        "title": "Chapter 9",
+        "level": 2,
+        "href": "029_BM_endNotes.xhtml#oso-9780198941927-miscMatter-9-titleGroup-12"
+      },
+      {
+        "title": "Chapter 10",
+        "level": 2,
+        "href": "029_BM_endNotes.xhtml#oso-9780198941927-miscMatter-9-titleGroup-13"
+      },
+      {
+        "title": "Chapter 11",
+        "level": 2,
+        "href": "029_BM_endNotes.xhtml#oso-9780198941927-miscMatter-9-titleGroup-14"
+      },
+      {
+        "title": "Chapter 12",
+        "level": 2,
+        "href": "029_BM_endNotes.xhtml#oso-9780198941927-miscMatter-9-titleGroup-15"
+      }
+    ]
+  },
+  {
+    "title": "Top Thirty AI Books",
+    "level": 1,
+    "href": "030_BM_bibliographyGroup.xhtml"
+  },
+  {
+    "title": "Acknowledgements",
+    "level": 1,
+    "href": "031_BM_acknowledgements.xhtml"
+  },
+  {
+    "title": "Publisher Acknowledgements",
+    "level": 1,
+    "href": "032_BM_acknowledgements.xhtml"
+  },
+  {
+    "title": "Index",
+    "level": 1,
+    "href": "033_BM_regular.xhtml"
+  }
+]

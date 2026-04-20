@@ -1,0 +1,74 @@
+{
+  "headings": [],
+  "core_concepts": [
+    "APPENDIX A",
+    "CAPABILITIES TO DRIVE IMPROVEMENT",
+    "Our research has uncovered 24 key capabilities that drive improvements in software delivery performance in a statistically significant way",
+    "We have classified these capabilities into five categories",
+    "Continuous delivery Architecture Product and process Lean management and monitoring CulturalWithin each category, the capabilities are presented in no particular order",
+    "CONTINUOUS DELIVERY CAPABILITIES",
+    "Use version control for all production artifacts",
+    "Use a loosely coupled architecture",
+    "Gather and implement customer feedback",
+    "Have a lightweight change approval processes",
+    "Support a generative culture (as outlined by Westrum)",
+    "We have classified these capabilities into five categories: Continuous delivery Architecture Product and process Lean management and monitoring CulturalWithin each category, the capabilities are presented in no partic"
+  ],
+  "mechanisms_or_explanations": [
+    "We have classified these capabilities into five categories: Continuous delivery Architecture Product and process Lean management and monitoring CulturalWithin each category, the capabilities are presented in no partic",
+    "Automate your deployment process",
+    "Continuous integration (CI) is the first step towards continuous delivery",
+    "The CI process creates canonical builds and packages that are ultimately deployed and released",
+    "Test automation is a practice where software tests are run automatically (not manually) continuously throughout the development process",
+    "Integrating security into the design and testing phases of the software development process is key to driving IT performance",
+    "This includes conducting security reviews of applications, including the infosec team in the design and demo process for applications, using preapproved security libraries and packages, and testing security features a",
+    "Fast feedback on the quality and deployability of the system is available to all team members, and when they get reports that the system isn’t deployable, fixes are made quickly",
+    "(The product management counterpart to this is found in Chapter 8.)PRODUCT AND PROCESS CAPABILITIES Gather and implement customer feedback",
+    "Team experimentation is the ability of developers to try out new ideas and create and update specifications during the development process, without requiring approval from outside of the team, which allows them to inn",
+    "This is particularly impactful when combined with working in small batches, incorporating customer feedback, and making the flow of work visible",
+    "(The technical counterpart to this is found in Chapter 4.)LEAN MANAGEMENT AND MONITORING CAPABILITIES Have a lightweight change approval processes"
+  ],
+  "critical_qualifiers": [
+    "We do caution, however, that teams should minimize, whenever possible, the amount of test data needed to run automated tests",
+    "Finally, the system can be deployed to production or end users at any time, on demand",
+    "This affects the extent to which a team can test and deploy their applications on demand, without requiring orchestration with other services",
+    "Our research shows that teams that can choose which tools to use do better at continuous delivery and, in turn, drive better software development and delivery performance",
+    "Teams should slice work into small pieces that can be completed in a week or less",
+    "This idea can be applied at the feature and the product level"
+  ],
+  "important_examples": [
+    "It is characterized by fewer than three active branches in a code repository; branches and forks having very short lifetimes (e.g., less than a day) before being merged into master; and application teams rarely or nev"
+  ],
+  "key_entities_or_numbers": [
+    "APPENDIX A CAPABILITIES TO DRIVE IMPROVEMENT Our research has uncovered 24 key capabilities that drive improvements in software delivery performance in a statistically significant way",
+    "This appendix provides you with a handy list of these capabilities, each with a pointer to the chapter that covers it in detail (see also Figure A.1)",
+    "See Chapter 4.ARCHITECTURE CAPABILITIES Use a loosely coupled architecture",
+    "(The product management counterpart to this is found in Chapter 8.)PRODUCT AND PROCESS CAPABILITIES Gather and implement customer feedback",
+    "(The technical counterpart to this is found in Chapter 4.)LEAN MANAGEMENT AND MONITORING CAPABILITIES Have a lightweight change approval processes",
+    "See Chapter 7.CULTURAL CAPABILITIES Support a generative culture (as outlined by Westrum)",
+    "See Chapters 3 and 5",
+    "See Chapter 11.Figure A.1: Overall Research Program (for a larger, downloadable version visit https://bit.ly/high-perf-behaviors-practices)"
+  ],
+  "key_terms": [
+    "Our",
+    "This",
+    "Continuous",
+    "Architecture Product",
+    "Lean",
+    "Use",
+    "Version",
+    "Subversion",
+    "See Chapter",
+    "Automate",
+    "Deployment",
+    "Implement",
+    "The",
+    "Trunk",
+    "Test",
+    "Effective",
+    "Note",
+    "Support",
+    "Shift",
+    "Integrating"
+  ]
+}

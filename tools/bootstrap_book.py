@@ -26,6 +26,7 @@ EXCLUDED_TOC_PATTERNS = [
     r"^reference(s)? and notes$",
     r"^notes$",
     r"^endnotes$",
+    r"^footnotes$",
     r"^appendix(?:es)?$",
     r"^glossary$",
     r"^acknowledg(?:e)?ments$",
@@ -267,6 +268,8 @@ def natural_sort_key(value: str) -> list[Any]:
 
 def discover_chapter_paths(book_dir: Path, chapter_glob: str) -> list[Path]:
     candidates = [path for path in book_dir.glob(chapter_glob) if path.is_file()]
+    # Filter out empty files (e.g. frontmatter placeholders)
+    candidates = [path for path in candidates if path.stat().st_size > 0]
     excluded_names = {"book.json", "metadata.md", "toc.md", "toc.json", "README.md"}
     chapter_paths = [path for path in candidates if path.name not in excluded_names]
     chapter_paths.sort(key=lambda path: natural_sort_key(str(path.relative_to(book_dir))))

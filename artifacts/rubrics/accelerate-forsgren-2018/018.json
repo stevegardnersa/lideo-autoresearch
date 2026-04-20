@@ -1,0 +1,49 @@
+{
+  "headings": [],
+  "core_concepts": [
+    "CONCLUSION",
+    "Over the past several years of surveying technology professionals and writing the State of DevOps Reports with the team at Puppet, we have discovered a lot about what makes high-performing teams and organizations",
+    "In all of our research, one thing has proved consistently true: since nearly every company relies on software, delivery performance is critical to any organization doing business today",
+    "This book is a compilation of the things we found along that journey",
+    "In Part II, we summarized the science behind the research and shed some light on the design decisions we made as well as the analysis methods we used",
+    "We also identified the key capabilities that contribute to software delivery performance in statistically significant and meaningful ways",
+    "In Part III, we close with a discussion of organizational change management",
+    "We hope this book has helped you identify areas where you can improve your own technology and business processes, work culture, and improvement cycles",
+    "This journey has included researching technology transformations, publishing our results in peer review, and working with our colleagues and peers who are assessing and transforming their own organizations",
+    "And software delivery performance is affected by many factors, including leadership, tools, automation, and a culture of continuous learning and improvement",
+    "In this way, the ability to deliver quality software at high tempo with stability is a key value driver and differentiator for all organizations, regardless of size or industry vertical",
+    "However, our research is unequivocal"
+  ],
+  "mechanisms_or_explanations": [
+    "This journey has included researching technology transformations, publishing our results in peer review, and working with our colleagues and peers who are assessing and transforming their own organizations",
+    "It starts with a discussion of why software delivery performance matters and how it drives organizational performance measures like profitability, productivity, and market share, as well as noncommercial measures like",
+    "We hope this book has helped you identify areas where you can improve your own technology and business processes, work culture, and improvement cycles"
+  ],
+  "critical_qualifiers": [
+    "Their contributed chapter presents one view of what following the capabilities and practices outlined in this book looks like and what it can provide for innovative organizations",
+    "You can begin your own technology transformation with everything we have learned in our research— transformation that so many others have been able to implement with great success in their own teams and organizations",
+    "We hope this book has helped you identify areas where you can improve your own technology and business processes, work culture, and improvement cycles",
+    "However, our research is unequivocal"
+  ],
+  "important_examples": [
+    "We hope that a discussion of what these practices are, with examples, will help you improve your own performance"
+  ],
+  "key_entities_or_numbers": [],
+  "key_terms": [
+    "Over",
+    "State",
+    "Reports",
+    "Puppet",
+    "This",
+    "Throughout",
+    "And",
+    "In Part",
+    "Steve Bell",
+    "Karen Whitley Bell",
+    "Their",
+    "You",
+    "Remember",
+    "However",
+    "The"
+  ]
+}
