@@ -63,16 +63,29 @@ _EXAMPLE_MARKERS = (
     "case study",
     "consider ",
 )
-_STOP_TERMS = {
-    "Introduction",
-    "Conclusion",
-    "Summary",
-    "Chapter",
-    "Part",
-    "Figure",
-    "Table",
-    "Notes",
-}
+_CHAPTER_HEADER_RE = re.compile(r"^Chapter\s+\d+", re.IGNORECASE)
+_PART_HEADER_RE = re.compile(r"^Part\s+\d+", re.IGNORECASE)
+_PROLOGUE_RE = re.compile(r"^(Prologue|Introduction|Conclusion|Summary|Epilogue)", re.IGNORECASE)
+_CHAPTER_INTRO_RE = re.compile(r"^(Chapter|Part)\s+\d+[.\s]", re.IGNORECASE)
+
+
+def _is_header_sentence(text: str) -> bool:
+    cleaned = text.strip()
+    if not cleaned:
+        return False
+    if _CHAPTER_HEADER_RE.match(cleaned):
+        return True
+    if _PART_HEADER_RE.match(cleaned):
+        return True
+    if _PROLOGUE_RE.match(cleaned):
+        return True
+    if cleaned.startswith("#"):
+        return True
+    words = cleaned.split()
+    if len(words) <= 5 and any(c in cleaned for c in [":", "-", "–", "—"]):
+        if _CHAPTER_INTRO_RE.match(cleaned):
+            return True
+    return False
 
 
 def _unique_preserve(items: Iterable[str], *, limit: int) -> List[str]:
@@ -100,6 +113,20 @@ def _clean_item(text: str) -> str:
     if len(text) > 220:
         text = text[:217].rstrip() + "..."
     return text
+
+
+def _is_noise_sentence(text: str) -> bool:
+    if not text:
+        return True
+    cleaned = text.strip()
+    if not cleaned:
+        return True
+    if _is_header_sentence(cleaned):
+        return True
+    words = cleaned.split()
+    if len(words) <= 3:
+        return True
+    return False
 
 
 def _sentences_from_source(source_md: str) -> List[str]:
@@ -136,7 +163,7 @@ def _extract_emphasized_terms(source_md: str) -> List[str]:
     for match in _EMPHASIS_RE.finditer(source_md):
         term = next((group for group in match.groups() if group), "")
         term = _clean_item(term)
-        if term and term not in _STOP_TERMS:
+        if term and not _is_noise_sentence(term):
             terms.append(term)
     return terms
 
@@ -146,7 +173,7 @@ def _extract_title_case_terms(source_md: str) -> List[str]:
     terms = []
     for match in _TITLE_CASE_RE.finditer(clean):
         term = _clean_item(match.group(0))
-        if not term or term in _STOP_TERMS:
+        if not term or _is_noise_sentence(term):
             continue
         if len(term.split()) > 5:
             continue
@@ -158,12 +185,12 @@ def _extract_heading_terms(headings: Sequence[str]) -> List[str]:
     terms: List[str] = []
     for heading in headings:
         heading = _clean_item(heading)
-        if not heading:
+        if not heading or _is_noise_sentence(heading):
             continue
         terms.append(heading)
         for piece in re.split(r"[:\-–—]", heading):
             piece = _clean_item(piece)
-            if piece and piece not in _STOP_TERMS:
+            if piece and not _is_noise_sentence(piece):
                 terms.append(piece)
     return terms
 
@@ -182,7 +209,10 @@ def heuristic_rubric_from_source(source_md: str) -> Rubric:
     sentences = _sentences_from_source(source_md)
     section_openers = _first_sentences_by_section(source_md)
 
-    concept_candidates = list(section_openers)
+    concept_candidates = []
+    for sentence in section_openers:
+        if not _is_noise_sentence(sentence):
+            concept_candidates.append(sentence)
     concept_candidates.extend(_filter_sentences(sentences, _CONCEPT_MARKERS, limit=12))
     concept_candidates.extend(sentences[:6])
 
