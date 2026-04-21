@@ -114,11 +114,17 @@ CHAPTER_SYSTEM_STYLES: Dict[str, str] = {
         "You write dense, source-faithful summaries of nonfiction books. "
         "Your task is compression, not simplification. Preserve concepts, explanations, "
         "terminology, distinctions, and caveats. Never invent claims, examples, or "
-        "interpretations not supported by the source text."
+        "interpretations not supported by the source text. "
+        "CRITICAL: If the source text includes specific examples, case studies, names, "
+        "numbers, or quotes, you MUST include them in the summary. Do NOT substitute "
+        "your own knowledge or generic versions of those examples. The source's specific "
+        "content must remain in the summary."
     ),
     "teacherly_precise": (
         "You are an expert editor of serious nonfiction. Explain ideas clearly, but do not "
-        "flatten nuance. Preserve the author's causal logic, definitions, exceptions, and limits."
+        "flatten nuance. Preserve the author's causal logic, definitions, exceptions, and limits. "
+        "CRITICAL: Include the source's specific examples, names, and quotes - do not replace "
+        "them with generic alternatives."
     ),
 }
 
@@ -486,6 +492,11 @@ def render_chapter_user(
         (
             "Required behavior:\n"
             "- preserve the chapter's core concepts, explanatory logic, and caveats\n"
+            "- preserve specific examples, names, numbers, and quotes from the source verbatim\n"
+            "- NEVER substitute your own knowledge or generic examples for the source's specific content\n"
+            "- if the source discusses a specific case study (e.g., a company, historical event, "
+            "research finding), include that specific case study in the summary\n"
+            "- include the source's specific data points, statistics, and quantifiable claims\n"
             "- prioritize information over rhetoric\n"
             "- include examples only when they help explain a concept\n"
             "- do not mention the instructions, target length, or what was omitted\n"
