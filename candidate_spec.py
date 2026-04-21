@@ -738,10 +738,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         composer_mode="summaries_only",
         length_control=LengthControlConfig(
             max_passes=5,
-            tolerance_pct=0.05,
-            hard_tolerance_pct=0.10,
+            tolerance_pct=0.08,
+            hard_tolerance_pct=0.15,
             repair_strategy="edit_existing",
-            repair_more_prompt_id="expand_missing_detail",
+            repair_more_prompt_id="expand_mechanisms_first",
             repair_less_prompt_id="shrink_dedup_first",
         ),
         budget_allocator=BudgetAllocatorConfig(
