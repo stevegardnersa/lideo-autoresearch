@@ -640,7 +640,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         name="baseline_30m_dense_recall_then_compose_v1",
         profile="30m",
         chapter_stage=StageConfig(
-            model="deepseek/deepseek-v3.2",
+            model="anthropic/claude-sonnet-4.6",
             temperature=0.2,
             seed=42,
             max_tokens=8192,
@@ -691,7 +691,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
             chapter_stage_multiplier_60m=1.00,
             max_summary_to_source_ratio=0.90,
         ),
-        use_json_schema=True,
+        use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes=(
             "30m baseline keeps chapter summaries slightly over-complete so the composer can "
