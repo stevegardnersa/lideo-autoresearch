@@ -47,6 +47,7 @@ class StageConfig:
     prompt_components: Dict[str, str] = field(default_factory=dict)
     provider_order: Tuple[str, ...] = ()
     allow_fallbacks: bool = False
+    use_json_schema: Optional[bool] = None
 
 
 @dataclass
@@ -655,6 +656,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
                 "terminology_policy": "keep_source_terms",
                 "anti_fluff_policy": "hard",
             },
+            use_json_schema=False,
         ),
         composer_stage=StageConfig(
             model="openai/gpt-5-mini",
