@@ -705,12 +705,13 @@ def run_length_controlled_stage(
         )
 
     if passes_used <= 0 or not summary_md:
+        use_json_schema = stage_config.use_json_schema if stage_config.use_json_schema is not None else spec.use_json_schema
         request = build_openrouter_request(
             stage=stage_config,
             system_prompt=system_prompt,
             user_prompt=initial_user_prompt,
             schema_name=spec.json_schema_name,
-            use_json_schema=spec.use_json_schema,
+            use_json_schema=use_json_schema,
         )
         result = invoke_generation(client, request, mock_source_md=mock_source_md, target_words=target_words)
         passes_used = 1
@@ -754,12 +755,13 @@ def run_length_controlled_stage(
                     retrieved_source_excerpts=retrieved_source_excerpts,
                 )
             current_for_mock = summary_md
+        use_json_schema = stage_config.use_json_schema if stage_config.use_json_schema is not None else spec.use_json_schema
         repair_request = build_openrouter_request(
             stage=stage_config,
             system_prompt=system_prompt,
             user_prompt=repair_user_prompt,
             schema_name=spec.json_schema_name,
-            use_json_schema=spec.use_json_schema,
+            use_json_schema=use_json_schema,
         )
         result = invoke_generation(
             client,
