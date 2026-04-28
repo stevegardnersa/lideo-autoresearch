@@ -548,6 +548,7 @@ def make_client(args: argparse.Namespace) -> Optional[OpenRouterClient]:
         pricing_snapshot_path=args.pricing_snapshot,
         referer=args.referer,
         title=args.title,
+        timeout=600,
     )
 
 
