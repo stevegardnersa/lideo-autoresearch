@@ -48,6 +48,7 @@ class StageConfig:
     provider_order: Tuple[str, ...] = ()
     allow_fallbacks: bool = False
     use_json_schema: Optional[bool] = None
+    extra_body: Optional[Dict[str, Any]] = None
 
 
 @dataclass
@@ -119,7 +120,8 @@ CHAPTER_SYSTEM_STYLES: Dict[str, str] = {
         "CRITICAL: If the source text includes specific examples, case studies, names, "
         "numbers, or quotes, you MUST include them in the summary. Do NOT substitute "
         "your own knowledge or generic versions of those examples. The source's specific "
-        "content must remain in the summary."
+        "content must remain in the summary. "
+        "Strive for brevity within the word budget - avoid wordy or elaborate framing."
     ),
     "teacherly_precise": (
         "You are an expert editor of serious nonfiction. Explain ideas clearly, but do not "
@@ -633,6 +635,8 @@ def build_openrouter_request(
             "type": "json_schema",
             "json_schema": schema,
         }
+    if stage.extra_body:
+        request["extra_body"] = stage.extra_body
     return request
 
 
@@ -641,7 +645,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         name="baseline_30m_dense_recall_then_compose_v1",
         profile="30m",
         chapter_stage=StageConfig(
-            model="anthropic/claude-sonnet-4.6",
+            model="minimax/minimax-m2.7",
             temperature=0.2,
             seed=42,
             max_tokens=8192,
@@ -656,7 +660,11 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
                 "terminology_policy": "keep_source_terms",
                 "anti_fluff_policy": "hard",
             },
-            use_json_schema=False,
+extra_body={
+            "thinking": {"type": "disabled"},
+            "order": ["minimax"],
+            "allow_fallbacks": False,
+        },
         ),
         composer_stage=StageConfig(
             model="openai/gpt-5-mini",
