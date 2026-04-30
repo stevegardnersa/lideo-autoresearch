@@ -15,6 +15,7 @@ The only file autoresearch should edit is ``candidate_spec.py``.
 from __future__ import annotations
 
 import argparse
+import csv
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 import importlib.util
@@ -47,7 +48,7 @@ from core.versioning import (
     save_json,
     sha256_file,
 )
-from scoring import JudgeScores, Rubric, SummarySample, score_dataset, visible_word_count, DEFAULT_SCORING_CONFIG, apply_gates_override
+from scoring import JudgeScores, Rubric, SummarySample, readability_metrics, score_dataset, visible_word_count, DEFAULT_SCORING_CONFIG, apply_gates_override
 
 
 @dataclass(frozen=True)
@@ -100,8 +101,21 @@ def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def utc_now_ts() -> str:
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+
 def _json_safe(payload: Any) -> Any:
     return json.loads(json.dumps(payload, ensure_ascii=False, default=str))
+
+
+def _is_thinking_enabled(spec) -> bool:
+    chapter_extra = spec.chapter_stage.extra_body or {}
+    thinking_cfg = chapter_extra.get("thinking")
+    if thinking_cfg and isinstance(thinking_cfg, dict):
+        if thinking_cfg.get("type") == "disabled":
+            return False
+    return True
 
 
 def error_to_dict(exc: BaseException) -> Dict[str, Any]:
@@ -997,6 +1011,7 @@ def run_book_sample(
     judge_source_char_limit: int,
     resume_progress: Optional[Mapping[str, Any]] = None,
     progress_callback: Optional[Callable[[Mapping[str, Any]], None]] = None,
+    run_dir: Optional[Path] = None,
 ) -> Tuple[SummarySample, Dict[str, Any]]:
     book_id = str(item["book_id"])
     sample_id = str(item.get("sample_id", book_id))
@@ -1041,6 +1056,21 @@ def run_book_sample(
         if chapter_key and isinstance(stage_payload, Mapping):
             completed_map[chapter_key] = deserialize_stage_run(stage_payload)
 
+    chapter_judge_scores: Dict[str, JudgeScores] = {}
+    chapter_judge_payload = progress.get("chapter_judge_scores")
+    if isinstance(chapter_judge_payload, Mapping):
+        for ch_id, scores_payload in chapter_judge_payload.items():
+            scores = judge_scores_from_dict(scores_payload)
+            if scores is not None:
+                chapter_judge_scores[str(ch_id)] = scores
+
+    chapter_runs_rows: List[Dict[str, Any]] = []
+    saved_rows = progress.get("chapter_runs_rows")
+    if isinstance(saved_rows, list):
+        for row in saved_rows:
+            if isinstance(row, Mapping):
+                chapter_runs_rows.append(dict(row))
+
     chapter_outputs: List[Tuple[ChapterContext, StageRun]] = []
     chapter_passes: List[int] = []
     completed_generation_cost = sum(stage.generation_cost for stage in completed_map.values())
@@ -1062,6 +1092,25 @@ def run_book_sample(
             chapter_run = completed_map[chapter.chapter_id]
             chapter_outputs.append((chapter, chapter_run))
             chapter_passes.append(chapter_run.passes_used)
+            total_generation_cost += chapter_run.generation_cost
+            total_uncached_cost += chapter_run.uncached_generation_cost
+            existing_row = next((r for r in chapter_runs_rows if r.get("chapter_id") == chapter.chapter_id), None)
+            if existing_row is None:
+                chapter_row: Dict[str, Any] = {
+                    "chapter_id": chapter.chapter_id,
+                    "chapter_title": chapter.chapter_title,
+                    "target_words": target_words,
+                    "output_words": visible_word_count(chapter_run.summary_md),
+                    "passes_used": chapter_run.passes_used,
+                    "generation_cost": chapter_run.generation_cost,
+                    "uncached_generation_cost": chapter_run.uncached_generation_cost,
+                }
+                if chapter_run.summary_md:
+                    rm = readability_metrics(chapter_run.summary_md)
+                    chapter_row["flesch_reading_ease"] = rm.flesch_reading_ease
+                    chapter_row["flesch_kincaid_grade"] = rm.flesch_kincaid_grade
+                    chapter_row["sentence_count"] = rm.sentence_count
+                chapter_runs_rows.append(chapter_row)
             continue
 
         chapter_user_prompt = candidate_module.render_chapter_user(
@@ -1116,6 +1165,41 @@ def run_book_sample(
         chapter_passes.append(chapter_run.passes_used)
         total_generation_cost += chapter_run.generation_cost
         total_uncached_cost += chapter_run.uncached_generation_cost
+
+        if spec.disable_composer and client is not None and judge_model:
+            chapter_judge_result = judge_if_requested(
+                client,
+                judge_model,
+                summary_md=chapter_run.summary_md,
+                rubric=chapter.rubric,
+                source_md=chapter.source_md,
+                source_char_limit=judge_source_char_limit,
+            )
+            if chapter_judge_result is not None and chapter_judge_result.scores is not None:
+                chapter_judge_scores[chapter.chapter_id] = chapter_judge_result.scores
+
+        chapter_row = {
+            "chapter_id": chapter.chapter_id,
+            "chapter_title": chapter.chapter_title,
+            "target_words": target_words,
+            "output_words": visible_word_count(chapter_run.summary_md),
+            "passes_used": chapter_run.passes_used,
+            "generation_cost": chapter_run.generation_cost,
+            "uncached_generation_cost": chapter_run.uncached_generation_cost,
+            "judge_faithfulness": chapter_judge_scores.get(chapter.chapter_id, {}).get("faithfulness"),
+            "judge_concept_coverage": chapter_judge_scores.get(chapter.chapter_id, {}).get("concept_coverage"),
+            "judge_qualifier_preservation": chapter_judge_scores.get(chapter.chapter_id, {}).get("qualifier_preservation"),
+            "judge_no_fluff": chapter_judge_scores.get(chapter.chapter_id, {}).get("no_fluff"),
+            "judge_structure_quality": chapter_judge_scores.get(chapter.chapter_id, {}).get("structure_quality"),
+            "judge_rationale": chapter_judge_scores.get(chapter.chapter_id, ""),
+        }
+        if chapter_run.summary_md:
+            rm = readability_metrics(chapter_run.summary_md)
+            chapter_row["flesch_reading_ease"] = rm.flesch_reading_ease
+            chapter_row["flesch_kincaid_grade"] = rm.flesch_kincaid_grade
+            chapter_row["sentence_count"] = rm.sentence_count
+        chapter_runs_rows.append(chapter_row)
+
         progress.clear()
         progress.update(base_progress)
         progress["phase"] = "chapters"
@@ -1124,6 +1208,11 @@ def run_book_sample(
         progress["chapter_passes"] = list(chapter_passes)
         progress["total_generation_cost"] = total_generation_cost
         progress["total_uncached_cost"] = total_uncached_cost
+        progress["chapter_runs_rows"] = chapter_runs_rows
+        if spec.disable_composer and chapter_judge_scores:
+            progress["chapter_judge_scores"] = {
+                ch_id: judge_scores_to_dict(scores) for ch_id, scores in chapter_judge_scores.items()
+            }
         progress["current_stage"] = None
         emit()
 
@@ -1143,7 +1232,7 @@ def run_book_sample(
     composer_run_payload = progress.get("composer_stage_run") if isinstance(progress.get("composer_stage_run"), Mapping) else None
     composer_run = deserialize_stage_run(composer_run_payload) if composer_run_payload else None
     current_stage = progress.get("current_stage") if isinstance(progress.get("current_stage"), Mapping) else {}
-    if composer_run is None:
+    if composer_run is None and not spec.disable_composer:
         composer_system_prompt = candidate_module.render_composer_system(spec)
         composer_user_prompt = candidate_module.render_composer_user(
             spec,
@@ -1212,20 +1301,51 @@ def run_book_sample(
         progress["current_stage"] = None
         emit()
     else:
-        if "total_generation_cost" not in progress:
-            total_generation_cost += composer_run.generation_cost
-        if "total_uncached_cost" not in progress:
-            total_uncached_cost += composer_run.uncached_generation_cost
+        if composer_run is not None:
+            if "total_generation_cost" not in progress:
+                total_generation_cost += composer_run.generation_cost
+            if "total_uncached_cost" not in progress:
+                total_uncached_cost += composer_run.uncached_generation_cost
 
-    source_md = join_book_source(book)
-    judge_result = judge_if_requested(
-        client,
-        judge_model,
-        summary_md=composer_run.summary_md,
-        rubric=book.book_rubric,
-        source_md=source_md,
-        source_char_limit=judge_source_char_limit,
-    )
+    if spec.disable_composer:
+        composer_run = StageRun(
+            summary_md=chapter_summaries_md,
+            first_pass_summary_md=chapter_summaries_md,
+            passes_used=0,
+            generation_cost=0.0,
+            uncached_generation_cost=0.0,
+            raw_responses=(),
+        )
+        progress["composer_stage_run"] = serialize_stage_run(composer_run)
+
+    if spec.disable_composer and chapter_judge_scores:
+        all_scores = list(chapter_judge_scores.values())
+        if all_scores:
+            aggregated_scores = JudgeScores(
+                faithfulness=sum(s.faithfulness for s in all_scores) / len(all_scores),
+                concept_coverage=sum(s.concept_coverage for s in all_scores) / len(all_scores),
+                qualifier_preservation=sum(s.qualifier_preservation for s in all_scores) / len(all_scores),
+                no_fluff=sum(s.no_fluff for s in all_scores) / len(all_scores),
+                structure_quality=sum(s.structure_quality for s in all_scores) / len(all_scores),
+            )
+            judge_result = AbsoluteJudgeResult(
+                scores=aggregated_scores,
+                rationale="Aggregated from chapter-level judges (composer disabled)",
+                raw_response={},
+            )
+        else:
+            judge_result = None
+        source_md = join_book_source(book)
+    else:
+        source_md = join_book_source(book)
+        judge_result = judge_if_requested(
+            client,
+            judge_model,
+            summary_md=composer_run.summary_md,
+            rubric=book.book_rubric,
+            source_md=source_md,
+            source_char_limit=judge_source_char_limit,
+        )
     sample = SummarySample(
         sample_id=sample_id,
         level="book",
@@ -1253,6 +1373,28 @@ def run_book_sample(
         "chapter_targets": {chapter.chapter_id: target for chapter, target in zip(book.chapters, chapter_targets)},
         "judge_rationale": judge_result.rationale if judge_result else "",
     }
+    if spec.disable_composer and chapter_judge_scores:
+        all_scores = list(chapter_judge_scores.values())
+        sorted_faith = sorted(s.faithfulness for s in all_scores)
+        sorted_cov = sorted(s.concept_coverage for s in all_scores)
+        n = len(all_scores)
+        trace["chapter_judge_scores"] = {
+            ch_id: judge_scores_to_dict(scores)
+            for ch_id, scores in chapter_judge_scores.items()
+        }
+        trace["agg_faithfulness"] = sum(s.faithfulness for s in all_scores) / n
+        trace["agg_concept_coverage"] = sum(s.concept_coverage for s in all_scores) / n
+        trace["worst_chapter_faithfulness"] = sorted_faith[0]
+        trace["worst_chapter_id_faithfulness"] = [
+            ch_id for ch_id, s in chapter_judge_scores.items()
+            if s.faithfulness == sorted_faith[0]
+        ][0]
+        trace["best_chapter_faithfulness"] = sorted_faith[-1]
+        trace["faithfulness_p10"] = sorted_faith[n // 10] if n >= 10 else sorted_faith[0]
+        trace["faithfulness_p90"] = sorted_faith[(n * 9) // 10] if n >= 10 else sorted_faith[-1]
+        trace["faithfulness_std"] = (
+            (sum((s.faithfulness - trace["agg_faithfulness"]) ** 2 for s in all_scores) / n) ** 0.5
+        )
     trace.update(taxonomy_trace_payload(book.taxonomy))
     progress.clear()
     progress.update(base_progress)
@@ -1267,6 +1409,34 @@ def run_book_sample(
     progress["current_stage"] = None
     progress["sample_record"] = build_sample_record(sample, trace, item_key=sample_id)
     emit()
+
+    if spec.disable_composer and chapter_runs_rows and run_dir:
+        chapter_runs_dir = run_dir / "chapter_runs"
+        chapter_runs_dir.mkdir(parents=True, exist_ok=True)
+        chapter_csv_path = chapter_runs_dir / f"{sample_id}.csv"
+        if chapter_csv_path.exists():
+            existing_rows: List[Dict[str, Any]] = []
+            with open(chapter_csv_path, newline="", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    existing_rows.append(row)
+            existing_ids = {r.get("sample_id", "") for r in existing_rows}
+            if sample_id in existing_ids:
+                chapter_csv_path = chapter_runs_dir / f"{sample_id}_{utc_now_ts()}.csv"
+        fieldnames = [
+            "sample_id", "chapter_id", "chapter_title", "target_words", "output_words",
+            "passes_used", "generation_cost", "uncached_generation_cost",
+            "judge_faithfulness", "judge_concept_coverage", "judge_qualifier_preservation",
+            "judge_no_fluff", "judge_structure_quality",
+            "flesch_reading_ease", "flesch_kincaid_grade", "sentence_count",
+        ]
+        with open(chapter_csv_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            for row in chapter_runs_rows:
+                writer.writerow({**row, "sample_id": sample_id})
+        progress["chapter_runs_csv"] = str(chapter_csv_path)
+
     return sample, trace
 
 
@@ -1408,7 +1578,7 @@ def append_results_tsv(
     header = (
         "timestamp\trun_id\tbenchmark_version\tcorpus_version\trubric_version\tscoring_version\tjudge_version\t"
         "profile\tbench\tcandidate_name\tcandidate_sha256\thypothesis\tchapter_model\tcomposer_model\tjudge_model\t"
-        "mean_quality\tmean_utility\tmean_faithfulness\tmean_concept_coverage\tmean_final_length_error_pct\t"
+        "use_json_schema\tthinking\tmean_quality\tmean_utility\tmean_faithfulness\tmean_concept_coverage\tmean_final_length_error_pct\t"
         "mean_first_pass_length_error_pct\tmean_passes_used\tmean_uncached_generation_cost\tmean_generation_cost\t"
         "hard_fail_rate\tworst_genre_macro\tworst_genre_macro_utility\tworst_genre_macro_quality\t"
         "genre_macro_spread_utility\tn_genre_macros\trun_artifact\tcatalog_snapshot\tprice_snapshot\tnotes\n"
@@ -1432,6 +1602,8 @@ def append_results_tsv(
         str(run_manifest.get("chapter_model", "")),
         str(run_manifest.get("composer_model", "")),
         str(run_manifest.get("judge_model", "")),
+        str(run_manifest.get("use_json_schema", "")),
+        str(run_manifest.get("thinking_enabled", "")),
         f"{dataset_score.mean_quality:.6f}",
         f"{dataset_score.mean_utility:.6f}",
         f"{dataset_score.mean_faithfulness:.6f}",
@@ -1637,6 +1809,8 @@ def main() -> None:
             "chapter_model": spec.chapter_stage.model,
             "composer_model": spec.composer_stage.model,
             "judge_model": args.judge_model,
+            "use_json_schema": spec.use_json_schema,
+            "thinking_enabled": _is_thinking_enabled(spec),
             "provider_preferences": {
                 "chapter": {
                     "order": list(spec.chapter_stage.provider_order),
@@ -1733,6 +1907,7 @@ def main() -> None:
                         judge_source_char_limit=args.judge_source_char_limit,
                         resume_progress=current_progress,
                         progress_callback=progress_callback,
+                        run_dir=run_dir,
                     )
 
                 append_sample_checkpoint(
