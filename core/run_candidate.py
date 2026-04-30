@@ -47,7 +47,7 @@ from core.versioning import (
     save_json,
     sha256_file,
 )
-from scoring import JudgeScores, Rubric, SummarySample, score_dataset, visible_word_count
+from scoring import JudgeScores, Rubric, SummarySample, score_dataset, visible_word_count, DEFAULT_SCORING_CONFIG, apply_gates_override
 
 
 @dataclass(frozen=True)
@@ -387,7 +387,18 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--spec", default=str(ROOT / "candidate_spec.py"))
     parser.add_argument("--bench", required=True, help="Benchmark name (chapter_fast, book_gate, book_holdout) or path to JSONL")
-    parser.add_argument("--profile", required=True, choices=["30m", "60m"])
+    parser.add_argument("--profile", required=True, choices=[
+        "30m", "60m",
+        "30m_minimax_notthinking", "60m_deepseek_notthinking",
+        "30m_dv4flash_thinking", "30m_dv4flash_notthinking",
+        "30m_dv4pro_thinking", "30m_dv4pro_notthinking",
+        "60m_dv4flash_thinking", "60m_dv4flash_notthinking",
+        "60m_dv4pro_thinking", "60m_dv4pro_notthinking",
+        "30m_mimo25pro_thinking", "30m_mimo25pro_notthinking",
+        "30m_mimoflash_thinking", "30m_mimoflash_notthinking",
+        "60m_mimo25pro_thinking", "60m_mimo25pro_notthinking",
+        "60m_mimoflash_thinking", "60m_mimoflash_notthinking",
+    ])
     parser.add_argument("--data-dir", default=str(ROOT / "data" / "books"))
     parser.add_argument("--results-tsv", default=str(ROOT / "results.tsv"))
     parser.add_argument("--runs-dir", default=str(ROOT / "runs"))
@@ -1776,7 +1787,18 @@ def main() -> None:
                 save_run_state(state_path, state)
                 raise
 
-    dataset_score = score_dataset(samples)
+    scoring_config = DEFAULT_SCORING_CONFIG
+    if spec.scoring_gates_override is not None:
+        override = spec.scoring_gates_override
+        scoring_config = apply_gates_override(
+            scoring_config,
+            min_faithfulness=override.min_faithfulness,
+            min_concept_coverage=override.min_concept_coverage,
+            max_final_length_error_pct=override.max_final_length_error_pct,
+            max_passes=override.max_passes,
+        )
+
+    dataset_score = score_dataset(samples, config=scoring_config)
     mean_generation_cost = _mean([sample.generation_cost for sample in samples])
     run_manifest = dict(state.get("run_manifest") or run_manifest)
     resume_events = list(state.get("resume_events_utc") or [])
@@ -1793,6 +1815,18 @@ def main() -> None:
     )
     dataset_payload = dict(artifact_payload.get("dataset_score") or {})
     worst_genre_macro = dict(dataset_payload.get("worst_genre_macro") or {})
+    scoring_gates_override_dict = None
+    if spec.scoring_gates_override is not None:
+        override = spec.scoring_gates_override
+        scoring_gates_override_dict = {
+            "min_faithfulness": override.min_faithfulness,
+            "min_concept_coverage": override.min_concept_coverage,
+            "max_final_length_error_pct": override.max_final_length_error_pct,
+            "max_passes": override.max_passes,
+        }
+    if scoring_gates_override_dict is not None:
+        artifact_payload["scoring_gates_override"] = scoring_gates_override_dict
+
     summary_block = {
         "run_id": run_id,
         "benchmark_version": benchmark_manifest.get("benchmark_version", ""),
@@ -1800,6 +1834,7 @@ def main() -> None:
         "profile": spec.profile,
         "candidate_name": spec.name,
         "n_samples": dataset_score.n_samples,
+        "scoring_gates_override": scoring_gates_override_dict,
         "hard_fail_rate": dataset_score.hard_fail_rate,
         "mean_quality": dataset_score.mean_quality,
         "mean_utility": dataset_score.mean_utility,
