@@ -1,12 +1,11 @@
 {
-  "benchmark_version": "booksum-v2",
+  "benchmark_version": "booksum-v4",
   "benchmark_label": "nonfiction-book-summary-genre-aware",
-  "created_at_utc": "2026-04-19T00:00:00Z",
+  "created_at_utc": "2026-04-30T00:00:00Z",
   "corpus_version": "corpus-2026-04-19",
   "rubric_version": "rubrics-v1",
-  "scoring_version": "scoring-v1",
   "judge_version": "judge-absolute-v1",
   "split_seed": 42,
   "words_per_minute": 200,
-  "notes": "Genre-aware benchmark version. Increment benchmark_version whenever the corpus, split membership logic, rubric builder, scoring rules, judge prompt/model, logging schema, or visible-word-count behavior changes."
+  "notes": "v4: per-profile scoring gates - 30m profiles use min_faithfulness=0.50, min_concept_coverage=0.15. v3 used uniform 0.70/0.60 gates for all profiles."
 }
