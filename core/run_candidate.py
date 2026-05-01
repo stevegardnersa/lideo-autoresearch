@@ -872,6 +872,7 @@ def run_chapter_sample(
     judge_source_char_limit: int,
     resume_progress: Optional[Mapping[str, Any]] = None,
     progress_callback: Optional[Callable[[Mapping[str, Any]], None]] = None,
+    run_dir: Optional[Path] = None,
 ) -> Tuple[SummarySample, Dict[str, Any]]:
     book_id = str(item["book_id"])
     chapter_id = str(item["chapter_id"])
@@ -984,6 +985,51 @@ def run_chapter_sample(
         "judge_rationale": judge_result.rationale if judge_result else "",
     }
     trace.update(taxonomy_trace_payload(book.taxonomy))
+    if spec.disable_composer and judge_result and judge_result.scores and run_dir:
+        chapter_runs_dir = run_dir / "chapter_runs"
+        chapter_runs_dir.mkdir(parents=True, exist_ok=True)
+        chapter_csv_path = chapter_runs_dir / f"{sample_id}.csv"
+        rm = readability_metrics(stage_run.summary_md) if stage_run.summary_md else None
+        fieldnames = [
+            "sample_id", "chapter_id", "chapter_title", "target_words", "output_words",
+            "passes_used", "generation_cost", "uncached_generation_cost",
+            "judge_faithfulness", "judge_concept_coverage", "judge_qualifier_preservation",
+            "judge_no_fluff", "judge_structure_quality",
+            "flesch_reading_ease", "flesch_kincaid_grade", "sentence_count",
+        ]
+        row = {
+            "sample_id": sample_id,
+            "chapter_id": chapter_id,
+            "chapter_title": chapter.chapter_title,
+            "target_words": target_words,
+            "output_words": visible_word_count(stage_run.summary_md),
+            "passes_used": stage_run.passes_used,
+            "generation_cost": stage_run.generation_cost,
+            "uncached_generation_cost": stage_run.uncached_generation_cost,
+            "judge_faithfulness": judge_result.scores.faithfulness,
+            "judge_concept_coverage": judge_result.scores.concept_coverage,
+            "judge_qualifier_preservation": judge_result.scores.qualifier_preservation,
+            "judge_no_fluff": judge_result.scores.no_fluff,
+            "judge_structure_quality": judge_result.scores.structure_quality,
+        }
+        if rm:
+            row["flesch_reading_ease"] = rm.flesch_reading_ease
+            row["flesch_kincaid_grade"] = rm.flesch_kincaid_grade
+            row["sentence_count"] = rm.sentence_count
+        if chapter_csv_path.exists():
+            existing_rows: List[Dict[str, Any]] = []
+            with open(chapter_csv_path, newline="", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for r in reader:
+                    existing_rows.append(r)
+            existing_keys = {(r.get("sample_id", ""), r.get("chapter_id", "")) for r in existing_rows}
+            if (sample_id, chapter_id) in existing_keys:
+                chapter_csv_path = chapter_runs_dir / f"{sample_id}_{utc_now_ts()}.csv"
+        with open(chapter_csv_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerow(row)
+        trace["chapter_runs_csv"] = str(chapter_csv_path)
     progress.clear()
     progress.update(base_progress)
     progress["phase"] = "completed"
@@ -1899,6 +1945,7 @@ def main() -> None:
                         judge_source_char_limit=args.judge_source_char_limit,
                         resume_progress=current_progress,
                         progress_callback=progress_callback,
+                        run_dir=run_dir,
                     )
                 else:
                     sample, trace = run_book_sample(
