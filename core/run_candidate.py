@@ -416,6 +416,7 @@ def parse_args() -> argparse.Namespace:
         "30m_gpt5mini_mimoflash_thinking", "30m_gpt5mini_mimoflash_notthinking",
         "30m_gpt5mini_dv4flash_thinking", "30m_gpt5mini_dv4flash_notthinking",
         "30m_gpt5mini_dv4pro_thinking", "30m_gpt5mini_dv4pro_notthinking",
+        "30m_deepseek-v4-flash_thinking", "30m_deepseek-v4-flash_notthinking",
     ])
     parser.add_argument("--data-dir", default=str(ROOT / "data" / "books"))
     parser.add_argument("--results-tsv", default=str(ROOT / "results.tsv"))
