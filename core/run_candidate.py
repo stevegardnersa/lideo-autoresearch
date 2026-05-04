@@ -401,23 +401,10 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--spec", default=str(ROOT / "candidate_spec.py"))
     parser.add_argument("--bench", required=True, help="Benchmark name (chapter_fast, book_gate, book_holdout) or path to JSONL")
-    parser.add_argument("--profile", required=True, choices=[
-        "30m", "60m",
-        "30m_minimax_notthinking", "60m_deepseek_notthinking",
-        "30m_dv4flash_thinking", "30m_dv4flash_notthinking",
-        "30m_dv4pro_thinking", "30m_dv4pro_notthinking",
-        "60m_dv4flash_thinking", "60m_dv4flash_notthinking",
-        "60m_dv4pro_thinking", "60m_dv4pro_notthinking",
-        "30m_mimo25pro_thinking", "30m_mimo25pro_notthinking",
-        "30m_mimoflash_thinking", "30m_mimoflash_notthinking",
-        "60m_mimo25pro_thinking", "60m_mimo25pro_notthinking",
-        "60m_mimoflash_thinking", "60m_mimoflash_notthinking",
-        "30m_gpt5mini_mimo25pro_thinking", "30m_gpt5mini_mimo25pro_notthinking",
-        "30m_gpt5mini_mimoflash_thinking", "30m_gpt5mini_mimoflash_notthinking",
-        "30m_gpt5mini_dv4flash_thinking", "30m_gpt5mini_dv4flash_notthinking",
-        "30m_gpt5mini_dv4pro_thinking", "30m_gpt5mini_dv4pro_notthinking",
-        "30m_deepseek-v4-flash_thinking", "30m_deepseek-v4-flash_notthinking",
-    ])
+    parser.add_argument("--time", default="all", choices=["all", "30m", "60m"],
+                        help="Filter candidates by time budget: '30m', '60m', or 'all' (default: all)")
+    parser.add_argument("--profile", required=True,
+                        help="Profile name to run (e.g. '30m_deepseek-v4-flash_notthinking'). Use 'all' with --time to run all matching profiles.")
     parser.add_argument("--data-dir", default=str(ROOT / "data" / "books"))
     parser.add_argument("--results-tsv", default=str(ROOT / "results.tsv"))
     parser.add_argument("--runs-dir", default=str(ROOT / "runs"))
@@ -1758,6 +1745,46 @@ def main() -> None:
 
     spec_path = resolve_path(args.spec)
     candidate_module = load_module_from_path("candidate_spec_runtime", spec_path)
+
+    if args.profile == "all":
+        if args.resume:
+            print("Error: --resume is not supported with --profile all. Resume a specific run instead.")
+            raise SystemExit(1)
+        profiles = candidate_module.get_profiles_by_time(args.time)
+        if not profiles:
+            print(f"No profiles found for time budget: {args.time}")
+            raise SystemExit(1)
+        print(f"Running {len(profiles)} profile(s) for time={args.time}: {profiles}")
+        run_all_profiles(profiles, args, benchmark_manifest, spec_path)
+    else:
+        _run_single(args, benchmark_manifest, spec_path, inherited_run_id=None)
+
+
+def run_all_profiles(
+    profiles: Sequence[str],
+    args: argparse.Namespace,
+    benchmark_manifest: Dict[str, Any],
+    spec_path: Path,
+) -> None:
+    """Run benchmark for multiple profiles sequentially."""
+    for profile in profiles:
+        print(f"\n{'='*60}")
+        print(f"Running profile: {profile}")
+        print(f"{'='*60}\n")
+        args.profile = profile
+        _run_single(args, benchmark_manifest, spec_path, inherited_run_id=None)
+
+
+def _run_single(
+    args: argparse.Namespace,
+    benchmark_manifest: Dict[str, Any],
+    spec_path: Path,
+    inherited_run_id: Optional[str],
+) -> str:
+    if inherited_run_id:
+        args.run_id = inherited_run_id
+    spec_path = resolve_path(args.spec)
+    candidate_module = load_module_from_path("candidate_spec_runtime", spec_path)
     spec = candidate_module.get_candidate(args.profile)
     client = make_client(args)
 
@@ -2015,14 +2042,21 @@ def main() -> None:
                 raise
 
     scoring_config = DEFAULT_SCORING_CONFIG
-    if spec.scoring_gates_override is not None:
-        override = spec.scoring_gates_override
+    profile_name = spec.profile
+    if profile_name.startswith("30m_"):
+        gate_key = "30m"
+    elif profile_name.startswith("60m_"):
+        gate_key = "60m"
+    else:
+        gate_key = "default"
+    gates = benchmark_manifest.get("scoring_gates", {}).get(gate_key)
+    if gates:
         scoring_config = apply_gates_override(
             scoring_config,
-            min_faithfulness=override.min_faithfulness,
-            min_concept_coverage=override.min_concept_coverage,
-            max_final_length_error_pct=override.max_final_length_error_pct,
-            max_passes=override.max_passes,
+            min_faithfulness=gates.get("min_faithfulness"),
+            min_concept_coverage=gates.get("min_concept_coverage"),
+            max_final_length_error_pct=gates.get("max_final_length_error_pct"),
+            max_passes=gates.get("max_passes"),
         )
 
     dataset_score = score_dataset(samples, config=scoring_config)
@@ -2042,15 +2076,7 @@ def main() -> None:
     )
     dataset_payload = dict(artifact_payload.get("dataset_score") or {})
     worst_genre_macro = dict(dataset_payload.get("worst_genre_macro") or {})
-    scoring_gates_override_dict = None
-    if spec.scoring_gates_override is not None:
-        override = spec.scoring_gates_override
-        scoring_gates_override_dict = {
-            "min_faithfulness": override.min_faithfulness,
-            "min_concept_coverage": override.min_concept_coverage,
-            "max_final_length_error_pct": override.max_final_length_error_pct,
-            "max_passes": override.max_passes,
-        }
+    scoring_gates_override_dict = scoring_config if gate_key != "default" else None
     if scoring_gates_override_dict is not None:
         artifact_payload["scoring_gates_override"] = scoring_gates_override_dict
 

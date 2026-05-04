@@ -219,21 +219,100 @@ python tools/build_bench.py \
   --seed 42
 ```
 
-Run a smoke test without API calls:
+### Adding a New Candidate
+
+**Step 1 — Auto-generate profiles from a model name:**
 
 ```bash
-python core/run_candidate.py --bench chapter_fast --profile 30m --mock
-python core/run_candidate.py --bench book_gate --profile 30m --mock
+# Both 30m and 60m profiles (default)
+python tools/add_candidate.py --model-full "minimax/minimax-1.5-flash"
+python tools/add_candidate.py --model-full "deepseek/deepseek-v4-flash"
+
+# 30m profiles only
+python tools/add_candidate.py --model-full "openai/gpt-5-mini" --time-budget 30m
+
+# Preview what would be created (no API calls, no file writes)
+python tools/add_candidate.py --model-full "openai/gpt-5-mini" --dry-run
 ```
 
-Run a real benchmark with OpenRouter:
+The script probes the model for (a) JSON schema support, (b) thinking mode, (c) non-thinking mode — and creates one profile per supported mode. If the model supports both thinking and non-thinking, two profiles are created (e.g. `30m_deepseek-v4-flash_thinking` and `30m_deepseek-v4-flash_notthinking`).
+
+Key `--time-budget` values:
+- `30m` — only 30-minute whole-book summary profiles
+- `60m` — only 60-minute whole-book summary profiles
+- `30m 60m` — both (default)
+
+Profiles are written to `data/candidates.json`.
+
+**Step 2 — Compile profiles into the active harness:**
+
+```bash
+python tools/gen_profile_literal.py
+```
+
+This regenerates `Profile` union type and `_CANDIDATES` dict in `candidate_spec.py` from `data/candidates.json`. Run this whenever you add or update profiles.
+
+**Step 3 — Smoke test:**
+
+```bash
+python core/run_candidate.py --bench chapter_fast --profile <name> --mock --write-results
+```
+
+### Run a smoke test without API calls:
+
+```bash
+# Single profile smoke test
+python core/run_candidate.py --bench chapter_fast --profile 30m_minimax_notthinking --mock
+
+# All 30m profiles smoke test (sequential, no LLM calls)
+python core/run_candidate.py --bench chapter_fast --profile all --time 30m --mock
+
+# All 60m profiles smoke test
+python core/run_candidate.py --bench chapter_fast --profile all --time 60m --mock
+```
+
+### Run a real benchmark with OpenRouter:
 
 ```bash
 export OPENROUTER_API_KEY=...
-python core/run_candidate.py --bench chapter_fast --profile 30m --judge-model openai/gpt-5-mini --write-results
+# Single profile
+python core/run_candidate.py --bench chapter_fast --profile 30m_minimax_notthinking --judge-model openai/gpt-5-mini --write-results
+
+# All 30m profiles (sequential)
+python core/run_candidate.py --bench chapter_fast --profile all --time 30m --judge-model openai/gpt-5-mini --write-results
 ```
 
+**Profile selection:**
+- `--profile <name>` — run a single named profile (e.g. `30m_minimax_notthinking`, `60m_deepseek-v4-flash_thinking`)
+- `--profile all --time 30m` — run all 30m-prefixed profiles sequentially
+- `--profile all --time 60m` — run all 60m-prefixed profiles sequentially
+- `--profile all --time all` — run all profiles sequentially (default with `--profile all`)
+
+**Scoring gates by profile:**
+- `30m_*` profiles → min_faithfulness=0.50, min_concept_coverage=0.15 (permissive)
+- `60m_*` profiles → min_faithfulness=0.60, min_concept_coverage=0.50 (moderate)
+- bare `30m`/`60m` → min_faithfulness=0.70, min_concept_coverage=0.60 (strict default)
+
+**Judge behavior:**
+- With `--judge-model openai/gpt-5-mini` — LLM judge evaluates summaries; results include `judge_no_fluff`, `judge_structure_quality`, `judge_concept_coverage`, `judge_concept_coverage_faithfulness`, `judge_overall_quality`
+- Without `--judge-model` — scoring uses only deterministic metrics (faithfulness proxy from keyword overlap, concept coverage proxy, length error). All judge fields are absent from results. Useful for fast iteration without LLM cost.
+
+**Common flag combinations:**
+- `--mock` — run without any LLM API calls; uses fake responses to test pipeline logic end-to-end
+- `--write-results` — persist results JSON and samples JSONL to `runs/` (without this flag results are only printed to stdout)
+- `--mock --write-results` — smoke test that saves artifacts locally; useful to verify the full pipeline before real runs
+
 Promote only winning candidates to `book_gate`, then evaluate finalists once on `book_holdout`.
+
+**Step 4 — Promote through benchmark splits:**
+
+| Split | Purpose | Gate |
+|-------|---------|------|
+| `chapter_fast` | Rapid iteration on chapter summarization | min_faithfulness=0.50, min_concept_coverage=0.15 (30m) |
+| `book_gate` | Full-book evaluation, used to select finalists | Same gates as fast |
+| `book_holdout` | Final evaluation of winning candidates on unseen books | Same gates |
+
+Promote a candidate from `chapter_fast` → `book_gate` only if its leaderboard scores are competitive. Finalists on `book_holdout` determine which candidates are production-ready.
 
 ## Leaderboards
 

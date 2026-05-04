@@ -88,14 +88,6 @@ class BudgetAllocatorConfig:
 
 
 @dataclass
-class ScoringGatesOverride:
-    min_faithfulness: Optional[float] = None
-    min_concept_coverage: Optional[float] = None
-    max_final_length_error_pct: Optional[float] = None
-    max_passes: Optional[int] = None
-
-
-@dataclass
 class CandidateSpec:
     name: str
     profile: Profile
@@ -107,7 +99,6 @@ class CandidateSpec:
     use_json_schema: bool = True
     json_schema_name: str = "summary_response"
     notes: str = ""
-    scoring_gates_override: Optional[ScoringGatesOverride] = None
     disable_composer: bool = False
 
     def to_dict(self) -> Dict[str, object]:
@@ -732,10 +723,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
             "30m baseline keeps chapter summaries slightly over-complete so the composer can "
             "deduplicate across chapters."
         ),
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
     ),
     "60m": CandidateSpec(
         name="baseline_60m_dense_faithful_v1",
@@ -797,10 +784,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         notes=(
             "60m baseline keeps chapter summaries closer to the final budget because the final "
             "product allows more detail and less aggressive compression."
-        ),
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.45,
-            min_concept_coverage=0.10,
         ),
     ),
     "30m_minimax_notthinking": CandidateSpec(
@@ -869,10 +852,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes="30m variant with thinking explicitly disabled for both minimax chapter stage and gpt-5-mini composer stage.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
     ),
     "60m_deepseek_notthinking": CandidateSpec(
         name="60m_deepseek_notthinking_v1",
@@ -938,10 +917,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=True,
         json_schema_name="summary_response_60m",
         notes="60m variant with thinking explicitly disabled for both deepseek-v3.2 chapter and composer stages.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.45,
-            min_concept_coverage=0.10,
-        ),
     ),
     "30m_dv4flash_thinking": CandidateSpec(
         name="30m_dv4flash_thinking_v1",
@@ -1003,10 +978,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes="30m dv4-flash with thinking enabled (default) for both chapter and composer.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
     ),
     "30m_dv4flash_notthinking": CandidateSpec(
         name="30m_dv4flash_notthinking_v1",
@@ -1068,10 +1039,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes="30m dv4-flash with thinking explicitly disabled for both chapter and composer.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
     ),
     "30m_dv4pro_thinking": CandidateSpec(
         name="30m_dv4pro_thinking_v1",
@@ -1133,10 +1100,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes="30m dv4-pro with thinking enabled (default) for both chapter and composer.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
     ),
     "30m_dv4pro_notthinking": CandidateSpec(
         name="30m_dv4pro_notthinking_v1",
@@ -1198,10 +1161,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes="30m dv4-pro with thinking explicitly disabled for both chapter and composer.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
     ),
     "60m_dv4flash_thinking": CandidateSpec(
         name="60m_dv4flash_thinking_v1",
@@ -1263,10 +1222,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_60m",
         notes="60m dv4-flash with thinking enabled (default) for both chapter and composer.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.45,
-            min_concept_coverage=0.10,
-        ),
     ),
     "60m_dv4flash_notthinking": CandidateSpec(
         name="60m_dv4flash_notthinking_v1",
@@ -1328,10 +1283,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_60m",
         notes="60m dv4-flash with thinking explicitly disabled for both chapter and composer.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.45,
-            min_concept_coverage=0.10,
-        ),
     ),
     "60m_dv4pro_thinking": CandidateSpec(
         name="60m_dv4pro_thinking_v1",
@@ -1393,10 +1344,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_60m",
         notes="60m dv4-pro with thinking enabled (default) for both chapter and composer.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.45,
-            min_concept_coverage=0.10,
-        ),
     ),
     "60m_dv4pro_notthinking": CandidateSpec(
         name="60m_dv4pro_notthinking_v1",
@@ -1458,10 +1405,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=True,
         json_schema_name="summary_response_60m",
         notes="60m dv4-pro with thinking explicitly disabled for both chapter and composer.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.45,
-            min_concept_coverage=0.10,
-        ),
     ),
     "30m_mimo25pro_thinking": CandidateSpec(
         name="30m_mimo25pro_thinking_v1",
@@ -1523,10 +1466,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes="30m mimo-v2.5-pro with thinking enabled (default) for both chapter and composer.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
     ),
     "30m_mimo25pro_notthinking": CandidateSpec(
         name="30m_mimo25pro_notthinking_v1",
@@ -1588,10 +1527,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes="30m mimo-v2.5-pro with thinking explicitly disabled for both chapter and composer.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
     ),
     "30m_mimoflash_thinking": CandidateSpec(
         name="30m_mimoflash_thinking_v1",
@@ -1653,10 +1588,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes="30m mimo-v2-flash with thinking enabled (default) for both chapter and composer.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
     ),
     "30m_mimoflash_notthinking": CandidateSpec(
         name="30m_mimoflash_notthinking_v1",
@@ -1718,10 +1649,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=True,
         json_schema_name="summary_response_30m",
         notes="30m mimo-v2-flash with thinking explicitly disabled for both chapter and composer.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
     ),
     "60m_mimo25pro_thinking": CandidateSpec(
         name="60m_mimo25pro_thinking_v1",
@@ -1783,10 +1710,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_60m",
         notes="60m mimo-v2.5-pro with thinking enabled (default) for both chapter and composer.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.45,
-            min_concept_coverage=0.10,
-        ),
     ),
     "60m_mimo25pro_notthinking": CandidateSpec(
         name="60m_mimo25pro_notthinking_v1",
@@ -1848,10 +1771,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=True,
         json_schema_name="summary_response_60m",
         notes="60m mimo-v2.5-pro with thinking explicitly disabled for both chapter and composer.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.45,
-            min_concept_coverage=0.10,
-        ),
     ),
     "60m_mimoflash_thinking": CandidateSpec(
         name="60m_mimoflash_thinking_v1",
@@ -1913,10 +1832,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_60m",
         notes="60m mimo-v2-flash with thinking enabled (default) for both chapter and composer.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.45,
-            min_concept_coverage=0.10,
-        ),
     ),
     "60m_mimoflash_notthinking": CandidateSpec(
         name="60m_mimoflash_notthinking_v1",
@@ -1978,10 +1893,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=True,
         json_schema_name="summary_response_60m",
         notes="60m mimo-v2-flash with thinking explicitly disabled for both chapter and composer.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.45,
-            min_concept_coverage=0.10,
-        ),
     ),
     "30m_gpt5mini_mimo25pro_thinking": CandidateSpec(
         name="30m_gpt5mini_mimo25pro_thinking_v1",
@@ -2042,10 +1953,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes="30m with gpt-5-mini composer and mimo-v2.5-pro chapter model with thinking enabled. Composer disabled for pure chapter-only evaluation.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
         disable_composer=True,
     ),
     "30m_gpt5mini_mimo25pro_notthinking": CandidateSpec(
@@ -2108,10 +2015,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes="30m with gpt-5-mini composer and mimo-v2.5-pro chapter model with thinking disabled. Composer disabled for pure chapter-only evaluation.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
         disable_composer=True,
     ),
     "30m_gpt5mini_mimoflash_thinking": CandidateSpec(
@@ -2173,10 +2076,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes="30m with gpt-5-mini composer and mimo-v2-flash chapter model with thinking enabled. Composer disabled for pure chapter-only evaluation.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
         disable_composer=True,
     ),
     "30m_gpt5mini_mimoflash_notthinking": CandidateSpec(
@@ -2239,10 +2138,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes="30m with gpt-5-mini composer and mimo-v2-flash chapter model with thinking disabled. Composer disabled for pure chapter-only evaluation.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
         disable_composer=True,
     ),
     "30m_gpt5mini_dv4flash_thinking": CandidateSpec(
@@ -2304,10 +2199,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes="30m with gpt-5-mini composer and databricks-v4-2 chapter model with thinking enabled. Composer disabled for pure chapter-only evaluation.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
         disable_composer=True,
     ),
     "30m_gpt5mini_dv4flash_notthinking": CandidateSpec(
@@ -2370,10 +2261,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes="30m with gpt-5-mini composer and databricks-v4-2 chapter model with thinking disabled. Composer disabled for pure chapter-only evaluation.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
         disable_composer=True,
     ),
     "30m_gpt5mini_dv4pro_thinking": CandidateSpec(
@@ -2435,10 +2322,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes="30m with gpt-5-mini composer and databricks-v4-8 chapter model with thinking enabled. Composer disabled for pure chapter-only evaluation.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
         disable_composer=True,
     ),
     "30m_gpt5mini_dv4pro_notthinking": CandidateSpec(
@@ -2501,10 +2384,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=False,
         json_schema_name="summary_response_30m",
         notes="30m with gpt-5-mini composer and databricks-v4-8 chapter model with thinking disabled. Composer disabled for pure chapter-only evaluation.",
-        scoring_gates_override=ScoringGatesOverride(
-            min_faithfulness=0.20,
-            min_concept_coverage=0.10,
-        ),
         disable_composer=True,
     ),
 }
@@ -2514,3 +2393,14 @@ def get_candidate(profile: Profile) -> CandidateSpec:
     if profile not in PROFILE_CANDIDATES:
         raise KeyError(f"Unknown profile: {profile}")
     return PROFILE_CANDIDATES[profile]
+
+
+def get_all_profiles() -> list[Profile]:
+    return list(PROFILE_CANDIDATES.keys())
+
+
+def get_profiles_by_time(time_budget: str) -> list[Profile]:
+    """Return profiles matching the given time budget ('30m', '60m', or 'all')."""
+    if time_budget == "all":
+        return get_all_profiles()
+    return [p for p in PROFILE_CANDIDATES if p.startswith(f"{time_budget}_")]
