@@ -23,6 +23,26 @@ DEFAULT_BENCHMARK_MANIFEST: Dict[str, Any] = {
         "Genre-aware benchmark version. Increment benchmark_version whenever the corpus, split membership logic, "
         "rubric builder, scoring rules, judge prompt/model, logging schema, or visible-word-count behavior changes."
     ),
+    "scoring_gates": {
+        "default": {
+            "min_faithfulness": 0.70,
+            "min_concept_coverage": 0.60,
+            "max_final_length_error_pct": None,
+            "max_passes": None,
+        },
+        "30m": {
+            "min_faithfulness": 0.50,
+            "min_concept_coverage": 0.15,
+            "max_final_length_error_pct": None,
+            "max_passes": None,
+        },
+        "60m": {
+            "min_faithfulness": 0.60,
+            "min_concept_coverage": 0.50,
+            "max_final_length_error_pct": None,
+            "max_passes": None,
+        },
+    },
 }
 
 

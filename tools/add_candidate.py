@@ -142,10 +142,10 @@ def _build_composer_config(model: str, thinking: bool, schema_ok: bool) -> Dict[
     }
 
 
-def _build_profile(model: str, thinking: bool, schema_ok: bool) -> Dict[str, Any]:
+def _build_profile(model: str, thinking: bool, schema_ok: bool, time_budget: str = "30m") -> Dict[str, Any]:
     mode = "thinking" if thinking else "notthinking"
     slug = _slug(model)
-    full_profile = f"30m_{slug}_{mode}"
+    full_profile = f"{time_budget}_{slug}_{mode}"
     return {
         "name": f"{full_profile}_v1",
         "profile": full_profile,
@@ -169,12 +169,8 @@ def _build_profile(model: str, thinking: bool, schema_ok: bool) -> Dict[str, Any
             "chapter_stage_multiplier_60m": 1.00,
             "max_summary_to_source_ratio": 0.90,
         },
-        "scoring_gates_override": {
-            "min_faithfulness": 0.20,
-            "min_concept_coverage": 0.10,
-        },
         "disable_composer": False,
-        "notes": f"Auto-generated: {model} chapter+composer, {mode}, schema={schema_ok}",
+        "notes": f"Auto-generated: {model} chapter+composer, {time_budget}, {mode}, schema={schema_ok}",
     }
 
 
@@ -208,7 +204,11 @@ def add_candidates(
     candidates_path: Path,
     dry_run: bool = False,
     dry_run_only: bool = False,
+    time_budgets: Optional[List[str]] = None,
 ) -> List[str]:
+    if time_budgets is None:
+        time_budgets = ["30m", "60m"]
+
     print(f"\n=== Probing {model} ===")
     schema_ok, thinking_ok, notthinking_ok = run_probes(model)
 
@@ -220,15 +220,16 @@ def add_candidates(
         print("This model is not compatible with this harness.")
         sys.exit(1)
 
-    if thinking_ok:
-        p = _build_profile(model, thinking=True, schema_ok=schema_ok)
-        created.append(p["profile"])
-        print(f"\n  → Will create profile: {p['profile']}")
+    for tb in time_budgets:
+        for thinking in ([True, False] if (thinking_ok or notthinking_ok) else [False]):
+            if thinking and not thinking_ok:
+                continue
+            if not thinking and not notthinking_ok:
+                continue
 
-    if notthinking_ok:
-        p = _build_profile(model, thinking=False, schema_ok=schema_ok)
-        created.append(p["profile"])
-        print(f"\n  → Will create profile: {p['profile']}")
+            p = _build_profile(model, thinking=thinking, schema_ok=schema_ok, time_budget=tb)
+            created.append(p["profile"])
+            print(f"\n  → Will create profile: {p['profile']}")
 
     if dry_run_only:
         print("\n[Dry run] Would append these profiles to candidates JSON:")
@@ -249,6 +250,7 @@ def add_candidates(
             model,
             thinking=("notthinking" not in profile_name),
             schema_ok=schema_ok,
+            time_budget=profile_name.split("_")[0],
         )
         data["profiles"][profile_name] = profile_data
         print(f"  Added: {profile_name}")
@@ -276,6 +278,12 @@ def main() -> None:
     parser.add_argument("--provider", help="Provider slug (e.g., deepseek, xai)")
     parser.add_argument("--model", help="Model slug (e.g., deepseek-v4-flash)")
     parser.add_argument("--model-full", help="Full model ID (e.g., deepseek/deepseek-v4-flash), overrides --provider/--model")
+    parser.add_argument(
+        "--time-budget",
+        nargs="+",
+        default=["30m", "60m"],
+        help="Time budget(s) to create profiles for (default: 30m 60m). Use '30m' or '60m' or both.",
+    )
     parser.add_argument("--out", type=Path, default=Path("data/candidates.json"),
                         help="Path to candidates JSON")
     parser.add_argument("--dry-run", action="store_true",
@@ -303,6 +311,7 @@ def main() -> None:
         candidates_path=args.out,
         dry_run=args.dry_run,
         dry_run_only=args.dry_run,
+        time_budgets=args.time_budget,
     )
 
 
