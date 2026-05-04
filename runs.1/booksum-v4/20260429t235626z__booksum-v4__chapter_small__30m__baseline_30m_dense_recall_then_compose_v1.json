@@ -1,0 +1,541 @@
+{
+  "run_manifest": {
+    "run_id": "20260429t235626z__booksum-v4__chapter_small__30m__baseline_30m_dense_recall_then_compose_v1",
+    "created_at_utc": "2026-04-29T23:56:26.752994+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v4",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m",
+    "bench": "chapter_small",
+    "bench_path": "bench/chapter_small.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "baseline_30m_dense_recall_then_compose_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "070652193961ec7daea6ab0cfa734397696c6133398029de7bf57516bea5bbf4",
+    "chapter_model": "minimax/minimax-m2.7",
+    "composer_model": "openai/gpt-5-mini",
+    "judge_model": "",
+    "provider_preferences": {
+      "chapter": {
+        "order": [],
+        "allow_fallbacks": false
+      },
+      "composer": {
+        "order": [],
+        "allow_fallbacks": false
+      }
+    },
+    "prompt_hashes": {
+      "candidate_dict_sha256": "3905b29e5a7b486f503a08c78fb79743571221c59ba8eb0f8329b9722ca0762e",
+      "chapter_stage_sha256": "dfde7f9e29041689390ec3bfde7112ee3ce674cc15c15c181818f9ac3583e655",
+      "composer_stage_sha256": "b08d5b1d3e9aeb8325d1c338912e1fb43450a2462b1d0df8f3e8d0bdc978d041",
+      "length_control_sha256": "4d7dbfc50c3c8a4cdc7bdbf340c8358fea8c476609ea62d33868f493f497845a",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "2906d9c5015f7f2119361da0251930f92f6cfa699028740d40b5e31357e5fe91",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "efebadeb9ca47c9ebdc7bd107e1ef76b086635dade60a6051370cc4ee74e0bf8",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "eaf542bdf2754c05fa8ba012be11add95091cd039c9c0b93ec891c8889667e0b",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260429T235626Z__booksum-v4.json",
+    "price_snapshot": "snapshots/pricing/20260429T235626Z__booksum-v4.json",
+    "hypothesis": "",
+    "notes": "30m baseline booksum-v4 resumed",
+    "resume_count": 0
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v4",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-30T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "v4: per-profile scoring gates - 30m profiles use min_faithfulness=0.50, min_concept_coverage=0.15. v3 used uniform 0.70/0.60 gates for all profiles.",
+    "scoring_version": "scoring-v1"
+  },
+  "dataset_score": {
+    "n_samples": 4,
+    "hard_fail_rate": 0.5,
+    "mean_quality": 0.537694476708009,
+    "mean_utility": 0.519970409708009,
+    "mean_faithfulness": 0.5294642857142857,
+    "mean_concept_coverage": 0.11249999999999999,
+    "mean_final_length_error_pct": 0.29459864902676985,
+    "mean_first_pass_length_error_pct": 1.065982993928161,
+    "mean_passes_used": 2.75,
+    "mean_uncached_cost": 0.01120335,
+    "mean_generation_cost": 0.01120335,
+    "by_group_quality": {
+      "designing-with-data-tan-2017": 0.5434960049120436,
+      "accelerate-forsgren-2018": 0.6313923201465625,
+      "concorde-bannister-2022": 0.45625000000000004,
+      "atomic-habits-clear-2018": 0.5196395817734297
+    },
+    "by_group_utility": {
+      "designing-with-data-tan-2017": 0.5434367129120437,
+      "accelerate-forsgren-2018": 0.6313364181465625,
+      "concorde-bannister-2022": 0.41582070000000004,
+      "atomic-habits-clear-2018": 0.48928780777342973
+    },
+    "slice_summaries": {
+      "genre_macro": {
+        "history_biography_politics_social_analysis": {
+          "n_samples": 1,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.45625000000000004,
+          "mean_utility": 0.41582070000000004,
+          "mean_faithfulness": 0.625,
+          "mean_concept_coverage": 0.15,
+          "mean_passes_used": 5.0,
+          "mean_uncached_generation_cost": 0.021465000000000005,
+          "mean_generation_cost": 0.021465000000000005
+        },
+        "psychology_health_self_development": {
+          "n_samples": 1,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.5196395817734297,
+          "mean_utility": 0.48928780777342973,
+          "mean_faithfulness": 0.4,
+          "mean_concept_coverage": 0.0,
+          "mean_passes_used": 4.0,
+          "mean_uncached_generation_cost": 0.0175887,
+          "mean_generation_cost": 0.0175887
+        },
+        "science_technology_environment": {
+          "n_samples": 2,
+          "n_books": 2,
+          "hard_fail_rate": 0.0,
+          "mean_quality": 0.5874441625293031,
+          "mean_utility": 0.5873865655293031,
+          "mean_faithfulness": 0.5464285714285715,
+          "mean_concept_coverage": 0.15,
+          "mean_passes_used": 1.0,
+          "mean_uncached_generation_cost": 0.0028798499999999998,
+          "mean_generation_cost": 0.0028798499999999998
+        }
+      },
+      "genre_micro": {
+        "aviation_history": {
+          "n_samples": 1,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.45625000000000004,
+          "mean_utility": 0.41582070000000004,
+          "mean_faithfulness": 0.625,
+          "mean_concept_coverage": 0.15,
+          "mean_passes_used": 5.0,
+          "mean_uncached_generation_cost": 0.021465000000000005,
+          "mean_generation_cost": 0.021465000000000005
+        },
+        "habits_and_productivity": {
+          "n_samples": 1,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.5196395817734297,
+          "mean_utility": 0.48928780777342973,
+          "mean_faithfulness": 0.4,
+          "mean_concept_coverage": 0.0,
+          "mean_passes_used": 4.0,
+          "mean_uncached_generation_cost": 0.0175887,
+          "mean_generation_cost": 0.0175887
+        },
+        "software_engineering_and_devops": {
+          "n_samples": 1,
+          "n_books": 1,
+          "hard_fail_rate": 0.0,
+          "mean_quality": 0.6313923201465625,
+          "mean_utility": 0.6313364181465625,
+          "mean_faithfulness": 0.5428571428571428,
+          "mean_concept_coverage": 0.15,
+          "mean_passes_used": 1.0,
+          "mean_uncached_generation_cost": 0.0027951,
+          "mean_generation_cost": 0.0027951
+        },
+        "ux_design_and_data_science": {
+          "n_samples": 1,
+          "n_books": 1,
+          "hard_fail_rate": 0.0,
+          "mean_quality": 0.5434960049120436,
+          "mean_utility": 0.5434367129120437,
+          "mean_faithfulness": 0.55,
+          "mean_concept_coverage": 0.15,
+          "mean_passes_used": 1.0,
+          "mean_uncached_generation_cost": 0.0029646,
+          "mean_generation_cost": 0.0029646
+        }
+      },
+      "narrative_vs_expository": {
+        "expository": {
+          "n_samples": 3,
+          "n_books": 3,
+          "hard_fail_rate": 0.3333333333333333,
+          "mean_quality": 0.5648426356106787,
+          "mean_utility": 0.5546869796106786,
+          "mean_faithfulness": 0.4976190476190476,
+          "mean_concept_coverage": 0.09999999999999999,
+          "mean_passes_used": 2.0,
+          "mean_uncached_generation_cost": 0.0077827999999999994,
+          "mean_generation_cost": 0.0077827999999999994
+        },
+        "mixed": {
+          "n_samples": 1,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.45625000000000004,
+          "mean_utility": 0.41582070000000004,
+          "mean_faithfulness": 0.625,
+          "mean_concept_coverage": 0.15,
+          "mean_passes_used": 5.0,
+          "mean_uncached_generation_cost": 0.021465000000000005,
+          "mean_generation_cost": 0.021465000000000005
+        }
+      },
+      "prescriptive_vs_analytical": {
+        "analytical": {
+          "n_samples": 3,
+          "n_books": 3,
+          "hard_fail_rate": 0.3333333333333333,
+          "mean_quality": 0.5437127750195354,
+          "mean_utility": 0.530197943686202,
+          "mean_faithfulness": 0.5726190476190477,
+          "mean_concept_coverage": 0.15,
+          "mean_passes_used": 2.3333333333333335,
+          "mean_uncached_generation_cost": 0.009074900000000002,
+          "mean_generation_cost": 0.009074900000000002
+        },
+        "prescriptive": {
+          "n_samples": 1,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.5196395817734297,
+          "mean_utility": 0.48928780777342973,
+          "mean_faithfulness": 0.4,
+          "mean_concept_coverage": 0.0,
+          "mean_passes_used": 4.0,
+          "mean_uncached_generation_cost": 0.0175887,
+          "mean_generation_cost": 0.0175887
+        }
+      },
+      "quantitative_density": {
+        "high": {
+          "n_samples": 4,
+          "n_books": 4,
+          "hard_fail_rate": 0.5,
+          "mean_quality": 0.537694476708009,
+          "mean_utility": 0.519970409708009,
+          "mean_faithfulness": 0.5294642857142857,
+          "mean_concept_coverage": 0.11249999999999999,
+          "mean_passes_used": 2.75,
+          "mean_uncached_generation_cost": 0.01120335,
+          "mean_generation_cost": 0.01120335
+        }
+      },
+      "chapter_length_profile": {
+        "mixed": {
+          "n_samples": 4,
+          "n_books": 4,
+          "hard_fail_rate": 0.5,
+          "mean_quality": 0.537694476708009,
+          "mean_utility": 0.519970409708009,
+          "mean_faithfulness": 0.5294642857142857,
+          "mean_concept_coverage": 0.11249999999999999,
+          "mean_passes_used": 2.75,
+          "mean_uncached_generation_cost": 0.01120335,
+          "mean_generation_cost": 0.01120335
+        }
+      },
+      "benchmark_pool": {
+        "balanced": {
+          "n_samples": 4,
+          "n_books": 4,
+          "hard_fail_rate": 0.5,
+          "mean_quality": 0.537694476708009,
+          "mean_utility": 0.519970409708009,
+          "mean_faithfulness": 0.5294642857142857,
+          "mean_concept_coverage": 0.11249999999999999,
+          "mean_passes_used": 2.75,
+          "mean_uncached_generation_cost": 0.01120335,
+          "mean_generation_cost": 0.01120335
+        }
+      }
+    },
+    "worst_genre_macro": {
+      "slice_value": "history_biography_politics_social_analysis",
+      "n_samples": 1,
+      "n_books": 1,
+      "hard_fail_rate": 1.0,
+      "mean_quality": 0.45625000000000004,
+      "mean_utility": 0.41582070000000004,
+      "mean_faithfulness": 0.625,
+      "mean_concept_coverage": 0.15,
+      "mean_passes_used": 5.0,
+      "mean_uncached_generation_cost": 0.021465000000000005,
+      "mean_generation_cost": 0.021465000000000005
+    },
+    "n_genre_macros": 3,
+    "genre_macro_spread_utility": 0.17156586552930309
+  },
+  "sample_scores": [
+    {
+      "sample_id": "designing-with-data-tan-2017:008",
+      "group_id": "designing-with-data-tan-2017",
+      "level": "chapter",
+      "hard_fail": false,
+      "hard_fail_reasons": [],
+      "quality": 0.5434960049120436,
+      "utility": 0.5434367129120437,
+      "resolved_faithfulness": 0.55,
+      "resolved_concept_coverage": 0.15,
+      "resolved_qualifier_preservation": 0.0,
+      "resolved_no_fluff": 1.0,
+      "resolved_structure_quality": 1.0,
+      "deterministic": {
+        "visible_words": 709,
+        "first_pass_visible_words": 709,
+        "final_length_error_pct": 0.023088023088023088,
+        "first_pass_length_error_pct": 0.023088023088023088,
+        "final_length_accuracy": 1.0,
+        "first_pass_length_accuracy": 1.0,
+        "readability_band": 0.45708578445776543,
+        "heading_coverage": 1.0,
+        "concept_phrase_coverage": 0.0,
+        "mechanism_phrase_coverage": 0.0,
+        "qualifier_phrase_coverage": 0.0,
+        "key_term_coverage": 0.5,
+        "number_coverage": 1.0,
+        "redundancy_score": 1.0,
+        "structure_proxy": 1.0,
+        "faithfulness_proxy": 0.55,
+        "concept_proxy": 0.15
+      }
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:022",
+      "group_id": "accelerate-forsgren-2018",
+      "level": "chapter",
+      "hard_fail": false,
+      "hard_fail_reasons": [],
+      "quality": 0.6313923201465625,
+      "utility": 0.6313364181465625,
+      "resolved_faithfulness": 0.5428571428571428,
+      "resolved_concept_coverage": 0.15,
+      "resolved_qualifier_preservation": 1.0,
+      "resolved_no_fluff": 1.0,
+      "resolved_structure_quality": 1.0,
+      "deterministic": {
+        "visible_words": 254,
+        "first_pass_visible_words": 254,
+        "final_length_error_pct": 0.0661764705882353,
+        "first_pass_length_error_pct": 0.0661764705882353,
+        "final_length_accuracy": 0.9191176470588236,
+        "first_pass_length_accuracy": 0.9191176470588236,
+        "readability_band": 0.4911687992125981,
+        "heading_coverage": 1.0,
+        "concept_phrase_coverage": 0.0,
+        "mechanism_phrase_coverage": 0.0,
+        "qualifier_phrase_coverage": 1.0,
+        "key_term_coverage": 0.0,
+        "number_coverage": 0.2857142857142857,
+        "redundancy_score": 1.0,
+        "structure_proxy": 1.0,
+        "faithfulness_proxy": 0.5428571428571428,
+        "concept_proxy": 0.15
+      }
+    },
+    {
+      "sample_id": "concorde-bannister-2022:042",
+      "group_id": "concorde-bannister-2022",
+      "level": "chapter",
+      "hard_fail": true,
+      "hard_fail_reasons": [
+        "length_outside_hard_tolerance"
+      ],
+      "quality": 0.45625000000000004,
+      "utility": 0.41582070000000004,
+      "resolved_faithfulness": 0.625,
+      "resolved_concept_coverage": 0.15,
+      "resolved_qualifier_preservation": 0.0,
+      "resolved_no_fluff": 1.0,
+      "resolved_structure_quality": 1.0,
+      "deterministic": {
+        "visible_words": 252,
+        "first_pass_visible_words": 530,
+        "final_length_error_pct": 1.032258064516129,
+        "first_pass_length_error_pct": 3.274193548387097,
+        "final_length_accuracy": 0.0,
+        "first_pass_length_accuracy": 0.0,
+        "readability_band": 1.0,
+        "heading_coverage": 1.0,
+        "concept_phrase_coverage": 0.0,
+        "mechanism_phrase_coverage": 0.0,
+        "qualifier_phrase_coverage": 0.0,
+        "key_term_coverage": 1.0,
+        "number_coverage": 0.8333333333333334,
+        "redundancy_score": 1.0,
+        "structure_proxy": 1.0,
+        "faithfulness_proxy": 0.625,
+        "concept_proxy": 0.15
+      }
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:032",
+      "group_id": "atomic-habits-clear-2018",
+      "level": "chapter",
+      "hard_fail": true,
+      "hard_fail_reasons": [
+        "concept_coverage_below_threshold"
+      ],
+      "quality": 0.5196395817734297,
+      "utility": 0.48928780777342973,
+      "resolved_faithfulness": 0.4,
+      "resolved_concept_coverage": 0.0,
+      "resolved_qualifier_preservation": 1.0,
+      "resolved_no_fluff": 1.0,
+      "resolved_structure_quality": 0.5,
+      "deterministic": {
+        "visible_words": 223,
+        "first_pass_visible_words": 401,
+        "final_length_error_pct": 0.05687203791469194,
+        "first_pass_length_error_pct": 0.9004739336492891,
+        "final_length_accuracy": 0.9656398104265403,
+        "first_pass_length_accuracy": 0.0,
+        "readability_band": 0.9439371532967952,
+        "heading_coverage": 0.0,
+        "concept_phrase_coverage": 0.0,
+        "mechanism_phrase_coverage": 0.0,
+        "qualifier_phrase_coverage": 1.0,
+        "key_term_coverage": 1.0,
+        "number_coverage": 0.0,
+        "redundancy_score": 1.0,
+        "structure_proxy": 0.5,
+        "faithfulness_proxy": 0.4,
+        "concept_proxy": 0.0
+      }
+    }
+  ],
+  "samples": [
+    {
+      "sample_id": "designing-with-data-tan-2017:008",
+      "level": "chapter",
+      "group_id": "designing-with-data-tan-2017",
+      "target_words": 693,
+      "summary_visible_words": 709,
+      "passes_used": 1,
+      "generation_cost": 0.0029646,
+      "uncached_generation_cost": 0.0029646
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:022",
+      "level": "chapter",
+      "group_id": "accelerate-forsgren-2018",
+      "target_words": 272,
+      "summary_visible_words": 254,
+      "passes_used": 1,
+      "generation_cost": 0.0027951,
+      "uncached_generation_cost": 0.0027951
+    },
+    {
+      "sample_id": "concorde-bannister-2022:042",
+      "level": "chapter",
+      "group_id": "concorde-bannister-2022",
+      "target_words": 124,
+      "summary_visible_words": 252,
+      "passes_used": 5,
+      "generation_cost": 0.021465000000000005,
+      "uncached_generation_cost": 0.021465000000000005
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:032",
+      "level": "chapter",
+      "group_id": "atomic-habits-clear-2018",
+      "target_words": 211,
+      "summary_visible_words": 223,
+      "passes_used": 4,
+      "generation_cost": 0.0175887,
+      "uncached_generation_cost": 0.0175887
+    }
+  ],
+  "traces": [
+    {
+      "sample_id": "designing-with-data-tan-2017:008",
+      "book_id": "designing-with-data-tan-2017",
+      "chapter_id": "008",
+      "target_words": 693,
+      "output_words": 709,
+      "passes_used": 1,
+      "generation_cost": 0.0029646,
+      "uncached_generation_cost": 0.0029646,
+      "judge_rationale": "",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "ux_design_and_data_science",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:022",
+      "book_id": "accelerate-forsgren-2018",
+      "chapter_id": "022",
+      "target_words": 272,
+      "output_words": 254,
+      "passes_used": 1,
+      "generation_cost": 0.0027951,
+      "uncached_generation_cost": 0.0027951,
+      "judge_rationale": "",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "concorde-bannister-2022:042",
+      "book_id": "concorde-bannister-2022",
+      "chapter_id": "042",
+      "target_words": 124,
+      "output_words": 252,
+      "passes_used": 5,
+      "generation_cost": 0.021465000000000005,
+      "uncached_generation_cost": 0.021465000000000005,
+      "judge_rationale": "",
+      "genre_macro": "history_biography_politics_social_analysis",
+      "genre_micro": "aviation_history",
+      "narrative_vs_expository": "mixed",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:032",
+      "book_id": "atomic-habits-clear-2018",
+      "chapter_id": "032",
+      "target_words": 211,
+      "output_words": 223,
+      "passes_used": 4,
+      "generation_cost": 0.0175887,
+      "uncached_generation_cost": 0.0175887,
+      "judge_rationale": "",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ]
+}

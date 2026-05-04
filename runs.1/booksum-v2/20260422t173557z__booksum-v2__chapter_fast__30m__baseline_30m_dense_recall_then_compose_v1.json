@@ -1,0 +1,460 @@
+{
+  "run_manifest": {
+    "run_id": "20260422t173557z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1",
+    "created_at_utc": "2026-04-22T17:35:57.447980+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v2",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m",
+    "bench": "chapter_fast",
+    "bench_path": "bench/chapter_fast.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "baseline_30m_dense_recall_then_compose_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "b1ad5011c2647cc041cf0920f2d66714d894c10e4c077906aa98764943ca196c",
+    "chapter_model": "minimax/minimax-m2.7",
+    "composer_model": "openai/gpt-5-mini",
+    "judge_model": "",
+    "provider_preferences": {
+      "chapter": {
+        "order": [],
+        "allow_fallbacks": false
+      },
+      "composer": {
+        "order": [],
+        "allow_fallbacks": false
+      }
+    },
+    "prompt_hashes": {
+      "candidate_dict_sha256": "08676d8c77638ef1cca1cce0730b2f879d1334160c7f38afeed8d84274ce12f5",
+      "chapter_stage_sha256": "e4b263c4039ef4ecef030c8498621483c5300e81e4cb03448895e384bff06b84",
+      "composer_stage_sha256": "b08d5b1d3e9aeb8325d1c338912e1fb43450a2462b1d0df8f3e8d0bdc978d041",
+      "length_control_sha256": "4d7dbfc50c3c8a4cdc7bdbf340c8358fea8c476609ea62d33868f493f497845a",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "2906d9c5015f7f2119361da0251930f92f6cfa699028740d40b5e31357e5fe91",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "efebadeb9ca47c9ebdc7bd107e1ef76b086635dade60a6051370cc4ee74e0bf8",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "eaf542bdf2754c05fa8ba012be11add95091cd039c9c0b93ec891c8889667e0b",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260422T173557Z__booksum-v2.json",
+    "price_snapshot": "snapshots/pricing/20260422T173557Z__booksum-v2.json",
+    "hypothesis": "Minimax remaining 4 samples",
+    "notes": "Minimax atomic-habits samples",
+    "resume_count": 0
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v2",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-19T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "Genre-aware benchmark version. Increment benchmark_version whenever the corpus, split membership logic, rubric builder, scoring rules, judge prompt/model, logging schema, or visible-word-count behavior changes."
+  },
+  "dataset_score": {
+    "n_samples": 4,
+    "hard_fail_rate": 1.0,
+    "mean_quality": 0.5119662576143872,
+    "mean_utility": 0.49175711561438723,
+    "mean_faithfulness": 0.5413311688311688,
+    "mean_concept_coverage": 0.16041666666666665,
+    "mean_final_length_error_pct": 0.08112918261578823,
+    "mean_first_pass_length_error_pct": 0.20196650419099996,
+    "mean_passes_used": 3,
+    "mean_uncached_cost": 0.0104571,
+    "mean_generation_cost": 0.0104571,
+    "by_group_quality": {
+      "accelerate-forsgren-2018": 0.5119662576143872
+    },
+    "by_group_utility": {
+      "accelerate-forsgren-2018": 0.49175711561438723
+    },
+    "slice_summaries": {
+      "genre_macro": {
+        "science_technology_environment": {
+          "n_samples": 4,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.5119662576143872,
+          "mean_utility": 0.49175711561438723,
+          "mean_faithfulness": 0.5413311688311688,
+          "mean_concept_coverage": 0.16041666666666665,
+          "mean_passes_used": 3.0,
+          "mean_uncached_generation_cost": 0.0104571,
+          "mean_generation_cost": 0.0104571
+        }
+      },
+      "genre_micro": {
+        "software_engineering_and_devops": {
+          "n_samples": 4,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.5119662576143872,
+          "mean_utility": 0.49175711561438723,
+          "mean_faithfulness": 0.5413311688311688,
+          "mean_concept_coverage": 0.16041666666666665,
+          "mean_passes_used": 3.0,
+          "mean_uncached_generation_cost": 0.0104571,
+          "mean_generation_cost": 0.0104571
+        }
+      },
+      "narrative_vs_expository": {
+        "expository": {
+          "n_samples": 4,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.5119662576143872,
+          "mean_utility": 0.49175711561438723,
+          "mean_faithfulness": 0.5413311688311688,
+          "mean_concept_coverage": 0.16041666666666665,
+          "mean_passes_used": 3.0,
+          "mean_uncached_generation_cost": 0.0104571,
+          "mean_generation_cost": 0.0104571
+        }
+      },
+      "prescriptive_vs_analytical": {
+        "analytical": {
+          "n_samples": 4,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.5119662576143872,
+          "mean_utility": 0.49175711561438723,
+          "mean_faithfulness": 0.5413311688311688,
+          "mean_concept_coverage": 0.16041666666666665,
+          "mean_passes_used": 3.0,
+          "mean_uncached_generation_cost": 0.0104571,
+          "mean_generation_cost": 0.0104571
+        }
+      },
+      "quantitative_density": {
+        "high": {
+          "n_samples": 4,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.5119662576143872,
+          "mean_utility": 0.49175711561438723,
+          "mean_faithfulness": 0.5413311688311688,
+          "mean_concept_coverage": 0.16041666666666665,
+          "mean_passes_used": 3.0,
+          "mean_uncached_generation_cost": 0.0104571,
+          "mean_generation_cost": 0.0104571
+        }
+      },
+      "chapter_length_profile": {
+        "mixed": {
+          "n_samples": 4,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.5119662576143872,
+          "mean_utility": 0.49175711561438723,
+          "mean_faithfulness": 0.5413311688311688,
+          "mean_concept_coverage": 0.16041666666666665,
+          "mean_passes_used": 3.0,
+          "mean_uncached_generation_cost": 0.0104571,
+          "mean_generation_cost": 0.0104571
+        }
+      },
+      "benchmark_pool": {
+        "balanced": {
+          "n_samples": 4,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.5119662576143872,
+          "mean_utility": 0.49175711561438723,
+          "mean_faithfulness": 0.5413311688311688,
+          "mean_concept_coverage": 0.16041666666666665,
+          "mean_passes_used": 3.0,
+          "mean_uncached_generation_cost": 0.0104571,
+          "mean_generation_cost": 0.0104571
+        }
+      }
+    },
+    "worst_genre_macro": {
+      "slice_value": "science_technology_environment",
+      "n_samples": 4,
+      "n_books": 1,
+      "hard_fail_rate": 1.0,
+      "mean_quality": 0.5119662576143872,
+      "mean_utility": 0.49175711561438723,
+      "mean_faithfulness": 0.5413311688311688,
+      "mean_concept_coverage": 0.16041666666666665,
+      "mean_passes_used": 3.0,
+      "mean_uncached_generation_cost": 0.0104571,
+      "mean_generation_cost": 0.0104571
+    },
+    "n_genre_macros": 1,
+    "genre_macro_spread_utility": 0.0
+  },
+  "sample_scores": [
+    {
+      "sample_id": "accelerate-forsgren-2018:018",
+      "group_id": "accelerate-forsgren-2018",
+      "level": "chapter",
+      "hard_fail": true,
+      "hard_fail_reasons": [
+        "faithfulness_below_threshold",
+        "concept_coverage_below_threshold"
+      ],
+      "quality": 0.5263972505583892,
+      "utility": 0.5163263905583891,
+      "resolved_faithfulness": 0.65,
+      "resolved_concept_coverage": 0.19166666666666665,
+      "resolved_qualifier_preservation": 0.0,
+      "resolved_no_fluff": 1.0,
+      "resolved_structure_quality": 1.0,
+      "deterministic": {
+        "visible_words": 202,
+        "first_pass_visible_words": 270,
+        "final_length_error_pct": 0.06481481481481481,
+        "first_pass_length_error_pct": 0.25,
+        "final_length_accuracy": 0.9259259259259259,
+        "first_pass_length_accuracy": 0.0,
+        "readability_band": 0.4424474947494745,
+        "heading_coverage": 1.0,
+        "concept_phrase_coverage": 0.08333333333333333,
+        "mechanism_phrase_coverage": 0.0,
+        "qualifier_phrase_coverage": 0.0,
+        "key_term_coverage": 1.0,
+        "number_coverage": 1.0,
+        "redundancy_score": 1.0,
+        "structure_proxy": 1.0,
+        "faithfulness_proxy": 0.65,
+        "concept_proxy": 0.19166666666666665
+      }
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:003",
+      "group_id": "accelerate-forsgren-2018",
+      "level": "chapter",
+      "hard_fail": true,
+      "hard_fail_reasons": [
+        "length_outside_hard_tolerance",
+        "faithfulness_below_threshold",
+        "concept_coverage_below_threshold"
+      ],
+      "quality": 0.42102881277718984,
+      "utility": 0.38057449277718985,
+      "resolved_faithfulness": 0.605,
+      "resolved_concept_coverage": 0.15,
+      "resolved_qualifier_preservation": 0.0,
+      "resolved_no_fluff": 1.0,
+      "resolved_structure_quality": 1.0,
+      "deterministic": {
+        "visible_words": 361,
+        "first_pass_visible_words": 371,
+        "final_length_error_pct": 0.2363013698630137,
+        "first_pass_length_error_pct": 0.2705479452054795,
+        "final_length_accuracy": 0.06849315068493145,
+        "first_pass_length_accuracy": 0.0,
+        "readability_band": 0.49327853869566723,
+        "heading_coverage": 1.0,
+        "concept_phrase_coverage": 0.0,
+        "mechanism_phrase_coverage": 0.0,
+        "qualifier_phrase_coverage": 0.0,
+        "key_term_coverage": 1.0,
+        "number_coverage": 0.7,
+        "redundancy_score": 1.0,
+        "structure_proxy": 1.0,
+        "faithfulness_proxy": 0.605,
+        "concept_proxy": 0.15
+      }
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:004",
+      "group_id": "accelerate-forsgren-2018",
+      "level": "chapter",
+      "hard_fail": true,
+      "hard_fail_reasons": [
+        "faithfulness_below_threshold",
+        "concept_coverage_below_threshold"
+      ],
+      "quality": 0.4626279828769707,
+      "utility": 0.43237062487697075,
+      "resolved_faithfulness": 0.36818181818181817,
+      "resolved_concept_coverage": 0.15,
+      "resolved_qualifier_preservation": 0.0,
+      "resolved_no_fluff": 1.0,
+      "resolved_structure_quality": 1.0,
+      "deterministic": {
+        "visible_words": 491,
+        "first_pass_visible_words": 619,
+        "final_length_error_pct": 0.012371134020618556,
+        "first_pass_length_error_pct": 0.27628865979381445,
+        "final_length_accuracy": 1.0,
+        "first_pass_length_accuracy": 0.0,
+        "readability_band": 0.8732568982424387,
+        "heading_coverage": 1.0,
+        "concept_phrase_coverage": 0.0,
+        "mechanism_phrase_coverage": 0.0,
+        "qualifier_phrase_coverage": 0.0,
+        "key_term_coverage": 0.0,
+        "number_coverage": 0.45454545454545453,
+        "redundancy_score": 1.0,
+        "structure_proxy": 1.0,
+        "faithfulness_proxy": 0.36818181818181817,
+        "concept_proxy": 0.15
+      }
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:022",
+      "group_id": "accelerate-forsgren-2018",
+      "level": "chapter",
+      "hard_fail": true,
+      "hard_fail_reasons": [
+        "faithfulness_below_threshold",
+        "concept_coverage_below_threshold"
+      ],
+      "quality": 0.6378109842449992,
+      "utility": 0.6377569542449991,
+      "resolved_faithfulness": 0.5421428571428571,
+      "resolved_concept_coverage": 0.15,
+      "resolved_qualifier_preservation": 1.0,
+      "resolved_no_fluff": 1.0,
+      "resolved_structure_quality": 1.0,
+      "deterministic": {
+        "visible_words": 269,
+        "first_pass_visible_words": 269,
+        "final_length_error_pct": 0.011029411764705883,
+        "first_pass_length_error_pct": 0.011029411764705883,
+        "final_length_accuracy": 1.0,
+        "first_pass_length_accuracy": 1.0,
+        "readability_band": 0.41291201982651743,
+        "heading_coverage": 1.0,
+        "concept_phrase_coverage": 0.0,
+        "mechanism_phrase_coverage": 0.0,
+        "qualifier_phrase_coverage": 1.0,
+        "key_term_coverage": 0.05,
+        "number_coverage": 0.21428571428571427,
+        "redundancy_score": 1.0,
+        "structure_proxy": 1.0,
+        "faithfulness_proxy": 0.5421428571428571,
+        "concept_proxy": 0.15
+      }
+    }
+  ],
+  "samples": [
+    {
+      "sample_id": "accelerate-forsgren-2018:018",
+      "level": "chapter",
+      "group_id": "accelerate-forsgren-2018",
+      "target_words": 216,
+      "summary_visible_words": 202,
+      "passes_used": 2,
+      "generation_cost": 0.003543,
+      "uncached_generation_cost": 0.003543
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:003",
+      "level": "chapter",
+      "group_id": "accelerate-forsgren-2018",
+      "target_words": 292,
+      "summary_visible_words": 361,
+      "passes_used": 5,
+      "generation_cost": 0.022716,
+      "uncached_generation_cost": 0.022716
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:004",
+      "level": "chapter",
+      "group_id": "accelerate-forsgren-2018",
+      "target_words": 485,
+      "summary_visible_words": 491,
+      "passes_used": 4,
+      "generation_cost": 0.0128679,
+      "uncached_generation_cost": 0.0128679
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:022",
+      "level": "chapter",
+      "group_id": "accelerate-forsgren-2018",
+      "target_words": 272,
+      "summary_visible_words": 269,
+      "passes_used": 1,
+      "generation_cost": 0.0027015,
+      "uncached_generation_cost": 0.0027015
+    }
+  ],
+  "traces": [
+    {
+      "sample_id": "accelerate-forsgren-2018:018",
+      "book_id": "accelerate-forsgren-2018",
+      "chapter_id": "018",
+      "target_words": 216,
+      "output_words": 202,
+      "passes_used": 2,
+      "generation_cost": 0.003543,
+      "uncached_generation_cost": 0.003543,
+      "judge_rationale": "",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:003",
+      "book_id": "accelerate-forsgren-2018",
+      "chapter_id": "003",
+      "target_words": 292,
+      "output_words": 361,
+      "passes_used": 5,
+      "generation_cost": 0.022716,
+      "uncached_generation_cost": 0.022716,
+      "judge_rationale": "",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:004",
+      "book_id": "accelerate-forsgren-2018",
+      "chapter_id": "004",
+      "target_words": 485,
+      "output_words": 491,
+      "passes_used": 4,
+      "generation_cost": 0.0128679,
+      "uncached_generation_cost": 0.0128679,
+      "judge_rationale": "",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:022",
+      "book_id": "accelerate-forsgren-2018",
+      "chapter_id": "022",
+      "target_words": 272,
+      "output_words": 269,
+      "passes_used": 1,
+      "generation_cost": 0.0027015,
+      "uncached_generation_cost": 0.0027015,
+      "judge_rationale": "",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ]
+}

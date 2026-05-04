@@ -1,0 +1,230 @@
+{
+  "run_id": "20260430t001542z__booksum-v4__chapter_small__30m__baseline_30m_dense_recall_then_compose_v1",
+  "created_at_utc": "2026-04-30T00:15:42.798554+00:00",
+  "status": "running",
+  "run_manifest": {
+    "run_id": "20260430t001542z__booksum-v4__chapter_small__30m__baseline_30m_dense_recall_then_compose_v1",
+    "created_at_utc": "2026-04-30T00:15:42.798554+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v4",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m",
+    "bench": "chapter_small",
+    "bench_path": "bench/chapter_small.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "baseline_30m_dense_recall_then_compose_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "070652193961ec7daea6ab0cfa734397696c6133398029de7bf57516bea5bbf4",
+    "chapter_model": "minimax/minimax-m2.7",
+    "composer_model": "openai/gpt-5-mini",
+    "judge_model": "",
+    "provider_preferences": {
+      "chapter": {
+        "order": [],
+        "allow_fallbacks": false
+      },
+      "composer": {
+        "order": [],
+        "allow_fallbacks": false
+      }
+    },
+    "prompt_hashes": {
+      "candidate_dict_sha256": "3905b29e5a7b486f503a08c78fb79743571221c59ba8eb0f8329b9722ca0762e",
+      "chapter_stage_sha256": "dfde7f9e29041689390ec3bfde7112ee3ce674cc15c15c181818f9ac3583e655",
+      "composer_stage_sha256": "b08d5b1d3e9aeb8325d1c338912e1fb43450a2462b1d0df8f3e8d0bdc978d041",
+      "length_control_sha256": "4d7dbfc50c3c8a4cdc7bdbf340c8358fea8c476609ea62d33868f493f497845a",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "2906d9c5015f7f2119361da0251930f92f6cfa699028740d40b5e31357e5fe91",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "efebadeb9ca47c9ebdc7bd107e1ef76b086635dade60a6051370cc4ee74e0bf8",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "eaf542bdf2754c05fa8ba012be11add95091cd039c9c0b93ec891c8889667e0b",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260430T001542Z__booksum-v4.json",
+    "price_snapshot": "snapshots/pricing/20260430T001542Z__booksum-v4.json",
+    "hypothesis": "",
+    "notes": "30m baseline booksum-v4 resume"
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v4",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-30T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "v4: per-profile scoring gates - 30m profiles use min_faithfulness=0.50, min_concept_coverage=0.15. v3 used uniform 0.70/0.60 gates for all profiles.",
+    "scoring_version": "scoring-v1"
+  },
+  "bench_rows": [
+    {
+      "sample_id": "designing-with-data-tan-2017:008",
+      "level": "chapter",
+      "book_id": "designing-with-data-tan-2017",
+      "group_id": "designing-with-data-tan-2017",
+      "chapter_id": "008",
+      "chapter_title": "Chapter 7: Creating the Right Environment",
+      "book_title": "Designing with Data",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "ux_design_and_data_science",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:022",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "022",
+      "chapter_title": "Appendix C: Statistical Methods Used in Our Research",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "concorde-bannister-2022:042",
+      "level": "chapter",
+      "book_id": "concorde-bannister-2022",
+      "group_id": "concorde-bannister-2022",
+      "chapter_id": "042",
+      "chapter_title": "39",
+      "book_title": "Concorde",
+      "genre_macro": "history_biography_politics_social_analysis",
+      "genre_micro": "aviation_history",
+      "narrative_vs_expository": "mixed",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:032",
+      "level": "chapter",
+      "book_id": "atomic-habits-clear-2018",
+      "group_id": "atomic-habits-clear-2018",
+      "chapter_id": "032",
+      "chapter_title": "How to Apply These Ideas to Business",
+      "book_title": "Atomic Habits",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ],
+  "completed_sample_ids": [
+    "designing-with-data-tan-2017:008",
+    "accelerate-forsgren-2018:022"
+  ],
+  "completed_count": 2,
+  "n_total_samples": 4,
+  "current_item": {
+    "kind": "chapter",
+    "phase": "stage",
+    "item_key": "concorde-bannister-2022:042",
+    "item": {
+      "sample_id": "concorde-bannister-2022:042",
+      "level": "chapter",
+      "book_id": "concorde-bannister-2022",
+      "group_id": "concorde-bannister-2022",
+      "chapter_id": "042",
+      "chapter_title": "39",
+      "book_title": "Concorde",
+      "genre_macro": "history_biography_politics_social_analysis",
+      "genre_micro": "aviation_history",
+      "narrative_vs_expository": "mixed",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    "book_id": "concorde-bannister-2022",
+    "chapter_id": "042",
+    "sample_id": "concorde-bannister-2022:042",
+    "target_words": 124,
+    "stage_state": {
+      "summary_md": "## Retirement Announcement\n\nBA initially proposed coordinating a simultaneous retirement with Air France in October 2003, but Air France declined—choosing May instead, citing that France would never sanction a dual retirement perceived as celebratory after the accident.\n\nThe announcement was planned for an April 9th Forum 150 meeting until Bannister noted it coincided with the 34th anniversary of Concorde's first flight. The date shifted to April 10th, 2003. Bannister, in full uniform, delivered the news with a rehearsed slide presentation. The reaction split sharply: roughly two-thirds of senior managers expressed sadness; the remainder felt relief. No one was ambivalent.\n\nBannister then served as company spokesman. Key messaging stressed this was a commercial decision driven by factors beyond BA's control, with assurances customers would receive equivalent service via upgraded Club Class and First on 747s.\n\nAt the press conference, when asked why Concorde was being retired, Bannister instinctively offered what became the universal party line: \"It's the right decision at the right time for the right reasons\"—despite internally believing it had been quite the wrong decision at the wrong time for the wrong reasons.\n\nCommon questions included why BA spent money restoring Concorde only to retire it, and why not give aircraft to Richard Branson. On Branson, BA anticipated three scenarios: success would prompt him to claim BA couldn't run a tea shop; failure would blame BA's maintenance; refusal would be characterized as bullying. The official response—that government funding meant BA couldn't transfer ownership—was a \"cop-out containing just enough truth.\" A senior Virgin pilot actually thanked Bannister, saying \"You're not really going to give Concorde to us, are you, Mike?\" and, upon hearing \"not a chance in hell,\" replied \"Thank God… because it would probably send us bust!\"\n\nOn retaining one aircraft for air shows: Concorde required a Certificate of Airworthiness and Type Certificate—far higher standards than the Vulcan's \"Permit to Fly.\" The £60 million annual infrastructure cost would rise by another £40 million, remaining constant regardless of fleet size. Even halved to £50 million meant £1 million weekly for a single aircraft. Airbus, focused on the approaching A380 and successful A320 family, refused to maintain the Type Certificate. Their air-intake computer technology remained proprietary and secret due to military aircraft applications. Another organization theoretically could have taken the Type Certificate, but Airbus was under no compulsion to transfer it and had strong incentives to retain the technical drawings.\n\nBy summer, public discourse shifted from retirement motives toward celebrating Concorde's legacy. Edward de Bono observed that Concorde appealed to both brain hemispheres—the analytically superb and artistically graceful. For Bannister, the simpler explanation sufficed: most Britons had developed a sense of individual ownership. \"That's my Concorde up there.\"",
+      "first_pass_summary_md": "## Retirement Announcement\n\nBA initially proposed coordinating a simultaneous retirement with Air France in October 2003, but Air France declined—choosing May instead, citing that France would never sanction a dual retirement perceived as celebratory after the accident.\n\nThe announcement was planned for an April 9th Forum 150 meeting until Bannister noted it coincided with the 34th anniversary of Concorde's first flight. The date shifted to April 10th, 2003. Bannister, in full uniform, delivered the news with a rehearsed slide presentation. The reaction split sharply: roughly two-thirds of senior managers expressed sadness; the remainder felt relief. No one was ambivalent.\n\nBannister then served as company spokesman. Key messaging stressed this was a commercial decision driven by factors beyond BA's control, with assurances customers would receive equivalent service via upgraded Club Class and First on 747s.\n\nAt the press conference, when asked why Concorde was being retired, Bannister instinctively offered what became the universal party line: \"It's the right decision at the right time for the right reasons\"—despite internally believing it had been quite the wrong decision at the wrong time for the wrong reasons.\n\nCommon questions included why BA spent money restoring Concorde only to retire it, and why not give aircraft to Richard Branson. On Branson, BA anticipated three scenarios: success would prompt him to claim BA couldn't run a tea shop; failure would blame BA's maintenance; refusal would be characterized as bullying. The official response—that government funding meant BA couldn't transfer ownership—was a \"cop-out containing just enough truth.\" A senior Virgin pilot actually thanked Bannister, saying \"You're not really going to give Concorde to us, are you, Mike?\" and, upon hearing \"not a chance in hell,\" replied \"Thank God… because it would probably send us bust!\"\n\nOn retaining one aircraft for air shows: Concorde required a Certificate of Airworthiness and Type Certificate—far higher standards than the Vulcan's \"Permit to Fly.\" The £60 million annual infrastructure cost would rise by another £40 million, remaining constant regardless of fleet size. Even halved to £50 million meant £1 million weekly for a single aircraft. Airbus, focused on the approaching A380 and successful A320 family, refused to maintain the Type Certificate. Their air-intake computer technology remained proprietary and secret due to military aircraft applications. Another organization theoretically could have taken the Type Certificate, but Airbus was under no compulsion to transfer it and had strong incentives to retain the technical drawings.\n\nBy summer, public discourse shifted from retirement motives toward celebrating Concorde's legacy. Edward de Bono observed that Concorde appealed to both brain hemispheres—the analytically superb and artistically graceful. For Bannister, the simpler explanation sufficed: most Britons had developed a sense of individual ownership. \"That's my Concorde up there.\"",
+      "passes_used": 1,
+      "generation_cost": 0.0021288,
+      "uncached_generation_cost": 0.0021288,
+      "raw_responses": [
+        {
+          "id": "gen-1777508507-y81l4VQC5VGI4DEdgFmz",
+          "object": "chat.completion",
+          "created": 1777508507,
+          "model": "minimax/minimax-m2.7-20260318",
+          "provider": "Minimax",
+          "system_fingerprint": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "## Retirement Announcement\n\nBA initially proposed coordinating a simultaneous retirement with Air France in October 2003, but Air France declined—choosing May instead, citing that France would never sanction a dual retirement perceived as celebratory after the accident.\n\nThe announcement was planned for an April 9th Forum 150 meeting until Bannister noted it coincided with the 34th anniversary of Concorde's first flight. The date shifted to April 10th, 2003. Bannister, in full uniform, delivered the news with a rehearsed slide presentation. The reaction split sharply: roughly two-thirds of senior managers expressed sadness; the remainder felt relief. No one was ambivalent.\n\nBannister then served as company spokesman. Key messaging stressed this was a commercial decision driven by factors beyond BA's control, with assurances customers would receive equivalent service via upgraded Club Class and First on 747s.\n\nAt the press conference, when asked why Concorde was being retired, Bannister instinctively offered what became the universal party line: \"It's the right decision at the right time for the right reasons\"—despite internally believing it had been quite the wrong decision at the wrong time for the wrong reasons.\n\nCommon questions included why BA spent money restoring Concorde only to retire it, and why not give aircraft to Richard Branson. On Branson, BA anticipated three scenarios: success would prompt him to claim BA couldn't run a tea shop; failure would blame BA's maintenance; refusal would be characterized as bullying. The official response—that government funding meant BA couldn't transfer ownership—was a \"cop-out containing just enough truth.\" A senior Virgin pilot actually thanked Bannister, saying \"You're not really going to give Concorde to us, are you, Mike?\" and, upon hearing \"not a chance in hell,\" replied \"Thank God… because it would probably send us bust!\"\n\nOn retaining one aircraft for air shows: Concorde required a Certificate of Airworthiness and Type Certificate—far higher standards than the Vulcan's \"Permit to Fly.\" The £60 million annual infrastructure cost would rise by another £40 million, remaining constant regardless of fleet size. Even halved to £50 million meant £1 million weekly for a single aircraft. Airbus, focused on the approaching A380 and successful A320 family, refused to maintain the Type Certificate. Their air-intake computer technology remained proprietary and secret due to military aircraft applications. Another organization theoretically could have taken the Type Certificate, but Airbus was under no compulsion to transfer it and had strong incentives to retain the technical drawings.\n\nBy summer, public discourse shifted from retirement motives toward celebrating Concorde's legacy. Edward de Bono observed that Concorde appealed to both brain hemispheres—the analytically superb and artistically graceful. For Bannister, the simpler explanation sufficed: most Britons had developed a sense of individual ownership. \"That's my Concorde up there.\"",
+                "refusal": null,
+                "reasoning": "Let me analyze this chapter carefully to create a faithful summary.\n\nThe chapter is about the retirement of Concorde - specifically the process of announcing it and handling public/press reactions.\n\nKey points to preserve:\n1. BA wanted to retire in October, Air France retired in May\n2. Announcement was planned for April 9, 2003 (anniversary of first flight) but changed to April 10\n3. Bannister announced it at Forum 150 meeting\n4. \"Marmite factor\" - roughly two-thirds sad, remainder relieved\n5. His quote: \"It's the right decision at the right time for the right reasons\"\n6. The Branson question - BA's strategic response about government ownership\n7. A Virgin pilot actually thanked him for not giving Concorde to Virgin\n8. Why one aircraft couldn't be kept for air shows:\n   - Certificate of Airworthiness and Type Certificate requirements\n   - £60 million per annum infrastructure cost, would rise by £40 million\n   - Even reduced to £50 million = £1 million per week for one aircraft\n   - Airbus wasn't interested in keeping Type Certificate\n   - Intake computers were proprietary/secret military technology\n9. Public sentiment shifted from doom to celebration\n10. Edward de Bono's quote about both sides of the brain\n11. The sense of national ownership Brits felt\n\nLet me count words and aim for 114-134 target:",
+                "reasoning_details": [
+                  {
+                    "type": "reasoning.text",
+                    "text": "Let me analyze this chapter carefully to create a faithful summary.\n\nThe chapter is about the retirement of Concorde - specifically the process of announcing it and handling public/press reactions.\n\nKey points to preserve:\n1. BA wanted to retire in October, Air France retired in May\n2. Announcement was planned for April 9, 2003 (anniversary of first flight) but changed to April 10\n3. Bannister announced it at Forum 150 meeting\n4. \"Marmite factor\" - roughly two-thirds sad, remainder relieved\n5. His quote: \"It's the right decision at the right time for the right reasons\"\n6. The Branson question - BA's strategic response about government ownership\n7. A Virgin pilot actually thanked him for not giving Concorde to Virgin\n8. Why one aircraft couldn't be kept for air shows:\n   - Certificate of Airworthiness and Type Certificate requirements\n   - £60 million per annum infrastructure cost, would rise by £40 million\n   - Even reduced to £50 million = £1 million per week for one aircraft\n   - Airbus wasn't interested in keeping Type Certificate\n   - Intake computers were proprietary/secret military technology\n9. Public sentiment shifted from doom to celebration\n10. Edward de Bono's quote about both sides of the brain\n11. The sense of national ownership Brits felt\n\nLet me count words and aim for 114-134 target:",
+                    "format": "unknown",
+                    "index": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 3612,
+            "completion_tokens": 871,
+            "total_tokens": 4483,
+            "cost": 0.0021288,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0021288,
+              "upstream_inference_prompt_cost": 0.0010836,
+              "upstream_inference_completions_cost": 0.0010452
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 291,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "latest_error": null,
+  "resume_events_utc": [],
+  "state_path": "runs/booksum-v4/20260430t001542z__booksum-v4__chapter_small__30m__baseline_30m_dense_recall_then_compose_v1.state.json",
+  "samples_path": "runs/booksum-v4/20260430t001542z__booksum-v4__chapter_small__30m__baseline_30m_dense_recall_then_compose_v1.samples.jsonl",
+  "out_path": "runs/booksum-v4/20260430t001542z__booksum-v4__chapter_small__30m__baseline_30m_dense_recall_then_compose_v1.json",
+  "updated_at_utc": "2026-04-30T00:22:06.764287+00:00"
+}

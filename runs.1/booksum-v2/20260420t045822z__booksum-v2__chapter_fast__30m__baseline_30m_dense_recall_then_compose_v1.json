@@ -1,0 +1,392 @@
+{
+  "run_manifest": {
+    "run_id": "20260420t045822z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1",
+    "created_at_utc": "2026-04-20T04:58:22.627682+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v2",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m",
+    "bench": "chapter_fast",
+    "bench_path": "bench/chapter_fast.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "baseline_30m_dense_recall_then_compose_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "6d49d26718620b388af5f2602e239d027a0373704d369dce02992e5aded6cb45",
+    "chapter_model": "deepseek/deepseek-v3.2",
+    "composer_model": "openai/gpt-5-mini",
+    "judge_model": "",
+    "provider_preferences": {
+      "chapter": {
+        "order": [],
+        "allow_fallbacks": false
+      },
+      "composer": {
+        "order": [],
+        "allow_fallbacks": false
+      }
+    },
+    "prompt_hashes": {
+      "candidate_dict_sha256": "e350cff4b2bd87b6bc245160115ed4659fa86c8ba30f7e50b7723fbd9865346d",
+      "chapter_stage_sha256": "b15d8b55df3361296b798d54b0009cbdd9cc71c1cc2ee9da175421b6f8231c99",
+      "composer_stage_sha256": "bc86d8b0c640e4b69c08546f4e53a8c383aa3f08d14c6b44ea65ffc9d766dfa0",
+      "length_control_sha256": "8ec4dc536f51bf408f45df046f82417cfd4e57192d016295f4eb7650a1378d1d",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "73cf2a314cd430c46c888732b6538af7f7437802ed9a32e5a516fb6844aeb073",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "82ae4bd00fe54bf615243c077d3d49e4c7d27f49ff94d1d0ad23d1d7ca92f872",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "d7d0b3f7a575b67c2de1def08923fd3fc2376339dfbf56c1d5803702b98398bc",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "",
+    "price_snapshot": "",
+    "hypothesis": "",
+    "notes": "",
+    "resume_count": 0
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v2",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-19T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "Genre-aware benchmark version. Increment benchmark_version whenever the corpus, split membership logic, rubric builder, scoring rules, judge prompt/model, logging schema, or visible-word-count behavior changes."
+  },
+  "dataset_score": {
+    "n_samples": 3,
+    "hard_fail_rate": 1.0,
+    "mean_quality": 0.8435459413411222,
+    "mean_utility": 0.8035459413411221,
+    "mean_faithfulness": 0.886026936026936,
+    "mean_concept_coverage": 0.825,
+    "mean_final_length_error_pct": 0.12475355969331872,
+    "mean_first_pass_length_error_pct": 0.12475355969331872,
+    "mean_passes_used": 5,
+    "mean_uncached_cost": 0.0,
+    "mean_generation_cost": 0.0,
+    "by_group_quality": {
+      "example-systems-book": 0.8435459413411222
+    },
+    "by_group_utility": {
+      "example-systems-book": 0.8035459413411221
+    },
+    "slice_summaries": {
+      "genre_macro": {
+        "business_economics_productivity": {
+          "n_samples": 3,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.8435459413411222,
+          "mean_utility": 0.8035459413411221,
+          "mean_faithfulness": 0.886026936026936,
+          "mean_concept_coverage": 0.8250000000000001,
+          "mean_passes_used": 5.0,
+          "mean_uncached_generation_cost": 0.0,
+          "mean_generation_cost": 0.0
+        }
+      },
+      "genre_micro": {
+        "systems_thinking": {
+          "n_samples": 3,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.8435459413411222,
+          "mean_utility": 0.8035459413411221,
+          "mean_faithfulness": 0.886026936026936,
+          "mean_concept_coverage": 0.8250000000000001,
+          "mean_passes_used": 5.0,
+          "mean_uncached_generation_cost": 0.0,
+          "mean_generation_cost": 0.0
+        }
+      },
+      "narrative_vs_expository": {
+        "expository": {
+          "n_samples": 3,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.8435459413411222,
+          "mean_utility": 0.8035459413411221,
+          "mean_faithfulness": 0.886026936026936,
+          "mean_concept_coverage": 0.8250000000000001,
+          "mean_passes_used": 5.0,
+          "mean_uncached_generation_cost": 0.0,
+          "mean_generation_cost": 0.0
+        }
+      },
+      "prescriptive_vs_analytical": {
+        "mixed": {
+          "n_samples": 3,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.8435459413411222,
+          "mean_utility": 0.8035459413411221,
+          "mean_faithfulness": 0.886026936026936,
+          "mean_concept_coverage": 0.8250000000000001,
+          "mean_passes_used": 5.0,
+          "mean_uncached_generation_cost": 0.0,
+          "mean_generation_cost": 0.0
+        }
+      },
+      "quantitative_density": {
+        "medium": {
+          "n_samples": 3,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.8435459413411222,
+          "mean_utility": 0.8035459413411221,
+          "mean_faithfulness": 0.886026936026936,
+          "mean_concept_coverage": 0.8250000000000001,
+          "mean_passes_used": 5.0,
+          "mean_uncached_generation_cost": 0.0,
+          "mean_generation_cost": 0.0
+        }
+      },
+      "chapter_length_profile": {
+        "medium": {
+          "n_samples": 3,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.8435459413411222,
+          "mean_utility": 0.8035459413411221,
+          "mean_faithfulness": 0.886026936026936,
+          "mean_concept_coverage": 0.8250000000000001,
+          "mean_passes_used": 5.0,
+          "mean_uncached_generation_cost": 0.0,
+          "mean_generation_cost": 0.0
+        }
+      },
+      "benchmark_pool": {
+        "balanced": {
+          "n_samples": 3,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.8435459413411222,
+          "mean_utility": 0.8035459413411221,
+          "mean_faithfulness": 0.886026936026936,
+          "mean_concept_coverage": 0.8250000000000001,
+          "mean_passes_used": 5.0,
+          "mean_uncached_generation_cost": 0.0,
+          "mean_generation_cost": 0.0
+        }
+      }
+    },
+    "worst_genre_macro": {
+      "slice_value": "business_economics_productivity",
+      "n_samples": 3,
+      "n_books": 1,
+      "hard_fail_rate": 1.0,
+      "mean_quality": 0.8435459413411222,
+      "mean_utility": 0.8035459413411221,
+      "mean_faithfulness": 0.886026936026936,
+      "mean_concept_coverage": 0.8250000000000001,
+      "mean_passes_used": 5.0,
+      "mean_uncached_generation_cost": 0.0,
+      "mean_generation_cost": 0.0
+    },
+    "n_genre_macros": 1,
+    "genre_macro_spread_utility": 0.0
+  },
+  "sample_scores": [
+    {
+      "sample_id": "example-systems-book:01-feedback",
+      "group_id": "example-systems-book",
+      "level": "chapter",
+      "hard_fail": true,
+      "hard_fail_reasons": [
+        "length_outside_hard_tolerance"
+      ],
+      "quality": 0.848859437751004,
+      "utility": 0.808859437751004,
+      "resolved_faithfulness": 0.8833333333333333,
+      "resolved_concept_coverage": 0.7583333333333333,
+      "resolved_qualifier_preservation": 0.75,
+      "resolved_no_fluff": 1.0,
+      "resolved_structure_quality": 1.0,
+      "deterministic": {
+        "visible_words": 149,
+        "first_pass_visible_words": 149,
+        "final_length_error_pct": 0.10240963855421686,
+        "first_pass_length_error_pct": 0.10240963855421686,
+        "final_length_accuracy": 0.7379518072289157,
+        "first_pass_length_accuracy": 0.7379518072289157,
+        "readability_band": 1.0,
+        "heading_coverage": 1.0,
+        "concept_phrase_coverage": 0.75,
+        "mechanism_phrase_coverage": 0.6666666666666666,
+        "qualifier_phrase_coverage": 0.75,
+        "key_term_coverage": 0.9166666666666666,
+        "number_coverage": 1.0,
+        "redundancy_score": 1.0,
+        "structure_proxy": 1.0,
+        "faithfulness_proxy": 0.8833333333333333,
+        "concept_proxy": 0.7583333333333333
+      }
+    },
+    {
+      "sample_id": "example-systems-book:02-delays",
+      "group_id": "example-systems-book",
+      "level": "chapter",
+      "hard_fail": true,
+      "hard_fail_reasons": [
+        "length_outside_hard_tolerance"
+      ],
+      "quality": 0.8237329317269078,
+      "utility": 0.7837329317269077,
+      "resolved_faithfulness": 0.8777777777777778,
+      "resolved_concept_coverage": 0.8,
+      "resolved_qualifier_preservation": 0.75,
+      "resolved_no_fluff": 1.0,
+      "resolved_structure_quality": 1.0,
+      "deterministic": {
+        "visible_words": 142,
+        "first_pass_visible_words": 142,
+        "final_length_error_pct": 0.14457831325301204,
+        "first_pass_length_error_pct": 0.14457831325301204,
+        "final_length_accuracy": 0.5271084337349399,
+        "first_pass_length_accuracy": 0.5271084337349399,
+        "readability_band": 1.0,
+        "heading_coverage": 1.0,
+        "concept_phrase_coverage": 0.8333333333333334,
+        "mechanism_phrase_coverage": 0.6666666666666666,
+        "qualifier_phrase_coverage": 0.75,
+        "key_term_coverage": 0.8888888888888888,
+        "number_coverage": 1.0,
+        "redundancy_score": 1.0,
+        "structure_proxy": 1.0,
+        "faithfulness_proxy": 0.8777777777777778,
+        "concept_proxy": 0.8
+      }
+    },
+    {
+      "sample_id": "example-systems-book:03-leverage",
+      "group_id": "example-systems-book",
+      "level": "chapter",
+      "hard_fail": true,
+      "hard_fail_reasons": [
+        "length_outside_hard_tolerance"
+      ],
+      "quality": 0.8580454545454546,
+      "utility": 0.8180454545454545,
+      "resolved_faithfulness": 0.896969696969697,
+      "resolved_concept_coverage": 0.9166666666666666,
+      "resolved_qualifier_preservation": 0.6666666666666666,
+      "resolved_no_fluff": 1.0,
+      "resolved_structure_quality": 1.0,
+      "deterministic": {
+        "visible_words": 144,
+        "first_pass_visible_words": 144,
+        "final_length_error_pct": 0.12727272727272726,
+        "first_pass_length_error_pct": 0.12727272727272726,
+        "final_length_accuracy": 0.6136363636363638,
+        "first_pass_length_accuracy": 0.6136363636363638,
+        "readability_band": 1.0,
+        "heading_coverage": 1.0,
+        "concept_phrase_coverage": 0.8333333333333334,
+        "mechanism_phrase_coverage": 1.0,
+        "qualifier_phrase_coverage": 0.6666666666666666,
+        "key_term_coverage": 0.8181818181818182,
+        "number_coverage": 1.0,
+        "redundancy_score": 1.0,
+        "structure_proxy": 1.0,
+        "faithfulness_proxy": 0.896969696969697,
+        "concept_proxy": 0.9166666666666666
+      }
+    }
+  ],
+  "samples": [
+    {
+      "sample_id": "example-systems-book:01-feedback",
+      "level": "chapter",
+      "group_id": "example-systems-book",
+      "target_words": 166,
+      "summary_visible_words": 149,
+      "passes_used": 5,
+      "generation_cost": 0.0,
+      "uncached_generation_cost": 0.0
+    },
+    {
+      "sample_id": "example-systems-book:02-delays",
+      "level": "chapter",
+      "group_id": "example-systems-book",
+      "target_words": 166,
+      "summary_visible_words": 142,
+      "passes_used": 5,
+      "generation_cost": 0.0,
+      "uncached_generation_cost": 0.0
+    },
+    {
+      "sample_id": "example-systems-book:03-leverage",
+      "level": "chapter",
+      "group_id": "example-systems-book",
+      "target_words": 165,
+      "summary_visible_words": 144,
+      "passes_used": 5,
+      "generation_cost": 0.0,
+      "uncached_generation_cost": 0.0
+    }
+  ],
+  "traces": [
+    {
+      "sample_id": "example-systems-book:01-feedback",
+      "book_id": "example-systems-book",
+      "chapter_id": "01-feedback",
+      "target_words": 166,
+      "output_words": 149,
+      "passes_used": 5,
+      "generation_cost": 0.0,
+      "uncached_generation_cost": 0.0,
+      "judge_rationale": "",
+      "genre_macro": "business_economics_productivity",
+      "genre_micro": "systems_thinking",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "mixed",
+      "quantitative_density": "medium",
+      "chapter_length_profile": "medium",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "example-systems-book:02-delays",
+      "book_id": "example-systems-book",
+      "chapter_id": "02-delays",
+      "target_words": 166,
+      "output_words": 142,
+      "passes_used": 5,
+      "generation_cost": 0.0,
+      "uncached_generation_cost": 0.0,
+      "judge_rationale": "",
+      "genre_macro": "business_economics_productivity",
+      "genre_micro": "systems_thinking",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "mixed",
+      "quantitative_density": "medium",
+      "chapter_length_profile": "medium",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "example-systems-book:03-leverage",
+      "book_id": "example-systems-book",
+      "chapter_id": "03-leverage",
+      "target_words": 165,
+      "output_words": 144,
+      "passes_used": 5,
+      "generation_cost": 0.0,
+      "uncached_generation_cost": 0.0,
+      "judge_rationale": "",
+      "genre_macro": "business_economics_productivity",
+      "genre_micro": "systems_thinking",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "mixed",
+      "quantitative_density": "medium",
+      "chapter_length_profile": "medium",
+      "benchmark_pool": "balanced"
+    }
+  ]
+}
