@@ -1,0 +1,12 @@
+{
+  "benchmark_version": "booksum-v3",
+  "benchmark_label": "nonfiction-book-summary-genre-aware",
+  "created_at_utc": "2026-04-29T00:00:00Z",
+  "corpus_version": "corpus-2026-04-19",
+  "rubric_version": "rubrics-v1",
+  "scoring_version": "scoring-v2",
+  "judge_version": "judge-absolute-v1",
+  "split_seed": 42,
+  "words_per_minute": 200,
+  "notes": "Scoring v2: unified length gate - fail if diff > 100 words AND pct error > 10% for all targets (was: diff > 10% for all targets, then hybrid with 100-word threshold for small targets)."
+}

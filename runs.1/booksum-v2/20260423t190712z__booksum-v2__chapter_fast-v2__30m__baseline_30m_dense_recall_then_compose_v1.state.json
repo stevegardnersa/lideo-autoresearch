@@ -1,0 +1,297 @@
+{
+  "run_id": "20260423t190712z__booksum-v2__chapter_fast-v2__30m__baseline_30m_dense_recall_then_compose_v1",
+  "created_at_utc": "2026-04-23T19:07:12.436733+00:00",
+  "status": "running",
+  "run_manifest": {
+    "run_id": "20260423t190712z__booksum-v2__chapter_fast-v2__30m__baseline_30m_dense_recall_then_compose_v1",
+    "created_at_utc": "2026-04-23T19:07:12.436733+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v2",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m",
+    "bench": "chapter_fast-v2",
+    "bench_path": "bench/chapter_fast-v2.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "baseline_30m_dense_recall_then_compose_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "b1ad5011c2647cc041cf0920f2d66714d894c10e4c077906aa98764943ca196c",
+    "chapter_model": "minimax/minimax-m2.7",
+    "composer_model": "openai/gpt-5-mini",
+    "judge_model": "",
+    "provider_preferences": {
+      "chapter": {
+        "order": [],
+        "allow_fallbacks": false
+      },
+      "composer": {
+        "order": [],
+        "allow_fallbacks": false
+      }
+    },
+    "prompt_hashes": {
+      "candidate_dict_sha256": "08676d8c77638ef1cca1cce0730b2f879d1334160c7f38afeed8d84274ce12f5",
+      "chapter_stage_sha256": "e4b263c4039ef4ecef030c8498621483c5300e81e4cb03448895e384bff06b84",
+      "composer_stage_sha256": "b08d5b1d3e9aeb8325d1c338912e1fb43450a2462b1d0df8f3e8d0bdc978d041",
+      "length_control_sha256": "4d7dbfc50c3c8a4cdc7bdbf340c8358fea8c476609ea62d33868f493f497845a",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "2906d9c5015f7f2119361da0251930f92f6cfa699028740d40b5e31357e5fe91",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "efebadeb9ca47c9ebdc7bd107e1ef76b086635dade60a6051370cc4ee74e0bf8",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "eaf542bdf2754c05fa8ba012be11add95091cd039c9c0b93ec891c8889667e0b",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260423T190712Z__booksum-v2.json",
+    "price_snapshot": "snapshots/pricing/20260423T190712Z__booksum-v2.json",
+    "hypothesis": "Minimax on cleaned benchmark",
+    "notes": "Minimax with thinking disabled + concise prompt on chapter_fast-v2"
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v2",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-19T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "Genre-aware benchmark version. Increment benchmark_version whenever the corpus, split membership logic, rubric builder, scoring rules, judge prompt/model, logging schema, or visible-word-count behavior changes."
+  },
+  "bench_rows": [
+    {
+      "sample_id": "accelerate-forsgren-2018:018",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "018",
+      "chapter_title": "Chapter 16 - High-Performance Leadership and Management",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:003",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "003",
+      "chapter_title": "Chapter 1 - Accelerate",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:003",
+      "level": "chapter",
+      "book_id": "atomic-habits-clear-2018",
+      "group_id": "atomic-habits-clear-2018",
+      "chapter_id": "003",
+      "chapter_title": "The Fundamentals: Why Tiny Changes Make a Big Difference",
+      "book_title": "Atomic Habits",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "designing-with-data-tan-2017:008",
+      "level": "chapter",
+      "book_id": "designing-with-data-tan-2017",
+      "group_id": "designing-with-data-tan-2017",
+      "chapter_id": "008",
+      "chapter_title": "Chapter 7: Creating the Right Environment",
+      "book_title": "Designing with Data",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "ux_design_and_data_science",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "do-hard-things-magness-2022:015",
+      "level": "chapter",
+      "book_id": "do-hard-things-magness-2022",
+      "group_id": "do-hard-things-magness-2022",
+      "chapter_id": "015",
+      "chapter_title": "The Fourth Pillar of Toughness",
+      "book_title": "Do Hard Things",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "performance_and_resilience",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:001",
+      "level": "chapter",
+      "book_id": "everything-is-f-cked-manson-2019",
+      "group_id": "everything-is-f-cked-manson-2019",
+      "chapter_id": "001",
+      "chapter_title": "Chapter 1: The Uncomfortable Truth",
+      "book_title": "Everything Is F*cked",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "philosophy_and_psychology",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "getting-things-done-allen-2015:017",
+      "level": "chapter",
+      "book_id": "getting-things-done-allen-2015",
+      "group_id": "getting-things-done-allen-2015",
+      "chapter_id": "017",
+      "chapter_title": "The Power of the Capturing Habit",
+      "book_title": "Getting Things Done",
+      "genre_macro": "business_economics_productivity",
+      "genre_micro": "productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "low",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "outlive-attia-2023:010",
+      "level": "chapter",
+      "book_id": "outlive-attia-2023",
+      "group_id": "outlive-attia-2023",
+      "chapter_id": "010",
+      "chapter_title": "CHAPTER 4",
+      "book_title": "Outlive",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "health_and_longevity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ],
+  "completed_sample_ids": [
+    "accelerate-forsgren-2018:018",
+    "accelerate-forsgren-2018:003",
+    "atomic-habits-clear-2018:003",
+    "designing-with-data-tan-2017:008",
+    "do-hard-things-magness-2022:015"
+  ],
+  "completed_count": 5,
+  "n_total_samples": 8,
+  "current_item": {
+    "kind": "chapter",
+    "phase": "stage",
+    "item_key": "everything-is-f-cked-manson-2019:001",
+    "item": {
+      "sample_id": "everything-is-f-cked-manson-2019:001",
+      "level": "chapter",
+      "book_id": "everything-is-f-cked-manson-2019",
+      "group_id": "everything-is-f-cked-manson-2019",
+      "chapter_id": "001",
+      "chapter_title": "Chapter 1: The Uncomfortable Truth",
+      "book_title": "Everything Is F*cked",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "philosophy_and_psychology",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    "book_id": "everything-is-f-cked-manson-2019",
+    "chapter_id": "001",
+    "sample_id": "everything-is-f-cked-manson-2019:001",
+    "target_words": 594,
+    "stage_state": {
+      "summary_md": "## The Uncomfortable Truth\n\n### Pilecki's Heroism\n\nThe chapter opens with the story of Witold Pilecki, a decorated Polish officer who voluntarily entered Auschwitz in 1941 to gather intelligence for the resistance. What began as a planned rescue mission became something far darker than anticipated. Pilecki discovered prisoners being shot for minor infractions, men worked to death in pointless labor, and a death rate so high that in his first month, a third of his barracks died. Despite this, he built an entire resistance network within the camp—complete with chain of command, logistics, communication lines, and a smuggling operation—undiscovered for nearly two years. He constructed a transistor radio from spare parts to transmit attack plans to Warsaw.\n\nWhen Jewish arrivals began in massive numbers, Pilecki's reports to the outside world became frantic: tens of thousands were being murdered daily, mostly Jews, with death tolls potentially reaching millions. He pleaded for liberation or at minimum, bombing of the gas chambers. Allied command received his intelligence but concluded he must be exaggerating. In 1943, realizing no rescue was coming, Pilecki escaped by faking illness, lying to doctors about his work assignment, then sprinting to the river while being shot at.\n\nAfter the war, Pilecki continued spying—this time on the Soviet-installed Communist government, becoming the first to document Soviet infiltration and rigged elections. When discovered, he declined a chance to flee, declaring he would rather die Polish than live as something unrecognizable. Captured in 1947, he was tortured for nearly a year. He told his wife \"Auschwitz was just a trifle\" by comparison. Still, he never cooperated. Convicted in a 1948 show trial, his final statement was: \"I have tried to live my life such that in the hour of my death I would feel joy rather than fear.\"\n\n### The Uncomfortable Truth Defined\n\nThe chapter introduces the \"Uncomfortable Truth\": all human motivation stems from avoiding the inherent meaninglessness of existence. \"One day, you and everyone you love will die. And beyond a small group of people for an extremely brief period of time, little of what you say or do will ever matter.\" The universe does not care whether your loved ones recover, who wins elections, or whether civilization survives. Yet we desperately project importance onto the world because we need to feel significant to avoid being crushed by our material insignificance.\n\n### Hope as Psychological Necessity\n\nThe opposite of happiness is not anger or sadness—if you're angry or sad, something still matters, meaning hope remains. The true opposite is hopelessness: a cold, bleak nihilism where everything is fucked, so why do anything at all? Hopelessness is the root of anxiety, mental illness, and depression. It is the source of all misery and the cause of all addiction. Chronic anxiety is a crisis of hope (fear of a failed future); depression is a crisis of hope (belief in a meaningless future). Delusion, addiction, and obsession are the mind's compulsive attempts at generating hope one neurotic craving at a time.\n\nOur psyche needs hope to survive the way a fish needs water. Without it, our mental apparatus stalls out. The avoidance of hopelessness—constructing hope—becomes the mind's primary project. All meaning is constructed for maintaining hope. Hope is the only thing any of us willingly dies for.\n\n### Hope Narratives\n\nTo sustain us against existential terror, our psyches construct \"hope narratives\"—personal before/after stories. The author illustrates: after his grandfather died, his mind invented a narrative that he must live to make his grandfather proud, even though they hadn't been close. This irrational story gave meaning to empty experiences. These narratives imply both that something better exists in the future and that achieving it is possible. When people struggle to find their \"life's purpose,\" they are struggling to see what their before/after should be.\n\nThese narratives need not be religious. The author states: \"This book is my little source of hope... the narrative that I've constructed around that hope is that I believe this book might help some people, that it might make both my life and the world a little bit better.\" For others, the before/after story is raising kids well, saving the environment, or making money. Regardless of delivery method—faith or evidence—all hope narratives share two elements: (a) potential for growth or improvement exists in the future, and (b) there are ways to navigate toward it.\n\n### The Paradox of Progress\n\nThe chapter acknowledges that materially, things are arguably better than ever. Citing writers like Steven Pinker and Hans Rosling: people are more educated and literate than ever; violence has trended down for decades; racism, sexism, and discrimination are at historic lows; half the planet has internet access; extreme poverty is at an all-time low; wars are smaller and less frequent; children die less, people live longer.\n\nYet depression and anxiety symptoms show an eighty-year upswing among young people in the U.S. and a twenty-year upswing among adults. Since 1985, reported life satisfaction has declined. Drug overdoses recently hit an all-time high during the opioid crisis. Nearly half of all Americans now report feeling isolated, left out, or alone. Social trust is plummeting across the developed world. When researchers asked in the 1980s how many people participants had discussed important personal matters with over six months, the most common answer was \"three.\" By 2006, it was \"zero.\"\n\nThe paradox: the wealthier and safer the place you live, the more likely you are to commit suicide. Progress in health, safety, and material wealth cannot address this because hope is not based on statistics about the past—it cares only about problems that still need solving. The better the world gets, the more we have to lose, and the less we feel we have to hope for.\n\n### Three Pillars of Hope\n\nTo build and maintain hope, we need three things: **control** (feeling we can affect our fate), **values** (something important enough to work toward), and **community** (a group that values the same things and works toward shared goals). Without community, we feel isolated and values cease to matter. Without values, nothing appears worth pursuing. Without control, we feel powerless. Lose any of the three, and you lose hope.\n\nThe chapter announces that subsequent chapters will examine how we develop these three areas: control (chapter 2), values (chapter 3), and communities (chapter 4)—then return to the question of why we feel worse despite everything consistently getting better.",
+      "first_pass_summary_md": "## The Uncomfortable Truth\n\n### Pilecki's Heroism\n\nThe chapter opens with the story of Witold Pilecki, a decorated Polish officer who voluntarily entered Auschwitz in 1941 to gather intelligence for the resistance. What began as a planned rescue mission became something far darker than anticipated. Pilecki discovered prisoners being shot for minor infractions, men worked to death in pointless labor, and a death rate so high that in his first month, a third of his barracks died. Despite this, he built an entire resistance network within the camp—complete with chain of command, logistics, communication lines, and a smuggling operation—undiscovered for nearly two years. He constructed a transistor radio from spare parts to transmit attack plans to Warsaw.\n\nWhen Jewish arrivals began in massive numbers, Pilecki's reports to the outside world became frantic: tens of thousands were being murdered daily, mostly Jews, with death tolls potentially reaching millions. He pleaded for liberation or at minimum, bombing of the gas chambers. Allied command received his intelligence but concluded he must be exaggerating. In 1943, realizing no rescue was coming, Pilecki escaped by faking illness, lying to doctors about his work assignment, then sprinting to the river while being shot at.\n\nAfter the war, Pilecki continued spying—this time on the Soviet-installed Communist government, becoming the first to document Soviet infiltration and rigged elections. When discovered, he declined a chance to flee, declaring he would rather die Polish than live as something unrecognizable. Captured in 1947, he was tortured for nearly a year. He told his wife \"Auschwitz was just a trifle\" by comparison. Still, he never cooperated. Convicted in a 1948 show trial, his final statement was: \"I have tried to live my life such that in the hour of my death I would feel joy rather than fear.\"\n\n### The Uncomfortable Truth Defined\n\nThe chapter introduces the \"Uncomfortable Truth\": all human motivation stems from avoiding the inherent meaninglessness of existence. \"One day, you and everyone you love will die. And beyond a small group of people for an extremely brief period of time, little of what you say or do will ever matter.\" The universe does not care whether your loved ones recover, who wins elections, or whether civilization survives. Yet we desperately project importance onto the world because we need to feel significant to avoid being crushed by our material insignificance.\n\n### Hope as Psychological Necessity\n\nThe opposite of happiness is not anger or sadness—if you're angry or sad, something still matters, meaning hope remains. The true opposite is hopelessness: a cold, bleak nihilism where everything is fucked, so why do anything at all? Hopelessness is the root of anxiety, mental illness, and depression. It is the source of all misery and the cause of all addiction. Chronic anxiety is a crisis of hope (fear of a failed future); depression is a crisis of hope (belief in a meaningless future). Delusion, addiction, and obsession are the mind's compulsive attempts at generating hope one neurotic craving at a time.\n\nOur psyche needs hope to survive the way a fish needs water. Without it, our mental apparatus stalls out. The avoidance of hopelessness—constructing hope—becomes the mind's primary project. All meaning is constructed for maintaining hope. Hope is the only thing any of us willingly dies for.\n\n### Hope Narratives\n\nTo sustain us against existential terror, our psyches construct \"hope narratives\"—personal before/after stories. The author illustrates: after his grandfather died, his mind invented a narrative that he must live to make his grandfather proud, even though they hadn't been close. This irrational story gave meaning to empty experiences. These narratives imply both that something better exists in the future and that achieving it is possible. When people struggle to find their \"life's purpose,\" they are struggling to see what their before/after should be.\n\nThese narratives need not be religious. The author states: \"This book is my little source of hope... the narrative that I've constructed around that hope is that I believe this book might help some people, that it might make both my life and the world a little bit better.\" For others, the before/after story is raising kids well, saving the environment, or making money. Regardless of delivery method—faith or evidence—all hope narratives share two elements: (a) potential for growth or improvement exists in the future, and (b) there are ways to navigate toward it.\n\n### The Paradox of Progress\n\nThe chapter acknowledges that materially, things are arguably better than ever. Citing writers like Steven Pinker and Hans Rosling: people are more educated and literate than ever; violence has trended down for decades; racism, sexism, and discrimination are at historic lows; half the planet has internet access; extreme poverty is at an all-time low; wars are smaller and less frequent; children die less, people live longer.\n\nYet depression and anxiety symptoms show an eighty-year upswing among young people in the U.S. and a twenty-year upswing among adults. Since 1985, reported life satisfaction has declined. Drug overdoses recently hit an all-time high during the opioid crisis. Nearly half of all Americans now report feeling isolated, left out, or alone. Social trust is plummeting across the developed world. When researchers asked in the 1980s how many people participants had discussed important personal matters with over six months, the most common answer was \"three.\" By 2006, it was \"zero.\"\n\nThe paradox: the wealthier and safer the place you live, the more likely you are to commit suicide. Progress in health, safety, and material wealth cannot address this because hope is not based on statistics about the past—it cares only about problems that still need solving. The better the world gets, the more we have to lose, and the less we feel we have to hope for.\n\n### Three Pillars of Hope\n\nTo build and maintain hope, we need three things: **control** (feeling we can affect our fate), **values** (something important enough to work toward), and **community** (a group that values the same things and works toward shared goals). Without community, we feel isolated and values cease to matter. Without values, nothing appears worth pursuing. Without control, we feel powerless. Lose any of the three, and you lose hope.\n\nThe chapter announces that subsequent chapters will examine how we develop these three areas: control (chapter 2), values (chapter 3), and communities (chapter 4)—then return to the question of why we feel worse despite everything consistently getting better.",
+      "passes_used": 1,
+      "generation_cost": 0.00442116,
+      "uncached_generation_cost": 0.00442116,
+      "raw_responses": [
+        {
+          "id": "gen-1776971772-n29WLJ6oL8ly0O5XePsO",
+          "object": "chat.completion",
+          "created": 1776971772,
+          "model": "minimax/minimax-m2.7-20260318",
+          "provider": "Together",
+          "system_fingerprint": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "## The Uncomfortable Truth\n\n### Pilecki's Heroism\n\nThe chapter opens with the story of Witold Pilecki, a decorated Polish officer who voluntarily entered Auschwitz in 1941 to gather intelligence for the resistance. What began as a planned rescue mission became something far darker than anticipated. Pilecki discovered prisoners being shot for minor infractions, men worked to death in pointless labor, and a death rate so high that in his first month, a third of his barracks died. Despite this, he built an entire resistance network within the camp—complete with chain of command, logistics, communication lines, and a smuggling operation—undiscovered for nearly two years. He constructed a transistor radio from spare parts to transmit attack plans to Warsaw.\n\nWhen Jewish arrivals began in massive numbers, Pilecki's reports to the outside world became frantic: tens of thousands were being murdered daily, mostly Jews, with death tolls potentially reaching millions. He pleaded for liberation or at minimum, bombing of the gas chambers. Allied command received his intelligence but concluded he must be exaggerating. In 1943, realizing no rescue was coming, Pilecki escaped by faking illness, lying to doctors about his work assignment, then sprinting to the river while being shot at.\n\nAfter the war, Pilecki continued spying—this time on the Soviet-installed Communist government, becoming the first to document Soviet infiltration and rigged elections. When discovered, he declined a chance to flee, declaring he would rather die Polish than live as something unrecognizable. Captured in 1947, he was tortured for nearly a year. He told his wife \"Auschwitz was just a trifle\" by comparison. Still, he never cooperated. Convicted in a 1948 show trial, his final statement was: \"I have tried to live my life such that in the hour of my death I would feel joy rather than fear.\"\n\n### The Uncomfortable Truth Defined\n\nThe chapter introduces the \"Uncomfortable Truth\": all human motivation stems from avoiding the inherent meaninglessness of existence. \"One day, you and everyone you love will die. And beyond a small group of people for an extremely brief period of time, little of what you say or do will ever matter.\" The universe does not care whether your loved ones recover, who wins elections, or whether civilization survives. Yet we desperately project importance onto the world because we need to feel significant to avoid being crushed by our material insignificance.\n\n### Hope as Psychological Necessity\n\nThe opposite of happiness is not anger or sadness—if you're angry or sad, something still matters, meaning hope remains. The true opposite is hopelessness: a cold, bleak nihilism where everything is fucked, so why do anything at all? Hopelessness is the root of anxiety, mental illness, and depression. It is the source of all misery and the cause of all addiction. Chronic anxiety is a crisis of hope (fear of a failed future); depression is a crisis of hope (belief in a meaningless future). Delusion, addiction, and obsession are the mind's compulsive attempts at generating hope one neurotic craving at a time.\n\nOur psyche needs hope to survive the way a fish needs water. Without it, our mental apparatus stalls out. The avoidance of hopelessness—constructing hope—becomes the mind's primary project. All meaning is constructed for maintaining hope. Hope is the only thing any of us willingly dies for.\n\n### Hope Narratives\n\nTo sustain us against existential terror, our psyches construct \"hope narratives\"—personal before/after stories. The author illustrates: after his grandfather died, his mind invented a narrative that he must live to make his grandfather proud, even though they hadn't been close. This irrational story gave meaning to empty experiences. These narratives imply both that something better exists in the future and that achieving it is possible. When people struggle to find their \"life's purpose,\" they are struggling to see what their before/after should be.\n\nThese narratives need not be religious. The author states: \"This book is my little source of hope... the narrative that I've constructed around that hope is that I believe this book might help some people, that it might make both my life and the world a little bit better.\" For others, the before/after story is raising kids well, saving the environment, or making money. Regardless of delivery method—faith or evidence—all hope narratives share two elements: (a) potential for growth or improvement exists in the future, and (b) there are ways to navigate toward it.\n\n### The Paradox of Progress\n\nThe chapter acknowledges that materially, things are arguably better than ever. Citing writers like Steven Pinker and Hans Rosling: people are more educated and literate than ever; violence has trended down for decades; racism, sexism, and discrimination are at historic lows; half the planet has internet access; extreme poverty is at an all-time low; wars are smaller and less frequent; children die less, people live longer.\n\nYet depression and anxiety symptoms show an eighty-year upswing among young people in the U.S. and a twenty-year upswing among adults. Since 1985, reported life satisfaction has declined. Drug overdoses recently hit an all-time high during the opioid crisis. Nearly half of all Americans now report feeling isolated, left out, or alone. Social trust is plummeting across the developed world. When researchers asked in the 1980s how many people participants had discussed important personal matters with over six months, the most common answer was \"three.\" By 2006, it was \"zero.\"\n\nThe paradox: the wealthier and safer the place you live, the more likely you are to commit suicide. Progress in health, safety, and material wealth cannot address this because hope is not based on statistics about the past—it cares only about problems that still need solving. The better the world gets, the more we have to lose, and the less we feel we have to hope for.\n\n### Three Pillars of Hope\n\nTo build and maintain hope, we need three things: **control** (feeling we can affect our fate), **values** (something important enough to work toward), and **community** (a group that values the same things and works toward shared goals). Without community, we feel isolated and values cease to matter. Without values, nothing appears worth pursuing. Without control, we feel powerless. Lose any of the three, and you lose hope.\n\nThe chapter announces that subsequent chapters will examine how we develop these three areas: control (chapter 2), values (chapter 3), and communities (chapter 4)—then return to the question of why we feel worse despite everything consistently getting better.",
+                "refusal": null,
+                "reasoning": "The user wants me to write a faithful chapter summary for Chapter 1: \"The Uncomfortable Truth\" from Mark Manson's book \"Everything Is F*cked: A Book About Hope.\"\n\nLet me analyze the key content:\n\n1. **Opening Story**: Witold Pilecki - a Polish war hero who voluntarily entered Auschwitz to gather intelligence and organize resistance. He built an espionage network, reported on the Holocaust (which was dismissed as exaggeration), eventually escaped, and later spied on the Soviet-installed Polish government. He was captured, tortured, and executed in 1948. His final words: \"I have tried to live my life such that in the hour of my death I would feel joy rather than fear.\"\n\n2. **The Uncomfortable Truth**: The author introduces the concept that all human motivation stems from avoiding the meaninglessness of existence. Key points:\n- \"One day, you and everyone you love will die. And beyond a small group of people for an extremely brief period of time, little of what you say or do will ever matter.\"\n- The universe doesn't care about individual human concerns\n- We project importance onto things to avoid this truth\n- Hope is what sustains us\n\n3. **Hope as Essential**: \n- The opposite of happiness is not anger or sadness - it's hopelessness\n- Hopelessness is the root of anxiety, mental illness, depression\n- Hopelessness is a cold nihilism\n- Our psyche needs hope to survive\n- We construct \"hope narratives\" to maintain meaning\n\n4. **Hope Narratives**: Personal before/after stories we create:\n- The author's example of his grandfather's death leading him to \"live to make him proud\"\n- These can be religious or secular\n- They give our lives purpose\n\n5. **The Paradox of Progress**:\n- Materially, things are better than ever (citing Pinker, Rosling)\n- Yet depression, anxiety, loneliness are increasing\n- Statistics: 80-year upswing in depression/anxiety among young people in US; 20-year upswing among adults\n\n\n- Since 1985, reported life satisfaction has declined while drug overdoses reach record highs. Nearly half of Americans experience isolation, and social trust has collapsed—people went from discussing important matters with three others in the 1980s to discussing them with no one by 2006. Suicide rates paradoxically increase in wealthier, safer regions.\n\n6. **Three Pillars of Hope**: Control, Values, and Community form the foundation for maintaining hope. Without these three elements working together, hopelessness takes root.\n\nThe chapter establishes that hope isn't optional—it's the psychological engine that makes life bearable. The paradox is that material progress hasn't translated into emotional wellbeing, suggesting our need for meaning runs on different tracks than our need for safety and prosperity.",
+                "reasoning_details": [
+                  {
+                    "type": "reasoning.text",
+                    "text": "The user wants me to write a faithful chapter summary for Chapter 1: \"The Uncomfortable Truth\" from Mark Manson's book \"Everything Is F*cked: A Book About Hope.\"\n\nLet me analyze the key content:\n\n1. **Opening Story**: Witold Pilecki - a Polish war hero who voluntarily entered Auschwitz to gather intelligence and organize resistance. He built an espionage network, reported on the Holocaust (which was dismissed as exaggeration), eventually escaped, and later spied on the Soviet-installed Polish government. He was captured, tortured, and executed in 1948. His final words: \"I have tried to live my life such that in the hour of my death I would feel joy rather than fear.\"\n\n2. **The Uncomfortable Truth**: The author introduces the concept that all human motivation stems from avoiding the meaninglessness of existence. Key points:\n- \"One day, you and everyone you love will die. And beyond a small group of people for an extremely brief period of time, little of what you say or do will ever matter.\"\n- The universe doesn't care about individual human concerns\n- We project importance onto things to avoid this truth\n- Hope is what sustains us\n\n3. **Hope as Essential**: \n- The opposite of happiness is not anger or sadness - it's hopelessness\n- Hopelessness is the root of anxiety, mental illness, depression\n- Hopelessness is a cold nihilism\n- Our psyche needs hope to survive\n- We construct \"hope narratives\" to maintain meaning\n\n4. **Hope Narratives**: Personal before/after stories we create:\n- The author's example of his grandfather's death leading him to \"live to make him proud\"\n- These can be religious or secular\n- They give our lives purpose\n\n5. **The Paradox of Progress**:\n- Materially, things are better than ever (citing Pinker, Rosling)\n- Yet depression, anxiety, loneliness are increasing\n- Statistics: 80-year upswing in depression/anxiety among young people in US; 20-year upswing among adults\n\n\n- Since 1985, reported life satisfaction has declined while drug overdoses reach record highs. Nearly half of Americans experience isolation, and social trust has collapsed—people went from discussing important matters with three others in the 1980s to discussing them with no one by 2006. Suicide rates paradoxically increase in wealthier, safer regions.\n\n6. **Three Pillars of Hope**: Control, Values, and Community form the foundation for maintaining hope. Without these three elements working together, hopelessness takes root.\n\nThe chapter establishes that hope isn't optional—it's the psychological engine that makes life bearable. The paradox is that material progress hasn't translated into emotional wellbeing, suggesting our need for meaning runs on different tracks than our need for safety and prosperity.",
+                    "format": "unknown",
+                    "index": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 7278,
+            "completion_tokens": 1916,
+            "total_tokens": 9194,
+            "cost": 0.00442116,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.00442116,
+              "upstream_inference_prompt_cost": 0.00212196,
+              "upstream_inference_completions_cost": 0.0022992
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 712,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "latest_error": null,
+  "resume_events_utc": [],
+  "state_path": "runs/booksum-v2/20260423t190712z__booksum-v2__chapter_fast-v2__30m__baseline_30m_dense_recall_then_compose_v1.state.json",
+  "samples_path": "runs/booksum-v2/20260423t190712z__booksum-v2__chapter_fast-v2__30m__baseline_30m_dense_recall_then_compose_v1.samples.jsonl",
+  "out_path": "runs/booksum-v2/20260423t190712z__booksum-v2__chapter_fast-v2__30m__baseline_30m_dense_recall_then_compose_v1.json",
+  "updated_at_utc": "2026-04-23T19:16:50.907728+00:00"
+}

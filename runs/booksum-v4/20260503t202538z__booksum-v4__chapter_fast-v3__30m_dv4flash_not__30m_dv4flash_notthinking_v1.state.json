@@ -1,0 +1,215 @@
+{
+  "run_id": "20260503t202538z__booksum-v4__chapter_fast-v3__30m_dv4flash_not__30m_dv4flash_notthinking_v1",
+  "created_at_utc": "2026-05-03T20:25:38.729718+00:00",
+  "status": "running",
+  "run_manifest": {
+    "run_id": "20260503t202538z__booksum-v4__chapter_fast-v3__30m_dv4flash_not__30m_dv4flash_notthinking_v1",
+    "created_at_utc": "2026-05-03T20:25:38.729718+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v4",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version_resolved": "judge-absolute-v1::openai/gpt-5-mini",
+    "profile": "30m_dv4flash_notthinking",
+    "bench": "chapter_fast-v3",
+    "bench_path": "bench/chapter_fast-v3.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "30m_dv4flash_notthinking_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "7eab8a0ab6f177f660d66544f9ca6353de9a29792fb2c44ee52e078c1f7992f0",
+    "chapter_model": "deepseek/deepseek-v4-flash",
+    "composer_model": "deepseek/deepseek-v4-flash",
+    "judge_model": "openai/gpt-5-mini",
+    "use_json_schema": false,
+    "thinking_enabled": false,
+    "provider_preferences": {
+      "chapter": {
+        "order": [],
+        "allow_fallbacks": false
+      },
+      "composer": {
+        "order": [],
+        "allow_fallbacks": false
+      }
+    },
+    "prompt_hashes": {
+      "candidate_dict_sha256": "0c8144164a5fd6a1782827addab450f3bd73f6d600ca4fb7df50b13f8d383995",
+      "chapter_stage_sha256": "a8ec406a7f28dd7d272f7ab5b158419416d8a04aae6c8831a916844db6cdda97",
+      "composer_stage_sha256": "b7b8cd60004bb5f72a735e31c89ecc93214cd0221563592c838392ef986f072f",
+      "length_control_sha256": "4d7dbfc50c3c8a4cdc7bdbf340c8358fea8c476609ea62d33868f493f497845a",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "2906d9c5015f7f2119361da0251930f92f6cfa699028740d40b5e31357e5fe91",
+      "composer_system_prompt_sha256": "02678c276cb28a372957e1cb1664effd471d145e9e8bec124b8414f9dd6d7848",
+      "render_chapter_user_sha256": "efebadeb9ca47c9ebdc7bd107e1ef76b086635dade60a6051370cc4ee74e0bf8",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "eaf542bdf2754c05fa8ba012be11add95091cd039c9c0b93ec891c8889667e0b",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260503T202538Z__booksum-v4.json",
+    "price_snapshot": "snapshots/pricing/20260503T202538Z__booksum-v4.json",
+    "hypothesis": "",
+    "notes": ""
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v4",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-30T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "v4: per-profile scoring gates - 30m profiles use min_faithfulness=0.50, min_concept_coverage=0.15. v3 used uniform 0.70/0.60 gates for all profiles.",
+    "scoring_version": "scoring-v1"
+  },
+  "bench_rows": [
+    {
+      "sample_id": "do-hard-things-magness-2022:003",
+      "level": "chapter",
+      "book_id": "do-hard-things-magness-2022",
+      "group_id": "do-hard-things-magness-2022",
+      "chapter_id": "003",
+      "chapter_title": "Chapter 1",
+      "book_title": "Do Hard Things",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "performance_and_resilience",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "getting-things-done-allen-2015:013",
+      "level": "chapter",
+      "book_id": "getting-things-done-allen-2015",
+      "group_id": "getting-things-done-allen-2015",
+      "chapter_id": "013",
+      "chapter_title": "Organizing: Setting Up the Right Buckets",
+      "book_title": "Getting Things Done",
+      "genre_macro": "business_economics_productivity",
+      "genre_micro": "productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "low",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:004",
+      "level": "chapter",
+      "book_id": "everything-is-f-cked-manson-2019",
+      "group_id": "everything-is-f-cked-manson-2019",
+      "chapter_id": "004",
+      "chapter_title": "Chapter 4: How to Make All Your Dreams Come True",
+      "book_title": "Everything Is F*cked",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "philosophy_and_psychology",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ],
+  "completed_sample_ids": [
+    "do-hard-things-magness-2022:003"
+  ],
+  "completed_count": 1,
+  "n_total_samples": 3,
+  "current_item": {
+    "kind": "chapter",
+    "phase": "stage",
+    "item_key": "getting-things-done-allen-2015:013",
+    "item": {
+      "sample_id": "getting-things-done-allen-2015:013",
+      "level": "chapter",
+      "book_id": "getting-things-done-allen-2015",
+      "group_id": "getting-things-done-allen-2015",
+      "chapter_id": "013",
+      "chapter_title": "Organizing: Setting Up the Right Buckets",
+      "book_title": "Getting Things Done",
+      "genre_macro": "business_economics_productivity",
+      "genre_micro": "productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "low",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    "book_id": "getting-things-done-allen-2015",
+    "chapter_id": "013",
+    "sample_id": "getting-things-done-allen-2015:013",
+    "target_words": 1288,
+    "stage_state": {
+      "summary_md": "# Organizing: Setting Up the Right Buckets\n\n## The Basic Categories\n\nSeven primary types of things to track: Projects list, project support material, calendar actions/information, Next Actions lists, Waiting For list, reference material, Someday/Maybe list. These categories must be kept pristinely distinct—each represents a discrete type of agreement with yourself. If they blend, you go psychologically numb to contents. For example, mixing reference with \"to read\" items makes you unconscious to the stack; putting day-specific items on Next Actions lists undermines trust in your calendar.\n\nAll you really need are lists and folders. Lists can be: (1) file folder with separate paper notes, (2) actual list on titled paper in a loose-leaf organizer, or (3) inventory in software. Don't impose external priority scaffolding that requires rearranging—prioritize intuitively against shifting variables.\n\n## Organizing Action Reminders\n\n### Calendar Actions\n\nCalendar shows only the \"hard landscape\"—time-specific (\"10:00–11:00 meet with Jim\") or day-specific (\"Call Rachel Tuesday\"). Resist putting actions you'd *like* to do on a certain day but might not; calendar must be sacred territory reflecting exact hard edges. Most actions belong in \"as soon as possible\" category.\n\n### Organizing ASAP Actions by Context\n\nBest way to remind of \"as soon as I can\" actions is by context (tool, location, or situation). How discrete categories need to be depends on (1) number of actions to track and (2) how often you change contexts. With 25 next actions, a single list might suffice; with 50–100, you need sorting.\n\nCommon list headings:\n- **Calls** – all phone calls; record phone numbers alongside each item so you can call without looking up.\n- **At Computer** – actions needing computer; Allen maintains separate \"Online\" list for when he's on a plane without Wi-Fi.\n- **Errands** – e.g., \"Get stock certificates from bank deposit box,\" \"Pick up suit at the tailor,\" \"Buy flowers for Robyn at the florist.\" Can include sublists (e.g., \"hardware store\" with appended items). Caveat: location-based reminders are overoptimistic for total trust.\n- **At Office** – actions requiring physical presence (e.g., purging filing cabinet). With \"hotel-ing\" on the rise, may need multiple office lists.\n- **At Home** – e.g., \"Hang new watercolor print,\" \"Organize travel accessories,\" \"Switch closets to winter clothes.\"\n- **Agendas** – for people and meetings. Separate lists for bosses, partners, assistants, children, attorneys, etc. Standing meetings deserve their own lists. Add ad hoc as needed.\n- **Read/Review** – longer-than-two-minute reading items managed in a physical tray or portable folder. Some professionals also use \"Review/Respond\" for rigorous reading. For digital input, create \"Review/Watch\" file or \"Surf Web\" action list.\n\n### Organizing \"Waiting For\"\n\nReminders of things others are supposed to do (e.g., tickets ordered, scanner coming, client approval). Not action steps but triggers. Include date requested and agreed-upon due date—\"But I placed the order March twentieth\" is worth its weight in gold. Keep list close to Next Actions; responsibility bounces back and forth.\n\n### Using the Original Item as Its Own Action Reminder\n\nExceptions to writing reminders on lists: Read/Review articles (toss magazine itself into tray), paper bills in \"Bills to Pay\" folder, receipts in \"Receipts to Process\" envelope. Caveat: these must be reviewed as consistently as lists or they won't get off your mind. For e-mail: create @ACTION and @WAITING FOR folders (prefix with @ or hyphen to sort at top). Getting e-mail \"in\" to empty means deleting, filing, doing <2-min responses, and moving actionable e-mails to @ACTION. Danger of dispersing reminders: you must review all categories equally. Digital data offscreen can disappear as a viable prompt—many revert to paper for physical obviousness.\n\n## Organizing Project Reminders\n\n### The Projects List\n\nA comprehensive index of open loops—every commitment requiring more than one action step. Not for plans or priority sorting; you can't do a project, only action steps. Real value: complete weekly review ensuring action steps defined for all projects. Examples of subtle projects: \"Look into getting a dog for our kids,\" \"Find a good tailor.\"\n\nValue of complete list:\n- Critical for control and focus – \"I've got to get my driver's license renewed\" takes as much mental space as \"I need to formulate the agenda for next year's conference.\"\n- Alleviates subtle tensions – small things morph into bigger ones (registration problems, invoice disputes).\n- Core of Weekly Review – linchpin for marrying larger commitments to day-to-day.\n- Facilitates relationship management – triggers important conversations with bosses, spouses, staff.\n\nWhere to find hidden projects:\n1. **Current activities** – calendar meetings, action lists, workspaces (e.g., conference call about client request → \"Look into possible custom program for Client XYZ\").\n2. **Higher-horizon interests** – professional goals, company objectives, strategic plans, personal life (kids aging, retirement).\n3. **Current problems, issues, opportunities** – problems (always projects), process improvements, creative/capacity-building opportunities. Examples: \"Look into improving Frederick's relationship with his school,\" \"Resolve situation with landlord,\" \"Get closure on compensation dispute.\"\n\n### One List or Subdivided?\n\nMost find one master list best. If subsorting, common options: Personal/Professional (but personal needs weekday review), Delegated Projects (for senior managers), Specific Types (e.g., \"Projects—Presentations\" for keynote speakers, sales relationships in progress). Subprojects: e.g., \"Move to Amsterdam\" unpacked into 15 projects (from \"Set up Dutch bank accounts\" to \"Finalize artwork storage in Santa Barbara\"). If subprojects are independent, list separately; if dependent, keep as one entry with subproject support material.\n\n### Project Support Materials\n\nResources to support actions, not reminders. Don't use support material for reminding—stacks and files that haven't been processed deliver \"Do something about me!\" chant. Instead: add project to Projects list, put action steps on appropriate lists, pull support materials only when doing the action. For Weekly Review, pull project file and thumb through notes to identify any missing next actions. Client folders/CRM software often mix facts with actions—actions belong on action lists.\n\nOrganizing ad hoc project thinking: attached notes in software, e-mail reference folders (e.g., \"Johnson Partnership—Active\" and \"Johnson Partnership—Archive\"), paper-based files, loose-leaf notebook pages. Key: consistently look for action steps in notes; clear out stale notes.\n\n## Organizing Nonactionable Data\n\n### Reference Materials\n\nOnce you've distinguished actionable from nonactionable, reference has no pull—it's just your library. General-reference filing: one to four physical file drawers, dozens of e-mail folders. Large-category filing: topics needing >50 folders get own section (e.g., corporate merger due-diligence cabinets). Contact managers: purely reference—don't use for action reminders. Libraries/archives: decide what you need with you always (mobile device), for meetings (briefcase), in office (personal filing), rare situations (off-site storage), or findable on Web (nothing to do unless offline).\n\n### Someday/Maybes\n\nTrack things to reassess later—\"Learn Spanish,\" \"Get Marcie a horse,\" \"Climb Mt. Washington,\" \"Write a mystery novel,\" \"Get a vacation cottage.\" Allen's experience: learning flute and sailing started here. Sources: creative imagination (hobbies, skills, trips, toys) and reassessing current projects (move optional projects to Someday/Maybe if no chance of attention for months). Subcategorize if helpful (home projects vs. bucket list). Danger of \"Hold and Review\" files: people hold but don't review; after processing, often nothing left.\n\nUsing calendar for future options: triggers for activating projects (e.g., \"Annual sales conference\" reminder), events you might attend (seminars, conferences), decision catalysts (hire/fire, merge/acquire, change job/career). \"It's OK to decide not to decide—as long as you have a decide-not-to-decide system.\"\n\nTickler file: 43 folders (31 daily + 12 monthly). Daily files in front starting with tomorrow's date; monthly files behind. Each day, empty that day's folder into in-tray, refile at back. Allows storing actual documents (forms, agendas, invoices). Must check every day; if leaving town, check folders for days you'll be away.\n\n## Checklists: Creative and Reminders\n\nChecklists are \"recipes of potential ingredients\" for projects, processes, events, areas of responsibility. Examples: \"Exercise more regularly\" → project \"Set up regular exercise program\" + action \"Call Sally for suggestion about gyms.\" For fuzzier commitments (e.g., \"Maintain good morale on my team\"), create overview checklist reviewed regularly. The more novel the situation, the more control required—new job, new responsibilities, new organizational structure. Allen's example: when taking on accounting, computers, marketing, legal, administration for a new business structure, he kept a checklist until cruise control.\n\nChecklists at all levels: Job Areas of Responsibility, Exercise Regimens, Travel Checklist, Weekly Review, Training Program Components, Key Clients, People to Stay in Touch With, Year-end Activities, Personal Development, Jokes. Be ready to create and eliminate as required.",
+      "first_pass_summary_md": "# Organizing: Setting Up the Right Buckets\n\n## The Basic Categories\n\nSeven primary types of things to track: Projects list, project support material, calendar actions/information, Next Actions lists, Waiting For list, reference material, Someday/Maybe list. These categories must be kept pristinely distinct—each represents a discrete type of agreement with yourself. If they blend, you go psychologically numb to contents. For example, mixing reference with \"to read\" items makes you unconscious to the stack; putting day-specific items on Next Actions lists undermines trust in your calendar.\n\nAll you really need are lists and folders. Lists can be: (1) file folder with separate paper notes, (2) actual list on titled paper in a loose-leaf organizer, or (3) inventory in software. Don't impose external priority scaffolding that requires rearranging—prioritize intuitively against shifting variables.\n\n## Organizing Action Reminders\n\n### Calendar Actions\n\nCalendar shows only the \"hard landscape\"—time-specific (\"10:00–11:00 meet with Jim\") or day-specific (\"Call Rachel Tuesday\"). Resist putting actions you'd *like* to do on a certain day but might not; calendar must be sacred territory reflecting exact hard edges. Most actions belong in \"as soon as possible\" category.\n\n### Organizing ASAP Actions by Context\n\nBest way to remind of \"as soon as I can\" actions is by context (tool, location, or situation). How discrete categories need to be depends on (1) number of actions to track and (2) how often you change contexts. With 25 next actions, a single list might suffice; with 50–100, you need sorting.\n\nCommon list headings:\n- **Calls** – all phone calls; record phone numbers alongside each item so you can call without looking up.\n- **At Computer** – actions needing computer; Allen maintains separate \"Online\" list for when he's on a plane without Wi-Fi.\n- **Errands** – e.g., \"Get stock certificates from bank deposit box,\" \"Pick up suit at the tailor,\" \"Buy flowers for Robyn at the florist.\" Can include sublists (e.g., \"hardware store\" with appended items). Caveat: location-based reminders are overoptimistic for total trust.\n- **At Office** – actions requiring physical presence (e.g., purging filing cabinet). With \"hotel-ing\" on the rise, may need multiple office lists.\n- **At Home** – e.g., \"Hang new watercolor print,\" \"Organize travel accessories,\" \"Switch closets to winter clothes.\"\n- **Agendas** – for people and meetings. Separate lists for bosses, partners, assistants, children, attorneys, etc. Standing meetings deserve their own lists. Add ad hoc as needed.\n- **Read/Review** – longer-than-two-minute reading items managed in a physical tray or portable folder. Some professionals also use \"Review/Respond\" for rigorous reading. For digital input, create \"Review/Watch\" file or \"Surf Web\" action list.\n\n### Organizing \"Waiting For\"\n\nReminders of things others are supposed to do (e.g., tickets ordered, scanner coming, client approval). Not action steps but triggers. Include date requested and agreed-upon due date—\"But I placed the order March twentieth\" is worth its weight in gold. Keep list close to Next Actions; responsibility bounces back and forth.\n\n### Using the Original Item as Its Own Action Reminder\n\nExceptions to writing reminders on lists: Read/Review articles (toss magazine itself into tray), paper bills in \"Bills to Pay\" folder, receipts in \"Receipts to Process\" envelope. Caveat: these must be reviewed as consistently as lists or they won't get off your mind. For e-mail: create @ACTION and @WAITING FOR folders (prefix with @ or hyphen to sort at top). Getting e-mail \"in\" to empty means deleting, filing, doing <2-min responses, and moving actionable e-mails to @ACTION. Danger of dispersing reminders: you must review all categories equally. Digital data offscreen can disappear as a viable prompt—many revert to paper for physical obviousness.\n\n## Organizing Project Reminders\n\n### The Projects List\n\nA comprehensive index of open loops—every commitment requiring more than one action step. Not for plans or priority sorting; you can't do a project, only action steps. Real value: complete weekly review ensuring action steps defined for all projects. Examples of subtle projects: \"Look into getting a dog for our kids,\" \"Find a good tailor.\"\n\nValue of complete list:\n- Critical for control and focus – \"I've got to get my driver's license renewed\" takes as much mental space as \"I need to formulate the agenda for next year's conference.\"\n- Alleviates subtle tensions – small things morph into bigger ones (registration problems, invoice disputes).\n- Core of Weekly Review – linchpin for marrying larger commitments to day-to-day.\n- Facilitates relationship management – triggers important conversations with bosses, spouses, staff.\n\nWhere to find hidden projects:\n1. **Current activities** – calendar meetings, action lists, workspaces (e.g., conference call about client request → \"Look into possible custom program for Client XYZ\").\n2. **Higher-horizon interests** – professional goals, company objectives, strategic plans, personal life (kids aging, retirement).\n3. **Current problems, issues, opportunities** – problems (always projects), process improvements, creative/capacity-building opportunities. Examples: \"Look into improving Frederick's relationship with his school,\" \"Resolve situation with landlord,\" \"Get closure on compensation dispute.\"\n\n### One List or Subdivided?\n\nMost find one master list best. If subsorting, common options: Personal/Professional (but personal needs weekday review), Delegated Projects (for senior managers), Specific Types (e.g., \"Projects—Presentations\" for keynote speakers, sales relationships in progress). Subprojects: e.g., \"Move to Amsterdam\" unpacked into 15 projects (from \"Set up Dutch bank accounts\" to \"Finalize artwork storage in Santa Barbara\"). If subprojects are independent, list separately; if dependent, keep as one entry with subproject support material.\n\n### Project Support Materials\n\nResources to support actions, not reminders. Don't use support material for reminding—stacks and files that haven't been processed deliver \"Do something about me!\" chant. Instead: add project to Projects list, put action steps on appropriate lists, pull support materials only when doing the action. For Weekly Review, pull project file and thumb through notes to identify any missing next actions. Client folders/CRM software often mix facts with actions—actions belong on action lists.\n\nOrganizing ad hoc project thinking: attached notes in software, e-mail reference folders (e.g., \"Johnson Partnership—Active\" and \"Johnson Partnership—Archive\"), paper-based files, loose-leaf notebook pages. Key: consistently look for action steps in notes; clear out stale notes.\n\n## Organizing Nonactionable Data\n\n### Reference Materials\n\nOnce you've distinguished actionable from nonactionable, reference has no pull—it's just your library. General-reference filing: one to four physical file drawers, dozens of e-mail folders. Large-category filing: topics needing >50 folders get own section (e.g., corporate merger due-diligence cabinets). Contact managers: purely reference—don't use for action reminders. Libraries/archives: decide what you need with you always (mobile device), for meetings (briefcase), in office (personal filing), rare situations (off-site storage), or findable on Web (nothing to do unless offline).\n\n### Someday/Maybes\n\nTrack things to reassess later—\"Learn Spanish,\" \"Get Marcie a horse,\" \"Climb Mt. Washington,\" \"Write a mystery novel,\" \"Get a vacation cottage.\" Allen's experience: learning flute and sailing started here. Sources: creative imagination (hobbies, skills, trips, toys) and reassessing current projects (move optional projects to Someday/Maybe if no chance of attention for months). Subcategorize if helpful (home projects vs. bucket list). Danger of \"Hold and Review\" files: people hold but don't review; after processing, often nothing left.\n\nUsing calendar for future options: triggers for activating projects (e.g., \"Annual sales conference\" reminder), events you might attend (seminars, conferences), decision catalysts (hire/fire, merge/acquire, change job/career). \"It's OK to decide not to decide—as long as you have a decide-not-to-decide system.\"\n\nTickler file: 43 folders (31 daily + 12 monthly). Daily files in front starting with tomorrow's date; monthly files behind. Each day, empty that day's folder into in-tray, refile at back. Allows storing actual documents (forms, agendas, invoices). Must check every day; if leaving town, check folders for days you'll be away.\n\n## Checklists: Creative and Reminders\n\nChecklists are \"recipes of potential ingredients\" for projects, processes, events, areas of responsibility. Examples: \"Exercise more regularly\" → project \"Set up regular exercise program\" + action \"Call Sally for suggestion about gyms.\" For fuzzier commitments (e.g., \"Maintain good morale on my team\"), create overview checklist reviewed regularly. The more novel the situation, the more control required—new job, new responsibilities, new organizational structure. Allen's example: when taking on accounting, computers, marketing, legal, administration for a new business structure, he kept a checklist until cruise control.\n\nChecklists at all levels: Job Areas of Responsibility, Exercise Regimens, Travel Checklist, Weekly Review, Training Program Components, Key Clients, People to Stay in Touch With, Year-end Activities, Personal Development, Jokes. Be ready to create and eliminate as required.",
+      "passes_used": 1,
+      "generation_cost": 0.0041055,
+      "uncached_generation_cost": 0.0041055,
+      "raw_responses": [
+        {
+          "id": "gen-1777839979-1hSDHOJ3ozP8e92aF75D",
+          "object": "chat.completion",
+          "created": 1777839979,
+          "model": "deepseek/deepseek-v4-flash-20260423",
+          "provider": "Novita",
+          "system_fingerprint": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "# Organizing: Setting Up the Right Buckets\n\n## The Basic Categories\n\nSeven primary types of things to track: Projects list, project support material, calendar actions/information, Next Actions lists, Waiting For list, reference material, Someday/Maybe list. These categories must be kept pristinely distinct—each represents a discrete type of agreement with yourself. If they blend, you go psychologically numb to contents. For example, mixing reference with \"to read\" items makes you unconscious to the stack; putting day-specific items on Next Actions lists undermines trust in your calendar.\n\nAll you really need are lists and folders. Lists can be: (1) file folder with separate paper notes, (2) actual list on titled paper in a loose-leaf organizer, or (3) inventory in software. Don't impose external priority scaffolding that requires rearranging—prioritize intuitively against shifting variables.\n\n## Organizing Action Reminders\n\n### Calendar Actions\n\nCalendar shows only the \"hard landscape\"—time-specific (\"10:00–11:00 meet with Jim\") or day-specific (\"Call Rachel Tuesday\"). Resist putting actions you'd *like* to do on a certain day but might not; calendar must be sacred territory reflecting exact hard edges. Most actions belong in \"as soon as possible\" category.\n\n### Organizing ASAP Actions by Context\n\nBest way to remind of \"as soon as I can\" actions is by context (tool, location, or situation). How discrete categories need to be depends on (1) number of actions to track and (2) how often you change contexts. With 25 next actions, a single list might suffice; with 50–100, you need sorting.\n\nCommon list headings:\n- **Calls** – all phone calls; record phone numbers alongside each item so you can call without looking up.\n- **At Computer** – actions needing computer; Allen maintains separate \"Online\" list for when he's on a plane without Wi-Fi.\n- **Errands** – e.g., \"Get stock certificates from bank deposit box,\" \"Pick up suit at the tailor,\" \"Buy flowers for Robyn at the florist.\" Can include sublists (e.g., \"hardware store\" with appended items). Caveat: location-based reminders are overoptimistic for total trust.\n- **At Office** – actions requiring physical presence (e.g., purging filing cabinet). With \"hotel-ing\" on the rise, may need multiple office lists.\n- **At Home** – e.g., \"Hang new watercolor print,\" \"Organize travel accessories,\" \"Switch closets to winter clothes.\"\n- **Agendas** – for people and meetings. Separate lists for bosses, partners, assistants, children, attorneys, etc. Standing meetings deserve their own lists. Add ad hoc as needed.\n- **Read/Review** – longer-than-two-minute reading items managed in a physical tray or portable folder. Some professionals also use \"Review/Respond\" for rigorous reading. For digital input, create \"Review/Watch\" file or \"Surf Web\" action list.\n\n### Organizing \"Waiting For\"\n\nReminders of things others are supposed to do (e.g., tickets ordered, scanner coming, client approval). Not action steps but triggers. Include date requested and agreed-upon due date—\"But I placed the order March twentieth\" is worth its weight in gold. Keep list close to Next Actions; responsibility bounces back and forth.\n\n### Using the Original Item as Its Own Action Reminder\n\nExceptions to writing reminders on lists: Read/Review articles (toss magazine itself into tray), paper bills in \"Bills to Pay\" folder, receipts in \"Receipts to Process\" envelope. Caveat: these must be reviewed as consistently as lists or they won't get off your mind. For e-mail: create @ACTION and @WAITING FOR folders (prefix with @ or hyphen to sort at top). Getting e-mail \"in\" to empty means deleting, filing, doing <2-min responses, and moving actionable e-mails to @ACTION. Danger of dispersing reminders: you must review all categories equally. Digital data offscreen can disappear as a viable prompt—many revert to paper for physical obviousness.\n\n## Organizing Project Reminders\n\n### The Projects List\n\nA comprehensive index of open loops—every commitment requiring more than one action step. Not for plans or priority sorting; you can't do a project, only action steps. Real value: complete weekly review ensuring action steps defined for all projects. Examples of subtle projects: \"Look into getting a dog for our kids,\" \"Find a good tailor.\"\n\nValue of complete list:\n- Critical for control and focus – \"I've got to get my driver's license renewed\" takes as much mental space as \"I need to formulate the agenda for next year's conference.\"\n- Alleviates subtle tensions – small things morph into bigger ones (registration problems, invoice disputes).\n- Core of Weekly Review – linchpin for marrying larger commitments to day-to-day.\n- Facilitates relationship management – triggers important conversations with bosses, spouses, staff.\n\nWhere to find hidden projects:\n1. **Current activities** – calendar meetings, action lists, workspaces (e.g., conference call about client request → \"Look into possible custom program for Client XYZ\").\n2. **Higher-horizon interests** – professional goals, company objectives, strategic plans, personal life (kids aging, retirement).\n3. **Current problems, issues, opportunities** – problems (always projects), process improvements, creative/capacity-building opportunities. Examples: \"Look into improving Frederick's relationship with his school,\" \"Resolve situation with landlord,\" \"Get closure on compensation dispute.\"\n\n### One List or Subdivided?\n\nMost find one master list best. If subsorting, common options: Personal/Professional (but personal needs weekday review), Delegated Projects (for senior managers), Specific Types (e.g., \"Projects—Presentations\" for keynote speakers, sales relationships in progress). Subprojects: e.g., \"Move to Amsterdam\" unpacked into 15 projects (from \"Set up Dutch bank accounts\" to \"Finalize artwork storage in Santa Barbara\"). If subprojects are independent, list separately; if dependent, keep as one entry with subproject support material.\n\n### Project Support Materials\n\nResources to support actions, not reminders. Don't use support material for reminding—stacks and files that haven't been processed deliver \"Do something about me!\" chant. Instead: add project to Projects list, put action steps on appropriate lists, pull support materials only when doing the action. For Weekly Review, pull project file and thumb through notes to identify any missing next actions. Client folders/CRM software often mix facts with actions—actions belong on action lists.\n\nOrganizing ad hoc project thinking: attached notes in software, e-mail reference folders (e.g., \"Johnson Partnership—Active\" and \"Johnson Partnership—Archive\"), paper-based files, loose-leaf notebook pages. Key: consistently look for action steps in notes; clear out stale notes.\n\n## Organizing Nonactionable Data\n\n### Reference Materials\n\nOnce you've distinguished actionable from nonactionable, reference has no pull—it's just your library. General-reference filing: one to four physical file drawers, dozens of e-mail folders. Large-category filing: topics needing >50 folders get own section (e.g., corporate merger due-diligence cabinets). Contact managers: purely reference—don't use for action reminders. Libraries/archives: decide what you need with you always (mobile device), for meetings (briefcase), in office (personal filing), rare situations (off-site storage), or findable on Web (nothing to do unless offline).\n\n### Someday/Maybes\n\nTrack things to reassess later—\"Learn Spanish,\" \"Get Marcie a horse,\" \"Climb Mt. Washington,\" \"Write a mystery novel,\" \"Get a vacation cottage.\" Allen's experience: learning flute and sailing started here. Sources: creative imagination (hobbies, skills, trips, toys) and reassessing current projects (move optional projects to Someday/Maybe if no chance of attention for months). Subcategorize if helpful (home projects vs. bucket list). Danger of \"Hold and Review\" files: people hold but don't review; after processing, often nothing left.\n\nUsing calendar for future options: triggers for activating projects (e.g., \"Annual sales conference\" reminder), events you might attend (seminars, conferences), decision catalysts (hire/fire, merge/acquire, change job/career). \"It's OK to decide not to decide—as long as you have a decide-not-to-decide system.\"\n\nTickler file: 43 folders (31 daily + 12 monthly). Daily files in front starting with tomorrow's date; monthly files behind. Each day, empty that day's folder into in-tray, refile at back. Allows storing actual documents (forms, agendas, invoices). Must check every day; if leaving town, check folders for days you'll be away.\n\n## Checklists: Creative and Reminders\n\nChecklists are \"recipes of potential ingredients\" for projects, processes, events, areas of responsibility. Examples: \"Exercise more regularly\" → project \"Set up regular exercise program\" + action \"Call Sally for suggestion about gyms.\" For fuzzier commitments (e.g., \"Maintain good morale on my team\"), create overview checklist reviewed regularly. The more novel the situation, the more control required—new job, new responsibilities, new organizational structure. Allen's example: when taking on accounting, computers, marketing, legal, administration for a new business structure, he kept a checklist until cruise control.\n\nChecklists at all levels: Job Areas of Responsibility, Exercise Regimens, Travel Checklist, Weekly Review, Training Program Components, Key Clients, People to Stay in Touch With, Year-end Activities, Personal Development, Jokes. Be ready to create and eliminate as required.",
+                "refusal": null,
+                "reasoning": "We need to summarize Chapter 7 \"Organizing: Setting Up the Right Buckets\" from David Allen's Getting Things Done. The target is 1288 words, range 1185-1391. We must preserve core concepts, specific examples, names, numbers, quotes, and caveats. Use short markdown headings, dense paragraphs/bullets. Prioritize mechanisms and explanatory material. Include specific examples from the source (e.g., \"Get stock certificates from bank deposit box\", \"Buy flowers for Robyn at the florist\", \"Move to Amsterdam\" example, tickler file setup with 43 folders, etc.). Preserve caveats like \"The digital world can be dangerous\" and \"Hold and Review\" danger. Use the author's technical terms. Avoid motivational framing. Structure: follow the chapter's conceptual flow: Basic Categories, Organizing Action Reminders (Calendar, Contexts, Waiting For, Original Item as Reminder), Organizing Project Reminders (Projects List, Subprojects, Support Materials), Organizing Nonactionable Data (Reference, Someday/Maybe, Tickler File), Checklists. Ensure we hit the word count. Let's write",
+                "reasoning_details": [
+                  {
+                    "type": "reasoning.text",
+                    "text": "We need to summarize Chapter 7 \"Organizing: Setting Up the Right Buckets\" from David Allen's Getting Things Done. The target is 1288 words, range 1185-1391. We must preserve core concepts, specific examples, names, numbers, quotes, and caveats. Use short markdown headings, dense paragraphs/bullets. Prioritize mechanisms and explanatory material. Include specific examples from the source (e.g., \"Get stock certificates from bank deposit box\", \"Buy flowers for Robyn at the florist\", \"Move to Amsterdam\" example, tickler file setup with 43 folders, etc.). Preserve caveats like \"The digital world can be dangerous\" and \"Hold and Review\" danger. Use the author's technical terms. Avoid motivational framing. Structure: follow the chapter's conceptual flow: Basic Categories, Organizing Action Reminders (Calendar, Contexts, Waiting For, Original Item as Reminder), Organizing Project Reminders (Projects List, Subprojects, Support Materials), Organizing Nonactionable Data (Reference, Someday/Maybe, Tickler File), Checklists. Ensure we hit the word count. Let's write",
+                    "format": "unknown",
+                    "index": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 24791,
+            "completion_tokens": 2267,
+            "total_tokens": 27058,
+            "cost": 0.0041055,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0041055,
+              "upstream_inference_prompt_cost": 0.00347074,
+              "upstream_inference_completions_cost": 0.00063476
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 267,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "latest_error": null,
+  "resume_events_utc": [],
+  "state_path": "runs/booksum-v4/20260503t202538z__booksum-v4__chapter_fast-v3__30m_dv4flash_not__30m_dv4flash_notthinking_v1.state.json",
+  "samples_path": "runs/booksum-v4/20260503t202538z__booksum-v4__chapter_fast-v3__30m_dv4flash_not__30m_dv4flash_notthinking_v1.samples.jsonl",
+  "out_path": "runs/booksum-v4/20260503t202538z__booksum-v4__chapter_fast-v3__30m_dv4flash_not__30m_dv4flash_notthinking_v1.json",
+  "updated_at_utc": "2026-05-03T20:26:38.461799+00:00"
+}

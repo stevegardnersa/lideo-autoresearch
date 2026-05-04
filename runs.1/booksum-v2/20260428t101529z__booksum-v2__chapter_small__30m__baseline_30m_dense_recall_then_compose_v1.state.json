@@ -1,0 +1,282 @@
+{
+  "run_id": "20260428t101529z__booksum-v2__chapter_small__30m__baseline_30m_dense_recall_then_compose_v1",
+  "created_at_utc": "2026-04-28T10:15:29.101656+00:00",
+  "status": "running",
+  "run_manifest": {
+    "run_id": "20260428t101529z__booksum-v2__chapter_small__30m__baseline_30m_dense_recall_then_compose_v1",
+    "created_at_utc": "2026-04-28T10:15:29.101656+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v2",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m",
+    "bench": "chapter_small",
+    "bench_path": "bench/chapter_small.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "baseline_30m_dense_recall_then_compose_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "b1ad5011c2647cc041cf0920f2d66714d894c10e4c077906aa98764943ca196c",
+    "chapter_model": "minimax/minimax-m2.7",
+    "composer_model": "openai/gpt-5-mini",
+    "judge_model": "",
+    "provider_preferences": {
+      "chapter": {
+        "order": [],
+        "allow_fallbacks": false
+      },
+      "composer": {
+        "order": [],
+        "allow_fallbacks": false
+      }
+    },
+    "prompt_hashes": {
+      "candidate_dict_sha256": "08676d8c77638ef1cca1cce0730b2f879d1334160c7f38afeed8d84274ce12f5",
+      "chapter_stage_sha256": "e4b263c4039ef4ecef030c8498621483c5300e81e4cb03448895e384bff06b84",
+      "composer_stage_sha256": "b08d5b1d3e9aeb8325d1c338912e1fb43450a2462b1d0df8f3e8d0bdc978d041",
+      "length_control_sha256": "4d7dbfc50c3c8a4cdc7bdbf340c8358fea8c476609ea62d33868f493f497845a",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "2906d9c5015f7f2119361da0251930f92f6cfa699028740d40b5e31357e5fe91",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "efebadeb9ca47c9ebdc7bd107e1ef76b086635dade60a6051370cc4ee74e0bf8",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "eaf542bdf2754c05fa8ba012be11add95091cd039c9c0b93ec891c8889667e0b",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260428T101529Z__booksum-v2.json",
+    "price_snapshot": "snapshots/pricing/20260428T101529Z__booksum-v2.json",
+    "hypothesis": "Minimax quick test",
+    "notes": "Testing minimax on small chapters"
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v2",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-19T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "Genre-aware benchmark version. Increment benchmark_version whenever the corpus, split membership logic, rubric builder, scoring rules, judge prompt/model, logging schema, or visible-word-count behavior changes."
+  },
+  "bench_rows": [
+    {
+      "sample_id": "designing-with-data-tan-2017:008",
+      "level": "chapter",
+      "book_id": "designing-with-data-tan-2017",
+      "group_id": "designing-with-data-tan-2017",
+      "chapter_id": "008",
+      "chapter_title": "Chapter 7: Creating the Right Environment",
+      "book_title": "Designing with Data",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "ux_design_and_data_science",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:022",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "022",
+      "chapter_title": "Appendix C: Statistical Methods Used in Our Research",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "concorde-bannister-2022:042",
+      "level": "chapter",
+      "book_id": "concorde-bannister-2022",
+      "group_id": "concorde-bannister-2022",
+      "chapter_id": "042",
+      "chapter_title": "39",
+      "book_title": "Concorde",
+      "genre_macro": "history_biography_politics_social_analysis",
+      "genre_micro": "aviation_history",
+      "narrative_vs_expository": "mixed",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:032",
+      "level": "chapter",
+      "book_id": "atomic-habits-clear-2018",
+      "group_id": "atomic-habits-clear-2018",
+      "chapter_id": "032",
+      "chapter_title": "How to Apply These Ideas to Business",
+      "book_title": "Atomic Habits",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ],
+  "completed_sample_ids": [
+    "designing-with-data-tan-2017:008"
+  ],
+  "completed_count": 1,
+  "n_total_samples": 4,
+  "current_item": {
+    "kind": "chapter",
+    "phase": "stage",
+    "item_key": "accelerate-forsgren-2018:022",
+    "item": {
+      "sample_id": "accelerate-forsgren-2018:022",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "022",
+      "chapter_title": "Appendix C: Statistical Methods Used in Our Research",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    "book_id": "accelerate-forsgren-2018",
+    "chapter_id": "022",
+    "sample_id": "accelerate-forsgren-2018:022",
+    "target_words": 272,
+    "stage_state": {
+      "summary_md": "## Unable to Complete Request\n\nThe source text provided consists only of the **Bibliography** section, not the actual explanatory content of Appendix C. The bibliography lists references cited throughout *Accelerate* but does not contain the methodological descriptions, procedures, or analytical techniques that would appear in the appendix itself.\n\nWithout the actual Appendix C text describing the study's statistical methods, I cannot produce a faithful summary that includes mechanisms, conceptual distinctions, caveats, or examples drawn from the source material.\n\nTo complete this task, the actual Appendix C content describing the statistical methods used in the research would be required.",
+      "first_pass_summary_md": "## Unable to Complete Request\n\nThe source text provided for this chapter consists solely of the **Bibliography** section (labeled \"BIBLIOGRAPHY\" at the top), not the actual content of Appendix C. Without the appendix's statistical methods content, I cannot produce a faithful summary of its explanatory material, procedures, or findings.\n\nIf the actual Appendix C text is available, I can summarize it within the target word range while preserving its specific methodological details, statistical techniques, and any cited evidence.",
+      "passes_used": 2,
+      "generation_cost": 0.0056022,
+      "uncached_generation_cost": 0.0056022,
+      "raw_responses": [
+        {
+          "id": "gen-1777371906-Lq63PESwBwjKJb25XwUs",
+          "object": "chat.completion",
+          "created": 1777371906,
+          "model": "minimax/minimax-m2.7-20260318",
+          "provider": "Minimax",
+          "system_fingerprint": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "## Unable to Complete Request\n\nThe source text provided for this chapter consists solely of the **Bibliography** section (labeled \"BIBLIOGRAPHY\" at the top), not the actual content of Appendix C. Without the appendix's statistical methods content, I cannot produce a faithful summary of its explanatory material, procedures, or findings.\n\nIf the actual Appendix C text is available, I can summarize it within the target word range while preserving its specific methodological details, statistical techniques, and any cited evidence.",
+                "refusal": null,
+                "reasoning": "The user wants me to summarize Appendix C: Statistical Methods Used in Our Research from the book \"Accelerate.\" However, looking at the provided source text, it appears to be a bibliography, not the actual appendix content.\n\nLet me re-read the request. The user wants me to summarize \"Appendix C: Statistical Methods Used in Our Research\" but the markdown provided is just the bibliography section.\n\nThis is problematic because I don't have access to the actual content of Appendix C - only the bibliography entries. Without the actual chapter content, I cannot write a faithful summary of what the appendix contains.\n\nI should note that the bibliography is labeled \"BIBLIOGRAPHY\" and contains all the references cited throughout the book. This appears to be appended at the end, possibly after the appendices.\n\nSince I don't have the actual content of Appendix C to summarize, I cannot fulfill this request faithfully. I should not fabricate content that isn't there.\n\nWait - let me reconsider. The user says \"Return markdown only\" which suggests they expect me to produce output. But I genuinely don't have the appendix content - only the bibliography.\n\nI need to inform the user that the source text provided is only the bibliography, not the actual content of Appendix C, so I cannot summarize what the appendix actually says.\n\nActually, looking more carefully at the markdown provided, it starts with \"BIBLIOGRAPHY\" - this is clearly the bibliography section, not Appendix C. The appendix content itself is not included in what was provided.\n\nI should clarify this limitation with the user - I can only summarize what was provided in the source, and what was provided is the bibliography, not the appendix content itself.",
+                "reasoning_details": [
+                  {
+                    "type": "reasoning.text",
+                    "text": "The user wants me to summarize Appendix C: Statistical Methods Used in Our Research from the book \"Accelerate.\" However, looking at the provided source text, it appears to be a bibliography, not the actual appendix content.\n\nLet me re-read the request. The user wants me to summarize \"Appendix C: Statistical Methods Used in Our Research\" but the markdown provided is just the bibliography section.\n\nThis is problematic because I don't have access to the actual content of Appendix C - only the bibliography entries. Without the actual chapter content, I cannot write a faithful summary of what the appendix contains.\n\nI should note that the bibliography is labeled \"BIBLIOGRAPHY\" and contains all the references cited throughout the book. This appears to be appended at the end, possibly after the appendices.\n\nSince I don't have the actual content of Appendix C to summarize, I cannot fulfill this request faithfully. I should not fabricate content that isn't there.\n\nWait - let me reconsider. The user says \"Return markdown only\" which suggests they expect me to produce output. But I genuinely don't have the appendix content - only the bibliography.\n\nI need to inform the user that the source text provided is only the bibliography, not the actual content of Appendix C, so I cannot summarize what the appendix actually says.\n\nActually, looking more carefully at the markdown provided, it starts with \"BIBLIOGRAPHY\" - this is clearly the bibliography section, not Appendix C. The appendix content itself is not included in what was provided.\n\nI should clarify this limitation with the user - I can only summarize what was provided in the source, and what was provided is the bibliography, not the appendix content itself.",
+                    "format": "unknown",
+                    "index": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 4738,
+            "completion_tokens": 439,
+            "total_tokens": 5177,
+            "cost": 0.0019482,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0019482,
+              "upstream_inference_prompt_cost": 0.0014214,
+              "upstream_inference_completions_cost": 0.0005268
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 444,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        },
+        {
+          "id": "gen-1777371918-dEqO8H6mbiNuNp2GyfpS",
+          "object": "chat.completion",
+          "created": 1777371918,
+          "model": "minimax/minimax-m2.7-20260318",
+          "provider": "Minimax",
+          "system_fingerprint": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "## Unable to Complete Request\n\nThe source text provided consists only of the **Bibliography** section, not the actual explanatory content of Appendix C. The bibliography lists references cited throughout *Accelerate* but does not contain the methodological descriptions, procedures, or analytical techniques that would appear in the appendix itself.\n\nWithout the actual Appendix C text describing the study's statistical methods, I cannot produce a faithful summary that includes mechanisms, conceptual distinctions, caveats, or examples drawn from the source material.\n\nTo complete this task, the actual Appendix C content describing the statistical methods used in the research would be required.",
+                "refusal": null,
+                "reasoning": "The user wants me to summarize \"Appendix C: Statistical Methods Used in Our Research\" from the book \"Accelerate.\" However, looking at the provided source text, it only contains the BIBLIOGRAPHY section - the actual statistical methods content is not included.\n\nThe task states the summary is \"too short\" and needs to be expanded, but there's no actual appendix content to summarize - just a bibliography. The bibliography entries themselves are references, not explanatory content about statistical methods.\n\nGiven the instruction to \"keep the result faithful to the source\" and that the source only contains a bibliography (not the actual appendix content), I cannot create a meaningful summary of statistical methods that doesn't exist in the provided text. I should indicate that the actual appendix content is not present in the provided source.\n\nWait - let me re-read the task. It says \"Revise the existing chapter summary\" and mentions the current summary is \"Unable to Complete Request\" because the source text only contains the bibliography. The user is asking me to revise this, but the underlying issue is that the actual appendix content is missing.\n\nI should follow the instruction to be faithful to the source. The source only contains bibliography entries, not the actual statistical methods content. I cannot invent content about statistical methods that isn't in the source.\n\nActually, looking more carefully - the task is a \"repair\" direction of \"more\" meaning I need to expand content. But if the source doesn't contain the actual Appendix C content (just its bibliography), I cannot create faithful explanatory content.\n\nI need to clearly state that the actual appendix content is not available in the provided source. The bibliography alone cannot be summarized as statistical methods content.",
+                "reasoning_details": [
+                  {
+                    "type": "reasoning.text",
+                    "text": "The user wants me to summarize \"Appendix C: Statistical Methods Used in Our Research\" from the book \"Accelerate.\" However, looking at the provided source text, it only contains the BIBLIOGRAPHY section - the actual statistical methods content is not included.\n\nThe task states the summary is \"too short\" and needs to be expanded, but there's no actual appendix content to summarize - just a bibliography. The bibliography entries themselves are references, not explanatory content about statistical methods.\n\nGiven the instruction to \"keep the result faithful to the source\" and that the source only contains a bibliography (not the actual appendix content), I cannot create a meaningful summary of statistical methods that doesn't exist in the provided text. I should indicate that the actual appendix content is not present in the provided source.\n\nWait - let me re-read the task. It says \"Revise the existing chapter summary\" and mentions the current summary is \"Unable to Complete Request\" because the source text only contains the bibliography. The user is asking me to revise this, but the underlying issue is that the actual appendix content is missing.\n\nI should follow the instruction to be faithful to the source. The source only contains bibliography entries, not the actual statistical methods content. I cannot invent content about statistical methods that isn't in the source.\n\nActually, looking more carefully - the task is a \"repair\" direction of \"more\" meaning I need to expand content. But if the source doesn't contain the actual Appendix C content (just its bibliography), I cannot create faithful explanatory content.\n\nI need to clearly state that the actual appendix content is not available in the provided source. The bibliography alone cannot be summarized as statistical methods content.",
+                    "format": "unknown",
+                    "index": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 4262,
+            "completion_tokens": 457,
+            "total_tokens": 4719,
+            "cost": 0.003654,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.003654,
+              "upstream_inference_prompt_cost": 0.0025572,
+              "upstream_inference_completions_cost": 0.0010968
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 339,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "latest_error": null,
+  "resume_events_utc": [],
+  "state_path": "runs/booksum-v2/20260428t101529z__booksum-v2__chapter_small__30m__baseline_30m_dense_recall_then_compose_v1.state.json",
+  "samples_path": "runs/booksum-v2/20260428t101529z__booksum-v2__chapter_small__30m__baseline_30m_dense_recall_then_compose_v1.samples.jsonl",
+  "out_path": "runs/booksum-v2/20260428t101529z__booksum-v2__chapter_small__30m__baseline_30m_dense_recall_then_compose_v1.json",
+  "updated_at_utc": "2026-04-28T10:25:26.753079+00:00"
+}

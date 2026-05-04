@@ -1,0 +1,312 @@
+{
+  "run_id": "20260420t103856z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1",
+  "created_at_utc": "2026-04-20T10:38:56.881461+00:00",
+  "status": "running",
+  "run_manifest": {
+    "run_id": "20260420t103856z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1",
+    "created_at_utc": "2026-04-20T10:38:56.881461+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v2",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m",
+    "bench": "chapter_fast",
+    "bench_path": "bench/chapter_fast.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "baseline_30m_dense_recall_then_compose_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "6d49d26718620b388af5f2602e239d027a0373704d369dce02992e5aded6cb45",
+    "chapter_model": "deepseek/deepseek-v3.2",
+    "composer_model": "openai/gpt-5-mini",
+    "judge_model": "",
+    "provider_preferences": {
+      "chapter": {
+        "order": [],
+        "allow_fallbacks": false
+      },
+      "composer": {
+        "order": [],
+        "allow_fallbacks": false
+      }
+    },
+    "prompt_hashes": {
+      "candidate_dict_sha256": "e350cff4b2bd87b6bc245160115ed4659fa86c8ba30f7e50b7723fbd9865346d",
+      "chapter_stage_sha256": "b15d8b55df3361296b798d54b0009cbdd9cc71c1cc2ee9da175421b6f8231c99",
+      "composer_stage_sha256": "bc86d8b0c640e4b69c08546f4e53a8c383aa3f08d14c6b44ea65ffc9d766dfa0",
+      "length_control_sha256": "8ec4dc536f51bf408f45df046f82417cfd4e57192d016295f4eb7650a1378d1d",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "73cf2a314cd430c46c888732b6538af7f7437802ed9a32e5a516fb6844aeb073",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "82ae4bd00fe54bf615243c077d3d49e4c7d27f49ff94d1d0ad23d1d7ca92f872",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "d7d0b3f7a575b67c2de1def08923fd3fc2376339dfbf56c1d5803702b98398bc",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260420T103856Z__booksum-v2.json",
+    "price_snapshot": "snapshots/pricing/20260420T103856Z__booksum-v2.json",
+    "hypothesis": "",
+    "notes": ""
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v2",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-19T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "Genre-aware benchmark version. Increment benchmark_version whenever the corpus, split membership logic, rubric builder, scoring rules, judge prompt/model, logging schema, or visible-word-count behavior changes."
+  },
+  "bench_rows": [
+    {
+      "sample_id": "accelerate-forsgren-2018:018",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "018",
+      "chapter_title": "Chapter 16 - High-Performance Leadership and Management",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:003",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "003",
+      "chapter_title": "Chapter 1 - Accelerate",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:004",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "004",
+      "chapter_title": "Chapter 2 - Measuring Performance",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:022",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "022",
+      "chapter_title": "Appendix C: Statistical Methods Used in Our Research",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ],
+  "completed_sample_ids": [
+    "accelerate-forsgren-2018:018",
+    "accelerate-forsgren-2018:003"
+  ],
+  "completed_count": 2,
+  "n_total_samples": 4,
+  "current_item": {
+    "kind": "chapter",
+    "phase": "stage",
+    "item_key": "accelerate-forsgren-2018:004",
+    "item": {
+      "sample_id": "accelerate-forsgren-2018:004",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "004",
+      "chapter_title": "Chapter 2 - Measuring Performance",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    "book_id": "accelerate-forsgren-2018",
+    "chapter_id": "004",
+    "sample_id": "accelerate-forsgren-2018:004",
+    "target_words": 485,
+    "stage_state": {
+      "summary_md": "## Defining a Valid Performance Measure\nMeasuring software delivery performance is difficult due to invisible inventory and simultaneous design/delivery. A valid, reliable measure is needed.\n\n## Flaws in Previous Metrics\nCommon productivity metrics focus on outputs over outcomes and local over global measures.\n- **Lines of code**: Rewarding volume leads to bloated, costly software. Minimizing lines is also flawed if it sacrifices understandability.\n- **Velocity**: Designed for capacity planning, its misuse as a productivity metric is flawed. Velocity is relative and team-dependent, leading to gaming when used for comparison.\n- **Utilization**: High utilization eliminates slack, causing longer lead times. Queue theory shows lead times approach infinity as utilization nears 100%. Lead time is a better productivity metric, requiring economic balancing against utilization.\n\n## Criteria for a Successful Measure\nMeasures should focus on global outcomes (preventing team conflict) and outcomes not output (avoiding busywork).\n\n## Four Key Software Delivery Performance Metrics\nFour measures meet the criteria, focusing on both tempo and stability.\n1. **Delivery Lead Time**: Time from code committed to successfully running in production. Shorter times enable faster feedback and rapid fixes. Measured in categories from less than one hour to more than six months.\n2. **Deployment Frequency**: A proxy for batch size, which is hard to measure directly. Frequent deployment indicates small batch sizes, a Lean principle that reduces cycle time and risk. Measured from on-demand (multiple per day) to fewer than once every six months.\n3. **Time to Restore Service**: How long to restore service after an incident. Inevitable failures make restoration speed key. Uses same time categories as lead time.\n4. **Change Fail Rate**: Percentage of changes to production that result in degraded service or require remediation. A key Lean quality metric (percent complete and accurate).\n\n## Cluster Analysis of Performance\nUsing cluster analysis on survey data revealed distinct performance categories: high, medium, and low performers. All four metrics were good classifiers, with groups significantly different across all measures.\n\n## Performance Trends and the Absence of Trade-offs\nHigh performers excel at all four measures simultaneously, demonstrating no trade-off between speed (tempo) and stability/quality. Trends from 2014-2017 show high performers improving or maintaining performance. Low performers maintained throughput until 2017, then increased tempo but lost ground in stability, likely due to ineffective \"work harder\" approaches without addressing underlying obstacles.\n\n## Anomaly in 2016 Data\nIn 2016, medium performers had a worse change fail rate than low performers. A possible explanation is medium performers are in transformation, doing large-scale rearchitecture (new work) while ignoring critical rework, accruing technical debt and fragility.\n\n## Impact on Organizational Performance\nSoftware delivery performance predicts broader organizational outcomes. High performers were twice as likely to exceed profitability, market share, and productivity goals as low performers. In 2017, research extended to noncommercial goals; high performers were also twice as likely to exceed these objectives. This demonstrates software delivery capability provides competitive advantage.\n\n## Strategic Implications\nThe ability to deliver in small batches enables rapid user feedback (e.g., A/B testing). This argues against outsourcing development of strategic software; such capability should be brought in-house. Non-strategic software can be acquired as SaaS. Distinguishing strategic from non-strategic software is critical.\n\n## Using the Framework for Evidence-Based Change\nThe defined, measurable performance framework enables evidence-based decisions, benchmarking, tracking improvement, and testing predictive hypotheses about which practices impact performance.\n\n## Cautions on Measurement Deployment\nMeasurement tools are powerful in a learning culture but dangerous in pathological/bureaucratic cultures where measurement becomes control and fosters fear, leading to wrong numbers. Developing a supportive culture is a prerequisite.",
+      "first_pass_summary_md": "## Defining a Valid Performance Measure\nMeasuring software delivery performance is difficult due to invisible inventory and simultaneous design/delivery activities. A valid, reliable measure must be defined.\n\n## Flaws in Previous Metrics\nCommon productivity metrics focus on outputs over outcomes and local over global measures.\n- **Lines of code**: Rewarding volume leads to bloated, costly software. Minimizing lines is also flawed if it sacrifices understandability.\n- **Velocity**: Designed for capacity planning, its misuse as a productivity metric is flawed. Velocity is relative and team-dependent, leading to gaming (inflated estimates, reduced collaboration) when used for comparison.\n- **Utilization**: High utilization eliminates slack, causing longer lead times. Queue theory shows lead times approach infinity as utilization nears 100%. Lead time itself is a better productivity metric, requiring economic balancing against utilization.\n\n## Criteria for a Successful Measure\nMeasures should focus on global outcomes (preventing team conflict) and outcomes not output (avoiding busywork).\n\n## Four Key Software Delivery Performance Metrics\nFour measures meet the criteria, focusing on both tempo and stability.\n1. **Delivery Lead Time**: Time from code committed to successfully running in production. Shorter times enable faster feedback and rapid fixes. Measured in categories from less than one hour to more than six months.\n2. **Deployment Frequency**: A proxy for batch size, which is hard to measure directly. Frequent deployment indicates small batch sizes, a Lean principle that reduces cycle time and risk. Measured from on-demand (multiple per day) to fewer than once every six months.\n3. **Time to Restore Service**: How long to restore service after an incident (e.g., outage). Inevitable failures make restoration speed key. Uses same time categories as lead time.\n4. **Change Fail Rate**: Percentage of changes to production that result in degraded service or require remediation. A key Lean quality metric (percent complete and accurate).\n\n## Cluster Analysis of Performance\nUsing cluster analysis (a data-driven, unbiased statistical grouping technique) on survey data across four years revealed distinct performance categories: high, medium, and low performers. All four metrics were good classifiers, with groups significantly different across all measures.\n\n## Performance Trends and the Absence of Trade-offs\nHigh performers excel at all four measures simultaneously, demonstrating no trade-off between speed (tempo) and stability/quality. This aligns with Agile/Lean predictions. Trends from 2014-2017 show high performers improving or maintaining performance, pulling away from the pack. Low performers maintained throughput until 2017, then increased tempo but lost ground in stability, likely due to ineffective \"work harder\" approaches without addressing underlying obstacles (e.g., architecture, automation).\n\n## Anomaly in 2016 Data\nIn 2016, medium performers had a worse change fail rate than low performers. A possible explanation is medium performers are in transformation, doing large-scale rearchitecture (new work) while ignoring critical rework, accruing technical debt and fragility.\n\n## Impact on Organizational Performance\nSoftware delivery performance predicts broader organizational outcomes. Survey respondents rated relative organizational performance on profitability, market share, and productivity (a validated scale correlated with ROI). High performers were twice as likely to exceed these goals as low performers. In 2017, research extended to noncommercial goals (quantity, efficiency, customer satisfaction, quality, mission achievement); high performers were also twice as likely to exceed these objectives. This demonstrates software delivery capability provides competitive advantage.\n\n## Strategic Implications\nThe ability to deliver in small batches enables rapid user feedback (e.g., A/B testing). This argues against outsourcing development of strategic software; such capability should be brought in-house (as seen in US government initiatives). Non-strategic software (e.g., office productivity) can be acquired as SaaS. Distinguishing strategic from non-strategic software is critical.\n\n## Using the Framework for Evidence-Based Change\nThe defined, measurable performance framework enables:\n- Evidence-based decisions to improve performance.\n- Benchmarking against industry and internal groups.\n- Tracking improvement over time.\n- Testing predictive hypotheses about which practices impact performance (e.g., change management boards are negatively correlated with tempo and stability).\n- Modeling culture quantitatively and its effects.\n\n## Cautions on Measurement Deployment\nMeasurement tools are powerful in a learning culture but dangerous in pathological/bureaucratic cultures where measurement becomes control and fosters fear, leading to wrong numbers. Developing a supportive culture is a prerequisite for scientific performance improvement.",
+      "passes_used": 3,
+      "generation_cost": 0.0053187,
+      "uncached_generation_cost": 0.0053187,
+      "raw_responses": [
+        {
+          "id": "gen-1776681724-V32pMSbv3jGa6pM4ZsQN",
+          "object": "chat.completion",
+          "created": 1776681724,
+          "model": "deepseek/deepseek-v3.2-20251201",
+          "provider": "AtlasCloud",
+          "system_fingerprint": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\n    \"summary_md\": \"## Defining a Valid Performance Measure\\nMeasuring software delivery performance is difficult due to invisible inventory and simultaneous design/delivery activities. A valid, reliable measure must be defined.\\n\\n## Flaws in Previous Metrics\\nCommon productivity metrics focus on outputs over outcomes and local over global measures.\\n- **Lines of code**: Rewarding volume leads to bloated, costly software. Minimizing lines is also flawed if it sacrifices understandability.\\n- **Velocity**: Designed for capacity planning, its misuse as a productivity metric is flawed. Velocity is relative and team-dependent, leading to gaming (inflated estimates, reduced collaboration) when used for comparison.\\n- **Utilization**: High utilization eliminates slack, causing longer lead times. Queue theory shows lead times approach infinity as utilization nears 100%. Lead time itself is a better productivity metric, requiring economic balancing against utilization.\\n\\n## Criteria for a Successful Measure\\nMeasures should focus on global outcomes (preventing team conflict) and outcomes not output (avoiding busywork).\\n\\n## Four Key Software Delivery Performance Metrics\\nFour measures meet the criteria, focusing on both tempo and stability.\\n1. **Delivery Lead Time**: Time from code committed to successfully running in production. Shorter times enable faster feedback and rapid fixes. Measured in categories from less than one hour to more than six months.\\n2. **Deployment Frequency**: A proxy for batch size, which is hard to measure directly. Frequent deployment indicates small batch sizes, a Lean principle that reduces cycle time and risk. Measured from on-demand (multiple per day) to fewer than once every six months.\\n3. **Time to Restore Service**: How long to restore service after an incident (e.g., outage). Inevitable failures make restoration speed key. Uses same time categories as lead time.\\n4. **Change Fail Rate**: Percentage of changes to production that result in degraded service or require remediation. A key Lean quality metric (percent complete and accurate).\\n\\n## Cluster Analysis of Performance\\nUsing cluster analysis (a data-driven, unbiased statistical grouping technique) on survey data across four years revealed distinct performance categories: high, medium, and low performers. All four metrics were good classifiers, with groups significantly different across all measures.\\n\\n## Performance Trends and the Absence of Trade-offs\\nHigh performers excel at all four measures simultaneously, demonstrating no trade-off between speed (tempo) and stability/quality. This aligns with Agile/Lean predictions. Trends from 2014-2017 show high performers improving or maintaining performance, pulling away from the pack. Low performers maintained throughput until 2017, then increased tempo but lost ground in stability, likely due to ineffective \\\"work harder\\\" approaches without addressing underlying obstacles (e.g., architecture, automation).\\n\\n## Anomaly in 2016 Data\\nIn 2016, medium performers had a worse change fail rate than low performers. A possible explanation is medium performers are in transformation, doing large-scale rearchitecture (new work) while ignoring critical rework, accruing technical debt and fragility.\\n\\n## Impact on Organizational Performance\\nSoftware delivery performance predicts broader organizational outcomes. Survey respondents rated relative organizational performance on profitability, market share, and productivity (a validated scale correlated with ROI). High performers were twice as likely to exceed these goals as low performers. In 2017, research extended to noncommercial goals (quantity, efficiency, customer satisfaction, quality, mission achievement); high performers were also twice as likely to exceed these objectives. This demonstrates software delivery capability provides competitive advantage.\\n\\n## Strategic Implications\\nThe ability to deliver in small batches enables rapid user feedback (e.g., A/B testing). This argues against outsourcing development of strategic software; such capability should be brought in-house (as seen in US government initiatives). Non-strategic software (e.g., office productivity) can be acquired as SaaS. Distinguishing strategic from non-strategic software is critical.\\n\\n## Using the Framework for Evidence-Based Change\\nThe defined, measurable performance framework enables:\\n- Evidence-based decisions to improve performance.\\n- Benchmarking against industry and internal groups.\\n- Tracking improvement over time.\\n- Testing predictive hypotheses about which practices impact performance (e.g., change management boards are negatively correlated with tempo and stability).\\n- Modeling culture quantitatively and its effects.\\n\\n## Cautions on Measurement Deployment\\nMeasurement tools are powerful in a learning culture but dangerous in pathological/bureaucratic cultures where measurement becomes control and fosters fear, leading to wrong numbers. Developing a supportive culture is a prerequisite for scientific performance improvement.\",\n    \"estimated_visible_words\": 485\n}",
+                "refusal": null,
+                "reasoning": null
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 5303,
+            "completion_tokens": 954,
+            "total_tokens": 6257,
+            "cost": 0.0017413,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0017413,
+              "upstream_inference_prompt_cost": 0.00137878,
+              "upstream_inference_completions_cost": 0.00036252
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        },
+        {
+          "id": "gen-1776681767-C55ZRgu2J8rZWY0FCu8F",
+          "object": "chat.completion",
+          "created": 1776681767,
+          "model": "deepseek/deepseek-v3.2-20251201",
+          "provider": "AtlasCloud",
+          "system_fingerprint": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\n    \"summary_md\": \"## Defining a Valid Performance Measure\\nMeasuring software delivery performance is difficult due to invisible inventory and simultaneous design/delivery activities. A valid, reliable measure must be defined.\\n\\n## Flaws in Previous Metrics\\nCommon productivity metrics focus on outputs over outcomes and local over global measures.\\n- **Lines of code**: Rewarding volume leads to bloated, costly software. Minimizing lines is also flawed if it sacrifices understandability.\\n- **Velocity**: Designed for capacity planning, its misuse as a productivity metric is flawed. Velocity is relative and team-dependent, leading to gaming (inflated estimates, reduced collaboration) when used for comparison.\\n- **Utilization**: High utilization eliminates slack, causing longer lead times. Queue theory shows lead times approach infinity as utilization nears 100%. Lead time itself is a better productivity metric, requiring economic balancing against utilization.\\n\\n## Criteria for a Successful Measure\\nMeasures should focus on global outcomes (preventing team conflict) and outcomes not output (avoiding busywork).\\n\\n## Four Key Software Delivery Performance Metrics\\nFour measures meet the criteria, focusing on both tempo and stability.\\n1. **Delivery Lead Time**: Time from code committed to successfully running in production. Shorter times enable faster feedback and rapid fixes. Measured in categories from less than one hour to more than six months.\\n2. **Deployment Frequency**: A proxy for batch size, which is hard to measure directly. Frequent deployment indicates small batch sizes, a Lean principle that reduces cycle time and risk. Measured from on-demand (multiple per day) to fewer than once every six months.\\n3. **Time to Restore Service**: How long to restore service after an incident (e.g., outage). Inevitable failures make restoration speed key. Uses same time categories as lead time.\\n4. **Change Fail Rate**: Percentage of changes to production that result in degraded service or require remediation. A key Lean quality metric (percent complete and accurate).\\n\\n## Cluster Analysis of Performance\\nUsing cluster analysis (a data-driven, unbiased statistical grouping technique) on survey data across four years revealed distinct performance categories: high, medium, and low performers. All four metrics were good classifiers, with groups significantly different across all measures.\\n\\n## Performance Trends and the Absence of Trade-offs\\nHigh performers excel at all four measures simultaneously, demonstrating no trade-off between speed (tempo) and stability/quality. This aligns with Agile/Lean predictions. Trends from 2014-2017 show high performers improving or maintaining performance, pulling away from the pack. Low performers maintained throughput until 2017, then increased tempo but lost ground in stability, likely due to ineffective \\\"work harder\\\" approaches without addressing underlying obstacles (e.g., architecture, automation).\\n\\n## Anomaly in 2016 Data\\nIn 2016, medium performers had a worse change fail rate than low performers. A possible explanation is medium performers are in transformation, doing large-scale rearchitecture (new work) while ignoring critical rework, accruing technical debt and fragility.\\n\\n## Impact on Organizational Performance\\nSoftware delivery performance predicts broader organizational outcomes. Survey respondents rated relative organizational performance on profitability, market share, and productivity (a validated scale correlated with ROI). High performers were twice as likely to exceed these goals as low performers. In 2017, research extended to noncommercial goals (quantity, efficiency, customer satisfaction, quality, mission achievement); high performers were also twice as likely to exceed these objectives. This demonstrates software delivery capability provides competitive advantage.\\n\\n## Strategic Implications\\nThe ability to deliver in small batches enables rapid user feedback (e.g., A/B testing). This argues against outsourcing development of strategic software; such capability should be brought in-house (as seen in US government initiatives). Non-strategic software (e.g., office productivity) can be acquired as SaaS. Distinguishing strategic from non-strategic software is critical.\\n\\n## Using the Framework for Evidence-Based Change\\nThe defined, measurable performance framework enables evidence-based decisions, benchmarking, tracking improvement, and testing predictive hypotheses about which practices impact performance (e.g., change management boards are negatively correlated with tempo and stability). It also enables modeling culture quantitatively and its effects.\\n\\n## Cautions on Measurement Deployment\\nMeasurement tools are powerful in a learning culture but dangerous in pathological/bureaucratic cultures where measurement becomes control and fosters fear, leading to wrong numbers. Developing a supportive culture is a prerequisite for scientific performance improvement.\",\n    \"estimated_visible_words\": 485\n}",
+                "refusal": null,
+                "reasoning": null
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 5704,
+            "completion_tokens": 935,
+            "total_tokens": 6639,
+            "cost": 0.00178842,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 384,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.00178842,
+              "upstream_inference_prompt_cost": 0.00143312,
+              "upstream_inference_completions_cost": 0.0003553
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        },
+        {
+          "id": "gen-1776681805-X3XFrNxiRWK9yx27ISgR",
+          "object": "chat.completion",
+          "created": 1776681805,
+          "model": "deepseek/deepseek-v3.2-20251201",
+          "provider": "AtlasCloud",
+          "system_fingerprint": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\n    \"summary_md\": \"## Defining a Valid Performance Measure\\nMeasuring software delivery performance is difficult due to invisible inventory and simultaneous design/delivery. A valid, reliable measure is needed.\\n\\n## Flaws in Previous Metrics\\nCommon productivity metrics focus on outputs over outcomes and local over global measures.\\n- **Lines of code**: Rewarding volume leads to bloated, costly software. Minimizing lines is also flawed if it sacrifices understandability.\\n- **Velocity**: Designed for capacity planning, its misuse as a productivity metric is flawed. Velocity is relative and team-dependent, leading to gaming when used for comparison.\\n- **Utilization**: High utilization eliminates slack, causing longer lead times. Queue theory shows lead times approach infinity as utilization nears 100%. Lead time is a better productivity metric, requiring economic balancing against utilization.\\n\\n## Criteria for a Successful Measure\\nMeasures should focus on global outcomes (preventing team conflict) and outcomes not output (avoiding busywork).\\n\\n## Four Key Software Delivery Performance Metrics\\nFour measures meet the criteria, focusing on both tempo and stability.\\n1. **Delivery Lead Time**: Time from code committed to successfully running in production. Shorter times enable faster feedback and rapid fixes. Measured in categories from less than one hour to more than six months.\\n2. **Deployment Frequency**: A proxy for batch size, which is hard to measure directly. Frequent deployment indicates small batch sizes, a Lean principle that reduces cycle time and risk. Measured from on-demand (multiple per day) to fewer than once every six months.\\n3. **Time to Restore Service**: How long to restore service after an incident. Inevitable failures make restoration speed key. Uses same time categories as lead time.\\n4. **Change Fail Rate**: Percentage of changes to production that result in degraded service or require remediation. A key Lean quality metric (percent complete and accurate).\\n\\n## Cluster Analysis of Performance\\nUsing cluster analysis on survey data revealed distinct performance categories: high, medium, and low performers. All four metrics were good classifiers, with groups significantly different across all measures.\\n\\n## Performance Trends and the Absence of Trade-offs\\nHigh performers excel at all four measures simultaneously, demonstrating no trade-off between speed (tempo) and stability/quality. Trends from 2014-2017 show high performers improving or maintaining performance. Low performers maintained throughput until 2017, then increased tempo but lost ground in stability, likely due to ineffective \\\"work harder\\\" approaches without addressing underlying obstacles.\\n\\n## Anomaly in 2016 Data\\nIn 2016, medium performers had a worse change fail rate than low performers. A possible explanation is medium performers are in transformation, doing large-scale rearchitecture (new work) while ignoring critical rework, accruing technical debt and fragility.\\n\\n## Impact on Organizational Performance\\nSoftware delivery performance predicts broader organizational outcomes. High performers were twice as likely to exceed profitability, market share, and productivity goals as low performers. In 2017, research extended to noncommercial goals; high performers were also twice as likely to exceed these objectives. This demonstrates software delivery capability provides competitive advantage.\\n\\n## Strategic Implications\\nThe ability to deliver in small batches enables rapid user feedback (e.g., A/B testing). This argues against outsourcing development of strategic software; such capability should be brought in-house. Non-strategic software can be acquired as SaaS. Distinguishing strategic from non-strategic software is critical.\\n\\n## Using the Framework for Evidence-Based Change\\nThe defined, measurable performance framework enables evidence-based decisions, benchmarking, tracking improvement, and testing predictive hypotheses about which practices impact performance.\\n\\n## Cautions on Measurement Deployment\\nMeasurement tools are powerful in a learning culture but dangerous in pathological/bureaucratic cultures where measurement becomes control and fosters fear, leading to wrong numbers. Developing a supportive culture is a prerequisite.\",\n    \"estimated_visible_words\": 485\n}",
+                "refusal": null,
+                "reasoning": null
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 5691,
+            "completion_tokens": 814,
+            "total_tokens": 6505,
+            "cost": 0.00178898,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.00178898,
+              "upstream_inference_prompt_cost": 0.00147966,
+              "upstream_inference_completions_cost": 0.00030932
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "latest_error": null,
+  "resume_events_utc": [],
+  "state_path": "runs/booksum-v2/20260420t103856z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1.state.json",
+  "samples_path": "runs/booksum-v2/20260420t103856z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1.samples.jsonl",
+  "out_path": "runs/booksum-v2/20260420t103856z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1.json",
+  "updated_at_utc": "2026-04-20T10:43:55.318980+00:00"
+}

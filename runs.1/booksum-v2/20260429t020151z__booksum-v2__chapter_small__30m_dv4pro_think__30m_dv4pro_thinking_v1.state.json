@@ -1,0 +1,179 @@
+{
+  "run_id": "20260429t020151z__booksum-v2__chapter_small__30m_dv4pro_think__30m_dv4pro_thinking_v1",
+  "created_at_utc": "2026-04-29T02:01:51.705180+00:00",
+  "status": "running",
+  "run_manifest": {
+    "run_id": "20260429t020151z__booksum-v2__chapter_small__30m_dv4pro_think__30m_dv4pro_thinking_v1",
+    "created_at_utc": "2026-04-29T02:01:51.705180+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v2",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m_dv4pro_thinking",
+    "bench": "chapter_small",
+    "bench_path": "bench/chapter_small.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "30m_dv4pro_thinking_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "1b5c5881f1f4e80ead6bf78a483a31ca72c20cc2093db2ffaaa7a17c6f7431ed",
+    "chapter_model": "deepseek/deepseek-v4-pro",
+    "composer_model": "deepseek/deepseek-v4-pro",
+    "judge_model": "",
+    "provider_preferences": {
+      "chapter": {
+        "order": [],
+        "allow_fallbacks": false
+      },
+      "composer": {
+        "order": [],
+        "allow_fallbacks": false
+      }
+    },
+    "prompt_hashes": {
+      "candidate_dict_sha256": "eef2c48de7cd1a220254fa88646f0b373d79a90971033835702f4fe478e210d3",
+      "chapter_stage_sha256": "7720956c2dd97f0d44615c3d3ced60a81899a4ed0d9288aea7208a56dff0ba29",
+      "composer_stage_sha256": "f6f24cd1c5c7062e0fc55e1361d33b53d9aa9d1c2cc1a239d2caf4777975c06e",
+      "length_control_sha256": "4d7dbfc50c3c8a4cdc7bdbf340c8358fea8c476609ea62d33868f493f497845a",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "2906d9c5015f7f2119361da0251930f92f6cfa699028740d40b5e31357e5fe91",
+      "composer_system_prompt_sha256": "02678c276cb28a372957e1cb1664effd471d145e9e8bec124b8414f9dd6d7848",
+      "render_chapter_user_sha256": "efebadeb9ca47c9ebdc7bd107e1ef76b086635dade60a6051370cc4ee74e0bf8",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "eaf542bdf2754c05fa8ba012be11add95091cd039c9c0b93ec891c8889667e0b",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260429T020151Z__booksum-v2.json",
+    "price_snapshot": "snapshots/pricing/20260429T020151Z__booksum-v2.json",
+    "hypothesis": "",
+    "notes": "dv4-pro thinking test"
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v2",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-19T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "Genre-aware benchmark version. Increment benchmark_version whenever the corpus, split membership logic, rubric builder, scoring rules, judge prompt/model, logging schema, or visible-word-count behavior changes."
+  },
+  "bench_rows": [
+    {
+      "sample_id": "designing-with-data-tan-2017:008",
+      "level": "chapter",
+      "book_id": "designing-with-data-tan-2017",
+      "group_id": "designing-with-data-tan-2017",
+      "chapter_id": "008",
+      "chapter_title": "Chapter 7: Creating the Right Environment",
+      "book_title": "Designing with Data",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "ux_design_and_data_science",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ],
+  "completed_sample_ids": [],
+  "completed_count": 0,
+  "n_total_samples": 1,
+  "current_item": {
+    "kind": "chapter",
+    "phase": "stage",
+    "item_key": "designing-with-data-tan-2017:008",
+    "item": {
+      "sample_id": "designing-with-data-tan-2017:008",
+      "level": "chapter",
+      "book_id": "designing-with-data-tan-2017",
+      "group_id": "designing-with-data-tan-2017",
+      "chapter_id": "008",
+      "chapter_title": "Chapter 7: Creating the Right Environment",
+      "book_title": "Designing with Data",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "ux_design_and_data_science",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    "book_id": "designing-with-data-tan-2017",
+    "chapter_id": "008",
+    "sample_id": "designing-with-data-tan-2017:008",
+    "target_words": 578,
+    "stage_state": {
+      "summary_md": "## Principle 1: Shared Company Culture and Values\n\n### Depth: Communicating Across Levels\n\nDesigning with data aims to reduce reliance on “gut” decision making and can break hierarchical, top-down structures. Data literacy across the company invites discussion, challenge, and the possibility of being wrong. User data—from A/B tests, ethnographic research, prototypes, surveys, usability studies, and more—drives decisions with less risk than executive hunches.\n\nAn early paper by Ron Kohavi, Randal Henne, and Dan Sommerfield (2007), “Practical Guide to Controlled Experiments on the Web: Listen to Your Customers not to the HIPPO,” argued that data resolves conflicts without relying on rank or politics. John Ciancutti, former VP of Product Engineering at Netflix, described how data literacy across all roles became a source of freedom and innovation. Patty McCord, Netflix’s Chief Talent Officer for over 12 years, noted that a mechanism to measure whether you are doing the right thing for customers gives more people a voice in product development.\n\nAt Netflix, the data-driven approach was universally accepted—from CEO Reed Hastings and CPO Neil Hunt down to individual contributors. Even the CEO’s ideas were subjected to the same A/B testing rigor. When Reed had a strong product idea, he would dictate it on “his test cell” (the experimental group he backed), which was tested against other cells proposed by the product team. If his cell didn’t win, it didn’t launch. Upper management holding themselves to the same process reinforced the practice of subjecting ideas to grounded review through experimentation and accepting “failure” as a positive outcome.\n\nShifting to a data-aware framework requires examining how decisions have been made. If one or two individuals previously held decision-making power, they must recognize the value of user data, as their individual weight will diminish—just like any other opinion. Designers and product people should also check their own comfort with data reducing the weight of their personal opinions in the process.",
+      "first_pass_summary_md": "## Principle 1: Shared Company Culture and Values\n\n### Depth: Communicating Across Levels\n\nDesigning with data aims to reduce reliance on “gut” decision making and can break hierarchical, top-down structures. Data literacy across the company invites discussion, challenge, and the possibility of being wrong. User data—from A/B tests, ethnographic research, prototypes, surveys, usability studies, and more—drives decisions with less risk than executive hunches.\n\nAn early paper by Ron Kohavi, Randal Henne, and Dan Sommerfield (2007), “Practical Guide to Controlled Experiments on the Web: Listen to Your Customers not to the HIPPO,” argued that data resolves conflicts without relying on rank or politics. John Ciancutti, former VP of Product Engineering at Netflix, described how data literacy across all roles became a source of freedom and innovation. Patty McCord, Netflix’s Chief Talent Officer for over 12 years, noted that a mechanism to measure whether you are doing the right thing for customers gives more people a voice in product development.\n\nAt Netflix, the data-driven approach was universally accepted—from CEO Reed Hastings and CPO Neil Hunt down to individual contributors. Even the CEO’s ideas were subjected to the same A/B testing rigor. When Reed had a strong product idea, he would dictate it on “his test cell” (the experimental group he backed), which was tested against other cells proposed by the product team. If his cell didn’t win, it didn’t launch. Upper management holding themselves to the same process reinforced the practice of subjecting ideas to grounded review through experimentation and accepting “failure” as a positive outcome.\n\nShifting to a data-aware framework requires examining how decisions have been made. If one or two individuals previously held decision-making power, they must recognize the value of user data, as their individual weight will diminish—just like any other opinion. Designers and product people should also check their own comfort with data reducing the weight of their personal opinions in the process.",
+      "passes_used": 1,
+      "generation_cost": 0.0079301,
+      "uncached_generation_cost": 0.0079301,
+      "raw_responses": [
+        {
+          "id": "gen-1777428136-xWZT9flWcR2NUiTF7Slv",
+          "object": "chat.completion",
+          "created": 1777428136,
+          "model": "deepseek/deepseek-v4-pro-20260423",
+          "provider": "Together",
+          "system_fingerprint": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\n  \"summary_md\": \"## Principle 1: Shared Company Culture and Values\\n\\n### Depth: Communicating Across Levels\\n\\nDesigning with data aims to reduce reliance on “gut” decision making and can break hierarchical, top-down structures. Data literacy across the company invites discussion, challenge, and the possibility of being wrong. User data—from A/B tests, ethnographic research, prototypes, surveys, usability studies, and more—drives decisions with less risk than executive hunches.\\n\\nAn early paper by Ron Kohavi, Randal Henne, and Dan Sommerfield (2007), “Practical Guide to Controlled Experiments on the Web: Listen to Your Customers not to the HIPPO,” argued that data resolves conflicts without relying on rank or politics. John Ciancutti, former VP of Product Engineering at Netflix, described how data literacy across all roles became a source of freedom and innovation. Patty McCord, Netflix’s Chief Talent Officer for over 12 years, noted that a mechanism to measure whether you are doing the right thing for customers gives more people a voice in product development.\\n\\nAt Netflix, the data-driven approach was universally accepted—from CEO Reed Hastings and CPO Neil Hunt down to individual contributors. Even the CEO’s ideas were subjected to the same A/B testing rigor. When Reed had a strong product idea, he would dictate it on “his test cell” (the experimental group he backed), which was tested against other cells proposed by the product team. If his cell didn’t win, it didn’t launch. Upper management holding themselves to the same process reinforced the practice of subjecting ideas to grounded review through experimentation and accepting “failure” as a positive outcome.\\n\\nShifting to a data-aware framework requires examining how decisions have been made. If one or two individuals previously held decision-making power, they must recognize the value of user data, as their individual weight will diminish—just like any other opinion. Designers and product people should also check their own comfort with data reducing the weight of their personal opinions in the process.\"\n  , \"estimated_visible_words\": 278\n}",
+                "refusal": null,
+                "reasoning": "We need to write a faithful chapter summary for Chapter 7: Creating the Right Environment for Data-Aware Design. The source chapter markdown provided is only a snippet, covering the \"Depth: Communicating Across Levels\" subsection under Principle 1. The full chapter likely includes more sections (Breadth, Learning Culture, etc.) as per the table of contents. However, the instruction says: \"Source chapter markdown:\" and then gives only that snippet. The user expects a summary of the entire chapter based on the provided markdown? But the markdown is incomplete. The instruction says: \"Write a faithful chapter summary. Book title: Designing with Data. Chapter title: Chapter 7: Creating the Right Environment. Table of contents: ... Source chapter markdown: [snippet]\". So we must summarize the chapter using only the provided source markdown. The snippet is just one subsection. The summary must be based solely on that source text, not on the table of contents or any external knowledge. The instruction: \"If the source text includes specific examples, case studies, names, numbers, or quotes, you MUST include them in the summary. Do NOT substitute your own knowledge or generic versions of those examples. The source's specific content must remain in the summary.\" So we must summarize the provided snippet faithfully, but the chapter title is \"Creating the Right Environment\" and the snippet is about \"Depth: Communicating Across Levels\" under Principle 1. The summary should reflect that this is part of a larger chapter, but we can only summarize what's given. The target visible words: 578, range 532-624. The snippet is about 400 words. We need to compress it into a summary that fits the word count? That would be longer than the source. That seems odd. Perhaps the user expects us to summarize the entire chapter, but only provided a snippet as an example? The instruction says \"Source chapter markdown:\" and then the snippet. I think we must treat that snippet as the entire source for the chapter. But the chapter title is \"Creating the Right Environment\" and the snippet is just one part. The summary should be faithful to that snippet, but we can't invent the rest. The word count target is 578, which is longer than the snippet. That suggests we need to expand on the concepts, but we can't add unsupported information. The instruction says: \"Never invent claims, examples, or interpretations not supported by the source text.\" So we can't add anything. So we must summarize the snippet, but the target length is longer than the snippet. That's impossible without adding unsupported content. Perhaps the user intended to provide the full chapter markdown but only gave a snippet by mistake. However, we must follow the instruction as given. I'll assume the source chapter markdown is the entire chapter content provided, and I need to summarize it faithfully, but the word count target is unrealistic. I'll produce a summary that is as dense as possible, preserving all concepts, examples, names, quotes, and then I'll check the word count. If it's far below, I'll note that the source is incomplete? But the instruction says \"Do not mention the instructions, target length, or what was omitted.\" So I can't mention that the source is incomplete. I'll just summarize the snippet, and if the word count is low, I'll accept that. But the acceptable range is 532-624, and the snippet is about 400 words. A summary would be shorter, maybe 200 words. That's far below. I think there's a misunderstanding. Perhaps the user expects me to summarize the entire chapter based on the table of contents and the snippet, but that would require inventing content. The instruction explicitly forbids inventing. So I'll stick to summarizing the provided snippet only, and I'll try to expand a bit by explaining the concepts in my own words while staying faithful, but I can't add new examples or claims. I'll rephrase and elaborate on the existing content to reach the word count, but that might be seen as adding interpretation. The instruction says \"Your task is compression, not simplification. Preserve concepts, explanations, terminology, distinctions, and caveats.\" So compression, not expansion. So the summary should be shorter than the source. The target word count is 578, which is longer than the source. That's contradictory. I'll assume the target word count is a mistake and I'll produce a concise summary of the snippet, around 200 words. But the instruction says \"Try to land inside the range on the first pass.\" So I'll aim for the range, but I can't. I'll just summarize the snippet and see what word count I get. I'll include all specific details: the paper by Kohavi et al., the quote from John Ciancutti, Patty McCord's points, Reed Hastings submitting his ideas to A/B testing, etc. I'll structure with a heading \"Principle 1: Shared Company Culture and Values\" and subheading \"Depth: Communicating Across Levels\". I'll compress the text. The source snippet is about 400 words. A compressed summary might be 250 words. Still below 532. I'll try to include more of the original phrasing to increase word count while still compressing. But compression means reducing. I'll aim for a summary that is about 300 words, but that's still below. I'll just produce the best summary I can and ignore the word count target, as it's impossible to meet without violating the rules. I'll note that the source is incomplete? No, I can't mention that. I'll just output the summary.",
+                "reasoning_details": [
+                  {
+                    "type": "reasoning.text",
+                    "text": "We need to write a faithful chapter summary for Chapter 7: Creating the Right Environment for Data-Aware Design. The source chapter markdown provided is only a snippet, covering the \"Depth: Communicating Across Levels\" subsection under Principle 1. The full chapter likely includes more sections (Breadth, Learning Culture, etc.) as per the table of contents. However, the instruction says: \"Source chapter markdown:\" and then gives only that snippet. The user expects a summary of the entire chapter based on the provided markdown? But the markdown is incomplete. The instruction says: \"Write a faithful chapter summary. Book title: Designing with Data. Chapter title: Chapter 7: Creating the Right Environment. Table of contents: ... Source chapter markdown: [snippet]\". So we must summarize the chapter using only the provided source markdown. The snippet is just one subsection. The summary must be based solely on that source text, not on the table of contents or any external knowledge. The instruction: \"If the source text includes specific examples, case studies, names, numbers, or quotes, you MUST include them in the summary. Do NOT substitute your own knowledge or generic versions of those examples. The source's specific content must remain in the summary.\" So we must summarize the provided snippet faithfully, but the chapter title is \"Creating the Right Environment\" and the snippet is about \"Depth: Communicating Across Levels\" under Principle 1. The summary should reflect that this is part of a larger chapter, but we can only summarize what's given. The target visible words: 578, range 532-624. The snippet is about 400 words. We need to compress it into a summary that fits the word count? That would be longer than the source. That seems odd. Perhaps the user expects us to summarize the entire chapter, but only provided a snippet as an example? The instruction says \"Source chapter markdown:\" and then the snippet. I think we must treat that snippet as the entire source for the chapter. But the chapter title is \"Creating the Right Environment\" and the snippet is just one part. The summary should be faithful to that snippet, but we can't invent the rest. The word count target is 578, which is longer than the snippet. That suggests we need to expand on the concepts, but we can't add unsupported information. The instruction says: \"Never invent claims, examples, or interpretations not supported by the source text.\" So we can't add anything. So we must summarize the snippet, but the target length is longer than the snippet. That's impossible without adding unsupported content. Perhaps the user intended to provide the full chapter markdown but only gave a snippet by mistake. However, we must follow the instruction as given. I'll assume the source chapter markdown is the entire chapter content provided, and I need to summarize it faithfully, but the word count target is unrealistic. I'll produce a summary that is as dense as possible, preserving all concepts, examples, names, quotes, and then I'll check the word count. If it's far below, I'll note that the source is incomplete? But the instruction says \"Do not mention the instructions, target length, or what was omitted.\" So I can't mention that the source is incomplete. I'll just summarize the snippet, and if the word count is low, I'll accept that. But the acceptable range is 532-624, and the snippet is about 400 words. A summary would be shorter, maybe 200 words. That's far below. I think there's a misunderstanding. Perhaps the user expects me to summarize the entire chapter based on the table of contents and the snippet, but that would require inventing content. The instruction explicitly forbids inventing. So I'll stick to summarizing the provided snippet only, and I'll try to expand a bit by explaining the concepts in my own words while staying faithful, but I can't add new examples or claims. I'll rephrase and elaborate on the existing content to reach the word count, but that might be seen as adding interpretation. The instruction says \"Your task is compression, not simplification. Preserve concepts, explanations, terminology, distinctions, and caveats.\" So compression, not expansion. So the summary should be shorter than the source. The target word count is 578, which is longer than the source. That's contradictory. I'll assume the target word count is a mistake and I'll produce a concise summary of the snippet, around 200 words. But the instruction says \"Try to land inside the range on the first pass.\" So I'll aim for the range, but I can't. I'll just summarize the snippet and see what word count I get. I'll include all specific details: the paper by Kohavi et al., the quote from John Ciancutti, Patty McCord's points, Reed Hastings submitting his ideas to A/B testing, etc. I'll structure with a heading \"Principle 1: Shared Company Culture and Values\" and subheading \"Depth: Communicating Across Levels\". I'll compress the text. The source snippet is about 400 words. A compressed summary might be 250 words. Still below 532. I'll try to include more of the original phrasing to increase word count while still compressing. But compression means reducing. I'll aim for a summary that is about 300 words, but that's still below. I'll just produce the best summary I can and ignore the word count target, as it's impossible to meet without violating the rules. I'll note that the source is incomplete? No, I can't mention that. I'll just output the summary.",
+                    "format": "unknown",
+                    "index": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 3437,
+            "completion_tokens": 1599,
+            "total_tokens": 5036,
+            "cost": 0.0079301,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 3328,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0079301,
+              "upstream_inference_prompt_cost": 0.0008945,
+              "upstream_inference_completions_cost": 0.0070356
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 1373,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "latest_error": null,
+  "resume_events_utc": [],
+  "state_path": "runs/booksum-v2/20260429t020151z__booksum-v2__chapter_small__30m_dv4pro_think__30m_dv4pro_thinking_v1.state.json",
+  "samples_path": "runs/booksum-v2/20260429t020151z__booksum-v2__chapter_small__30m_dv4pro_think__30m_dv4pro_thinking_v1.samples.jsonl",
+  "out_path": "runs/booksum-v2/20260429t020151z__booksum-v2__chapter_small__30m_dv4pro_think__30m_dv4pro_thinking_v1.json",
+  "updated_at_utc": "2026-04-29T02:07:42.006360+00:00"
+}

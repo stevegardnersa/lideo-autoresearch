@@ -1,0 +1,376 @@
+{
+  "run_manifest": {
+    "run_id": "20260501t091448z__booksum-v4__chapter_fast-v3__30m_gpt5mini_mim__30m_gpt5mini_mimo25pro_notthinking_v1",
+    "created_at_utc": "2026-05-01T09:14:48.472877+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v4",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m_gpt5mini_mimo25pro_notthinking",
+    "bench": "chapter_fast-v3",
+    "bench_path": "bench/chapter_fast-v3.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "30m_gpt5mini_mimo25pro_notthinking_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "43c634d649abf4bbc6b10ba2d5b4b52798d377cee8549765431959cf2d55f405",
+    "chapter_model": "xiaomi/mimo-v2.5-pro",
+    "composer_model": "openai/gpt-5-mini",
+    "judge_model": "",
+    "use_json_schema": false,
+    "thinking_enabled": false,
+    "provider_preferences": {
+      "chapter": {
+        "order": [],
+        "allow_fallbacks": false
+      },
+      "composer": {
+        "order": [],
+        "allow_fallbacks": false
+      }
+    },
+    "prompt_hashes": {
+      "candidate_dict_sha256": "630ff34fa4a245e12f6845da190d0943f5490da1ceccdce6f1871ac7b5d7f294",
+      "chapter_stage_sha256": "a88a674dee026d768cf24edab854295edfb4dd077058454a91952bf32bb86ff2",
+      "composer_stage_sha256": "bf9decf4fd6a8a3e76d03eab69e68f79242d8ac41d33740bf9df908863cf2ecb",
+      "length_control_sha256": "4d7dbfc50c3c8a4cdc7bdbf340c8358fea8c476609ea62d33868f493f497845a",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "2906d9c5015f7f2119361da0251930f92f6cfa699028740d40b5e31357e5fe91",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "efebadeb9ca47c9ebdc7bd107e1ef76b086635dade60a6051370cc4ee74e0bf8",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "eaf542bdf2754c05fa8ba012be11add95091cd039c9c0b93ec891c8889667e0b",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260501T091448Z__booksum-v4.json",
+    "price_snapshot": "snapshots/pricing/20260501T091448Z__booksum-v4.json",
+    "hypothesis": "",
+    "notes": "",
+    "resume_count": 0
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v4",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-30T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "v4: per-profile scoring gates - 30m profiles use min_faithfulness=0.50, min_concept_coverage=0.15. v3 used uniform 0.70/0.60 gates for all profiles.",
+    "scoring_version": "scoring-v1"
+  },
+  "dataset_score": {
+    "n_samples": 2,
+    "hard_fail_rate": 1.0,
+    "mean_quality": 0.39887347648963223,
+    "mean_utility": 0.37774460848963226,
+    "mean_faithfulness": 0.2846153846153846,
+    "mean_concept_coverage": 0.05,
+    "mean_final_length_error_pct": 0.08099123877525,
+    "mean_first_pass_length_error_pct": 0.1249795085699714,
+    "mean_passes_used": 3,
+    "mean_uncached_cost": 0.0564434,
+    "mean_generation_cost": 0.0564434,
+    "by_group_quality": {
+      "do-hard-things-magness-2022": 0.3818024437927664,
+      "getting-things-done-allen-2015": 0.4159445091864981
+    },
+    "by_group_utility": {
+      "do-hard-things-magness-2022": 0.33980979579276643,
+      "getting-things-done-allen-2015": 0.4156794211864981
+    },
+    "slice_summaries": {
+      "genre_macro": {
+        "business_economics_productivity": {
+          "n_samples": 1,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.4159445091864981,
+          "mean_utility": 0.4156794211864981,
+          "mean_faithfulness": 0.23423076923076924,
+          "mean_concept_coverage": 0.0375,
+          "mean_passes_used": 1.0,
+          "mean_uncached_generation_cost": 0.0132544,
+          "mean_generation_cost": 0.0132544
+        },
+        "psychology_health_self_development": {
+          "n_samples": 1,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.3818024437927664,
+          "mean_utility": 0.33980979579276643,
+          "mean_faithfulness": 0.33499999999999996,
+          "mean_concept_coverage": 0.0625,
+          "mean_passes_used": 5.0,
+          "mean_uncached_generation_cost": 0.0996324,
+          "mean_generation_cost": 0.0996324
+        }
+      },
+      "genre_micro": {
+        "performance_and_resilience": {
+          "n_samples": 1,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.3818024437927664,
+          "mean_utility": 0.33980979579276643,
+          "mean_faithfulness": 0.33499999999999996,
+          "mean_concept_coverage": 0.0625,
+          "mean_passes_used": 5.0,
+          "mean_uncached_generation_cost": 0.0996324,
+          "mean_generation_cost": 0.0996324
+        },
+        "productivity": {
+          "n_samples": 1,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.4159445091864981,
+          "mean_utility": 0.4156794211864981,
+          "mean_faithfulness": 0.23423076923076924,
+          "mean_concept_coverage": 0.0375,
+          "mean_passes_used": 1.0,
+          "mean_uncached_generation_cost": 0.0132544,
+          "mean_generation_cost": 0.0132544
+        }
+      },
+      "narrative_vs_expository": {
+        "expository": {
+          "n_samples": 2,
+          "n_books": 2,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.39887347648963223,
+          "mean_utility": 0.37774460848963226,
+          "mean_faithfulness": 0.2846153846153846,
+          "mean_concept_coverage": 0.05,
+          "mean_passes_used": 3.0,
+          "mean_uncached_generation_cost": 0.0564434,
+          "mean_generation_cost": 0.0564434
+        }
+      },
+      "prescriptive_vs_analytical": {
+        "prescriptive": {
+          "n_samples": 2,
+          "n_books": 2,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.39887347648963223,
+          "mean_utility": 0.37774460848963226,
+          "mean_faithfulness": 0.2846153846153846,
+          "mean_concept_coverage": 0.05,
+          "mean_passes_used": 3.0,
+          "mean_uncached_generation_cost": 0.0564434,
+          "mean_generation_cost": 0.0564434
+        }
+      },
+      "quantitative_density": {
+        "high": {
+          "n_samples": 1,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.3818024437927664,
+          "mean_utility": 0.33980979579276643,
+          "mean_faithfulness": 0.33499999999999996,
+          "mean_concept_coverage": 0.0625,
+          "mean_passes_used": 5.0,
+          "mean_uncached_generation_cost": 0.0996324,
+          "mean_generation_cost": 0.0996324
+        },
+        "low": {
+          "n_samples": 1,
+          "n_books": 1,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.4159445091864981,
+          "mean_utility": 0.4156794211864981,
+          "mean_faithfulness": 0.23423076923076924,
+          "mean_concept_coverage": 0.0375,
+          "mean_passes_used": 1.0,
+          "mean_uncached_generation_cost": 0.0132544,
+          "mean_generation_cost": 0.0132544
+        }
+      },
+      "chapter_length_profile": {
+        "mixed": {
+          "n_samples": 2,
+          "n_books": 2,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.39887347648963223,
+          "mean_utility": 0.37774460848963226,
+          "mean_faithfulness": 0.2846153846153846,
+          "mean_concept_coverage": 0.05,
+          "mean_passes_used": 3.0,
+          "mean_uncached_generation_cost": 0.0564434,
+          "mean_generation_cost": 0.0564434
+        }
+      },
+      "benchmark_pool": {
+        "balanced": {
+          "n_samples": 2,
+          "n_books": 2,
+          "hard_fail_rate": 1.0,
+          "mean_quality": 0.39887347648963223,
+          "mean_utility": 0.37774460848963226,
+          "mean_faithfulness": 0.2846153846153846,
+          "mean_concept_coverage": 0.05,
+          "mean_passes_used": 3.0,
+          "mean_uncached_generation_cost": 0.0564434,
+          "mean_generation_cost": 0.0564434
+        }
+      }
+    },
+    "worst_genre_macro": {
+      "slice_value": "psychology_health_self_development",
+      "n_samples": 1,
+      "n_books": 1,
+      "hard_fail_rate": 1.0,
+      "mean_quality": 0.3818024437927664,
+      "mean_utility": 0.33980979579276643,
+      "mean_faithfulness": 0.33499999999999996,
+      "mean_concept_coverage": 0.0625,
+      "mean_passes_used": 5.0,
+      "mean_uncached_generation_cost": 0.0996324,
+      "mean_generation_cost": 0.0996324
+    },
+    "n_genre_macros": 2,
+    "genre_macro_spread_utility": 0.07586962539373165
+  },
+  "sample_scores": [
+    {
+      "sample_id": "do-hard-things-magness-2022:003",
+      "group_id": "do-hard-things-magness-2022",
+      "level": "chapter",
+      "hard_fail": true,
+      "hard_fail_reasons": [
+        "length_outside_hard_tolerance",
+        "concept_coverage_below_threshold"
+      ],
+      "quality": 0.3818024437927664,
+      "utility": 0.33980979579276643,
+      "resolved_faithfulness": 0.33499999999999996,
+      "resolved_concept_coverage": 0.0625,
+      "resolved_qualifier_preservation": 0.0,
+      "resolved_no_fluff": 1.0,
+      "resolved_structure_quality": 0.7083333333333334,
+      "deterministic": {
+        "visible_words": 1176,
+        "first_pass_visible_words": 1266,
+        "final_length_error_pct": 0.1495601173020528,
+        "first_pass_length_error_pct": 0.2375366568914956,
+        "final_length_accuracy": 0.5021994134897361,
+        "first_pass_length_accuracy": 0.06231671554252194,
+        "readability_band": 1.0,
+        "heading_coverage": 0.4166666666666667,
+        "concept_phrase_coverage": 0.0,
+        "mechanism_phrase_coverage": 0.0,
+        "qualifier_phrase_coverage": 0.0,
+        "key_term_coverage": 0.6,
+        "number_coverage": 0.6,
+        "redundancy_score": 1.0,
+        "structure_proxy": 0.7083333333333334,
+        "faithfulness_proxy": 0.33499999999999996,
+        "concept_proxy": 0.0625
+      }
+    },
+    {
+      "sample_id": "getting-things-done-allen-2015:013",
+      "group_id": "getting-things-done-allen-2015",
+      "level": "chapter",
+      "hard_fail": true,
+      "hard_fail_reasons": [
+        "concept_coverage_below_threshold"
+      ],
+      "quality": 0.4159445091864981,
+      "utility": 0.4156794211864981,
+      "resolved_faithfulness": 0.23423076923076924,
+      "resolved_concept_coverage": 0.0375,
+      "resolved_qualifier_preservation": 0.0,
+      "resolved_no_fluff": 0.9976322020520916,
+      "resolved_structure_quality": 0.625,
+      "deterministic": {
+        "visible_words": 1272,
+        "first_pass_visible_words": 1272,
+        "final_length_error_pct": 0.012422360248447204,
+        "first_pass_length_error_pct": 0.012422360248447204,
+        "final_length_accuracy": 1.0,
+        "first_pass_length_accuracy": 1.0,
+        "readability_band": 0.7162162162162162,
+        "heading_coverage": 0.25,
+        "concept_phrase_coverage": 0.0,
+        "mechanism_phrase_coverage": 0.0,
+        "qualifier_phrase_coverage": 0.0,
+        "key_term_coverage": 0.45,
+        "number_coverage": 0.46153846153846156,
+        "redundancy_score": 0.9976322020520916,
+        "structure_proxy": 0.625,
+        "faithfulness_proxy": 0.23423076923076924,
+        "concept_proxy": 0.0375
+      }
+    }
+  ],
+  "samples": [
+    {
+      "sample_id": "do-hard-things-magness-2022:003",
+      "level": "chapter",
+      "group_id": "do-hard-things-magness-2022",
+      "target_words": 1023,
+      "summary_visible_words": 1176,
+      "passes_used": 5,
+      "generation_cost": 0.0996324,
+      "uncached_generation_cost": 0.0996324
+    },
+    {
+      "sample_id": "getting-things-done-allen-2015:013",
+      "level": "chapter",
+      "group_id": "getting-things-done-allen-2015",
+      "target_words": 1288,
+      "summary_visible_words": 1272,
+      "passes_used": 1,
+      "generation_cost": 0.0132544,
+      "uncached_generation_cost": 0.0132544
+    }
+  ],
+  "traces": [
+    {
+      "sample_id": "do-hard-things-magness-2022:003",
+      "book_id": "do-hard-things-magness-2022",
+      "chapter_id": "003",
+      "target_words": 1023,
+      "output_words": 1176,
+      "passes_used": 5,
+      "generation_cost": 0.0996324,
+      "uncached_generation_cost": 0.0996324,
+      "judge_rationale": "",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "performance_and_resilience",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "getting-things-done-allen-2015:013",
+      "book_id": "getting-things-done-allen-2015",
+      "chapter_id": "013",
+      "target_words": 1288,
+      "output_words": 1272,
+      "passes_used": 1,
+      "generation_cost": 0.0132544,
+      "uncached_generation_cost": 0.0132544,
+      "judge_rationale": "",
+      "genre_macro": "business_economics_productivity",
+      "genre_micro": "productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "low",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ],
+  "scoring_gates_override": {
+    "min_faithfulness": 0.2,
+    "min_concept_coverage": 0.1,
+    "max_final_length_error_pct": null,
+    "max_passes": null
+  }
+}

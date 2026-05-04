@@ -1,0 +1,334 @@
+{
+  "run_id": "20260421t071736z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1",
+  "created_at_utc": "2026-04-21T07:17:36.643292+00:00",
+  "status": "running",
+  "run_manifest": {
+    "run_id": "20260421t071736z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1",
+    "created_at_utc": "2026-04-21T07:17:36.643292+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v2",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m",
+    "bench": "chapter_fast",
+    "bench_path": "bench/chapter_fast.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "baseline_30m_dense_recall_then_compose_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "f20755bc9c265e962f6c5efc27dc025a2f6d1d0f833247109fec32cfc192c686",
+    "chapter_model": "deepseek/deepseek-v3.2",
+    "composer_model": "openai/gpt-5-mini",
+    "judge_model": "",
+    "provider_preferences": {
+      "chapter": {
+        "order": [],
+        "allow_fallbacks": false
+      },
+      "composer": {
+        "order": [],
+        "allow_fallbacks": false
+      }
+    },
+    "prompt_hashes": {
+      "candidate_dict_sha256": "b5aa3e978eef7a2214fe18488b64a7ce9cef66b1907717aebbf43238900b4ad1",
+      "chapter_stage_sha256": "b15d8b55df3361296b798d54b0009cbdd9cc71c1cc2ee9da175421b6f8231c99",
+      "composer_stage_sha256": "bc86d8b0c640e4b69c08546f4e53a8c383aa3f08d14c6b44ea65ffc9d766dfa0",
+      "length_control_sha256": "4d7dbfc50c3c8a4cdc7bdbf340c8358fea8c476609ea62d33868f493f497845a",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "596a636d1bec8750f4735016dafe5e1fcfb73ecef6a244eabdf0b8752e8bbcf0",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "efebadeb9ca47c9ebdc7bd107e1ef76b086635dade60a6051370cc4ee74e0bf8",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "d7d0b3f7a575b67c2de1def08923fd3fc2376339dfbf56c1d5803702b98398bc",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260421T071736Z__booksum-v2.json",
+    "price_snapshot": "snapshots/pricing/20260421T071736Z__booksum-v2.json",
+    "hypothesis": "",
+    "notes": ""
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v2",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-19T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "Genre-aware benchmark version. Increment benchmark_version whenever the corpus, split membership logic, rubric builder, scoring rules, judge prompt/model, logging schema, or visible-word-count behavior changes."
+  },
+  "bench_rows": [
+    {
+      "sample_id": "accelerate-forsgren-2018:018",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "018",
+      "chapter_title": "Chapter 16 - High-Performance Leadership and Management",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:003",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "003",
+      "chapter_title": "Chapter 1 - Accelerate",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:004",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "004",
+      "chapter_title": "Chapter 2 - Measuring Performance",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:022",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "022",
+      "chapter_title": "Appendix C: Statistical Methods Used in Our Research",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:003",
+      "level": "chapter",
+      "book_id": "atomic-habits-clear-2018",
+      "group_id": "atomic-habits-clear-2018",
+      "chapter_id": "003",
+      "chapter_title": "The Fundamentals: Why Tiny Changes Make a Big Difference",
+      "book_title": "Atomic Habits",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:032",
+      "level": "chapter",
+      "book_id": "atomic-habits-clear-2018",
+      "group_id": "atomic-habits-clear-2018",
+      "chapter_id": "032",
+      "chapter_title": "How to Apply These Ideas to Business",
+      "book_title": "Atomic Habits",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:005",
+      "level": "chapter",
+      "book_id": "atomic-habits-clear-2018",
+      "group_id": "atomic-habits-clear-2018",
+      "chapter_id": "005",
+      "chapter_title": "2: How Your Habits Shape Your Identity (and Vice Versa)",
+      "book_title": "Atomic Habits",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:028",
+      "level": "chapter",
+      "book_id": "atomic-habits-clear-2018",
+      "group_id": "atomic-habits-clear-2018",
+      "chapter_id": "028",
+      "chapter_title": "20: The Downside of Creating Good Habits",
+      "book_title": "Atomic Habits",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ],
+  "completed_sample_ids": [
+    "accelerate-forsgren-2018:018",
+    "accelerate-forsgren-2018:003",
+    "accelerate-forsgren-2018:004",
+    "accelerate-forsgren-2018:022",
+    "atomic-habits-clear-2018:003"
+  ],
+  "completed_count": 5,
+  "n_total_samples": 8,
+  "current_item": {
+    "kind": "chapter",
+    "phase": "stage",
+    "item_key": "atomic-habits-clear-2018:032",
+    "item": {
+      "sample_id": "atomic-habits-clear-2018:032",
+      "level": "chapter",
+      "book_id": "atomic-habits-clear-2018",
+      "group_id": "atomic-habits-clear-2018",
+      "chapter_id": "032",
+      "chapter_title": "How to Apply These Ideas to Business",
+      "book_title": "Atomic Habits",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    "book_id": "atomic-habits-clear-2018",
+    "chapter_id": "032",
+    "sample_id": "atomic-habits-clear-2018:032",
+    "target_words": 211,
+    "stage_state": {
+      "summary_md": "## Applying the Four Laws to Business\n\nThe chapter outlines applying the Four Laws of Behavior Change to business systems to shape employee and customer habits.\n\n### Make It Obvious: Engineering the Environment\n\nRedesign the environment to make desired behaviors more visible. Example: Massachusetts General Hospital's cafeteria placed water at eye level and soda in the back, increasing water sales by 25.8% and decreasing soda sales.\n\n### Make It Attractive: Leveraging Social Norms\n\nHabits are attractive when they help gain status or approval. Use social proof: highlight what peers (the \"many\") or industry leaders (the \"powerful\") do. Temptation bundling links a wanted action with a needed one. Example: ABC's 1970s Thursday lineup bundled popular shows with new ones to boost ratings.\n\n### Make It Easy: Reducing Friction\n\nThe Law of Least Effort: people choose the path of least resistance. Reduce friction for good habits. Example: Japanese factory's \"addition by subtraction\" removed unnecessary steps. Onetime actions automate good habits. Example: The cash register, invented by James Ritty and perfected by John Henry Patterson, made honest transactions easy.\n\n### Make It Satisfying: Immediate Rewards\n\nThe Cardinal Rule: what is immediately rewarded is repeated. Use immediate reinforcement. Example: Safeguard soap in Pakistan made handwashing pleasurable (lather, smell), increasing usage more than health education. For employees, visual measures like Trent Dyrsmid's Paper Clip Strategy provide satisfying evidence of progress.\n\n### Caveats and Advanced Application\n\nGoodhart's Law warns a measure that becomes a target ceases to be good. Pair habit tracking with nonscale victories. Professionals stick to habits when bored, unlike amateurs. Periodically review systems. Example: The Los Angeles Lakers' Career Best Effort (CBE) program under Pat Riley systematically measured effort to drive improvement.",
+      "first_pass_summary_md": "## Applying the Four Laws to Business\n\nThe chapter outlines how the core principles of atomic habits—the Four Laws of Behavior Change—can be applied to improve business outcomes. The focus is on designing systems that make good habits obvious, attractive, easy, and satisfying for employees and customers, while making undesirable behaviors the opposite.\n\n### Make It Obvious: Engineering the Environment\n\nBusinesses can redesign the environment to make desired behaviors more visible. The example of Massachusetts General Hospital's cafeteria shows how a simple design change—placing water at eye level and soda in the back—increased water sales by 25.8% and decreased soda sales. The principle is to engineer obvious visual cues for the actions you want to encourage.\n\n### Make It Attractive: Leveraging Social Norms and Temptation Bundling\n\nHabits are attractive when they help us fit in, gain status, or win approval. Businesses can harness this by highlighting what peers are doing (the \"many\") or what industry leaders are doing (the \"powerful\"). Temptation bundling, which links an action you want to do with an action you need to do, can also be applied. The example given is ABC's Thursday night TV lineup in the 1970s, which bundled popular shows (\"want\") with new shows (\"need\") to boost ratings.\n\n### Make It Easy: Reducing Friction\n\nThe Law of Least Effort states people will naturally gravitate toward the option requiring the least work. Businesses should reduce the friction associated with good habits. The Japanese factory example illustrates \"addition by subtraction,\" where removing unnecessary steps streamlined work. Onetime actions that automate good habits are powerful, like using technology to schedule social media posts or automate savings. The cash register, invented by James Ritty and perfected by John Henry Patterson, is cited as a device that made honest transactions easy and automatic for clerks.\n\n### Make It Satisfying: Reinforcing with Immediate Rewards\n\nThe Cardinal Rule of Behavior Change is that what is immediately rewarded is repeated. Businesses can use immediate reinforcement to build customer habits. The example of Safeguard soap in Pakistan shows that making handwashing a pleasurable sensory experience (nice lather, pleasant smell) increased usage more than health education alone. For employees, visual measures of progress, like the Paper Clip Strategy used by Trent Dyrsmid, provide satisfying immediate evidence of accomplishment. Habit tracking can be automated or manual, but its key benefit is making progress obvious.\n\n### Caveats and Advanced Application\n\nGoodhart's Law warns that when a measure becomes a target, it ceases to be a good measure. Therefore, businesses should pair habit tracking with nonscale victories—other indicators of success. The chapter also notes that professionals stick to their habits even when bored, a key differentiator from amateurs. Finally, businesses must periodically review and adjust their systems, as rigid adherence to outdated habits can be a downside. The example of the Los Angeles Lakers' Career Best Effort (CBE) program under Pat Riley shows how systematic reflection and measurement of effort, not just outcomes, drove improvement.",
+      "passes_used": 2,
+      "generation_cost": 0.003618416,
+      "uncached_generation_cost": 0.003618416,
+      "raw_responses": [
+        {
+          "id": "gen-1776756392-lfZW62sfuz5XA9LxJ0Is",
+          "object": "chat.completion",
+          "created": 1776756392,
+          "model": "deepseek/deepseek-v3.2-20251201",
+          "provider": "AtlasCloud",
+          "system_fingerprint": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\n    \"summary_md\": \"## Applying the Four Laws to Business\\n\\nThe chapter outlines how the core principles of atomic habits—the Four Laws of Behavior Change—can be applied to improve business outcomes. The focus is on designing systems that make good habits obvious, attractive, easy, and satisfying for employees and customers, while making undesirable behaviors the opposite.\\n\\n### Make It Obvious: Engineering the Environment\\n\\nBusinesses can redesign the environment to make desired behaviors more visible. The example of Massachusetts General Hospital's cafeteria shows how a simple design change—placing water at eye level and soda in the back—increased water sales by 25.8% and decreased soda sales. The principle is to engineer obvious visual cues for the actions you want to encourage.\\n\\n### Make It Attractive: Leveraging Social Norms and Temptation Bundling\\n\\nHabits are attractive when they help us fit in, gain status, or win approval. Businesses can harness this by highlighting what peers are doing (the \\\"many\\\") or what industry leaders are doing (the \\\"powerful\\\"). Temptation bundling, which links an action you want to do with an action you need to do, can also be applied. The example given is ABC's Thursday night TV lineup in the 1970s, which bundled popular shows (\\\"want\\\") with new shows (\\\"need\\\") to boost ratings.\\n\\n### Make It Easy: Reducing Friction\\n\\nThe Law of Least Effort states people will naturally gravitate toward the option requiring the least work. Businesses should reduce the friction associated with good habits. The Japanese factory example illustrates \\\"addition by subtraction,\\\" where removing unnecessary steps streamlined work. Onetime actions that automate good habits are powerful, like using technology to schedule social media posts or automate savings. The cash register, invented by James Ritty and perfected by John Henry Patterson, is cited as a device that made honest transactions easy and automatic for clerks.\\n\\n### Make It Satisfying: Reinforcing with Immediate Rewards\\n\\nThe Cardinal Rule of Behavior Change is that what is immediately rewarded is repeated. Businesses can use immediate reinforcement to build customer habits. The example of Safeguard soap in Pakistan shows that making handwashing a pleasurable sensory experience (nice lather, pleasant smell) increased usage more than health education alone. For employees, visual measures of progress, like the Paper Clip Strategy used by Trent Dyrsmid, provide satisfying immediate evidence of accomplishment. Habit tracking can be automated or manual, but its key benefit is making progress obvious.\\n\\n### Caveats and Advanced Application\\n\\nGoodhart's Law warns that when a measure becomes a target, it ceases to be a good measure. Therefore, businesses should pair habit tracking with nonscale victories—other indicators of success. The chapter also notes that professionals stick to their habits even when bored, a key differentiator from amateurs. Finally, businesses must periodically review and adjust their systems, as rigid adherence to outdated habits can be a downside. The example of the Los Angeles Lakers' Career Best Effort (CBE) program under Pat Riley shows how systematic reflection and measurement of effort, not just outcomes, drove improvement.\",\n    \"estimated_visible_words\": 211\n}",
+                "refusal": null,
+                "reasoning": null
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 6462,
+            "completion_tokens": 661,
+            "total_tokens": 7123,
+            "cost": 0.00188138,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 384,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.00188138,
+              "upstream_inference_prompt_cost": 0.0016302,
+              "upstream_inference_completions_cost": 0.00025118
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        },
+        {
+          "id": "gen-1776756424-4zM4I9MgkAuvn2uFPKza",
+          "object": "chat.completion",
+          "created": 1776756424,
+          "model": "deepseek/deepseek-v3.2-20251201",
+          "provider": "Baidu",
+          "system_fingerprint": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\n    \"summary_md\": \"## Applying the Four Laws to Business\\n\\nThe chapter outlines applying the Four Laws of Behavior Change to business systems to shape employee and customer habits.\\n\\n### Make It Obvious: Engineering the Environment\\n\\nRedesign the environment to make desired behaviors more visible. Example: Massachusetts General Hospital's cafeteria placed water at eye level and soda in the back, increasing water sales by 25.8% and decreasing soda sales.\\n\\n### Make It Attractive: Leveraging Social Norms\\n\\nHabits are attractive when they help gain status or approval. Use social proof: highlight what peers (the \\\"many\\\") or industry leaders (the \\\"powerful\\\") do. Temptation bundling links a wanted action with a needed one. Example: ABC's 1970s Thursday lineup bundled popular shows with new ones to boost ratings.\\n\\n### Make It Easy: Reducing Friction\\n\\nThe Law of Least Effort: people choose the path of least resistance. Reduce friction for good habits. Example: Japanese factory's \\\"addition by subtraction\\\" removed unnecessary steps. Onetime actions automate good habits. Example: The cash register, invented by James Ritty and perfected by John Henry Patterson, made honest transactions easy.\\n\\n### Make It Satisfying: Immediate Rewards\\n\\nThe Cardinal Rule: what is immediately rewarded is repeated. Use immediate reinforcement. Example: Safeguard soap in Pakistan made handwashing pleasurable (lather, smell), increasing usage more than health education. For employees, visual measures like Trent Dyrsmid's Paper Clip Strategy provide satisfying evidence of progress.\\n\\n### Caveats and Advanced Application\\n\\nGoodhart's Law warns a measure that becomes a target ceases to be good. Pair habit tracking with nonscale victories. Professionals stick to habits when bored, unlike amateurs. Periodically review systems. Example: The Los Angeles Lakers' Career Best Effort (CBE) program under Pat Riley systematically measured effort to drive improvement.\",\n    \"estimated_visible_words\": 226\n}",
+                "refusal": null,
+                "reasoning": null
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 6269,
+            "completion_tokens": 416,
+            "total_tokens": 6685,
+            "cost": 0.001737036,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.001737036,
+              "upstream_inference_prompt_cost": 0.001579788,
+              "upstream_inference_completions_cost": 0.000157248
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "latest_error": null,
+  "resume_events_utc": [],
+  "state_path": "runs/booksum-v2/20260421t071736z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1.state.json",
+  "samples_path": "runs/booksum-v2/20260421t071736z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1.samples.jsonl",
+  "out_path": "runs/booksum-v2/20260421t071736z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1.json",
+  "updated_at_utc": "2026-04-21T07:27:23.813887+00:00"
+}

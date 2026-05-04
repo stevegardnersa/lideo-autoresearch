@@ -1,0 +1,228 @@
+{
+  "run_id": "20260421t071017z__booksum-v2__book_gate__30m__baseline_30m_dense_recall_then_compose_v1",
+  "created_at_utc": "2026-04-21T07:10:17.242994+00:00",
+  "status": "running",
+  "run_manifest": {
+    "run_id": "20260421t071017z__booksum-v2__book_gate__30m__baseline_30m_dense_recall_then_compose_v1",
+    "created_at_utc": "2026-04-21T07:10:17.242994+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v2",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m",
+    "bench": "book_gate",
+    "bench_path": "bench/book_gate.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "baseline_30m_dense_recall_then_compose_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "f20755bc9c265e962f6c5efc27dc025a2f6d1d0f833247109fec32cfc192c686",
+    "chapter_model": "deepseek/deepseek-v3.2",
+    "composer_model": "openai/gpt-5-mini",
+    "judge_model": "",
+    "provider_preferences": {
+      "chapter": {
+        "order": [],
+        "allow_fallbacks": false
+      },
+      "composer": {
+        "order": [],
+        "allow_fallbacks": false
+      }
+    },
+    "prompt_hashes": {
+      "candidate_dict_sha256": "b5aa3e978eef7a2214fe18488b64a7ce9cef66b1907717aebbf43238900b4ad1",
+      "chapter_stage_sha256": "b15d8b55df3361296b798d54b0009cbdd9cc71c1cc2ee9da175421b6f8231c99",
+      "composer_stage_sha256": "bc86d8b0c640e4b69c08546f4e53a8c383aa3f08d14c6b44ea65ffc9d766dfa0",
+      "length_control_sha256": "4d7dbfc50c3c8a4cdc7bdbf340c8358fea8c476609ea62d33868f493f497845a",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "596a636d1bec8750f4735016dafe5e1fcfb73ecef6a244eabdf0b8752e8bbcf0",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "efebadeb9ca47c9ebdc7bd107e1ef76b086635dade60a6051370cc4ee74e0bf8",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "d7d0b3f7a575b67c2de1def08923fd3fc2376339dfbf56c1d5803702b98398bc",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260421T071017Z__booksum-v2.json",
+    "price_snapshot": "snapshots/pricing/20260421T071017Z__booksum-v2.json",
+    "hypothesis": "",
+    "notes": ""
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v2",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-19T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "Genre-aware benchmark version. Increment benchmark_version whenever the corpus, split membership logic, rubric builder, scoring rules, judge prompt/model, logging schema, or visible-word-count behavior changes."
+  },
+  "bench_rows": [
+    {
+      "sample_id": "emotionally-intelligent-design-bennet-2020",
+      "level": "book",
+      "book_id": "emotionally-intelligent-design-bennet-2020",
+      "group_id": "emotionally-intelligent-design-bennet-2020",
+      "book_title": "Emotionally Intelligent Design",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "design_and_ux",
+      "narrative_vs_expository": "mixed",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "low",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "how-to-stop-worrying-and-start-living-carnegie-2022",
+      "level": "book",
+      "book_id": "how-to-stop-worrying-and-start-living-carnegie-2022",
+      "group_id": "how-to-stop-worrying-and-start-living-carnegie-2022",
+      "book_title": "How To Stop Worrying And Start Living",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "self_help_mindset",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "low",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "the-5-am-club-own-your-morning-elevate-your-life-sharma-2018",
+      "level": "book",
+      "book_id": "the-5-am-club-own-your-morning-elevate-your-life-sharma-2018",
+      "group_id": "the-5-am-club-own-your-morning-elevate-your-life-sharma-2018",
+      "book_title": "The 5 AM Club: Own Your Morning. Elevate Your Life.",
+      "genre_macro": "business_economics_productivity",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "mixed",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "medium",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "the-strange-death-of-europe-murray-2017",
+      "level": "book",
+      "book_id": "the-strange-death-of-europe-murray-2017",
+      "group_id": "the-strange-death-of-europe-murray-2017",
+      "book_title": "The Strange Death of Europe",
+      "genre_macro": "history_biography_politics_social_analysis",
+      "genre_micro": "politics_social_analysis",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ],
+  "completed_sample_ids": [],
+  "completed_count": 0,
+  "n_total_samples": 4,
+  "current_item": {
+    "kind": "book",
+    "phase": "chapters",
+    "item_key": "emotionally-intelligent-design-bennet-2020",
+    "item": {
+      "sample_id": "emotionally-intelligent-design-bennet-2020",
+      "level": "book",
+      "book_id": "emotionally-intelligent-design-bennet-2020",
+      "group_id": "emotionally-intelligent-design-bennet-2020",
+      "book_title": "Emotionally Intelligent Design",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "design_and_ux",
+      "narrative_vs_expository": "mixed",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "low",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    "book_id": "emotionally-intelligent-design-bennet-2020",
+    "sample_id": "emotionally-intelligent-design-bennet-2020",
+    "chapter_targets": [
+      347,
+      735,
+      604,
+      773,
+      368,
+      255,
+      488,
+      599,
+      496,
+      330,
+      541
+    ],
+    "chapter_outputs": [],
+    "chapter_passes": [],
+    "total_generation_cost": 0,
+    "total_uncached_cost": 0,
+    "current_stage": {
+      "stage_kind": "chapter",
+      "chapter_id": "000",
+      "stage_state": {
+        "summary_md": "# That Feeling When (TFW)…\n\n## The Emotional Complexity of Digital Life\nOur relationship with technology is complicated and accelerating, with its most significant impacts often invisible. We experience pronounced emotional highs and lows, from camaraderie after serendipitous digital connections to 'rage hangovers' following difficult news cycles.\n\n## Technology's Insufficient Reach\nTechnology is embedded in daily life, collecting secrets, witnessing actions, and shaping relationships. Despite this deep integration, it remains radically insufficient for addressing our messy, beautiful, emotional reality.\n\n## The Misdirected Focus\nDesign often prioritizes ease, efficiency, and convenience, potentially overlooking essential human needs. We worry about technology capturing our attention while it also toys with our affections. We idealize calmness, yet technology frequently takes us on an emotional rollercoaster.\n\n## The Core Argument\nThe current moment demands technology that respects what it means to be human. This necessity forms the central premise of the book.",
+        "first_pass_summary_md": "# That Feeling When (TFW)…\n\n## The Emotional Complexity of Digital Life\nOur relationship with technology is complicated and accelerating, with its most significant impacts often invisible. We experience pronounced emotional highs and lows, from camaraderie after serendipitous digital connections to 'rage hangovers' following difficult news cycles.\n\n## Technology's Insufficient Reach\nTechnology is embedded in daily life, collecting secrets, witnessing actions, and shaping relationships. Despite this deep integration, it remains radically insufficient for addressing our messy, beautiful, emotional reality.\n\n## The Misdirected Focus\nDesign often prioritizes ease, efficiency, and convenience, potentially overlooking essential human needs. We worry about technology capturing our attention while it also toys with our affections. We idealize calmness, yet technology frequently takes us on an emotional rollercoaster.\n\n## The Core Argument\nThe current moment demands technology that respects what it means to be human. This necessity forms the central premise of the book.",
+        "passes_used": 1,
+        "generation_cost": 0.00033852,
+        "uncached_generation_cost": 0.00033852,
+        "raw_responses": [
+          {
+            "id": "gen-1776755418-RvmUaB82YTKsXIUy5GCS",
+            "object": "chat.completion",
+            "created": 1776755418,
+            "model": "deepseek/deepseek-v3.2-20251201",
+            "provider": "Chutes",
+            "system_fingerprint": null,
+            "choices": [
+              {
+                "index": 0,
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "message": {
+                  "role": "assistant",
+                  "content": "{ \"summary_md\": \"# That Feeling When (TFW)…\\n\\n## The Emotional Complexity of Digital Life\\nOur relationship with technology is complicated and accelerating, with its most significant impacts often invisible. We experience pronounced emotional highs and lows, from camaraderie after serendipitous digital connections to 'rage hangovers' following difficult news cycles.\\n\\n## Technology's Insufficient Reach\\nTechnology is embedded in daily life, collecting secrets, witnessing actions, and shaping relationships. Despite this deep integration, it remains radically insufficient for addressing our messy, beautiful, emotional reality.\\n\\n## The Misdirected Focus\\nDesign often prioritizes ease, efficiency, and convenience, potentially overlooking essential human needs. We worry about technology capturing our attention while it also toys with our affections. We idealize calmness, yet technology frequently takes us on an emotional rollercoaster.\\n\\n## The Core Argument\\nThe current moment demands technology that respects what it means to be human. This necessity forms the central premise of the book.\" , \"estimated_visible_words\": 150 }",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 882,
+              "completion_tokens": 218,
+              "total_tokens": 1100,
+              "cost": 0.00033852,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00033852,
+                "upstream_inference_prompt_cost": 0.00024696,
+                "upstream_inference_completions_cost": 9.156e-05
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "latest_error": null,
+  "resume_events_utc": [],
+  "state_path": "runs/booksum-v2/20260421t071017z__booksum-v2__book_gate__30m__baseline_30m_dense_recall_then_compose_v1.state.json",
+  "samples_path": "runs/booksum-v2/20260421t071017z__booksum-v2__book_gate__30m__baseline_30m_dense_recall_then_compose_v1.samples.jsonl",
+  "out_path": "runs/booksum-v2/20260421t071017z__booksum-v2__book_gate__30m__baseline_30m_dense_recall_then_compose_v1.json",
+  "updated_at_utc": "2026-04-21T07:11:15.027873+00:00"
+}

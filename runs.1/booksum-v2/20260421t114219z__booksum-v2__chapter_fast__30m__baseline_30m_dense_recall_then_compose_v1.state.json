@@ -1,0 +1,230 @@
+{
+  "run_id": "20260421t114219z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1",
+  "created_at_utc": "2026-04-21T11:42:19.155309+00:00",
+  "status": "running",
+  "run_manifest": {
+    "run_id": "20260421t114219z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1",
+    "created_at_utc": "2026-04-21T11:42:19.155309+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v2",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m",
+    "bench": "chapter_fast",
+    "bench_path": "bench/chapter_fast.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "baseline_30m_dense_recall_then_compose_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "b916c7f59ea616bc81e03ad2b46e5a552c81209b55ec1e7a8fc9a50b8f020275",
+    "chapter_model": "minimax/minimax-m2.7",
+    "composer_model": "openai/gpt-5-mini",
+    "judge_model": "",
+    "provider_preferences": {
+      "chapter": {
+        "order": [],
+        "allow_fallbacks": false
+      },
+      "composer": {
+        "order": [],
+        "allow_fallbacks": false
+      }
+    },
+    "prompt_hashes": {
+      "candidate_dict_sha256": "d672246c2a0b3fb8fa1f920406d89ce5dffc287414afbdac2aec96bb6e1f5d2f",
+      "chapter_stage_sha256": "7ff688cf3a3f506ad98245f7afe8c70deb2c1680bf81e6460ef19652a2c816b8",
+      "composer_stage_sha256": "bc86d8b0c640e4b69c08546f4e53a8c383aa3f08d14c6b44ea65ffc9d766dfa0",
+      "length_control_sha256": "4d7dbfc50c3c8a4cdc7bdbf340c8358fea8c476609ea62d33868f493f497845a",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "596a636d1bec8750f4735016dafe5e1fcfb73ecef6a244eabdf0b8752e8bbcf0",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "efebadeb9ca47c9ebdc7bd107e1ef76b086635dade60a6051370cc4ee74e0bf8",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "d7d0b3f7a575b67c2de1def08923fd3fc2376339dfbf56c1d5803702b98398bc",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260421T114219Z__booksum-v2.json",
+    "price_snapshot": "snapshots/pricing/20260421T114219Z__booksum-v2.json",
+    "hypothesis": "",
+    "notes": ""
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v2",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-19T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "Genre-aware benchmark version. Increment benchmark_version whenever the corpus, split membership logic, rubric builder, scoring rules, judge prompt/model, logging schema, or visible-word-count behavior changes."
+  },
+  "bench_rows": [
+    {
+      "sample_id": "accelerate-forsgren-2018:018",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "018",
+      "chapter_title": "Chapter 16 - High-Performance Leadership and Management",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:003",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "003",
+      "chapter_title": "Chapter 1 - Accelerate",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:004",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "004",
+      "chapter_title": "Chapter 2 - Measuring Performance",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:022",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "022",
+      "chapter_title": "Appendix C: Statistical Methods Used in Our Research",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ],
+  "completed_sample_ids": [
+    "accelerate-forsgren-2018:018",
+    "accelerate-forsgren-2018:003"
+  ],
+  "completed_count": 2,
+  "n_total_samples": 4,
+  "current_item": {
+    "kind": "chapter",
+    "phase": "stage",
+    "item_key": "accelerate-forsgren-2018:004",
+    "item": {
+      "sample_id": "accelerate-forsgren-2018:004",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "004",
+      "chapter_title": "Chapter 2 - Measuring Performance",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    "book_id": "accelerate-forsgren-2018",
+    "chapter_id": "004",
+    "sample_id": "accelerate-forsgren-2018:004",
+    "target_words": 485,
+    "stage_state": {
+      "summary_md": "## Defining Valid Software Delivery Metrics\n\nMeasuring software performance is difficult because inventory is invisible, work breakdown is arbitrary, and design and delivery happen simultaneously. The authors sought a scientific definition of \"good\" software delivery performance.\n\n## Flaws in Prior Metrics\n\n**Lines of code** suffers from rewarding quantity over quality—organizations would prefer 10-line solutions over 1,000-line solutions. Rewarding LOC leads to bloated software with higher maintenance costs. However, minimizing LOC also has drawbacks: a single incomprehensible line is less desirable than readable, maintainable code.\n\n**Velocity** (story points completed per iteration) has several flaws: it is relative and team-dependent, making cross-team comparison invalid; teams game estimates by inflating them; and it inhibits inter-team collaboration since helping other teams might decrease a team's own velocity.\n\n**Utilization** as a productivity proxy fails because high utilization leaves no slack to absorb unplanned work. Queue theory shows that as utilization approaches 100%, lead times approach infinity—making teams exponentially slower despite appearing more productive.\n\n## Four Key Performance Measures\n\nThe authors identified four metrics meeting two criteria: global outcome focus (preventing inter-team competition) and outcome focus (not rewarding busywork). These are **delivery lead time** (code committed to running in production), **deployment frequency** (as a proxy for batch size), **time to restore service**, and **change fail rate** (percentage of changes requiring remediation).\n\nLead time measurement focuses on the \"delivery\" portion rather than the \"fuzzy front end\" (Reinertsen 2009) of design and validation, which has high variability and unclear start points. Deployment frequency serves as a batch size proxy because batch size is hard to measure in software.\n\n## Cluster Analysis Findings\n\nUsing cluster analysis across four years, the researchers identified three distinct performance categories (high, medium, low) that were significantly different across all four measures. High performers deployed on demand (multiple times daily), had lead times under one hour, restored service in under one hour, and had change fail rates under 15%. Low performers deployed less than every six months, had lead times over six months, took more than a week to restore service, and had change fail rates over 45%.\n\nA key finding: there is **no tradeoff between performance and stability**. High performers excel at all measures simultaneously—the Agile and Lean prediction that faster delivery enables and reinforces quality, rather than trading off against it.\n\nThe high-performing cluster is pulling away from the pack. Low performers maintained stagnant throughput from 2014-2016 and only increased in 2017, while losing ground in stability—likely from attempting to increase tempo without addressing underlying obstacles like rearchitecture or automation.\n\nA notable anomaly: medium performers sometimes showed worse change fail rates than low performers, possibly due to large-scale rearchitecture work creating technical debt that leads to fragile systems.\n\n\n## Organizational Impact\n\nHigh-performing organizations were **twice as likely** to exceed profitability, market share, and productivity goals. In 2017, high performers were also twice as likely to exceed objectives in goods/service quantity, operating efficiency, customer satisfaction, quality, and mission goals. Software delivery capability provides competitive advantage.\n\n## Driving Change\n\nThese metrics enable evidence-based improvement decisions, benchmarking, and testing hypotheses about which practices impact delivery performance. The authors note that change management boards are negatively correlated with tempo and stability.\n\nHowever, Deming's warning applies: \"whenever there is fear, you get the wrong numbers.\" In pathological or bureaucratic cultures, measurement becomes control, and people hide information. A learning culture must precede scientific performance improvement.",
+      "first_pass_summary_md": "## Defining Valid Software Delivery Metrics\n\nMeasuring software performance is difficult because inventory is invisible, work breakdown is arbitrary, and design and delivery happen simultaneously. The authors sought a scientific definition of \"good\" software delivery performance.\n\n## Flaws in Prior Metrics\n\n**Lines of code** suffers from rewarding quantity over quality—organizations would prefer 10-line solutions over 1,000-line solutions. Rewarding LOC leads to bloated software with higher maintenance costs. However, minimizing LOC also has drawbacks: a single incomprehensible line is less desirable than readable, maintainable code.\n\n**Velocity** (story points completed per iteration) has several flaws: it is relative and team-dependent, making cross-team comparison invalid; teams game estimates by inflating them; and it inhibits inter-team collaboration since helping other teams might decrease a team's own velocity.\n\n**Utilization** as a productivity proxy fails because high utilization leaves no slack to absorb unplanned work. Queue theory shows that as utilization approaches 100%, lead times approach infinity—making teams exponentially slower despite appearing more productive.\n\n## Four Key Performance Measures\n\nThe authors identified four metrics meeting two criteria: global outcome focus (preventing inter-team competition) and outcome focus (not rewarding busywork). These are **delivery lead time** (code committed to running in production), **deployment frequency** (as a proxy for batch size), **time to restore service**, and **change fail rate** (percentage of changes requiring remediation).\n\nLead time measurement focuses on the \"delivery\" portion rather than the \"fuzzy front end\" (Reinertsen 2009) of design and validation, which has high variability and unclear start points. Deployment frequency serves as a batch size proxy because batch size is hard to measure in software.\n\n## Cluster Analysis Findings\n\nUsing cluster analysis across four years, the researchers identified three distinct performance categories (high, medium, low) that were significantly different across all four measures. High performers deployed on demand (multiple times daily), had lead times under one hour, restored service in under one hour, and had change fail rates under 15%. Low performers deployed less than every six months, had lead times over six months, took more than a week to restore service, and had change fail rates over 45%.\n\nA key finding: there is **no tradeoff between performance and stability**. High performers excel at all measures simultaneously—the Agile and Lean prediction that faster delivery enables and reinforces quality, rather than trading off against it.\n\nThe high-performing cluster is pulling away from the pack. Low performers maintained stagnant throughput from 2014-2016 and only increased in 2017, while losing ground in stability—likely from attempting to increase tempo without addressing underlying obstacles like rearchitecture or automation.\n\nA notable anomaly: medium performers sometimes showed worse change fail rates than low performers, possibly due to large-scale rearchitecture work creating technical debt that leads to fragile systems.\n\n\n## Organizational Impact\n\nHigh-performing organizations were **twice as likely** to exceed profitability, market share, and productivity goals. In 2017, high performers were also twice as likely to exceed objectives in goods/service quantity, operating efficiency, customer satisfaction, quality, and mission goals. Software delivery capability provides competitive advantage.\n\n## Driving Change\n\nThese metrics enable evidence-based improvement decisions, benchmarking, and testing hypotheses about which practices impact delivery performance. The authors note that change management boards are negatively correlated with tempo and stability.\n\nHowever, Deming's warning applies: \"whenever there is fear, you get the wrong numbers.\" In pathological or bureaucratic cultures, measurement becomes control, and people hide information. A learning culture must precede scientific performance improvement.",
+      "passes_used": 1,
+      "generation_cost": 0.00285096,
+      "uncached_generation_cost": 0.00285096,
+      "raw_responses": [
+        {
+          "id": "gen-1776772195-eDwJhAXcFQsFvPtGnxPC",
+          "object": "chat.completion",
+          "created": 1776772195,
+          "model": "minimax/minimax-m2.7-20260318",
+          "provider": "Together",
+          "system_fingerprint": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\n  \"summary_md\": \"## Defining Valid Software Delivery Metrics\\n\\nMeasuring software performance is difficult because inventory is invisible, work breakdown is arbitrary, and design and delivery happen simultaneously. The authors sought a scientific definition of \\\"good\\\" software delivery performance.\\n\\n## Flaws in Prior Metrics\\n\\n**Lines of code** suffers from rewarding quantity over quality—organizations would prefer 10-line solutions over 1,000-line solutions. Rewarding LOC leads to bloated software with higher maintenance costs. However, minimizing LOC also has drawbacks: a single incomprehensible line is less desirable than readable, maintainable code.\\n\\n**Velocity** (story points completed per iteration) has several flaws: it is relative and team-dependent, making cross-team comparison invalid; teams game estimates by inflating them; and it inhibits inter-team collaboration since helping other teams might decrease a team's own velocity.\\n\\n**Utilization** as a productivity proxy fails because high utilization leaves no slack to absorb unplanned work. Queue theory shows that as utilization approaches 100%, lead times approach infinity—making teams exponentially slower despite appearing more productive.\\n\\n## Four Key Performance Measures\\n\\nThe authors identified four metrics meeting two criteria: global outcome focus (preventing inter-team competition) and outcome focus (not rewarding busywork). These are **delivery lead time** (code committed to running in production), **deployment frequency** (as a proxy for batch size), **time to restore service**, and **change fail rate** (percentage of changes requiring remediation).\\n\\nLead time measurement focuses on the \\\"delivery\\\" portion rather than the \\\"fuzzy front end\\\" (Reinertsen 2009) of design and validation, which has high variability and unclear start points. Deployment frequency serves as a batch size proxy because batch size is hard to measure in software.\\n\\n## Cluster Analysis Findings\\n\\nUsing cluster analysis across four years, the researchers identified three distinct performance categories (high, medium, low) that were significantly different across all four measures. High performers deployed on demand (multiple times daily), had lead times under one hour, restored service in under one hour, and had change fail rates under 15%. Low performers deployed less than every six months, had lead times over six months, took more than a week to restore service, and had change fail rates over 45%.\\n\\nA key finding: there is **no tradeoff between performance and stability**. High performers excel at all measures simultaneously—the Agile and Lean prediction that faster delivery enables and reinforces quality, rather than trading off against it.\\n\\nThe high-performing cluster is pulling away from the pack. Low performers maintained stagnant throughput from 2014-2016 and only increased in 2017, while losing ground in stability—likely from attempting to increase tempo without addressing underlying obstacles like rearchitecture or automation.\\n\\nA notable anomaly: medium performers sometimes showed worse change fail rates than low performers, possibly due to large-scale rearchitecture work creating technical debt that leads to fragile systems.\\n\\n\\n## Organizational Impact\\n\\nHigh-performing organizations were **twice as likely** to exceed profitability, market share, and productivity goals. In 2017, high performers were also twice as likely to exceed objectives in goods/service quantity, operating efficiency, customer satisfaction, quality, and mission goals. Software delivery capability provides competitive advantage.\\n\\n## Driving Change\\n\\nThese metrics enable evidence-based improvement decisions, benchmarking, and testing hypotheses about which practices impact delivery performance. The authors note that change management boards are negatively correlated with tempo and stability.\\n\\nHowever, Deming's warning applies: \\\"whenever there is fear, you get the wrong numbers.\\\" In pathological or bureaucratic cultures, measurement becomes control, and people hide information. A learning culture must precede scientific performance improvement.\"\n                , \"estimated_visible_words\": 498\n                }",
+                "refusal": null,
+                "reasoning": "The user wants me to write a faithful chapter summary for Chapter 2 of \"Accelerate\" titled \"Measuring Performance.\" Let me analyze the key content:\n\n1. **Introduction**: The chapter is about measuring software delivery performance scientifically. They needed a valid, reliable measure.\n\n2. **Flaws in Previous Attempts**:\n   - Lines of code: rewards bloated code, not elegant solutions\n   - Velocity: relative measure, teams game it, inhibits collaboration\n   - Utilization: high utilization causes longer lead times (queue theory)\n\n3. **Four Key Metrics**:\n   - Delivery lead time (code committed to running in production)\n   - Deployment frequency (as proxy for batch size)\n   - Time to restore service\n   - Change fail rate\n\n4. **Cluster Analysis**: Used to identify high, medium, low performers without bias\n\n5. **Key Finding**: No tradeoff between performance and stability - high performers do better at ALL measures\n\n6. **Impact on Organizational Performance**: High performers 2x more likely to exceed goals\n\n7. **Driving Change**: These metrics enable evidence-based decisions\n\nLet me preserve specific data points, quotes, and examples from the source. The target is 446-524 words.\n\nKey specifics to include:\n- The four metrics and their response options\n- Cluster analysis approach\n- 2016 and 2017 data tables (though I can't show the actual tables, I should reference the findings)\n- \"Twice as likely\" finding\n- Deming quote about fear and wrong numbers\n- Apple Lisa story reference\n- Reinertsen's \"fuzzy front end\" concept\n- The specific finding that medium performers sometimes do worse than low performers on change fail rate\n\nLet me write this summary now, keeping it dense and information-rich while staying within the target range.",
+                "reasoning_details": [
+                  {
+                    "type": "reasoning.text",
+                    "text": "The user wants me to write a faithful chapter summary for Chapter 2 of \"Accelerate\" titled \"Measuring Performance.\" Let me analyze the key content:\n\n1. **Introduction**: The chapter is about measuring software delivery performance scientifically. They needed a valid, reliable measure.\n\n2. **Flaws in Previous Attempts**:\n   - Lines of code: rewards bloated code, not elegant solutions\n   - Velocity: relative measure, teams game it, inhibits collaboration\n   - Utilization: high utilization causes longer lead times (queue theory)\n\n3. **Four Key Metrics**:\n   - Delivery lead time (code committed to running in production)\n   - Deployment frequency (as proxy for batch size)\n   - Time to restore service\n   - Change fail rate\n\n4. **Cluster Analysis**: Used to identify high, medium, low performers without bias\n\n5. **Key Finding**: No tradeoff between performance and stability - high performers do better at ALL measures\n\n6. **Impact on Organizational Performance**: High performers 2x more likely to exceed goals\n\n7. **Driving Change**: These metrics enable evidence-based decisions\n\nLet me preserve specific data points, quotes, and examples from the source. The target is 446-524 words.\n\nKey specifics to include:\n- The four metrics and their response options\n- Cluster analysis approach\n- 2016 and 2017 data tables (though I can't show the actual tables, I should reference the findings)\n- \"Twice as likely\" finding\n- Deming quote about fear and wrong numbers\n- Apple Lisa story reference\n- Reinertsen's \"fuzzy front end\" concept\n- The specific finding that medium performers sometimes do worse than low performers on change fail rate\n\nLet me write this summary now, keeping it dense and information-rich while staying within the target range.",
+                    "format": "unknown",
+                    "index": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 5132,
+            "completion_tokens": 1144,
+            "total_tokens": 6276,
+            "cost": 0.00285096,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.00285096,
+              "upstream_inference_prompt_cost": 0.00147816,
+              "upstream_inference_completions_cost": 0.0013728
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 464,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "latest_error": null,
+  "resume_events_utc": [],
+  "state_path": "runs/booksum-v2/20260421t114219z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1.state.json",
+  "samples_path": "runs/booksum-v2/20260421t114219z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1.samples.jsonl",
+  "out_path": "runs/booksum-v2/20260421t114219z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1.json",
+  "updated_at_utc": "2026-04-21T11:50:24.794803+00:00"
+}

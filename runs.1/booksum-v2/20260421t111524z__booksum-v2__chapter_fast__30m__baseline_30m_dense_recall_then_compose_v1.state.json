@@ -1,0 +1,376 @@
+{
+  "run_id": "20260421t111524z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1",
+  "created_at_utc": "2026-04-21T11:15:24.669984+00:00",
+  "status": "running",
+  "run_manifest": {
+    "run_id": "20260421t111524z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1",
+    "created_at_utc": "2026-04-21T11:15:24.669984+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v2",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m",
+    "bench": "chapter_fast",
+    "bench_path": "bench/chapter_fast.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "baseline_30m_dense_recall_then_compose_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "7342ab2ff77b819d78f7d9a45ffa498f017f810595fa0bf86ed02e720259633e",
+    "chapter_model": "openai/gpt-4o",
+    "composer_model": "openai/gpt-5-mini",
+    "judge_model": "",
+    "provider_preferences": {
+      "chapter": {
+        "order": [],
+        "allow_fallbacks": false
+      },
+      "composer": {
+        "order": [],
+        "allow_fallbacks": false
+      }
+    },
+    "prompt_hashes": {
+      "candidate_dict_sha256": "195d1d894f4d83f918d5eec4d1ffdc6ad34a23bbeb863ad47c20f5a6cb4f46f6",
+      "chapter_stage_sha256": "101ba168f19f506ea76771337e17fce7dda1f784ba04573f775dcf103399836c",
+      "composer_stage_sha256": "bc86d8b0c640e4b69c08546f4e53a8c383aa3f08d14c6b44ea65ffc9d766dfa0",
+      "length_control_sha256": "4d7dbfc50c3c8a4cdc7bdbf340c8358fea8c476609ea62d33868f493f497845a",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "596a636d1bec8750f4735016dafe5e1fcfb73ecef6a244eabdf0b8752e8bbcf0",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "efebadeb9ca47c9ebdc7bd107e1ef76b086635dade60a6051370cc4ee74e0bf8",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "d7d0b3f7a575b67c2de1def08923fd3fc2376339dfbf56c1d5803702b98398bc",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260421T111524Z__booksum-v2.json",
+    "price_snapshot": "snapshots/pricing/20260421T111524Z__booksum-v2.json",
+    "hypothesis": "",
+    "notes": ""
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v2",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-19T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "Genre-aware benchmark version. Increment benchmark_version whenever the corpus, split membership logic, rubric builder, scoring rules, judge prompt/model, logging schema, or visible-word-count behavior changes."
+  },
+  "bench_rows": [
+    {
+      "sample_id": "accelerate-forsgren-2018:018",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "018",
+      "chapter_title": "Chapter 16 - High-Performance Leadership and Management",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:003",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "003",
+      "chapter_title": "Chapter 1 - Accelerate",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:004",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "004",
+      "chapter_title": "Chapter 2 - Measuring Performance",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "accelerate-forsgren-2018:022",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "022",
+      "chapter_title": "Appendix C: Statistical Methods Used in Our Research",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:003",
+      "level": "chapter",
+      "book_id": "atomic-habits-clear-2018",
+      "group_id": "atomic-habits-clear-2018",
+      "chapter_id": "003",
+      "chapter_title": "The Fundamentals: Why Tiny Changes Make a Big Difference",
+      "book_title": "Atomic Habits",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:032",
+      "level": "chapter",
+      "book_id": "atomic-habits-clear-2018",
+      "group_id": "atomic-habits-clear-2018",
+      "chapter_id": "032",
+      "chapter_title": "How to Apply These Ideas to Business",
+      "book_title": "Atomic Habits",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:005",
+      "level": "chapter",
+      "book_id": "atomic-habits-clear-2018",
+      "group_id": "atomic-habits-clear-2018",
+      "chapter_id": "005",
+      "chapter_title": "2: How Your Habits Shape Your Identity (and Vice Versa)",
+      "book_title": "Atomic Habits",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:028",
+      "level": "chapter",
+      "book_id": "atomic-habits-clear-2018",
+      "group_id": "atomic-habits-clear-2018",
+      "chapter_id": "028",
+      "chapter_title": "20: The Downside of Creating Good Habits",
+      "book_title": "Atomic Habits",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ],
+  "completed_sample_ids": [
+    "accelerate-forsgren-2018:018",
+    "accelerate-forsgren-2018:003"
+  ],
+  "completed_count": 2,
+  "n_total_samples": 8,
+  "current_item": {
+    "kind": "chapter",
+    "phase": "stage",
+    "item_key": "accelerate-forsgren-2018:004",
+    "item": {
+      "sample_id": "accelerate-forsgren-2018:004",
+      "level": "chapter",
+      "book_id": "accelerate-forsgren-2018",
+      "group_id": "accelerate-forsgren-2018",
+      "chapter_id": "004",
+      "chapter_title": "Chapter 2 - Measuring Performance",
+      "book_title": "Accelerate",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "software_engineering_and_devops",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    "book_id": "accelerate-forsgren-2018",
+    "chapter_id": "004",
+    "sample_id": "accelerate-forsgren-2018:004",
+    "target_words": 485,
+    "stage_state": {
+      "summary_md": "### Measuring Software Delivery Performance\n\nThe chapter addresses the challenge of measuring software delivery performance, emphasizing the need for metrics that prioritize outcomes over outputs. Unlike manufacturing, software lacks visible inventory, and Agile methodologies integrate design and delivery, complicating measurement. The authors aim to define valid, reliable measures aligned with organizational goals.\n\n### Critique of Traditional Metrics\n\nTraditional metrics like lines of code, velocity, and utilization focus on productivity rather than outcomes. Lines of code can lead to bloated software, while velocity, a relative measure, can be gamed by teams, undermining collaboration. High utilization increases lead times due to lack of slack for unplanned work.\n\n### Proposed Metrics\n\nThe authors propose four metrics: delivery lead time, deployment frequency, time to restore service, and change fail rate. These metrics focus on global outcomes and system-level goals:\n\n- **Lead Time**: Measures the time from code commit to production, crucial for rapid feedback and defect resolution. It is divided into design and delivery phases, with the latter being more measurable.\n- **Deployment Frequency**: Serves as a proxy for batch size, indicating how often code is deployed. Frequent deployments suggest smaller batch sizes, reducing risk and improving feedback.\n- **Time to Restore Service**: Assesses system reliability by measuring recovery speed after failures.\n- **Change Fail Rate**: Indicates quality by measuring the percentage of changes causing service degradation.\n\n### Cluster Analysis and Performance Categories\n\nCluster analysis categorizes software delivery performance into high, medium, and low performers. High performers excel in both speed and stability, challenging the notion that speed compromises quality. Over time, high performers improve, while low performers lag, emphasizing continuous improvement.\n\n### Impact on Organizational Performance\n\nHigh software delivery performance correlates with better organizational outcomes, such as profitability and customer satisfaction. High performers are twice as likely to exceed organizational goals compared to low performers. This underscores the strategic importance of in-house software development capabilities.\n\n### Driving Change\n\nThe chapter advocates for evidence-based improvements in software delivery, emphasizing a learning culture to effectively use these metrics. It warns against misuse in controlling environments, highlighting the potential to model and measure culture, linking it to delivery and organizational performance. Metrics should foster improvement rather than control, aligning with Deming's principle that fear distorts data.\n\n### Additional Insights\n\nThe chapter also discusses the importance of distinguishing between strategic and non-strategic software, suggesting that strategic software should be developed in-house. The authors highlight the role of continuous improvement and the potential for high performers to pull away from the pack over time, driven by practices like continuous delivery and DevOps.",
+      "first_pass_summary_md": "### Defining Software Delivery Performance\n\nThe chapter outlines the challenges of measuring software performance, emphasizing the need for valid, reliable metrics that focus on outcomes rather than outputs. Traditional metrics like lines of code, velocity, and utilization are critiqued for their focus on productivity rather than team or global outcomes. The authors argue for metrics that avoid pitting teams against each other and focus on outcomes that align with organizational goals.\n\n### Critique of Traditional Metrics\n\n- **Lines of Code**: Encourages bloated code and higher maintenance costs.\n- **Velocity**: Relative and team-dependent, often gamed by teams, reducing collaboration.\n- **Utilization**: High utilization leads to longer lead times, contrary to productivity goals.\n\n### Proposed Metrics for Performance\n\nThe authors propose four key metrics: delivery lead time, deployment frequency, time to restore service, and change fail rate. These metrics focus on global outcomes and system-level goals.\n\n- **Lead Time**: Time from code commit to production, crucial for rapid feedback and defect resolution.\n- **Deployment Frequency**: Proxy for batch size, indicating how often code is deployed.\n- **Time to Restore Service**: Measures system reliability and recovery speed after failures.\n- **Change Fail Rate**: Percentage of changes causing service degradation, indicating quality.\n\n### Cluster Analysis and Performance Categories\n\nUsing cluster analysis, the authors identify high, medium, and low performers in software delivery. High performers excel in both tempo and stability, contradicting the belief that speed compromises quality. Over time, high performers have improved, while low performers lag, highlighting the importance of continuous improvement.\n\n### Impact on Organizational Performance\n\nHigh software delivery performance correlates with better organizational outcomes, including profitability, market share, and customer satisfaction. This underscores the strategic importance of in-house software development capabilities.\n\n### Driving Change\n\nThe chapter concludes by advocating for evidence-based improvements in software delivery. It emphasizes the importance of a learning culture to effectively use these metrics, warning against their misuse in controlling environments. The authors highlight the potential to model and measure culture, linking it to delivery and organizational performance.",
+      "passes_used": 3,
+      "generation_cost": 0.053675,
+      "uncached_generation_cost": 0.053675,
+      "raw_responses": [
+        {
+          "id": "gen-1776770158-ETnzkuVthEYg1MS9tpgs",
+          "object": "chat.completion",
+          "created": 1776770158,
+          "model": "openai/gpt-4o",
+          "provider": "OpenAI",
+          "system_fingerprint": "fp_ed59d22d55",
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\"summary_md\":\"### Defining Software Delivery Performance\\n\\nThe chapter outlines the challenges of measuring software performance, emphasizing the need for valid, reliable metrics that focus on outcomes rather than outputs. Traditional metrics like lines of code, velocity, and utilization are critiqued for their focus on productivity rather than team or global outcomes. The authors argue for metrics that avoid pitting teams against each other and focus on outcomes that align with organizational goals.\\n\\n### Critique of Traditional Metrics\\n\\n- **Lines of Code**: Encourages bloated code and higher maintenance costs.\\n- **Velocity**: Relative and team-dependent, often gamed by teams, reducing collaboration.\\n- **Utilization**: High utilization leads to longer lead times, contrary to productivity goals.\\n\\n### Proposed Metrics for Performance\\n\\nThe authors propose four key metrics: delivery lead time, deployment frequency, time to restore service, and change fail rate. These metrics focus on global outcomes and system-level goals.\\n\\n- **Lead Time**: Time from code commit to production, crucial for rapid feedback and defect resolution.\\n- **Deployment Frequency**: Proxy for batch size, indicating how often code is deployed.\\n- **Time to Restore Service**: Measures system reliability and recovery speed after failures.\\n- **Change Fail Rate**: Percentage of changes causing service degradation, indicating quality.\\n\\n### Cluster Analysis and Performance Categories\\n\\nUsing cluster analysis, the authors identify high, medium, and low performers in software delivery. High performers excel in both tempo and stability, contradicting the belief that speed compromises quality. Over time, high performers have improved, while low performers lag, highlighting the importance of continuous improvement.\\n\\n### Impact on Organizational Performance\\n\\nHigh software delivery performance correlates with better organizational outcomes, including profitability, market share, and customer satisfaction. This underscores the strategic importance of in-house software development capabilities.\\n\\n### Driving Change\\n\\nThe chapter concludes by advocating for evidence-based improvements in software delivery. It emphasizes the importance of a learning culture to effectively use these metrics, warning against their misuse in controlling environments. The authors highlight the potential to model and measure culture, linking it to delivery and organizational performance.\",\"estimated_visible_words\":407}",
+                "refusal": null,
+                "reasoning": null
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 5220,
+            "completion_tokens": 452,
+            "total_tokens": 5672,
+            "cost": 0.01757,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.01757,
+              "upstream_inference_prompt_cost": 0.01305,
+              "upstream_inference_completions_cost": 0.00452
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        },
+        {
+          "id": "gen-1776770167-hoht3pJ6Ytu9wlQgwkAT",
+          "object": "chat.completion",
+          "created": 1776770167,
+          "model": "openai/gpt-4o",
+          "provider": "OpenAI",
+          "system_fingerprint": "fp_6dd86a7be3",
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\"summary_md\":\"### Measuring Software Delivery Performance\\n\\nThe chapter explores the complexities of measuring software delivery performance, emphasizing the need for metrics that focus on outcomes rather than outputs. Unlike manufacturing, software lacks visible inventory, and Agile methodologies further complicate measurement by integrating design and delivery activities. The authors aim to define valid, reliable measures that align with organizational goals.\\n\\n### Critique of Traditional Metrics\\n\\nTraditional metrics like lines of code, velocity, and utilization are critiqued for focusing on productivity rather than outcomes. Lines of code can lead to bloated software, while velocity, a relative measure, can be gamed by teams, undermining collaboration. High utilization, often seen as productive, actually increases lead times due to lack of slack for unplanned work.\\n\\n### Proposed Metrics\\n\\nThe authors propose four metrics: delivery lead time, deployment frequency, time to restore service, and change fail rate. These metrics focus on global outcomes and system-level goals:\\n\\n- **Lead Time**: Measures the time from code commit to production, crucial for rapid feedback and defect resolution. It is divided into design and delivery phases, with the latter being more measurable.\\n- **Deployment Frequency**: Serves as a proxy for batch size, indicating how often code is deployed. Frequent deployments suggest smaller batch sizes, reducing risk and improving feedback.\\n- **Time to Restore Service**: Assesses system reliability by measuring recovery speed after failures.\\n- **Change Fail Rate**: Indicates quality by measuring the percentage of changes causing service degradation.\\n\\n### Cluster Analysis and Performance Categories\\n\\nCluster analysis categorizes software delivery performance into high, medium, and low performers. High performers excel in both speed and stability, challenging the notion that speed compromises quality. Over time, high performers improve, while low performers lag, emphasizing continuous improvement.\\n\\n### Impact on Organizational Performance\\n\\nHigh software delivery performance correlates with better organizational outcomes, such as profitability and customer satisfaction. This underscores the strategic importance of in-house software development capabilities. High performers are twice as likely to exceed organizational goals compared to low performers.\\n\\n### Driving Change\\n\\nThe chapter advocates for evidence-based improvements in software delivery, emphasizing a learning culture to effectively use these metrics. It warns against misuse in controlling environments, highlighting the potential to model and measure culture, linking it to delivery and organizational performance. The authors stress that metrics should be used to foster improvement rather than control, aligning with Deming's principle that fear distorts data.\",\"estimated_visible_words\":451}",
+                "refusal": null,
+                "reasoning": null
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 5056,
+            "completion_tokens": 512,
+            "total_tokens": 5568,
+            "cost": 0.01776,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.01776,
+              "upstream_inference_prompt_cost": 0.01264,
+              "upstream_inference_completions_cost": 0.00512
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        },
+        {
+          "id": "gen-1776770175-dFTTIaqRSRKaJb9E3wId",
+          "object": "chat.completion",
+          "created": 1776770175,
+          "model": "openai/gpt-4o",
+          "provider": "OpenAI",
+          "system_fingerprint": "fp_6a72bc7d24",
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\"summary_md\":\"### Measuring Software Delivery Performance\\n\\nThe chapter addresses the challenge of measuring software delivery performance, emphasizing the need for metrics that prioritize outcomes over outputs. Unlike manufacturing, software lacks visible inventory, and Agile methodologies integrate design and delivery, complicating measurement. The authors aim to define valid, reliable measures aligned with organizational goals.\\n\\n### Critique of Traditional Metrics\\n\\nTraditional metrics like lines of code, velocity, and utilization focus on productivity rather than outcomes. Lines of code can lead to bloated software, while velocity, a relative measure, can be gamed by teams, undermining collaboration. High utilization increases lead times due to lack of slack for unplanned work.\\n\\n### Proposed Metrics\\n\\nThe authors propose four metrics: delivery lead time, deployment frequency, time to restore service, and change fail rate. These metrics focus on global outcomes and system-level goals:\\n\\n- **Lead Time**: Measures the time from code commit to production, crucial for rapid feedback and defect resolution. It is divided into design and delivery phases, with the latter being more measurable.\\n- **Deployment Frequency**: Serves as a proxy for batch size, indicating how often code is deployed. Frequent deployments suggest smaller batch sizes, reducing risk and improving feedback.\\n- **Time to Restore Service**: Assesses system reliability by measuring recovery speed after failures.\\n- **Change Fail Rate**: Indicates quality by measuring the percentage of changes causing service degradation.\\n\\n### Cluster Analysis and Performance Categories\\n\\nCluster analysis categorizes software delivery performance into high, medium, and low performers. High performers excel in both speed and stability, challenging the notion that speed compromises quality. Over time, high performers improve, while low performers lag, emphasizing continuous improvement.\\n\\n### Impact on Organizational Performance\\n\\nHigh software delivery performance correlates with better organizational outcomes, such as profitability and customer satisfaction. High performers are twice as likely to exceed organizational goals compared to low performers. This underscores the strategic importance of in-house software development capabilities.\\n\\n### Driving Change\\n\\nThe chapter advocates for evidence-based improvements in software delivery, emphasizing a learning culture to effectively use these metrics. It warns against misuse in controlling environments, highlighting the potential to model and measure culture, linking it to delivery and organizational performance. Metrics should foster improvement rather than control, aligning with Deming's principle that fear distorts data.\\n\\n### Additional Insights\\n\\nThe chapter also discusses the importance of distinguishing between strategic and non-strategic software, suggesting that strategic software should be developed in-house. The authors highlight the role of continuous improvement and the potential for high performers to pull away from the pack over time, driven by practices like continuous delivery and DevOps.\",\"estimated_visible_words\":487}",
+                "refusal": null,
+                "reasoning": null
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 5118,
+            "completion_tokens": 555,
+            "total_tokens": 5673,
+            "cost": 0.018345,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.018345,
+              "upstream_inference_prompt_cost": 0.012795,
+              "upstream_inference_completions_cost": 0.00555
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "latest_error": null,
+  "resume_events_utc": [],
+  "state_path": "runs/booksum-v2/20260421t111524z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1.state.json",
+  "samples_path": "runs/booksum-v2/20260421t111524z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1.samples.jsonl",
+  "out_path": "runs/booksum-v2/20260421t111524z__booksum-v2__chapter_fast__30m__baseline_30m_dense_recall_then_compose_v1.json",
+  "updated_at_utc": "2026-04-21T11:16:22.439516+00:00"
+}

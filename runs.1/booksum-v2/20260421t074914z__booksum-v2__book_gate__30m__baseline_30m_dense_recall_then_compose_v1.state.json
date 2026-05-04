@@ -1,0 +1,356 @@
+{
+  "run_id": "20260421t074914z__booksum-v2__book_gate__30m__baseline_30m_dense_recall_then_compose_v1",
+  "created_at_utc": "2026-04-21T07:49:14.954798+00:00",
+  "status": "running",
+  "run_manifest": {
+    "run_id": "20260421t074914z__booksum-v2__book_gate__30m__baseline_30m_dense_recall_then_compose_v1",
+    "created_at_utc": "2026-04-21T07:49:14.954798+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v2",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m",
+    "bench": "book_gate",
+    "bench_path": "bench/book_gate.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "baseline_30m_dense_recall_then_compose_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "f20755bc9c265e962f6c5efc27dc025a2f6d1d0f833247109fec32cfc192c686",
+    "chapter_model": "deepseek/deepseek-v3.2",
+    "composer_model": "openai/gpt-5-mini",
+    "judge_model": "",
+    "provider_preferences": {
+      "chapter": {
+        "order": [],
+        "allow_fallbacks": false
+      },
+      "composer": {
+        "order": [],
+        "allow_fallbacks": false
+      }
+    },
+    "prompt_hashes": {
+      "candidate_dict_sha256": "b5aa3e978eef7a2214fe18488b64a7ce9cef66b1907717aebbf43238900b4ad1",
+      "chapter_stage_sha256": "b15d8b55df3361296b798d54b0009cbdd9cc71c1cc2ee9da175421b6f8231c99",
+      "composer_stage_sha256": "bc86d8b0c640e4b69c08546f4e53a8c383aa3f08d14c6b44ea65ffc9d766dfa0",
+      "length_control_sha256": "4d7dbfc50c3c8a4cdc7bdbf340c8358fea8c476609ea62d33868f493f497845a",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "596a636d1bec8750f4735016dafe5e1fcfb73ecef6a244eabdf0b8752e8bbcf0",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "efebadeb9ca47c9ebdc7bd107e1ef76b086635dade60a6051370cc4ee74e0bf8",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "d7d0b3f7a575b67c2de1def08923fd3fc2376339dfbf56c1d5803702b98398bc",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260421T074914Z__booksum-v2.json",
+    "price_snapshot": "snapshots/pricing/20260421T074914Z__booksum-v2.json",
+    "hypothesis": "",
+    "notes": ""
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v2",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-19T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v1",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "Genre-aware benchmark version. Increment benchmark_version whenever the corpus, split membership logic, rubric builder, scoring rules, judge prompt/model, logging schema, or visible-word-count behavior changes."
+  },
+  "bench_rows": [
+    {
+      "sample_id": "emotionally-intelligent-design-bennet-2020",
+      "level": "book",
+      "book_id": "emotionally-intelligent-design-bennet-2020",
+      "group_id": "emotionally-intelligent-design-bennet-2020",
+      "book_title": "Emotionally Intelligent Design",
+      "genre_macro": "science_technology_environment",
+      "genre_micro": "design_and_ux",
+      "narrative_vs_expository": "mixed",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "low",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "how-to-stop-worrying-and-start-living-carnegie-2022",
+      "level": "book",
+      "book_id": "how-to-stop-worrying-and-start-living-carnegie-2022",
+      "group_id": "how-to-stop-worrying-and-start-living-carnegie-2022",
+      "book_title": "How To Stop Worrying And Start Living",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "self_help_mindset",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "low",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "the-5-am-club-own-your-morning-elevate-your-life-sharma-2018",
+      "level": "book",
+      "book_id": "the-5-am-club-own-your-morning-elevate-your-life-sharma-2018",
+      "group_id": "the-5-am-club-own-your-morning-elevate-your-life-sharma-2018",
+      "book_title": "The 5 AM Club: Own Your Morning. Elevate Your Life.",
+      "genre_macro": "business_economics_productivity",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "mixed",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "medium",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "the-strange-death-of-europe-murray-2017",
+      "level": "book",
+      "book_id": "the-strange-death-of-europe-murray-2017",
+      "group_id": "the-strange-death-of-europe-murray-2017",
+      "book_title": "The Strange Death of Europe",
+      "genre_macro": "history_biography_politics_social_analysis",
+      "genre_micro": "politics_social_analysis",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ],
+  "completed_sample_ids": [
+    "emotionally-intelligent-design-bennet-2020"
+  ],
+  "completed_count": 1,
+  "n_total_samples": 4,
+  "current_item": {
+    "kind": "book",
+    "phase": "chapters",
+    "item_key": "how-to-stop-worrying-and-start-living-carnegie-2022",
+    "item": {
+      "sample_id": "how-to-stop-worrying-and-start-living-carnegie-2022",
+      "level": "book",
+      "book_id": "how-to-stop-worrying-and-start-living-carnegie-2022",
+      "group_id": "how-to-stop-worrying-and-start-living-carnegie-2022",
+      "book_title": "How To Stop Worrying And Start Living",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "self_help_mindset",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "low",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    "book_id": "how-to-stop-worrying-and-start-living-carnegie-2022",
+    "sample_id": "how-to-stop-worrying-and-start-living-carnegie-2022",
+    "chapter_targets": [
+      216,
+      216,
+      482,
+      216,
+      454,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216,
+      216
+    ],
+    "chapter_outputs": [
+      {
+        "chapter_id": "000",
+        "chapter_title": "Preface",
+        "stage_run": {
+          "summary_md": "## Origin and Purpose\n\nDale Carnegie explains the book's origin in his adult education classes, where students' primary concern was worry. He researched the topic for seven years, reading everything from Confucius to modern psychology. He also interviewed hundreds of adults, including business leaders, to learn their anti-worry strategies. The book is a compilation of these findings, not a theoretical treatise. It is intended as a practical, action-oriented guide, with each chapter containing concrete rules to apply.\n\n## Research and Content Sources\n\nCarnegie details his research methods: reading philosophical texts (e.g., Confucius, Marcus Aurelius) and contemporary psychology; and conducting interviews. He specifically mentions interviewing business leaders like Sir Owen D. Young, Henry Ford, and John D. Rockefeller. He also corresponded with public figures like Franklin D. Roosevelt and General John J. Pershing. The book's content is derived from these sources, aiming to provide the best and most practical advice available.\n\n## Practical Application and Structure\n\nThe book is designed for immediate use. Carnegie emphasizes that reading alone is insufficient; the rules must be applied. He suggests treating the book as a workbook, underlining key points, and reviewing it frequently. The structure is modular, allowing readers to skip to relevant sections. The core promise is that applying the principles will lead to a new, worry-free way of life, characterized by increased peace and happiness.",
+          "first_pass_summary_md": "## Origin and Purpose\n\nDale Carnegie explains the book's origin in his adult education classes, where students' primary concern was worry. He researched the topic for seven years, reading everything from Confucius to modern psychology. He also interviewed hundreds of adults, including business leaders, to learn their anti-worry strategies. The book is a compilation of these findings, not a theoretical treatise. It is intended as a practical, action-oriented guide, with each chapter containing concrete rules to apply.\n\n## Research and Content Sources\n\nCarnegie details his research methods: reading philosophical texts (e.g., Confucius, Marcus Aurelius) and contemporary psychology; and conducting interviews. He specifically mentions interviewing business leaders like Sir Owen D. Young, Henry Ford, and John D. Rockefeller. He also corresponded with public figures like Franklin D. Roosevelt and General John J. Pershing. The book's content is derived from these sources, aiming to provide the best and most practical advice available.\n\n## Practical Application and Structure\n\nThe book is designed for immediate use. Carnegie emphasizes that reading alone is insufficient; the rules must be applied. He suggests treating the book as a workbook, underlining key points, and reviewing it frequently. The structure is modular, allowing readers to skip to relevant sections. The core promise is that applying the principles will lead to a new, worry-free way of life, characterized by increased peace and happiness.",
+          "passes_used": 1,
+          "generation_cost": 0.00053734,
+          "uncached_generation_cost": 0.00053734,
+          "raw_responses": [
+            {
+              "id": "gen-1776759509-df7OQ7SO0lUbrXe9zse4",
+              "object": "chat.completion",
+              "created": 1776759509,
+              "model": "deepseek/deepseek-v3.2-20251201",
+              "provider": "AtlasCloud",
+              "system_fingerprint": null,
+              "choices": [
+                {
+                  "index": 0,
+                  "logprobs": null,
+                  "finish_reason": "stop",
+                  "native_finish_reason": "stop",
+                  "message": {
+                    "role": "assistant",
+                    "content": "{\n    \"summary_md\": \"## Origin and Purpose\\n\\nDale Carnegie explains the book's origin in his adult education classes, where students' primary concern was worry. He researched the topic for seven years, reading everything from Confucius to modern psychology. He also interviewed hundreds of adults, including business leaders, to learn their anti-worry strategies. The book is a compilation of these findings, not a theoretical treatise. It is intended as a practical, action-oriented guide, with each chapter containing concrete rules to apply.\\n\\n## Research and Content Sources\\n\\nCarnegie details his research methods: reading philosophical texts (e.g., Confucius, Marcus Aurelius) and contemporary psychology; and conducting interviews. He specifically mentions interviewing business leaders like Sir Owen D. Young, Henry Ford, and John D. Rockefeller. He also corresponded with public figures like Franklin D. Roosevelt and General John J. Pershing. The book's content is derived from these sources, aiming to provide the best and most practical advice available.\\n\\n## Practical Application and Structure\\n\\nThe book is designed for immediate use. Carnegie emphasizes that reading alone is insufficient; the rules must be applied. He suggests treating the book as a workbook, underlining key points, and reviewing it frequently. The structure is modular, allowing readers to skip to relevant sections. The core promise is that applying the principles will lead to a new, worry-free way of life, characterized by increased peace and happiness.\",\n    \"estimated_visible_words\": 216\n}",
+                    "refusal": null,
+                    "reasoning": null
+                  }
+                }
+              ],
+              "usage": {
+                "prompt_tokens": 1618,
+                "completion_tokens": 307,
+                "total_tokens": 1925,
+                "cost": 0.00053734,
+                "is_byok": false,
+                "prompt_tokens_details": {
+                  "cached_tokens": 0,
+                  "cache_write_tokens": 0,
+                  "audio_tokens": 0,
+                  "video_tokens": 0
+                },
+                "cost_details": {
+                  "upstream_inference_cost": 0.00053734,
+                  "upstream_inference_prompt_cost": 0.00042068,
+                  "upstream_inference_completions_cost": 0.00011666
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0,
+                  "image_tokens": 0,
+                  "audio_tokens": 0
+                }
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "chapter_passes": [
+      1
+    ],
+    "total_generation_cost": 0.00053734,
+    "total_uncached_cost": 0.00053734,
+    "current_stage": {
+      "stage_kind": "chapter",
+      "chapter_id": "001",
+      "stage_state": {
+        "summary_md": "## Teaching Origin and Book Genesis\nThirty-five years prior, the author was an unhappy truck salesman in New York. He quit to teach adult night classes in public speaking, which he valued for building confidence and leadership. His Y.M.C.A. classes succeeded quickly; students gained promotions and his pay increased. Seeing a need for human relations training, he wrote *How to Win Friends and Influence People* as a textbook, which became a bestseller.\n\n## Identifying the Worry Problem\nHis adult students, a cross-section of professionals, had worry as a major problem. Researching for a textbook, he found the New York Public Library had only 22 books under 'WORRY' compared to 189 under 'WORMS'. He notes no high school or college courses on stopping worry, citing David Seabury's quote about lack of preparation. He states more than half of hospital beds are occupied by people with nervous and emotional troubles.\n\n## Research and 'Laboratory' Method\nHe prepared for seven years by reading philosophers and biographies, and interviewing prominent figures like Jack Dempsey and Eleanor Roosevelt. Crucially, he ran a five-year 'laboratory' in his adult classes: students applied rules to stop worrying and reported results. He listened to thousands of 'How I Conquered Worry' talks from classes across the U.S. and Canada.\n\n## Book's Nature and Promise\nThe book is a practical, documented collection of successful, time-tested 'recipes' from real people, with names and addresses. It quotes French philosopher Valery: 'Science is a collection of successful recipes.' The author warns the content is not new but focuses on application, not ignorance. He challenges the reader: if the first 44 pages don't provide new power to stop worry, discard the book.",
+        "first_pass_summary_md": "## Author's Personal Origin Story\nThirty-five years prior, the author was an unhappy truck salesman in New York, despising his job, his cockroach-infested room, and his life. He suffered from headaches from disappointment and rebellion. He longed to write and have leisure. He made a decisive change: he quit his job to teach adult night classes, using his college training in public speaking, which he valued most for building confidence and leadership.\n\n## Teaching Experience and Book Genesis\nHe started teaching public speaking at Y.M.C.A. night schools, where students paid for practical results. He had to motivate them and solve their problems. The classes succeeded quickly, with students gaining promotions. His pay increased from a refused five dollars a night to thirty dollars on a percentage basis. Seeing a need for human relations training, he wrote *How to Win Friends and Influence People* as a textbook, which unexpectedly became a bestseller.\n\n## Identifying the Worry Problem\nHis adult students, a cross-section of professionals and businesspeople, had worry as a major problem. Researching for a textbook, he found the New York Public Library had only 22 books under 'WORRY' compared to 189 under 'WORMS'. He notes no high school or college courses on stopping worry, citing David Seabury's quote about lack of preparation for life's pressures. He states more than half of hospital beds are occupied by people with nervous and emotional troubles.\n\n## Research and 'Laboratory' Method\nHe prepared for seven years by reading philosophers and biographies, and interviewing prominent figures like Jack Dempsey, General Omar Bradley, and Eleanor Roosevelt. Crucially, he ran a five-year 'laboratory' in his adult classes: students applied rules to stop worrying and reported results. He listened to thousands of 'How I Conquered Worry' talks from classes across the U.S. and Canada.\n\n## Book's Nature and Promise\nThe book is presented as a practical, documented collection of successful, time-tested 'recipes' from real people, with names and addresses, not academic theory. It quotes French philosopher Valery: 'Science is a collection of successful recipes.' The author warns the content is not new but focuses on application, not ignorance. The purpose is to restate basic truths and spur action. He challenges the reader: if the first 44 pages don't provide new power to stop worry, discard the book.",
+        "passes_used": 2,
+        "generation_cost": 0.00326946,
+        "uncached_generation_cost": 0.00326946,
+        "raw_responses": [
+          {
+            "id": "gen-1776759522-EncFh6HZqkN7tf9chjHa",
+            "object": "chat.completion",
+            "created": 1776759522,
+            "model": "deepseek/deepseek-v3.2-20251201",
+            "provider": "AtlasCloud",
+            "system_fingerprint": null,
+            "choices": [
+              {
+                "index": 0,
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "message": {
+                  "role": "assistant",
+                  "content": "{\n    \"summary_md\": \"## Author's Personal Origin Story\\nThirty-five years prior, the author was an unhappy truck salesman in New York, despising his job, his cockroach-infested room, and his life. He suffered from headaches from disappointment and rebellion. He longed to write and have leisure. He made a decisive change: he quit his job to teach adult night classes, using his college training in public speaking, which he valued most for building confidence and leadership.\\n\\n## Teaching Experience and Book Genesis\\nHe started teaching public speaking at Y.M.C.A. night schools, where students paid for practical results. He had to motivate them and solve their problems. The classes succeeded quickly, with students gaining promotions. His pay increased from a refused five dollars a night to thirty dollars on a percentage basis. Seeing a need for human relations training, he wrote *How to Win Friends and Influence People* as a textbook, which unexpectedly became a bestseller.\\n\\n## Identifying the Worry Problem\\nHis adult students, a cross-section of professionals and businesspeople, had worry as a major problem. Researching for a textbook, he found the New York Public Library had only 22 books under 'WORRY' compared to 189 under 'WORMS'. He notes no high school or college courses on stopping worry, citing David Seabury's quote about lack of preparation for life's pressures. He states more than half of hospital beds are occupied by people with nervous and emotional troubles.\\n\\n## Research and 'Laboratory' Method\\nHe prepared for seven years by reading philosophers and biographies, and interviewing prominent figures like Jack Dempsey, General Omar Bradley, and Eleanor Roosevelt. Crucially, he ran a five-year 'laboratory' in his adult classes: students applied rules to stop worrying and reported results. He listened to thousands of 'How I Conquered Worry' talks from classes across the U.S. and Canada.\\n\\n## Book's Nature and Promise\\nThe book is presented as a practical, documented collection of successful, time-tested 'recipes' from real people, with names and addresses, not academic theory. It quotes French philosopher Valery: 'Science is a collection of successful recipes.' The author warns the content is not new but focuses on application, not ignorance. The purpose is to restate basic truths and spur action. He challenges the reader: if the first 44 pages don't provide new power to stop worry, discard the book.\",\n    \"estimated_visible_words\": 230\n}",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 3764,
+              "completion_tokens": 514,
+              "total_tokens": 4278,
+              "cost": 0.00117396,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00117396,
+                "upstream_inference_prompt_cost": 0.00097864,
+                "upstream_inference_completions_cost": 0.00019532
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          },
+          {
+            "id": "gen-1776759544-Pwmcgn5IXHGpEB1q62v5",
+            "object": "chat.completion",
+            "created": 1776759544,
+            "model": "deepseek/deepseek-v3.2-20251201",
+            "provider": "Friendli",
+            "system_fingerprint": null,
+            "choices": [
+              {
+                "index": 0,
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "message": {
+                  "role": "assistant",
+                  "content": "{\n  \"summary_md\": \"## Teaching Origin and Book Genesis\\nThirty-five years prior, the author was an unhappy truck salesman in New York. He quit to teach adult night classes in public speaking, which he valued for building confidence and leadership. His Y.M.C.A. classes succeeded quickly; students gained promotions and his pay increased. Seeing a need for human relations training, he wrote *How to Win Friends and Influence People* as a textbook, which became a bestseller.\\n\\n## Identifying the Worry Problem\\nHis adult students, a cross-section of professionals, had worry as a major problem. Researching for a textbook, he found the New York Public Library had only 22 books under 'WORRY' compared to 189 under 'WORMS'. He notes no high school or college courses on stopping worry, citing David Seabury's quote about lack of preparation. He states more than half of hospital beds are occupied by people with nervous and emotional troubles.\\n\\n## Research and 'Laboratory' Method\\nHe prepared for seven years by reading philosophers and biographies, and interviewing prominent figures like Jack Dempsey and Eleanor Roosevelt. Crucially, he ran a five-year 'laboratory' in his adult classes: students applied rules to stop worrying and reported results. He listened to thousands of 'How I Conquered Worry' talks from classes across the U.S. and Canada.\\n\\n## Book's Nature and Promise\\nThe book is a practical, documented collection of successful, time-tested 'recipes' from real people, with names and addresses. It quotes French philosopher Valery: 'Science is a collection of successful recipes.' The author warns the content is not new but focuses on application, not ignorance. He challenges the reader: if the first 44 pages don't provide new power to stop worry, discard the book.\"\n  ,\n  \"estimated_visible_words\": 218\n}",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 3027,
+              "completion_tokens": 388,
+              "total_tokens": 3415,
+              "cost": 0.0020955,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0020955,
+                "upstream_inference_prompt_cost": 0.0015135,
+                "upstream_inference_completions_cost": 0.000582
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "latest_error": null,
+  "resume_events_utc": [],
+  "state_path": "runs/booksum-v2/20260421t074914z__booksum-v2__book_gate__30m__baseline_30m_dense_recall_then_compose_v1.state.json",
+  "samples_path": "runs/booksum-v2/20260421t074914z__booksum-v2__book_gate__30m__baseline_30m_dense_recall_then_compose_v1.samples.jsonl",
+  "out_path": "runs/booksum-v2/20260421t074914z__booksum-v2__book_gate__30m__baseline_30m_dense_recall_then_compose_v1.json",
+  "updated_at_utc": "2026-04-21T08:19:10.319912+00:00"
+}
