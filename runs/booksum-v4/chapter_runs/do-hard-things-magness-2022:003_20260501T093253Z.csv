@@ -1,2 +1,0 @@
-sample_id,chapter_id,chapter_title,target_words,output_words,passes_used,generation_cost,uncached_generation_cost,judge_faithfulness,judge_concept_coverage,judge_qualifier_preservation,judge_no_fluff,judge_structure_quality,flesch_reading_ease,flesch_kincaid_grade,sentence_count
-do-hard-things-magness-2022:003,003,Chapter 1,1023,984,2,0.090015072,0.090015072,0.9,0.9,0.8,0.9,0.9,46.995542005420106,11.23130081300813,54
