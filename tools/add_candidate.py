@@ -261,6 +261,7 @@ def add_candidates(
 
     _save_candidates(candidates_path, data)
     print(f"\nWrote {len(created)} profile(s) to {candidates_path}")
+    print(f"\nIMPORTANT: Run 'python3 tools/gen_profile_literal.py' to update candidate_spec.py with the new profile(s).")
     return created
 
 

@@ -49,6 +49,25 @@ def clear_profile_candidates(path: Path) -> bool:
     return True
 
 
+def clear_profile_literal(path: Path) -> bool:
+    with open(path, "r") as f:
+        content = f.read()
+
+    marker = "Profile = Literal["
+    if marker not in content:
+        print(f"  ERROR: Could not find '{marker}' in {path}")
+        return False
+
+    start = content.index(marker) + len(marker)
+    close_bracket = content.index("]", start)
+
+    new_content = content[:start] + '"none"]' + content[close_bracket + 1:]
+
+    with open(path, "w") as f:
+        f.write(new_content)
+    return True
+
+
 def confirm(msg: str) -> bool:
     response = input(f"{msg} [y/N] ").strip().lower()
     return response in ("y", "yes")
@@ -89,6 +108,7 @@ def main():
             for f in sorted(sd.glob("*")):
                 print(f"  would delete snapshot: {f}")
 
+    print(f"  would clear Profile Literal[] in {CANDIDATE_SPEC}")
     print(f"  would clear PROFILE_CANDIDATES in {CANDIDATE_SPEC}")
 
     print()
@@ -114,9 +134,11 @@ def main():
                 f.unlink()
                 print(f"  deleted snapshot: {f}")
 
-    print("\nClearing PROFILE_CANDIDATES...")
+    print("\nClearing Profile Literal[] and PROFILE_CANDIDATES...")
+    if clear_profile_literal(CANDIDATE_SPEC):
+        print(f"  cleared Profile Literal[]: {CANDIDATE_SPEC}")
     if clear_profile_candidates(CANDIDATE_SPEC):
-        print(f"  cleared: {CANDIDATE_SPEC}")
+        print(f"  cleared PROFILE_CANDIDATES: {CANDIDATE_SPEC}")
 
     print("\nDone. Run 'python run.py' to start a fresh benchmark.")
 

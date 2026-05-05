@@ -24,22 +24,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Dict, List, Literal, Optional, Sequence, Tuple
 
-Profile = Literal[
-    "30m", "60m",
-    "30m_minimax_notthinking", "60m_deepseek_notthinking",
-    "30m_dv4flash_thinking", "30m_dv4flash_notthinking",
-    "30m_dv4pro_thinking", "30m_dv4pro_notthinking",
-    "60m_dv4flash_thinking", "60m_dv4flash_notthinking",
-    "60m_dv4pro_thinking", "60m_dv4pro_notthinking",
-    "30m_mimo25pro_thinking", "30m_mimo25pro_notthinking",
-    "30m_mimoflash_thinking", "30m_mimoflash_notthinking",
-    "60m_mimo25pro_thinking", "60m_mimo25pro_notthinking",
-    "60m_mimoflash_thinking", "60m_mimoflash_notthinking",
-    "30m_gpt5mini_mimo25pro_thinking", "30m_gpt5mini_mimo25pro_notthinking",
-    "30m_gpt5mini_mimoflash_thinking", "30m_gpt5mini_mimoflash_notthinking",
-    "30m_gpt5mini_dv4flash_thinking", "30m_gpt5mini_dv4flash_notthinking",
-    "30m_gpt5mini_dv4pro_thinking", "30m_gpt5mini_dv4pro_notthinking",
-]
+Profile = Literal["none"]
 FormatMode = Literal["markdown_sections", "markdown_bullets", "prose"]
 ContextMode = Literal[
     "chapter_only",
