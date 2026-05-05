@@ -19,6 +19,10 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 SYS_PROMPT = "You are a helpful assistant that responds briefly."
 USER_PROMPT = "Reply with exactly the word 'ok'."
 

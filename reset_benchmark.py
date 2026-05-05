@@ -5,6 +5,8 @@ import shutil
 import sys
 from pathlib import Path
 
+BOOK_GATE = Path("bench/book_gate.jsonl")
+
 ARTIFACTS_RUNS = Path("artifacts/runs")
 RESULTS_TSV = Path("results.tsv")
 CANDIDATES_JSON = Path("data/candidates.json")
@@ -75,6 +77,7 @@ def main():
         (ARTIFACTS_RUNS, "artifacts/runs"),
         (RESULTS_TSV, "results.tsv"),
         (CANDIDATES_JSON, "data/candidates.json"),
+        (BOOK_GATE, "bench/book_gate.jsonl"),
     ]
 
     snapshot_dirs = [SNAPSHOTS_CATALOG, SNAPSHOTS_PRICING]

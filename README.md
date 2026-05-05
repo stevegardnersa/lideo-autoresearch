@@ -233,6 +233,9 @@ python3 tools/add_candidate.py --model-full "openai/gpt-5-mini" --time-budget 30
 
 # Preview what would be created (no API calls, no file writes)
 python3 tools/add_candidate.py --model-full "openai/gpt-5-mini" --dry-run
+
+# List all profiles in the candidates JSON
+python3 tools/add_candidate.py --list
 ```
 
 The script probes the model for (a) JSON schema support, (b) thinking mode, (c) non-thinking mode — and creates one profile per supported mode. If the model supports both thinking and non-thinking, two profiles are created (e.g. `30m_deepseek-v4-flash_thinking` and `30m_deepseek-v4-flash_notthinking`).
@@ -370,6 +373,7 @@ python33 reset_benchmark.py
 ```
 
 This interactive script asks for confirmation before deleting:
+- `bench/book_gate.jsonl` — gate set (books selected for benchmark evaluation)
 - `artifacts/runs/` — all run outputs
 - `results.tsv` — experiment log
 - `data/candidates.json` — saved candidates snapshot
