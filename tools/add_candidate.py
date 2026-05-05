@@ -249,20 +249,34 @@ def add_candidates(
     if "profiles" not in data:
         data["profiles"] = {}
 
+    existing = set(data.get("profiles", {}).keys())
+    added: List[str] = []
+    skipped: List[str] = []
+
     for profile_name in created:
-        profile_data = _build_profile(
-            model,
-            thinking=("notthinking" not in profile_name),
-            schema_ok=schema_ok,
-            time_budget=profile_name.split("_")[0],
-        )
-        data["profiles"][profile_name] = profile_data
-        print(f"  Added: {profile_name}")
+        if profile_name in existing:
+            skipped.append(profile_name)
+            print(f"  Skipped (already exists): {profile_name}")
+        else:
+            profile_data = _build_profile(
+                model,
+                thinking=("notthinking" not in profile_name),
+                schema_ok=schema_ok,
+                time_budget=profile_name.split("_")[0],
+            )
+            data["profiles"][profile_name] = profile_data
+            added.append(profile_name)
+            print(f"  Added: {profile_name}")
 
     _save_candidates(candidates_path, data)
-    print(f"\nWrote {len(created)} profile(s) to {candidates_path}")
-    print(f"\nIMPORTANT: Run 'python3 tools/gen_profile_literal.py' to update candidate_spec.py with the new profile(s).")
-    return created
+    print(f"\nWrote {len(added)} new profile(s) to {candidates_path}")
+    if skipped:
+        print(f"Skipped {len(skipped)} existing profile(s)")
+
+    if added:
+        print(f"\nIMPORTANT: Run 'python3 tools/gen_profile_literal.py' to update candidate_spec.py with the new profile(s).")
+
+    return added
 
 
 def list_profiles(candidates_path: Path) -> None:
