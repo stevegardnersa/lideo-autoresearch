@@ -1,146 +1,6 @@
 {
   "version": 1,
   "profiles": {
-    "60m_deepseek-v4-pro_thinking": {
-      "name": "60m_deepseek-v4-pro_thinking_v1",
-      "profile": "60m_deepseek-v4-pro_thinking",
-      "chapter_stage": {
-        "model": "deepseek/deepseek-v4-pro",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "dense_faithful",
-          "detail_policy": "mechanisms_first",
-          "qualifier_policy": "strict",
-          "structure_policy": "heading_aware",
-          "example_policy": "explanatory_only",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": false
-      },
-      "composer_stage": {
-        "model": "deepseek/deepseek-v4-pro",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "architectural_synthesizer",
-          "synthesis_policy": "thesis_then_frameworks",
-          "detail_policy": "balanced_dense",
-          "qualifier_policy": "strict",
-          "structure_policy": "theme_clustered",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": false
-      },
-      "composer_mode": "summaries_only",
-      "length_control": {
-        "max_passes": 5,
-        "tolerance_pct": 0.08,
-        "hard_tolerance_pct": 0.15,
-        "repair_strategy": "edit_existing",
-        "repair_more_prompt_id": "expand_mechanisms_first",
-        "repair_less_prompt_id": "shrink_dedup_first"
-      },
-      "budget_allocator": {
-        "words_per_minute": 200,
-        "allocation_alpha": 0.9,
-        "min_chapter_share": 0.03,
-        "max_chapter_share": 0.18,
-        "chapter_stage_multiplier_30m": 1.2,
-        "chapter_stage_multiplier_60m": 1.0,
-        "max_summary_to_source_ratio": 0.9
-      },
-      "disable_composer": false,
-      "notes": "Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, thinking, schema=False"
-    },
-    "60m_deepseek-v4-pro_notthinking": {
-      "name": "60m_deepseek-v4-pro_notthinking_v1",
-      "profile": "60m_deepseek-v4-pro_notthinking",
-      "chapter_stage": {
-        "model": "deepseek/deepseek-v4-pro",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "dense_faithful",
-          "detail_policy": "mechanisms_first",
-          "qualifier_policy": "strict",
-          "structure_policy": "heading_aware",
-          "example_policy": "explanatory_only",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": false
-      },
-      "composer_stage": {
-        "model": "deepseek/deepseek-v4-pro",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "architectural_synthesizer",
-          "synthesis_policy": "thesis_then_frameworks",
-          "detail_policy": "balanced_dense",
-          "qualifier_policy": "strict",
-          "structure_policy": "theme_clustered",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": false
-      },
-      "composer_mode": "summaries_only",
-      "length_control": {
-        "max_passes": 5,
-        "tolerance_pct": 0.08,
-        "hard_tolerance_pct": 0.15,
-        "repair_strategy": "edit_existing",
-        "repair_more_prompt_id": "expand_mechanisms_first",
-        "repair_less_prompt_id": "shrink_dedup_first"
-      },
-      "budget_allocator": {
-        "words_per_minute": 200,
-        "allocation_alpha": 0.9,
-        "min_chapter_share": 0.03,
-        "max_chapter_share": 0.18,
-        "chapter_stage_multiplier_30m": 1.2,
-        "chapter_stage_multiplier_60m": 1.0,
-        "max_summary_to_source_ratio": 0.9
-      },
-      "disable_composer": false,
-      "notes": "Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, notthinking, schema=False"
-    },
     "30m_deepseek-v4-flash_thinking": {
       "name": "30m_deepseek-v4-flash_thinking_v1",
       "profile": "30m_deepseek-v4-flash_thinking",
@@ -420,6 +280,286 @@
       },
       "disable_composer": false,
       "notes": "Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 60m, notthinking, schema=True"
+    },
+    "60m_deepseek-v4-pro_thinking": {
+      "name": "60m_deepseek-v4-pro_thinking_v1",
+      "profile": "60m_deepseek-v4-pro_thinking",
+      "chapter_stage": {
+        "model": "deepseek/deepseek-v4-pro",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "extra_body": {
+          "thinking": {
+            "type": "enabled"
+          }
+        },
+        "use_json_schema": true
+      },
+      "composer_stage": {
+        "model": "deepseek/deepseek-v4-pro",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "extra_body": {
+          "thinking": {
+            "type": "enabled"
+          }
+        },
+        "use_json_schema": true
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, thinking, schema=True"
+    },
+    "60m_deepseek-v4-pro_notthinking": {
+      "name": "60m_deepseek-v4-pro_notthinking_v1",
+      "profile": "60m_deepseek-v4-pro_notthinking",
+      "chapter_stage": {
+        "model": "deepseek/deepseek-v4-pro",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "extra_body": {
+          "thinking": {
+            "type": "disabled"
+          }
+        },
+        "use_json_schema": true
+      },
+      "composer_stage": {
+        "model": "deepseek/deepseek-v4-pro",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "extra_body": {
+          "thinking": {
+            "type": "disabled"
+          }
+        },
+        "use_json_schema": true
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, notthinking, schema=True"
+    },
+    "30m_deepseek-v4-pro_thinking": {
+      "name": "30m_deepseek-v4-pro_thinking_v1",
+      "profile": "30m_deepseek-v4-pro_thinking",
+      "chapter_stage": {
+        "model": "deepseek/deepseek-v4-pro",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "extra_body": {
+          "thinking": {
+            "type": "enabled"
+          }
+        },
+        "use_json_schema": true
+      },
+      "composer_stage": {
+        "model": "deepseek/deepseek-v4-pro",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "extra_body": {
+          "thinking": {
+            "type": "enabled"
+          }
+        },
+        "use_json_schema": true
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 30m, thinking, schema=True"
+    },
+    "30m_deepseek-v4-pro_notthinking": {
+      "name": "30m_deepseek-v4-pro_notthinking_v1",
+      "profile": "30m_deepseek-v4-pro_notthinking",
+      "chapter_stage": {
+        "model": "deepseek/deepseek-v4-pro",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "extra_body": {
+          "thinking": {
+            "type": "disabled"
+          }
+        },
+        "use_json_schema": true
+      },
+      "composer_stage": {
+        "model": "deepseek/deepseek-v4-pro",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "extra_body": {
+          "thinking": {
+            "type": "disabled"
+          }
+        },
+        "use_json_schema": true
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 30m, notthinking, schema=True"
     }
   }
 }

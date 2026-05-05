@@ -25,8 +25,9 @@ from dataclasses import asdict, dataclass, field
 from typing import Dict, List, Literal, Optional, Sequence, Tuple
 
 Profile = Literal[
-    "30m_deepseek-v4-flash_notthinking", "30m_deepseek-v4-flash_thinking", "60m_deepseek-v4-flash_notthinking",
-    "60m_deepseek-v4-flash_thinking", "60m_deepseek-v4-pro_notthinking", "60m_deepseek-v4-pro_thinking"
+    "30m_deepseek-v4-flash_notthinking", "30m_deepseek-v4-flash_thinking", "30m_deepseek-v4-pro_notthinking",
+    "30m_deepseek-v4-pro_thinking", "60m_deepseek-v4-flash_notthinking", "60m_deepseek-v4-flash_thinking",
+    "60m_deepseek-v4-pro_notthinking", "60m_deepseek-v4-pro_thinking"
 ]
 FormatMode = Literal["markdown_sections", "markdown_bullets", "prose"]
 ContextMode = Literal[
@@ -677,6 +678,38 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         notes="Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 30m, thinking, schema=True",
         disable_composer=False
     ),
+    "30m_deepseek-v4-pro_notthinking": CandidateSpec(
+        name="30m_deepseek-v4-pro_notthinking_v1",
+        profile="30m_deepseek-v4-pro_notthinking",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, extra_body={"thinking": {"type": "disabled"}}),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, extra_body={"thinking": {"type": "disabled"}}),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 30m, notthinking, schema=True",
+        disable_composer=False
+    ),
+    "30m_deepseek-v4-pro_thinking": CandidateSpec(
+        name="30m_deepseek-v4-pro_thinking_v1",
+        profile="30m_deepseek-v4-pro_thinking",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, extra_body={"thinking": {"type": "enabled"}}),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, extra_body={"thinking": {"type": "enabled"}}),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 30m, thinking, schema=True",
+        disable_composer=False
+    ),
     "60m_deepseek-v4-flash_notthinking": CandidateSpec(
         name="60m_deepseek-v4-flash_notthinking_v1",
         profile="60m_deepseek-v4-flash_notthinking",
@@ -722,7 +755,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, notthinking, schema=False",
+        notes="Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, notthinking, schema=True",
         disable_composer=False
     ),
     "60m_deepseek-v4-pro_thinking": CandidateSpec(
@@ -738,7 +771,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, thinking, schema=False",
+        notes="Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, thinking, schema=True",
         disable_composer=False
     )
 

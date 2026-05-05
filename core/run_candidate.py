@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import argparse
 import csv
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 import importlib.util
 import json
@@ -1797,7 +1797,10 @@ def _run_single(
     data_dir = resolve_path(args.data_dir)
     runs_root = resolve_path(args.runs_dir)
     benchmark_version = str(benchmark_manifest.get("benchmark_version", "benchmark"))
-    run_dir = runs_root / benchmark_version
+    if args.mock:
+        run_dir = runs_root / "mock" / benchmark_version
+    else:
+        run_dir = runs_root / benchmark_version
     run_dir.mkdir(parents=True, exist_ok=True)
 
     if args.resume:
@@ -1871,7 +1874,7 @@ def _run_single(
         run_manifest = {
             "run_id": run_id,
             "created_at_utc": timestamp_iso,
-            "benchmark_manifest_path": display_path(benchmark_manifest_path),
+            "benchmark_manifest_path": display_path(resolve_path(args.benchmark_manifest)),
             "benchmark_version": benchmark_manifest.get("benchmark_version", ""),
             "corpus_version": benchmark_manifest.get("corpus_version", ""),
             "rubric_version": benchmark_manifest.get("rubric_version", ""),
@@ -2076,7 +2079,7 @@ def _run_single(
     )
     dataset_payload = dict(artifact_payload.get("dataset_score") or {})
     worst_genre_macro = dict(dataset_payload.get("worst_genre_macro") or {})
-    scoring_gates_override_dict = scoring_config if gate_key != "default" else None
+    scoring_gates_override_dict = asdict(scoring_config) if gate_key != "default" else None
     if scoring_gates_override_dict is not None:
         artifact_payload["scoring_gates_override"] = scoring_gates_override_dict
 
