@@ -92,6 +92,20 @@ def build_candidates_dict(profiles: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def find_matching_brace(content: str, start: int) -> int:
+    """Find the closing brace that matches the opening brace at position start-1."""
+    depth = 1
+    i = start
+    while i < len(content) and depth > 0:
+        c = content[i]
+        if c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
+        i += 1
+    return i - 1
+
+
 def update_candidate_spec_py(profiles: dict) -> None:
     content = CANDIDATE_SPEC_PY.read_text(encoding="utf-8")
     profile_keys = sorted(profiles.keys())
@@ -99,24 +113,29 @@ def update_candidate_spec_py(profiles: dict) -> None:
     candidates_dict = build_candidates_dict(profiles)
 
     # Replace Profile literal
-    pattern = r'Profile = Literal\[[^\]]+\]\n'
+    pattern = r"Profile = Literal\[[^\]]+\]\n"
     if re.search(pattern, content):
         content = re.sub(pattern, literal, content, count=1)
     else:
         print("WARNING: Profile literal pattern not found")
 
-    # Replace PROFILE_CANDIDATES dict
-    pattern = r'PROFILE_CANDIDATES: Dict\[Profile, CandidateSpec\] = \{[^}]*\}'
-    if re.search(pattern, content):
-        content = re.sub(
-            pattern,
-            f'PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {{\n{candidates_dict}}}',
-            content,
-            count=1,
-            flags=re.DOTALL,
-        )
+    # Replace PROFILE_CANDIDATES dict using brace matching
+    marker = "PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {"
+    if marker not in content:
+        print("WARNING: PROFILE_CANDIDATES marker not found")
     else:
-        print("WARNING: PROFILE_CANDIDATES pattern not found")
+        marker_end = content.index(marker) + len(marker)
+        # Check if empty dict {}
+        if content[marker_end] == "}":
+            # Empty dict: content[:marker_end] keeps the { from the marker
+            # content[marker_end+1:] skips the } - but we need to add closing }
+            new_dict = f"\n{candidates_dict}\n}}"
+            content = content[:marker_end] + new_dict + content[marker_end + 1:]
+        else:
+            # Non-empty dict - find matching close brace and replace
+            close_brace = find_matching_brace(content, marker_end)
+            new_dict = f"\n{candidates_dict}\n}}"
+            content = content[:marker_end] + new_dict + content[close_brace + 1:]
 
     CANDIDATE_SPEC_PY.write_text(content, encoding="utf-8")
     print(f"Updated Profile literal in {CANDIDATE_SPEC_PY} ({len(profile_keys)} profiles)")
