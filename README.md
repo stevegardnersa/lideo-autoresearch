@@ -120,7 +120,7 @@ If your book directory already contains chapter markdown like `0.md`, `1.md`, `2
 The simplest case is now:
 
 ```bash
-python tools/bootstrap_book.py \
+python3 tools/bootstrap_book.py \
   --book-dir data/books/my-book \
   --chapter-glob '*.md' \
   --copy-raw-json
@@ -137,7 +137,7 @@ If `.env` contains `GOOGLE_BOOKS_API_KEY`, the script will also try to look up t
 You can still override everything manually:
 
 ```bash
-python tools/bootstrap_book.py \
+python3 tools/bootstrap_book.py \
   --book-dir data/books/my-book \
   --chapter-glob '*.md' \
   --volume-json /path/to/google_books_volume.json \
@@ -186,19 +186,19 @@ bench/
 Build frozen rubrics from the source chapters:
 
 ```bash
-python tools/build_rubrics.py --books-root data/books --artifacts-root artifacts
+python3 tools/build_rubrics.py --books-root data/books --artifacts-root artifacts
 ```
 
 Check that the corpus has reasonable genre coverage:
 
 ```bash
-python tools/corpus_report.py --books-root data/books
+python3 tools/corpus_report.py --books-root data/books
 ```
 
 Build the benchmark splits. The default mode is **genre-aware** and will balance the selected books across `genre_macro` while respecting `benchmark_pool`:
 
 ```bash
-python tools/build_bench.py \
+python3 tools/build_bench.py \
   --books-root data/books \
   --bench-dir bench \
   --dev-books 10 \
@@ -210,7 +210,7 @@ python tools/build_bench.py \
 For the included sample corpus, rebuild with:
 
 ```bash
-python tools/build_bench.py \
+python3 tools/build_bench.py \
   --books-root data/books \
   --bench-dir bench \
   --dev-books 1 \
@@ -225,14 +225,14 @@ python tools/build_bench.py \
 
 ```bash
 # Both 30m and 60m profiles (default)
-python tools/add_candidate.py --model-full "minimax/minimax-1.5-flash"
-python tools/add_candidate.py --model-full "deepseek/deepseek-v4-flash"
+python3 tools/add_candidate.py --model-full "minimax/minimax-1.5-flash"
+python3 tools/add_candidate.py --model-full "deepseek/deepseek-v4-flash"
 
 # 30m profiles only
-python tools/add_candidate.py --model-full "openai/gpt-5-mini" --time-budget 30m
+python3 tools/add_candidate.py --model-full "openai/gpt-5-mini" --time-budget 30m
 
 # Preview what would be created (no API calls, no file writes)
-python tools/add_candidate.py --model-full "openai/gpt-5-mini" --dry-run
+python3 tools/add_candidate.py --model-full "openai/gpt-5-mini" --dry-run
 ```
 
 The script probes the model for (a) JSON schema support, (b) thinking mode, (c) non-thinking mode — and creates one profile per supported mode. If the model supports both thinking and non-thinking, two profiles are created (e.g. `30m_deepseek-v4-flash_thinking` and `30m_deepseek-v4-flash_notthinking`).
@@ -247,7 +247,7 @@ Profiles are written to `data/candidates.json`.
 **Step 2 — Compile profiles into the active harness:**
 
 ```bash
-python tools/gen_profile_literal.py
+python3 tools/gen_profile_literal.py
 ```
 
 This regenerates `Profile` union type and `_CANDIDATES` dict in `candidate_spec.py` from `data/candidates.json`. Run this whenever you add or update profiles.
@@ -255,20 +255,20 @@ This regenerates `Profile` union type and `_CANDIDATES` dict in `candidate_spec.
 **Step 3 — Smoke test:**
 
 ```bash
-python core/run_candidate.py --bench chapter_fast --profile <name> --mock --write-results
+python3 core/run_candidate.py --bench chapter_fast --profile <name> --mock --write-results
 ```
 
 ### Run a smoke test without API calls:
 
 ```bash
 # Single profile smoke test
-python core/run_candidate.py --bench chapter_fast --profile 30m_minimax_notthinking --mock
+python3 core/run_candidate.py --bench chapter_fast --profile 30m_minimax_notthinking --mock
 
 # All 30m profiles smoke test (sequential, no LLM calls)
-python core/run_candidate.py --bench chapter_fast --profile all --time 30m --mock
+python3 core/run_candidate.py --bench chapter_fast --profile all --time 30m --mock
 
 # All 60m profiles smoke test
-python core/run_candidate.py --bench chapter_fast --profile all --time 60m --mock
+python3 core/run_candidate.py --bench chapter_fast --profile all --time 60m --mock
 ```
 
 ### Run a real benchmark with OpenRouter:
@@ -276,10 +276,10 @@ python core/run_candidate.py --bench chapter_fast --profile all --time 60m --moc
 ```bash
 export OPENROUTER_API_KEY=...
 # Single profile
-python core/run_candidate.py --bench chapter_fast --profile 30m_minimax_notthinking --judge-model openai/gpt-5-mini --write-results
+python3 core/run_candidate.py --bench chapter_fast --profile 30m_minimax_notthinking --judge-model openai/gpt-5-mini --write-results
 
 # All 30m profiles (sequential)
-python core/run_candidate.py --bench chapter_fast --profile all --time 30m --judge-model openai/gpt-5-mini --write-results
+python3 core/run_candidate.py --bench chapter_fast --profile all --time 30m --judge-model openai/gpt-5-mini --write-results
 ```
 
 **Profile selection:**
@@ -319,21 +319,21 @@ Promote a candidate from `chapter_fast` → `book_gate` only if its leaderboard 
 Overall leaderboard:
 
 ```bash
-python tools/leaderboard.py --bench chapter_fast --profile 30m
+python3 tools/leaderboard.py --bench chapter_fast --profile 30m
 ```
 
 Per-genre leaderboard:
 
 ```bash
-python tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field genre_macro
+python3 tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field genre_macro
 ```
 
 Other useful slices:
 
 ```bash
-python tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field narrative_vs_expository
-python tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field prescriptive_vs_analytical
-python tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field quantitative_density
+python3 tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field narrative_vs_expository
+python3 tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field prescriptive_vs_analytical
+python3 tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field quantitative_density
 ```
 
 The overall results table now includes:
@@ -360,3 +360,21 @@ make leaderboard
 - The judge is optional. If you omit `--judge-model`, the scorer falls back to deterministic proxies.
 - `candidate_spec.py` contains two separate task profiles: `30m` and `60m`.
 - The benchmark is designed so you can start with one **general nonfiction system** and later branch into **genre-specific systems** while keeping the general winner as the fallback.
+
+## Resetting the Benchmark
+
+To clear all runs, results, and snapshot data and start fresh:
+
+```bash
+python33 reset_benchmark.py
+```
+
+This interactive script asks for confirmation before deleting:
+- `artifacts/runs/` — all run outputs
+- `results.tsv` — experiment log
+- `data/candidates.json` — saved candidates snapshot
+- `snapshots/catalog/*.json` — catalog snapshots
+- `snapshots/pricing/*.json` — pricing snapshots
+- **`PROFILE_CANDIDATES` in `candidate_spec.py`** — all candidate definitions
+
+After resetting, you have a blank slate and can add new candidates to `candidate_spec.py`.
