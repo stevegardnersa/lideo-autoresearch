@@ -642,3 +642,16 @@ def build_openrouter_request(
 
 
 PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {}
+def get_candidate(profile: Profile) -> CandidateSpec:
+    if profile not in PROFILE_CANDIDATES:
+        raise KeyError(f"Unknown profile: {profile}")
+    return PROFILE_CANDIDATES[profile]
+
+def get_all_profiles() -> list[Profile]:
+    return list(PROFILE_CANDIDATES.keys())
+
+def get_profiles_by_time(time_budget: str) -> list[Profile]:
+    """Return profiles matching the given time budget ('30m', '60m', or 'all')."""
+    if time_budget == "all":
+        return get_all_profiles()
+    return [p for p in PROFILE_CANDIDATES if p.startswith(f"{time_budget}_")]

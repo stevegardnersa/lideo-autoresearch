@@ -49,6 +49,31 @@ def clear_profile_candidates(path: Path) -> bool:
     return True
 
 
+def ensure_helper_functions(path: Path) -> None:
+    with open(path, "r") as f:
+        content = f.read()
+    if "def get_candidate(profile: Profile)" in content:
+        return
+    default_helpers = [
+        "def get_candidate(profile: Profile) -> CandidateSpec:",
+        "    if profile not in PROFILE_CANDIDATES:",
+        '        raise KeyError(f"Unknown profile: {profile}")',
+        "    return PROFILE_CANDIDATES[profile]",
+        "",
+        "def get_all_profiles() -> list[Profile]:",
+        "    return list(PROFILE_CANDIDATES.keys())",
+        "",
+        "def get_profiles_by_time(time_budget: str) -> list[Profile]:",
+        '    """Return profiles matching the given time budget (\'30m\', \'60m\', or \'all\')."""',
+        "    if time_budget == \"all\":",
+        "        return get_all_profiles()",
+        '    return [p for p in PROFILE_CANDIDATES if p.startswith(f"{time_budget}_")]',
+    ]
+    with open(path, "w") as f:
+        f.write(content + "\n" + "\n".join(default_helpers) + "\n")
+    print(f"  added helper functions: {path}")
+
+
 def clear_profile_literal(path: Path) -> bool:
     with open(path, "r") as f:
         content = f.read()
@@ -139,6 +164,7 @@ def main():
         print(f"  cleared Profile Literal[]: {CANDIDATE_SPEC}")
     if clear_profile_candidates(CANDIDATE_SPEC):
         print(f"  cleared PROFILE_CANDIDATES: {CANDIDATE_SPEC}")
+    ensure_helper_functions(CANDIDATE_SPEC)
 
     print("\nDone. Run 'python run.py' to start a fresh benchmark.")
 

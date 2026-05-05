@@ -382,4 +382,4 @@ This interactive script asks for confirmation before deleting:
 - **`Profile` Literal[] in `candidate_spec.py`** — all profile type aliases
 - **`PROFILE_CANDIDATES` in `candidate_spec.py`** — all candidate definitions
 
-After resetting, you have a blank slate and can add new candidates to `candidate_spec.py`.
+After resetting, you have a blank slate. Add profiles to `data/candidates.json` via `python tools/add_candidate.py`, then run `python tools/gen_profile_literal.py` to update `candidate_spec.py`.
