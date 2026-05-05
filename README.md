@@ -369,7 +369,7 @@ make leaderboard
 To clear all runs, results, and snapshot data and start fresh:
 
 ```bash
-python33 reset_benchmark.py
+python3 reset_benchmark.py
 ```
 
 This interactive script asks for confirmation before deleting:
@@ -379,6 +379,7 @@ This interactive script asks for confirmation before deleting:
 - `data/candidates.json` — saved candidates snapshot
 - `snapshots/catalog/*.json` — catalog snapshots
 - `snapshots/pricing/*.json` — pricing snapshots
+- **`Profile` Literal[] in `candidate_spec.py`** — all profile type aliases
 - **`PROFILE_CANDIDATES` in `candidate_spec.py`** — all candidate definitions
 
 After resetting, you have a blank slate and can add new candidates to `candidate_spec.py`.
