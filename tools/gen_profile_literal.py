@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Regenerate candidate_spec.py Profile literal + constants from data/candidates.json.
+Regenerate candidate_spec.py Profile literal + PROFILE_CANDIDATES from data/candidates.json.
 Run this whenever a new profile is added via add_candidate.py.
 
 Usage:
@@ -16,16 +16,14 @@ CANDIDATES_JSON = Path("data/candidates.json")
 CANDIDATE_SPEC_PY = Path("candidate_spec.py")
 
 
-def load_profile_keys() -> list[str]:
+def load_profiles() -> dict:
     with open(CANDIDATES_JSON, encoding="utf-8") as f:
         data = json.load(f)
-    profiles = data.get("profiles", {})
-    return sorted(profiles.keys())
+    return data.get("profiles", {})
 
 
-def build_literal(values: list[str]) -> str:
-    quoted = [f'"{v}"' for v in values]
-    # Wrap at ~120 chars per line
+def build_literal(profile_keys: list[str]) -> str:
+    quoted = [f'"{v}"' for v in profile_keys]
     lines, line = [], ""
     for q in quoted:
         if line and len(line) + len(q) + 2 > 120:
@@ -37,26 +35,103 @@ def build_literal(values: list[str]) -> str:
     return "Profile = Literal[\n    " + ",\n    ".join(lines) + "\n]\n"
 
 
-def update_candidate_spec_py(profile_keys: list[str]) -> None:
-    content = CANDIDATE_SPEC_PY.read_text(encoding="utf-8")
-    literal = build_literal(profile_keys)
+def build_candidates_dict(profiles: dict) -> str:
+    lines = []
+    sorted_keys = sorted(profiles.keys())
+    for key in sorted_keys:
+        spec = profiles[key]
+        name = spec.get("name", key)
+        ch = spec.get("chapter_stage", {})
+        composer = spec.get("composer_stage", {})
+        lc = spec.get("length_control", {})
+        ba = spec.get("budget_allocator", {})
 
-    # Replace existing Profile literal
-    pattern = r'(Profile = Literal\[[^\]]+\]\n)'
-    if re.search(pattern, content, re.DOTALL):
-        content = re.sub(pattern, literal, content, count=1, flags=re.DOTALL)
+        def stage_str(s):
+            return (
+                f'StageConfig('
+                f'model="{s.get("model", "")}", '
+                f'temperature={s.get("temperature", 0.2)}, '
+                f'seed={s.get("seed", 42)}, '
+                f'max_tokens={s.get("max_tokens", 8192)}, '
+                f'format_mode="{s.get("format_mode", "markdown_sections")}", '
+                f'context_mode="{s.get("context_mode", "chapter_plus_toc_and_meta")}", '
+                f'prompt_components={json.dumps(s.get("prompt_components", {}))}, '
+                f'extra_body={json.dumps(s.get("extra_body"))}'
+                f')'
+            )
+
+        last = key == sorted_keys[-1]
+        comma = "" if last else ","
+
+        lines.append(f'    "{key}": CandidateSpec(')
+        lines.append(f'        name="{name}",')
+        lines.append(f'        profile="{key}",')
+        lines.append(f'        chapter_stage={stage_str(ch)},')
+        lines.append(f'        composer_stage={stage_str(composer)},')
+        lines.append(f'        length_control=LengthControlConfig(')
+        lines.append(f'            max_passes={lc.get("max_passes", 5)}, '
+                     f'tolerance_pct={lc.get("tolerance_pct", 0.05)}, '
+                     f'hard_tolerance_pct={lc.get("hard_tolerance_pct", 0.10)}, '
+                     f'repair_strategy="{lc.get("repair_strategy", "edit_existing")}"')
+        lines.append(f'        ),')
+        lines.append(f'        budget_allocator=BudgetAllocatorConfig(')
+        lines.append(f'            words_per_minute={ba.get("words_per_minute", 200)}, '
+                     f'allocation_alpha={ba.get("allocation_alpha", 0.90)}, '
+                     f'min_chapter_share={ba.get("min_chapter_share", 0.03)}, '
+                     f'max_chapter_share={ba.get("max_chapter_share", 0.18)}, '
+                     f'chapter_stage_multiplier_30m={ba.get("chapter_stage_multiplier_30m", 1.20)}, '
+                     f'chapter_stage_multiplier_60m={ba.get("chapter_stage_multiplier_60m", 1.00)}, '
+                     f'max_summary_to_source_ratio={ba.get("max_summary_to_source_ratio", 0.90)}')
+        lines.append(f'        ),')
+        lines.append(f'        use_json_schema={spec.get("use_json_schema", True)},')
+        lines.append(f'        json_schema_name="{spec.get("json_schema_name", "summary_response")}",')
+        lines.append(f'        notes="{spec.get("notes", "")}",')
+        lines.append(f'        disable_composer={spec.get("disable_composer", False)}')
+        lines.append(f'    ){comma}')
+
+    return "\n".join(lines) + "\n"
+
+
+def update_candidate_spec_py(profiles: dict) -> None:
+    content = CANDIDATE_SPEC_PY.read_text(encoding="utf-8")
+    profile_keys = sorted(profiles.keys())
+    literal = build_literal(profile_keys)
+    candidates_dict = build_candidates_dict(profiles)
+
+    # Replace Profile literal
+    pattern = r'Profile = Literal\[[^\]]+\]\n'
+    if re.search(pattern, content):
+        content = re.sub(pattern, literal, content, count=1)
     else:
-        # Insert after the first import / type definition block
-        # Just append after any existing Literal definition
-        content = re.sub(r'Profile = Literal\[.*?\]\n', literal, content, count=1, flags=re.DOTALL)
+        print("WARNING: Profile literal pattern not found")
+
+    # Replace PROFILE_CANDIDATES dict
+    pattern = r'PROFILE_CANDIDATES: Dict\[Profile, CandidateSpec\] = \{[^}]*\}'
+    if re.search(pattern, content):
+        content = re.sub(
+            pattern,
+            f'PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {{\n{candidates_dict}}}',
+            content,
+            count=1,
+            flags=re.DOTALL,
+        )
+    else:
+        print("WARNING: PROFILE_CANDIDATES pattern not found")
 
     CANDIDATE_SPEC_PY.write_text(content, encoding="utf-8")
     print(f"Updated Profile literal in {CANDIDATE_SPEC_PY} ({len(profile_keys)} profiles)")
+    print(f"Updated PROFILE_CANDIDATES in {CANDIDATE_SPEC_PY} ({len(profile_keys)} candidates)")
 
 
 def main() -> None:
-    profile_keys = load_profile_keys()
-    update_candidate_spec_py(profile_keys)
+    if not CANDIDATES_JSON.exists():
+        print(f"No profiles found in data/candidates.json (file does not exist)")
+        sys.exit(1)
+    profiles = load_profiles()
+    if not profiles:
+        print("No profiles found in data/candidates.json (empty)")
+        sys.exit(1)
+    update_candidate_spec_py(profiles)
     print("Done.")
 
 
