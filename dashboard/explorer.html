@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Run explorer</title>
+  <link rel="stylesheet" href="/explorer.css" />
+</head>
+
+<body>
+  <div class="page">
+    <header class="page-header">
+      <div class="title-wrap">
+        <div class="title-dot"></div>
+        <div>
+          <h1>Run explorer</h1>
+          <div class="subtitle" id="runSubtitle">Loading run data...</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="shell">
+      <div class="chapter-select-wrap">
+        <select id="chapterSelect">
+          <option value="">Select a chapter...</option>
+        </select>
+      </div>
+
+      <div class="split-pane" id="splitPane">
+        <div class="pane left-pane" id="leftPane">
+          <div class="pane-header">Test Summary</div>
+          <div class="pane-content" id="summaryContent">
+            <div class="placeholder-text">Select a chapter to view its test summary.</div>
+          </div>
+        </div>
+        <div class="pane-divider"></div>
+        <div class="pane right-pane" id="rightPane">
+          <div class="pane-header">Original Chapter</div>
+          <div class="pane-content" id="originalContent">
+            <div class="placeholder-text">Select a chapter to view the original text.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">Run explorer</div>
+    </div>
+  </div>
+  <script type="module" src="/explorer.js"></script>
+</body>
+
+</html>
