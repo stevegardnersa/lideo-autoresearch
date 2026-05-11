@@ -35,6 +35,8 @@ from core.book_data import BookTaxonomy, taxonomy_from_manifest
 from core.judge import AbsoluteJudgeResult, judge_summary_absolute
 from core.openrouter_client import (
     GenerationResult,
+    OpenRouterAPIError,
+    OpenRouterHTTPError,
     OpenRouterClient,
     OpenRouterInsufficientCreditsError,
     UsageRecord,
@@ -664,7 +666,9 @@ def invoke_generation(
 ) -> GenerationResult:
     if client is None:
         source = current_summary_md if current_summary_md and visible_word_count(current_summary_md) > target_words else mock_source_md
-        summary_md = extractive_mock_summary(source, target_words=target_words)
+        if not source.strip():
+            source = "placeholder content"
+        summary_md = extractive_mock_summary(source, target_words=max(1, target_words))
         usage = UsageRecord()
         payload = json.dumps({"summary_md": summary_md, "estimated_visible_words": visible_word_count(summary_md)})
         return GenerationResult(
@@ -674,7 +678,25 @@ def invoke_generation(
             usage=usage,
             raw_response={"mock": True},
         )
-    return client.chat_completion(request_body)
+    try:
+        return client.chat_completion(request_body)
+    except (OpenRouterAPIError, OpenRouterHTTPError) as e:
+        if isinstance(e, OpenRouterHTTPError):
+            model_in_request = request_body.get("model", "unknown") if isinstance(request_body, dict) else "unknown"
+            print(f"OpenRouter HTTP error: status_code={e.status_code}, path={e.path}, model={model_in_request}")
+            if e.error_payload:
+                error_info = e.error_payload.get('error', {})
+                print(f"  error_payload.message: {error_info.get('message', 'unknown')}")
+                print(f"  error_payload.type: {error_info.get('type', 'unknown')}")
+                print(f"  error_payload.code: {error_info.get('code', 'unknown')}")
+                print(f"  error_payload keys: {list(error_info.keys()) if isinstance(error_info, dict) else 'not a dict'}")
+                print(f"  full error_payload: {e.error_payload}")
+            else:
+                print(f"  error_payload: None")
+            print(f"  response_text (first 1000 chars): {e.response_text[:1000] if e.response_text else 'empty'}")
+        else:
+            print(f"OpenRouter API error: {e}")
+        raise
 
 
 def run_length_controlled_stage(
@@ -1772,6 +1794,18 @@ def run_all_profiles(
         print(f"Running profile: {profile}")
         print(f"{'='*60}\n")
         args.profile = profile
+        runs_root = resolve_path(args.runs_dir)
+        benchmark_version = str(benchmark_manifest.get("benchmark_version", "benchmark"))
+        check_dir = runs_root / benchmark_version
+        candidates = sorted(check_dir.glob(f"*__{profile}_v*.state.json"), reverse=True)
+        if candidates:
+            state_path = candidates[0]
+            state = load_json(state_path)
+            completed = state.get("completed_count", 0)
+            total = state.get("n_total_samples", 0)
+            if completed >= total and total > 0:
+                print(f"Skipping {profile}: already completed ({completed}/{total}). Use --resume to inspect.")
+                continue
         _run_single(args, benchmark_manifest, spec_path, inherited_run_id=None)
 
 

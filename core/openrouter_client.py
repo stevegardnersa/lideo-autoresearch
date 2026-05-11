@@ -214,7 +214,7 @@ class OpenRouterClient:
         http_referer: str = "",
         x_title: str = "",
         timeout: int = 180,
-        max_retries: int = 3,
+        max_retries: int = 6,
         pricing_snapshot: Optional[Mapping[str, Mapping[str, Any]]] = None,
     ) -> None:
         if not api_key:
@@ -242,7 +242,7 @@ class OpenRouterClient:
         title: str = "",
         base_url: str = "https://openrouter.ai/api/v1",
         timeout: int = 180,
-        max_retries: int = 3,
+        max_retries: int = 6,
     ) -> "OpenRouterClient":
         api_key = os.getenv(api_key_env, "")
         if not api_key:
@@ -327,6 +327,17 @@ class OpenRouterClient:
                 )
                 if exc.code not in {408, 409, 429, 500, 502, 503, 504} or attempt >= self.max_retries:
                     raise last_error
+                if exc.code == 429:
+                    retry_after = exc.headers.get("Retry-After")
+                    if retry_after:
+                        try:
+                            wait = float(retry_after)
+                        except ValueError:
+                            wait = min(2 ** attempt, 60)
+                    else:
+                        wait = min(2 ** attempt * 2, 120)
+                    time.sleep(wait)
+                    continue
                 time.sleep(min(2 ** attempt, 8))
             except urllib.error.URLError as exc:
                 last_error = OpenRouterAPIError(f"Network error for {path}: {exc}")
