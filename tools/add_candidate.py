@@ -274,7 +274,20 @@ def add_candidates(
         print(f"Skipped {len(skipped)} existing profile(s)")
 
     if added:
-        print(f"\nIMPORTANT: Run 'python3 tools/gen_profile_literal.py' to update candidate_spec.py with the new profile(s).")
+        print()
+        while True:
+            response = input("Run 'python3 tools/gen_profile_literal.py' to update candidate_spec.py now? [y/n]: ").strip().lower()
+            if response == "y":
+                import subprocess
+                result = subprocess.run(["python3", "tools/gen_profile_literal.py"], capture_output=False)
+                if result.returncode != 0:
+                    print("gen_profile_literal.py failed.")
+                break
+            elif response == "n":
+                print("You can run 'python3 tools/gen_profile_literal.py' later to update candidate_spec.py.")
+                break
+            else:
+                print("Please enter 'y' or 'n'.")
 
     return added
 
