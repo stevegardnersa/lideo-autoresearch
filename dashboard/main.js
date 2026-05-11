@@ -33,6 +33,7 @@ let currentMode = 'price_quality'
 let activeFilters = {}
 let showLabels = false
 let highlightQuadrant = true
+let fixedYRange = false
 let selectedRunId = null
 
 const numericFields = [
@@ -198,8 +199,8 @@ function renderChart() {
 
   const xMin = Math.min(...data.map(d => d.x))
   const xMax = Math.max(...data.map(d => d.x))
-  const yMin = Math.min(...data.map(d => d.y))
-  const yMax = Math.max(...data.map(d => d.y))
+  const yMin = fixedYRange ? 0 : Math.min(...data.map(d => d.y))
+  const yMax = fixedYRange ? 1 : Math.max(...data.map(d => d.y))
 
   const xPad = (xMax - xMin) * 0.1 || 0.1
   const yPad = (yMax - yMin) * 0.1 || 0.1
@@ -333,10 +334,10 @@ function renderChart() {
     const quad = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
     const xMid = (xMin + xMax) / 2
     const yMid = (yMin + yMax) / 2
-    quad.setAttribute('x', xScale(Math.min(xMid, xMax)))
-    quad.setAttribute('y', margin.top)
-    quad.setAttribute('width', xScale(xMid) - margin.left)
-    quad.setAttribute('height', yScale(yMid) - margin.top)
+    quad.setAttribute('x', xScale(xDataMin))
+    quad.setAttribute('y', yScale(yDataMax))
+    quad.setAttribute('width', xScale(xMid) - xScale(xDataMin))
+    quad.setAttribute('height', yScale(yMid) - yScale(yDataMax))
     quad.setAttribute('class', 'quad')
     g.appendChild(quad)
   }
@@ -351,7 +352,7 @@ function renderChart() {
     circle.dataset.runId = d.run.run_id
     circle.addEventListener('mouseenter', e => showTooltip(e, d))
     circle.addEventListener('mouseleave', hideTooltip)
-    circle.addEventListener('click', () => selectRun(d.run.run_id))
+    circle.addEventListener('click', () => selectRun(d.run.run_id, true))
     g.appendChild(circle)
 
     if (showLabels) {
@@ -397,10 +398,14 @@ function hideTooltip() {
   document.getElementById('tooltip').style.display = 'none'
 }
 
-function selectRun(runId) {
+function selectRun(runId, openExplorer = false) {
   selectedRunId = runId
   const run = runs.find(r => r.run_id === runId)
   if (!run) return
+
+  if (openExplorer) {
+    window.open(`/explorer.html?run_id=${encodeURIComponent(runId)}`, '_blank')
+  }
 
   const card = document.getElementById('detailCard')
   card.innerHTML = `
@@ -419,7 +424,11 @@ function selectRun(runId) {
       <div>mean_generation_cost</div><div>${run.mean_generation_cost.toFixed(6)}</div>
       <div>hard_fail_rate</div><div>${run.hard_fail_rate.toFixed(2)}</div>
     </div>
+    <button class="btn" id="explorerBtn" style="margin-top:12px;width:100%">Open in Run Explorer</button>
   `
+  document.getElementById('explorerBtn')?.addEventListener('click', () => {
+    window.open(`/explorer.html?run_id=${encodeURIComponent(runId)}`, '_blank')
+  })
   document.querySelectorAll('.point').forEach(p => {
     p.classList.toggle('active', p.dataset.runId === runId)
   })
@@ -482,6 +491,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('quadToggle')?.addEventListener('change', e => {
     highlightQuadrant = e.target.checked
+    renderChart()
+  })
+
+  document.getElementById('fixedYRange')?.addEventListener('change', e => {
+    fixedYRange = e.target.checked
     renderChart()
   })
 
