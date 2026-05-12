@@ -27,10 +27,10 @@ from typing import Dict, List, Literal, Optional, Sequence, Tuple
 Profile = Literal[
     "30m_deepseek-v4-flash_notthinking", "30m_deepseek-v4-flash_thinking", "30m_deepseek-v4-pro_notthinking",
     "30m_deepseek-v4-pro_thinking", "30m_mimo-v2-flash_notthinking", "30m_mimo-v2-flash_thinking",
-    "30m_mimo-v2.5-pro_notthinking", "30m_mimo-v2.5-pro_thinking", "60m_deepseek-v4-flash_notthinking",
+    "30m_minimax-m2.7_notthinking", "30m_minimax-m2.7_thinking", "60m_deepseek-v4-flash_notthinking",
     "60m_deepseek-v4-flash_thinking", "60m_deepseek-v4-pro_notthinking", "60m_deepseek-v4-pro_thinking",
-    "60m_mimo-v2-flash_notthinking", "60m_mimo-v2-flash_thinking", "60m_mimo-v2.5-pro_notthinking",
-    "60m_mimo-v2.5-pro_thinking"
+    "60m_mimo-v2-flash_notthinking", "60m_mimo-v2-flash_thinking", "60m_minimax-m2.7_notthinking",
+    "60m_minimax-m2.7_thinking"
 ]
 FormatMode = Literal["markdown_sections", "markdown_bullets", "prose"]
 ContextMode = Literal[
@@ -744,11 +744,11 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         notes="Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 30m, thinking, schema=True",
         disable_composer=False
     ),
-    "30m_mimo-v2.5-pro_notthinking": CandidateSpec(
-        name="30m_mimo-v2.5-pro_notthinking_v1",
-        profile="30m_mimo-v2.5-pro_notthinking",
-        chapter_stage=StageConfig(model="xiaomi/mimo-v2.5-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="xiaomi/mimo-v2.5-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+    "30m_minimax-m2.7_notthinking": CandidateSpec(
+        name="30m_minimax-m2.7_notthinking_v1",
+        profile="30m_minimax-m2.7_notthinking",
+        chapter_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        composer_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -757,14 +757,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: xiaomi/mimo-v2.5-pro chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: minimax/minimax-m2.7 chapter+composer, 30m, notthinking, schema=True",
         disable_composer=False
     ),
-    "30m_mimo-v2.5-pro_thinking": CandidateSpec(
-        name="30m_mimo-v2.5-pro_thinking_v1",
-        profile="30m_mimo-v2.5-pro_thinking",
-        chapter_stage=StageConfig(model="xiaomi/mimo-v2.5-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="xiaomi/mimo-v2.5-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+    "30m_minimax-m2.7_thinking": CandidateSpec(
+        name="30m_minimax-m2.7_thinking_v1",
+        profile="30m_minimax-m2.7_thinking",
+        chapter_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        composer_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -773,7 +773,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: xiaomi/mimo-v2.5-pro chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: minimax/minimax-m2.7 chapter+composer, 30m, thinking, schema=True",
         disable_composer=False
     ),
     "60m_deepseek-v4-flash_notthinking": CandidateSpec(
@@ -872,11 +872,11 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         notes="Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 60m, thinking, schema=True",
         disable_composer=False
     ),
-    "60m_mimo-v2.5-pro_notthinking": CandidateSpec(
-        name="60m_mimo-v2.5-pro_notthinking_v1",
-        profile="60m_mimo-v2.5-pro_notthinking",
-        chapter_stage=StageConfig(model="xiaomi/mimo-v2.5-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="xiaomi/mimo-v2.5-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+    "60m_minimax-m2.7_notthinking": CandidateSpec(
+        name="60m_minimax-m2.7_notthinking_v1",
+        profile="60m_minimax-m2.7_notthinking",
+        chapter_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        composer_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -885,14 +885,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: xiaomi/mimo-v2.5-pro chapter+composer, 60m, notthinking, schema=True",
+        notes="Auto-generated: minimax/minimax-m2.7 chapter+composer, 60m, notthinking, schema=True",
         disable_composer=False
     ),
-    "60m_mimo-v2.5-pro_thinking": CandidateSpec(
-        name="60m_mimo-v2.5-pro_thinking_v1",
-        profile="60m_mimo-v2.5-pro_thinking",
-        chapter_stage=StageConfig(model="xiaomi/mimo-v2.5-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="xiaomi/mimo-v2.5-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+    "60m_minimax-m2.7_thinking": CandidateSpec(
+        name="60m_minimax-m2.7_thinking_v1",
+        profile="60m_minimax-m2.7_thinking",
+        chapter_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        composer_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -901,7 +901,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: xiaomi/mimo-v2.5-pro chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: minimax/minimax-m2.7 chapter+composer, 60m, thinking, schema=True",
         disable_composer=False
     )
 
