@@ -18,15 +18,53 @@
           <div class="subtitle" id="runSubtitle">Loading run data...</div>
         </div>
       </div>
-    </header>
-
-    <div class="shell">
       <div class="chapter-select-wrap">
         <select id="chapterSelect">
           <option value="">Select a chapter...</option>
         </select>
+        <div class="genre-subtext" id="genreSubtext"></div>
       </div>
+    </header>
 
+    <div class="shell">
+      <div class="metrics-bar" id="metricsBar">
+        <div class="metrics-pane left-metrics">
+          <div class="metric-card">
+            <div class="metric-label">Target / Actual</div>
+            <div class="metric-value"><span id="targetWords">-</span> / <span id="actualWords">-</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Cost / Passes</div>
+            <div class="metric-value"><span id="genCost">-</span> / <span id="passesUsed">-</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Quality / Utility</div>
+            <div class="metric-value"><span id="qualityScore">-</span> / <span id="utilityScore">-</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Faith / Concept</div>
+            <div class="metric-value"><span id="faithScore">-</span> / <span id="conceptScore">-</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Summary Grade</div>
+            <div class="metric-value"><span id="readabilityScore">-</span> / <span id="gradeLevel">-</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Status</div>
+            <div class="metric-value" id="failStatus">-</div>
+          </div>
+        </div>
+        <div class="metrics-pane right-metrics">
+          <div class="metric-card">
+            <div class="metric-label">Original Words</div>
+            <div class="metric-value" id="originalWords">-</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Original Grade</div>
+            <div class="metric-value" id="originalGrade">-</div>
+          </div>
+        </div>
+      </div>
       <div class="split-pane" id="splitPane">
         <div class="pane left-pane" id="leftPane">
           <div class="pane-header">Test Summary</div>
