@@ -40,7 +40,7 @@ const numericFields = [
   'mean_quality', 'mean_utility', 'mean_faithfulness', 'mean_concept_coverage',
   'mean_final_length_error_pct', 'mean_first_pass_length_error_pct', 'mean_passes_used',
   'mean_generation_cost', 'mean_uncached_cost', 'hard_fail_rate', 'n_genre_macros',
-  'genre_macro_spread_utility'
+  'genre_macro_spread_utility', 'avg_time_per_chapter_seconds'
 ]
 
 const modeDefaults = {
@@ -73,6 +73,26 @@ async function loadRuns() {
         const manifest = data.run_manifest || {}
         const score = data.dataset_score || {}
 
+        let updatedAtUtc = null
+        try {
+          const statePath = file.replace('.json', '.state.json')
+          const stateRes = await fetch(`/runs/${statePath}`)
+          if (stateRes.ok) {
+            const stateData = await stateRes.json()
+            updatedAtUtc = stateData.updated_at_utc ? new Date(stateData.updated_at_utc) : null
+          }
+        } catch (e) {
+          console.warn(`State fetch error ${file}:`, e.message)
+        }
+
+        const createdAt = manifest.created_at_utc ? new Date(manifest.created_at_utc) : null
+        const nSamples = score.n_samples || 0
+        let avgTimePerChapterSeconds = null
+        if (createdAt && updatedAtUtc && nSamples > 0) {
+          const secs = (updatedAtUtc - createdAt) / 1000 / nSamples
+          avgTimePerChapterSeconds = (isNaN(secs) || !isFinite(secs)) ? null : secs
+        }
+
         const run = {
           run_id: manifest.run_id || file.replace('.json', ''),
           profile: manifest.profile || '',
@@ -97,6 +117,7 @@ async function loadRuns() {
           worst_genre_macro: score.worst_genre_macro?.slice_value || '',
           n_genre_macros: score.n_genre_macros || 0,
           genre_macro_spread_utility: score.genre_macro_spread_utility || 0,
+          avg_time_per_chapter_seconds: avgTimePerChapterSeconds,
           file: file
         }
         runs.push(run)
@@ -385,7 +406,8 @@ function showTooltip(e, d) {
     <strong>${run.candidate_name || run.run_id}</strong>
     <div>X: ${d.x.toFixed(4)} (${document.getElementById('xSelect').value})</div>
     <div>Y: ${d.y.toFixed(4)} (${document.getElementById('ySelect').value})</div>
-    <div>Bubble: ${d.size.toFixed(2)}</div>
+    <div>Bubble: ${d.size.toFixed(2)} (${document.getElementById('sizeSelect').value})</div>
+    ${run.avg_time_per_chapter_seconds != null ? `<div>avg_time/chap: ${run.avg_time_per_chapter_seconds.toFixed(1)}s</div>` : ''}
     <div style="margin-top:6px;color:#9ca3af">${run.bench || run.profile || ''}</div>
   `
   tooltip.style.display = 'block'
@@ -430,6 +452,7 @@ function selectRun(runId, openExplorer = false) {
       <div>mean_passes_used</div><div>${run.mean_passes_used.toFixed(2)}</div>
       <div>mean_generation_cost</div><div>${run.mean_generation_cost.toFixed(6)}</div>
       <div>hard_fail_rate</div><div>${run.hard_fail_rate.toFixed(2)}</div>
+      ${run.avg_time_per_chapter_seconds != null ? `<div>avg_time_per_chapter_seconds</div><div>${run.avg_time_per_chapter_seconds.toFixed(1)}s</div>` : ''}
     </div>
     <button class="btn" id="explorerBtn" style="margin-top:12px;width:100%">Open in Run Explorer</button>
   `

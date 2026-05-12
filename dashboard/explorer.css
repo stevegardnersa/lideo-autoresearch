@@ -75,11 +75,52 @@ h1 {
   flex-direction: column;
 }
 
-.chapter-select-wrap {
-  padding: 12px 18px;
-  border-bottom: 1px solid var(--line);
+.metrics-bar {
+  display: flex;
   background: #fafbfc;
+  border-bottom: 1px solid var(--line);
   flex-shrink: 0;
+}
+
+.metrics-pane {
+  flex: 1;
+  display: flex;
+  gap: 24px;
+  padding: 12px 18px;
+}
+
+.left-metrics {
+  border-right: 1px solid var(--line);
+}
+
+.genre-subtext {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+  padding-left: 4px;
+}
+
+.status-fail { color: #ef4444; }
+.status-pass { color: #22c55e; }
+
+.metric-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  margin-bottom: 2px;
+}
+
+.metric-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
 }
 
 .chapter-select-wrap select {

@@ -14,7 +14,7 @@ function scanRunsPlugin() {
           for (const dir of dirs) {
             if (dir.isDirectory()) {
               const subDir = join(runsDir, dir.name)
-              const files = readdirSync(subDir).filter(f => f.endsWith('.json'))
+              const files = readdirSync(subDir).filter(f => f.endsWith('.json') || f.endsWith('.jsonl'))
               for (const file of files) {
                 allFiles.push(`${dir.name}/${file}`)
               }
