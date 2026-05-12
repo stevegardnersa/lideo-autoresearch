@@ -1,0 +1,308 @@
+{
+  "run_id": "20260512t023337z__booksum-v4__chapter_fast-v3__30m_minimax-m2.5__30m_minimax-m2.5_thinking_v1",
+  "created_at_utc": "2026-05-12T02:33:37.308805+00:00",
+  "status": "failed",
+  "run_manifest": {
+    "run_id": "20260512t023337z__booksum-v4__chapter_fast-v3__30m_minimax-m2.5__30m_minimax-m2.5_thinking_v1",
+    "created_at_utc": "2026-05-12T02:33:37.308805+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v4",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v2",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m_minimax-m2.5_thinking",
+    "bench": "chapter_fast-v3",
+    "bench_path": "bench/chapter_fast-v3.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "30m_minimax-m2.5_thinking_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "a04be9cd82e62792191444b2623990b201f353d86e8329d15e7b845956e92139",
+    "chapter_model": "minimax/minimax-m2.5",
+    "composer_model": "minimax/minimax-m2.5",
+    "judge_model": "",
+    "use_json_schema": true,
+    "thinking_enabled": true,
+    "chapter_provider": null,
+    "composer_provider": null,
+    "prompt_hashes": {
+      "candidate_dict_sha256": "5d181b755131534399add8a4714061be62c040c0365ac1f8fc060e8494732e2a",
+      "chapter_stage_sha256": "57ed901b422a77103e28ceac85476709d76634aa84e43b825f67ebba5a7c55ee",
+      "composer_stage_sha256": "1da1b8acd5bbaff6fadc7b8f7400855f675fbbf9d4b20a1a2590c8d2241719aa",
+      "length_control_sha256": "63a0d5915a42f753be634004da3fad8fe4a39deb9409556e9d9e1112e976c0d2",
+      "budget_allocator_sha256": "b045a1e4e168375600d38a98b9c9406e9e079886fe13fbfd28896fbc31e284e6",
+      "chapter_system_prompt_sha256": "2906d9c5015f7f2119361da0251930f92f6cfa699028740d40b5e31357e5fe91",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "efebadeb9ca47c9ebdc7bd107e1ef76b086635dade60a6051370cc4ee74e0bf8",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "7e63abb9fc6c0bbf214688a725ea329520c5564d17bd02b4e38d78b4a84236e1",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260512T023337Z__booksum-v4.json",
+    "price_snapshot": "snapshots/pricing/20260512T023337Z__booksum-v4.json",
+    "hypothesis": "",
+    "notes": ""
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v4",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-30T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v2",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "v4: per-profile scoring gates - 30m profiles use min_faithfulness=0.50, min_concept_coverage=0.15. v3 used uniform 0.70/0.60 gates for all profiles.",
+    "scoring_gates": {
+      "default": {
+        "min_faithfulness": 0.7,
+        "min_concept_coverage": 0.6,
+        "max_final_length_error_pct": null,
+        "max_passes": null
+      },
+      "30m": {
+        "min_faithfulness": 0.5,
+        "min_concept_coverage": 0.15,
+        "max_final_length_error_pct": null,
+        "max_passes": null
+      },
+      "60m": {
+        "min_faithfulness": 0.6,
+        "min_concept_coverage": 0.5,
+        "max_final_length_error_pct": null,
+        "max_passes": null
+      }
+    }
+  },
+  "bench_rows": [
+    {
+      "sample_id": "do-hard-things-magness-2022:003",
+      "level": "chapter",
+      "book_id": "do-hard-things-magness-2022",
+      "group_id": "do-hard-things-magness-2022",
+      "chapter_id": "003",
+      "chapter_title": "Chapter 1",
+      "book_title": "Do Hard Things",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "performance_and_resilience",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "getting-things-done-allen-2015:013",
+      "level": "chapter",
+      "book_id": "getting-things-done-allen-2015",
+      "group_id": "getting-things-done-allen-2015",
+      "chapter_id": "013",
+      "chapter_title": "Organizing: Setting Up the Right Buckets",
+      "book_title": "Getting Things Done",
+      "genre_macro": "business_economics_productivity",
+      "genre_micro": "productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "low",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:004",
+      "level": "chapter",
+      "book_id": "everything-is-f-cked-manson-2019",
+      "group_id": "everything-is-f-cked-manson-2019",
+      "chapter_id": "004",
+      "chapter_title": "Chapter 4: How to Make All Your Dreams Come True",
+      "book_title": "Everything Is F*cked",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "philosophy_and_psychology",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:006",
+      "level": "chapter",
+      "book_id": "everything-is-f-cked-manson-2019",
+      "group_id": "everything-is-f-cked-manson-2019",
+      "chapter_id": "006",
+      "chapter_title": "Chapter 6: The Formula of Humanity",
+      "book_title": "Everything Is F*cked",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "philosophy_and_psychology",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:009",
+      "level": "chapter",
+      "book_id": "everything-is-f-cked-manson-2019",
+      "group_id": "everything-is-f-cked-manson-2019",
+      "chapter_id": "009",
+      "chapter_title": "Chapter 9: The Final Religion",
+      "book_title": "Everything Is F*cked",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "philosophy_and_psychology",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:001",
+      "level": "chapter",
+      "book_id": "everything-is-f-cked-manson-2019",
+      "group_id": "everything-is-f-cked-manson-2019",
+      "chapter_id": "001",
+      "chapter_title": "Chapter 1: The Uncomfortable Truth",
+      "book_title": "Everything Is F*cked",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "philosophy_and_psychology",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "do-hard-things-magness-2022:004",
+      "level": "chapter",
+      "book_id": "do-hard-things-magness-2022",
+      "group_id": "do-hard-things-magness-2022",
+      "chapter_id": "004",
+      "chapter_title": "Chapter 2",
+      "book_title": "Do Hard Things",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "performance_and_resilience",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:005",
+      "level": "chapter",
+      "book_id": "atomic-habits-clear-2018",
+      "group_id": "atomic-habits-clear-2018",
+      "chapter_id": "005",
+      "chapter_title": "2: How Your Habits Shape Your Identity (and Vice Versa)",
+      "book_title": "Atomic Habits",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ],
+  "completed_sample_ids": [],
+  "completed_count": 0,
+  "n_total_samples": 8,
+  "current_item": {
+    "kind": "chapter",
+    "phase": "stage",
+    "item_key": "do-hard-things-magness-2022:003",
+    "item": {
+      "sample_id": "do-hard-things-magness-2022:003",
+      "level": "chapter",
+      "book_id": "do-hard-things-magness-2022",
+      "group_id": "do-hard-things-magness-2022",
+      "chapter_id": "003",
+      "chapter_title": "Chapter 1",
+      "book_title": "Do Hard Things",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "performance_and_resilience",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    "book_id": "do-hard-things-magness-2022",
+    "chapter_id": "003",
+    "sample_id": "do-hard-things-magness-2022:003",
+    "target_words": 1023,
+    "stage_state": {
+      "summary_md": "# Chapter 1: From Tough Coaches, Tough Parents, and Tough Guys to Finding Real Inner Strength\n\n## How We Traditionally Define Toughness\n\nWhen college students describe toughness, they use words like hard-nosed, gritty, playing through pain, stoic, and perseverance. Among 160 elite athletes, perseverance ranked as the top descriptor. The common image is a football player popping a dislocated shoulder back in place, or a wounded military hero—individuals overcoming adversity through pain and suffering. This traditional view frames toughness as overcoming obstacles with perseverance, discipline, and stoicism, often visualized as a strong brute of a man.\n\n## Bobby Knight and the Problem with \"Old-School\" Toughness\n\nBobby Knight exemplifies this approach. Over five decades, he won over 900 games (third most in college basketball), reached the Final Five times, and won three NCAA championships. His 1976 Indiana team went undefeated. Knight defined toughness as \"being able to overcome obstacles. You can't feel sorry for yourself.\" His teams played disciplined, hard-nosed basketball, pioneering a pressing man-to-man defense.\n\nHowever, Knight's methods were abusive: tampons hanging on lockers of players he deemed \"soft,\" frequent verbal tirades (a 1991 tape captured him screaming obscenities at players), and physical abuse—including the infamous video of him choking a player. He brought toilet paper covered in feces to show players what he thought of them. His actual definition of toughness centered on showing no weakness, bulldozing through obstacles, and using fear to establish authority.\n\n## Tough Parenting and Authoritarian Styles\n\nDevelopmental psychologist Diana Baumrind's research identified parenting styles based on two factors: responsiveness (attunement to children's needs) and demandingness (expectations and control). The four styles are:\n\n- **Permissive**: low demandingness, high responsiveness (too soft)\n- **Authoritarian**: high demandingness, low responsiveness (too hard)\n- **Authoritative**: high demandingness AND high responsiveness (the \"Goldilocks\" fit)\n\nAuthoritarian parents don't trust children to make good decisions. They rely on fear, threats, and punishment. A typical refrain: \"Do it because I said so.\" In one study of over 1,000 parents, only 31 percent of authoritarian parents believed they should \"love their child unconditionally.\" Research shows 81 percent of Americans think parents are too soft on their children.\n\nThe issue isn't that punishment or expectations are bad—it's when demandingness far outweighs support. The old model of toughness pervades coaching, parenting, and leadership: we've taken the demanding part and forgotten warmth, care, and responsiveness.\n\n## Callousness and Machismo\n\nThe language of toughness reveals its flaws: we call teams \"soft\" and tell athletes to \"toughen up\" and \"show no signs of weakness.\" In youth sports, Mark Hyman's book *Until It Hurts* documented throwing up after workouts, insult-laden tirades, and parents justifying teaching eleven-year-olds to go until they puke as necessary for their \"inner lacrosse warrior.\"\n\nToughness has been tied to masculinity. We tell children to \"man up\" or use crude terms. The image of toughness skews toward The Rock or Vin Diesel—brute strength with confidence and bravado. Yet research consistently shows women quietly handle pain better than men.\n\n## The Downfall of Callous Toughness\n\nThe consequences are severe. In 2018, University of Maryland football player Jordan McNair collapsed during conditioning sprints after showing signs of profound fatigue—bending at the waist, experiencing cramps. Coaches and trainers goaded him to continue. It took 34 minutes to remove him from the field, 28 more minutes to call 911. He died two weeks later from heatstroke.\n\nRhabdomyolysis (rhabdo)—where damaged muscle products leak into the bloodstream—has become more common due to extreme \"toughening\" workouts. As Ohio University professor B. David Ridpath noted, these workouts aren't conditioning but tests designed to \"make them suffer\"—sometimes to open scholarship slots.\n\nResearch documents the damage: authoritarian parenting leads to lower independence, more aggressive behavior, higher substance abuse, and increased risky behaviors. In sports, controlling styles correlate with lower grit, more emotional exhaustion, burnout, and fear of failure. Even in discipline, authoritarian parenting correlates with higher child misbehavior. In the Israeli military, those from authoritarian backgrounds coped worse than peers from nurturing environments.\n\nIronically, teaching this version of toughness creates fragile, dependent individuals. One young athlete explained: \"Coaches use exercise as punishment because they want you to become stronger... It gets in your head and you start thinking, 'I need to do better. I need to work harder because I don't want to be punished.'\" The motivation is avoiding punishment, not intrinsic improvement.\n\n## Redefining Real Toughness\n\nThe old view trains us to respond to fear and power—pushing through discomfort because we imagine someone yelling at us or we'll face punishment. We've prioritized external displays over inner strength.\n\n**Fake toughness** is:\n- Control- and power-driven\n- Developed through fear\n- Fueled by insecurity\n- Based on appearance over substance\n\n**Real toughness** is: experiencing discomfort or distress, leaning in, paying attention, and creating space to take thoughtful action. It's navigating discomfort to make the best decision.\n\nPete Carroll represents this approach. After losing an NFL coaching job in the 1990s, he developed his own method. He's one of only three coaches to win both an NCAA championship and a Super Bowl. He believes toughness comes from an inner drive, embracing challenges, bouncing back, and perseverance—not control. His players describe him as never negative, finding ways to turn mistakes into positives.\n\nResearch supports this. A 2008 Eastern Washington University study of nearly 200 basketball players found that promoting mental toughness \"does not lie in this autocratic, authoritarian, or oppressive style\" but \"with the coach's ability to produce an environment which emphasizes trust and inclusion, humility, and service.\"\n\n## The Author's Story: Finding Real Toughness\n\nThe chapter closes with Magness's personal narrative. As a college runner competing in the Don Bowden Mile (commemorating the first American to break the four-minute mile), he executed his race plan perfectly—slotting behind pacesetters, zoning out to conserve mental energy. At 900 meters, he felt a sensation in his neck, tightening, and a strange high-pitched gasp. His inner voice panicked: \"What was that? What's wrong? You're done.\"\n\nHe tried to push through—his usual approach—but less than 100 meters later, his inner voice screamed, \"I can't breathe!\" He collapsed onto the track, unable to inhale properly.\n\nAfter dozens of tests across multiple specialists, an allergist diagnosed him with **paradoxical vocal cord dysfunction (VCD)**. The vocal cords, which should open widely when breathing in, instead close—blocking the airway. The American Thoracic Society cites \"strong emotions\" and stress as triggers. For Magness, a normal race-day \"freak-out\" became a full-blown disaster.\n\nFor years, the activity that defined his self-worth became something he feared. His path to success—pushing until he puked—backfired. To continue racing, he had to find a new tactic: relaxing, keeping his breathing, neck, and mind steady at the exact moment when discomfort peaked.\n\nThis search became the foundation of the book—a framework for understanding what it truly means to be tough.\n\n## The Four Pillars\n\nThe book will explore four pillars of real toughness:\n\n1. **Ditch the Facade, Embrace Reality**\n2. **Listen to Your Body**\n3. **Respond Instead of React**\n4. **Transcend Discomfort**\n\nReal toughness isn't a special attribute reserved for the talented—it's attainable to all. Most people walk around with the wrong framework, stuck in the old-school mindset. But we have countless examples of everyday individuals with immense inner strength who resist the facade of perfectionism and show compassion, grit, and grace. As podcaster Rich Roll noted, \"Everybody goes through shit in their life. Nobody escapes obstacles.\"\n\nReal toughness isn't just about dealing with pain or performing better—it's about becoming a healthier, happier human being.",
+      "first_pass_summary_md": "# Chapter 1: From Tough Coaches, Tough Parents, and Tough Guys to Finding Real Inner Strength\n\n## How We Traditionally Define Toughness\n\nWhen college students describe toughness, they use words like hard-nosed, gritty, playing through pain, stoic, and perseverance. Among 160 elite athletes, perseverance ranked as the top descriptor. The common image is a football player popping a dislocated shoulder back in place, or a wounded military hero—individuals overcoming adversity through pain and suffering. This traditional view frames toughness as overcoming obstacles with perseverance, discipline, and stoicism, often visualized as a strong brute of a man.\n\n## Bobby Knight and the Problem with \"Old-School\" Toughness\n\nBobby Knight exemplifies this approach. Over five decades, he won over 900 games (third most in college basketball), reached the Final Five times, and won three NCAA championships. His 1976 Indiana team went undefeated. Knight defined toughness as \"being able to overcome obstacles. You can't feel sorry for yourself.\" His teams played disciplined, hard-nosed basketball, pioneering a pressing man-to-man defense.\n\nHowever, Knight's methods were abusive: tampons hanging on lockers of players he deemed \"soft,\" frequent verbal tirades (a 1991 tape captured him screaming obscenities at players), and physical abuse—including the infamous video of him choking a player. He brought toilet paper covered in feces to show players what he thought of them. His actual definition of toughness centered on showing no weakness, bulldozing through obstacles, and using fear to establish authority.\n\n## Tough Parenting and Authoritarian Styles\n\nDevelopmental psychologist Diana Baumrind's research identified parenting styles based on two factors: responsiveness (attunement to children's needs) and demandingness (expectations and control). The four styles are:\n\n- **Permissive**: low demandingness, high responsiveness (too soft)\n- **Authoritarian**: high demandingness, low responsiveness (too hard)\n- **Authoritative**: high demandingness AND high responsiveness (the \"Goldilocks\" fit)\n\nAuthoritarian parents don't trust children to make good decisions. They rely on fear, threats, and punishment. A typical refrain: \"Do it because I said so.\" In one study of over 1,000 parents, only 31 percent of authoritarian parents believed they should \"love their child unconditionally.\" Research shows 81 percent of Americans think parents are too soft on their children.\n\nThe issue isn't that punishment or expectations are bad—it's when demandingness far outweighs support. The old model of toughness pervades coaching, parenting, and leadership: we've taken the demanding part and forgotten warmth, care, and responsiveness.\n\n## Callousness and Machismo\n\nThe language of toughness reveals its flaws: we call teams \"soft\" and tell athletes to \"toughen up\" and \"show no signs of weakness.\" In youth sports, Mark Hyman's book *Until It Hurts* documented throwing up after workouts, insult-laden tirades, and parents justifying teaching eleven-year-olds to go until they puke as necessary for their \"inner lacrosse warrior.\"\n\nToughness has been tied to masculinity. We tell children to \"man up\" or use crude terms. The image of toughness skews toward The Rock or Vin Diesel—brute strength with confidence and bravado. Yet research consistently shows women quietly handle pain better than men.\n\n## The Downfall of Callous Toughness\n\nThe consequences are severe. In 2018, University of Maryland football player Jordan McNair collapsed during conditioning sprints after showing signs of profound fatigue—bending at the waist, experiencing cramps. Coaches and trainers goaded him to continue. It took 34 minutes to remove him from the field, 28 more minutes to call 911. He died two weeks later from heatstroke.\n\nRhabdomyolysis (rhabdo)—where damaged muscle products leak into the bloodstream—has become more common due to extreme \"toughening\" workouts. As Ohio University professor B. David Ridpath noted, these workouts aren't conditioning but tests designed to \"make them suffer\"—sometimes to open scholarship slots.\n\nResearch documents the damage: authoritarian parenting leads to lower independence, more aggressive behavior, higher substance abuse, and increased risky behaviors. In sports, controlling styles correlate with lower grit, more emotional exhaustion, burnout, and fear of failure. Even in discipline, authoritarian parenting correlates with higher child misbehavior. In the Israeli military, those from authoritarian backgrounds coped worse than peers from nurturing environments.\n\nIronically, teaching this version of toughness creates fragile, dependent individuals. One young athlete explained: \"Coaches use exercise as punishment because they want you to become stronger... It gets in your head and you start thinking, 'I need to do better. I need to work harder because I don't want to be punished.'\" The motivation is avoiding punishment, not intrinsic improvement.\n\n## Redefining Real Toughness\n\nThe old view trains us to respond to fear and power—pushing through discomfort because we imagine someone yelling at us or we'll face punishment. We've prioritized external displays over inner strength.\n\n**Fake toughness** is:\n- Control- and power-driven\n- Developed through fear\n- Fueled by insecurity\n- Based on appearance over substance\n\n**Real toughness** is: experiencing discomfort or distress, leaning in, paying attention, and creating space to take thoughtful action. It's navigating discomfort to make the best decision.\n\nPete Carroll represents this approach. After losing an NFL coaching job in the 1990s, he developed his own method. He's one of only three coaches to win both an NCAA championship and a Super Bowl. He believes toughness comes from an inner drive, embracing challenges, bouncing back, and perseverance—not control. His players describe him as never negative, finding ways to turn mistakes into positives.\n\nResearch supports this. A 2008 Eastern Washington University study of nearly 200 basketball players found that promoting mental toughness \"does not lie in this autocratic, authoritarian, or oppressive style\" but \"with the coach's ability to produce an environment which emphasizes trust and inclusion, humility, and service.\"\n\n## The Author's Story: Finding Real Toughness\n\nThe chapter closes with Magness's personal narrative. As a college runner competing in the Don Bowden Mile (commemorating the first American to break the four-minute mile), he executed his race plan perfectly—slotting behind pacesetters, zoning out to conserve mental energy. At 900 meters, he felt a sensation in his neck, tightening, and a strange high-pitched gasp. His inner voice panicked: \"What was that? What's wrong? You're done.\"\n\nHe tried to push through—his usual approach—but less than 100 meters later, his inner voice screamed, \"I can't breathe!\" He collapsed onto the track, unable to inhale properly.\n\nAfter dozens of tests across multiple specialists, an allergist diagnosed him with **paradoxical vocal cord dysfunction (VCD)**. The vocal cords, which should open widely when breathing in, instead close—blocking the airway. The American Thoracic Society cites \"strong emotions\" and stress as triggers. For Magness, a normal race-day \"freak-out\" became a full-blown disaster.\n\nFor years, the activity that defined his self-worth became something he feared. His path to success—pushing until he puked—backfired. To continue racing, he had to find a new tactic: relaxing, keeping his breathing, neck, and mind steady at the exact moment when discomfort peaked.\n\nThis search became the foundation of the book—a framework for understanding what it truly means to be tough.\n\n## The Four Pillars\n\nThe book will explore four pillars of real toughness:\n\n1. **Ditch the Facade, Embrace Reality**\n2. **Listen to Your Body**\n3. **Respond Instead of React**\n4. **Transcend Discomfort**\n\nReal toughness isn't a special attribute reserved for the talented—it's attainable to all. Most people walk around with the wrong framework, stuck in the old-school mindset. But we have countless examples of everyday individuals with immense inner strength who resist the facade of perfectionism and show compassion, grit, and grace. As podcaster Rich Roll noted, \"Everybody goes through shit in their life. Nobody escapes obstacles.\"\n\nReal toughness isn't just about dealing with pain or performing better—it's about becoming a healthier, happier human being.",
+      "passes_used": 1,
+      "generation_cost": 0.00597225,
+      "uncached_generation_cost": 0.00597225,
+      "raw_responses": [
+        {
+          "id": "gen-1778553217-aPhIl7zChNj70Plroyjf",
+          "object": "chat.completion",
+          "created": 1778553217,
+          "model": "minimax/minimax-m2.5-20260211",
+          "provider": "AkashML",
+          "system_fingerprint": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\"summary_md\": \"# Chapter 1: From Tough Coaches, Tough Parents, and Tough Guys to Finding Real Inner Strength\\n\\n## How We Traditionally Define Toughness\\n\\nWhen college students describe toughness, they use words like hard-nosed, gritty, playing through pain, stoic, and perseverance. Among 160 elite athletes, perseverance ranked as the top descriptor. The common image is a football player popping a dislocated shoulder back in place, or a wounded military hero—individuals overcoming adversity through pain and suffering. This traditional view frames toughness as overcoming obstacles with perseverance, discipline, and stoicism, often visualized as a strong brute of a man.\\n\\n## Bobby Knight and the Problem with \\\"Old-School\\\" Toughness\\n\\nBobby Knight exemplifies this approach. Over five decades, he won over 900 games (third most in college basketball), reached the Final Five times, and won three NCAA championships. His 1976 Indiana team went undefeated. Knight defined toughness as \\\"being able to overcome obstacles. You can't feel sorry for yourself.\\\" His teams played disciplined, hard-nosed basketball, pioneering a pressing man-to-man defense.\\n\\nHowever, Knight's methods were abusive: tampons hanging on lockers of players he deemed \\\"soft,\\\" frequent verbal tirades (a 1991 tape captured him screaming obscenities at players), and physical abuse—including the infamous video of him choking a player. He brought toilet paper covered in feces to show players what he thought of them. His actual definition of toughness centered on showing no weakness, bulldozing through obstacles, and using fear to establish authority.\\n\\n## Tough Parenting and Authoritarian Styles\\n\\nDevelopmental psychologist Diana Baumrind's research identified parenting styles based on two factors: responsiveness (attunement to children's needs) and demandingness (expectations and control). The four styles are:\\n\\n- **Permissive**: low demandingness, high responsiveness (too soft)\\n- **Authoritarian**: high demandingness, low responsiveness (too hard)\\n- **Authoritative**: high demandingness AND high responsiveness (the \\\"Goldilocks\\\" fit)\\n\\nAuthoritarian parents don't trust children to make good decisions. They rely on fear, threats, and punishment. A typical refrain: \\\"Do it because I said so.\\\" In one study of over 1,000 parents, only 31 percent of authoritarian parents believed they should \\\"love their child unconditionally.\\\" Research shows 81 percent of Americans think parents are too soft on their children.\\n\\nThe issue isn't that punishment or expectations are bad—it's when demandingness far outweighs support. The old model of toughness pervades coaching, parenting, and leadership: we've taken the demanding part and forgotten warmth, care, and responsiveness.\\n\\n## Callousness and Machismo\\n\\nThe language of toughness reveals its flaws: we call teams \\\"soft\\\" and tell athletes to \\\"toughen up\\\" and \\\"show no signs of weakness.\\\" In youth sports, Mark Hyman's book *Until It Hurts* documented throwing up after workouts, insult-laden tirades, and parents justifying teaching eleven-year-olds to go until they puke as necessary for their \\\"inner lacrosse warrior.\\\"\\n\\nToughness has been tied to masculinity. We tell children to \\\"man up\\\" or use crude terms. The image of toughness skews toward The Rock or Vin Diesel—brute strength with confidence and bravado. Yet research consistently shows women quietly handle pain better than men.\\n\\n## The Downfall of Callous Toughness\\n\\nThe consequences are severe. In 2018, University of Maryland football player Jordan McNair collapsed during conditioning sprints after showing signs of profound fatigue—bending at the waist, experiencing cramps. Coaches and trainers goaded him to continue. It took 34 minutes to remove him from the field, 28 more minutes to call 911. He died two weeks later from heatstroke.\\n\\nRhabdomyolysis (rhabdo)—where damaged muscle products leak into the bloodstream—has become more common due to extreme \\\"toughening\\\" workouts. As Ohio University professor B. David Ridpath noted, these workouts aren't conditioning but tests designed to \\\"make them suffer\\\"—sometimes to open scholarship slots.\\n\\nResearch documents the damage: authoritarian parenting leads to lower independence, more aggressive behavior, higher substance abuse, and increased risky behaviors. In sports, controlling styles correlate with lower grit, more emotional exhaustion, burnout, and fear of failure. Even in discipline, authoritarian parenting correlates with higher child misbehavior. In the Israeli military, those from authoritarian backgrounds coped worse than peers from nurturing environments.\\n\\nIronically, teaching this version of toughness creates fragile, dependent individuals. One young athlete explained: \\\"Coaches use exercise as punishment because they want you to become stronger... It gets in your head and you start thinking, 'I need to do better. I need to work harder because I don't want to be punished.'\\\" The motivation is avoiding punishment, not intrinsic improvement.\\n\\n## Redefining Real Toughness\\n\\nThe old view trains us to respond to fear and power—pushing through discomfort because we imagine someone yelling at us or we'll face punishment. We've prioritized external displays over inner strength.\\n\\n**Fake toughness** is:\\n- Control- and power-driven\\n- Developed through fear\\n- Fueled by insecurity\\n- Based on appearance over substance\\n\\n**Real toughness** is: experiencing discomfort or distress, leaning in, paying attention, and creating space to take thoughtful action. It's navigating discomfort to make the best decision.\\n\\nPete Carroll represents this approach. After losing an NFL coaching job in the 1990s, he developed his own method. He's one of only three coaches to win both an NCAA championship and a Super Bowl. He believes toughness comes from an inner drive, embracing challenges, bouncing back, and perseverance—not control. His players describe him as never negative, finding ways to turn mistakes into positives.\\n\\nResearch supports this. A 2008 Eastern Washington University study of nearly 200 basketball players found that promoting mental toughness \\\"does not lie in this autocratic, authoritarian, or oppressive style\\\" but \\\"with the coach's ability to produce an environment which emphasizes trust and inclusion, humility, and service.\\\"\\n\\n## The Author's Story: Finding Real Toughness\\n\\nThe chapter closes with Magness's personal narrative. As a college runner competing in the Don Bowden Mile (commemorating the first American to break the four-minute mile), he executed his race plan perfectly—slotting behind pacesetters, zoning out to conserve mental energy. At 900 meters, he felt a sensation in his neck, tightening, and a strange high-pitched gasp. His inner voice panicked: \\\"What was that? What's wrong? You're done.\\\"\\n\\nHe tried to push through—his usual approach—but less than 100 meters later, his inner voice screamed, \\\"I can't breathe!\\\" He collapsed onto the track, unable to inhale properly.\\n\\nAfter dozens of tests across multiple specialists, an allergist diagnosed him with **paradoxical vocal cord dysfunction (VCD)**. The vocal cords, which should open widely when breathing in, instead close—blocking the airway. The American Thoracic Society cites \\\"strong emotions\\\" and stress as triggers. For Magness, a normal race-day \\\"freak-out\\\" became a full-blown disaster.\\n\\nFor years, the activity that defined his self-worth became something he feared. His path to success—pushing until he puked—backfired. To continue racing, he had to find a new tactic: relaxing, keeping his breathing, neck, and mind steady at the exact moment when discomfort peaked.\\n\\nThis search became the foundation of the book—a framework for understanding what it truly means to be tough.\\n\\n## The Four Pillars\\n\\nThe book will explore four pillars of real toughness:\\n\\n1. **Ditch the Facade, Embrace Reality**\\n2. **Listen to Your Body**\\n3. **Respond Instead of React**\\n4. **Transcend Discomfort**\\n\\nReal toughness isn't a special attribute reserved for the talented—it's attainable to all. Most people walk around with the wrong framework, stuck in the old-school mindset. But we have countless examples of everyday individuals with immense inner strength who resist the facade of perfectionism and show compassion, grit, and grace. As podcaster Rich Roll noted, \\\"Everybody goes through shit in their life. Nobody escapes obstacles.\\\"\\n\\nReal toughness isn't just about dealing with pain or performing better—it's about becoming a healthier, happier human being.\",\"estimated_visible_words\": 1050}",
+                "refusal": null,
+                "reasoning": "The user wants me to write a faithful summary of Chapter 1 from the book \"Do Hard Things\" by Steve Magness. Let me analyze the chapter content and create a dense, source-faithful summary.\n\nKey points from Chapter 1:\n1. The chapter opens with how people define toughness - words like hard-nosed, gritty, playing through pain, stoic, perseverance\n2. The traditional view of toughness: overcoming obstacles with perseverance, discipline, and stoicism - often associated with a strong brute of a man\n3. Bobby Knight as an example - successful coach but with abusive methods (tampons on lockers, cussing players, choking a player, bringing toilet paper with feces to show players)\n4. The problem: toughness has been confused with callousness and machismo\n5. Tough parenting - Diana Baumrind's research on parenting styles (authoritarian vs. permissive vs. authoritative)\n6. Authoritarian parenting characteristics: demanding, cold, controlling, harsh punishment\n7. Statistics: 81% of Americans thought parents were too soft on their children; only 31% of authoritarian parents said they should love their child unconditionally\n8. The downfall of callous view: Jordan McNair case (died from heatstroke after being forced to continue sprints), rhabdomyolysis cases\n9. Research consequences: authoritarian parenting leads to lower independence, more aggressive behavior, higher likelihood of substance abuse\n10. Fake toughness vs. real toughness\n11. Pete Carroll as an example of a different kind of coach\n12. The author's personal story - the Don Bowden Mile race, experiencing paradoxical vocal cord dysfunction (VCD)\n13. The four pillars of toughness that will be covered in the book\n\nLet me write a summary that preserves all these details and stays within the target word range of 941-1105 words.\n",
+                "reasoning_details": [
+                  {
+                    "type": "reasoning.text",
+                    "text": "The user wants me to write a faithful summary of Chapter 1 from the book \"Do Hard Things\" by Steve Magness. Let me analyze the chapter content and create a dense, source-faithful summary.\n\nKey points from Chapter 1:\n1. The chapter opens with how people define toughness - words like hard-nosed, gritty, playing through pain, stoic, perseverance\n2. The traditional view of toughness: overcoming obstacles with perseverance, discipline, and stoicism - often associated with a strong brute of a man\n3. Bobby Knight as an example - successful coach but with abusive methods (tampons on lockers, cussing players, choking a player, bringing toilet paper with feces to show players)\n4. The problem: toughness has been confused with callousness and machismo\n5. Tough parenting - Diana Baumrind's research on parenting styles (authoritarian vs. permissive vs. authoritative)\n6. Authoritarian parenting characteristics: demanding, cold, controlling, harsh punishment\n7. Statistics: 81% of Americans thought parents were too soft on their children; only 31% of authoritarian parents said they should love their child unconditionally\n8. The downfall of callous view: Jordan McNair case (died from heatstroke after being forced to continue sprints), rhabdomyolysis cases\n9. Research consequences: authoritarian parenting leads to lower independence, more aggressive behavior, higher likelihood of substance abuse\n10. Fake toughness vs. real toughness\n11. Pete Carroll as an example of a different kind of coach\n12. The author's personal story - the Don Bowden Mile race, experiencing paradoxical vocal cord dysfunction (VCD)\n13. The four pillars of toughness that will be covered in the book\n\nLet me write a summary that preserves all these details and stays within the target word range of 941-1105 words.\n",
+                    "format": "unknown",
+                    "index": 0
+                  }
+                ]
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 23232,
+            "completion_tokens": 2163,
+            "total_tokens": 25395,
+            "cost": 0.00597225,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.00597225,
+              "upstream_inference_prompt_cost": 0.0034848,
+              "upstream_inference_completions_cost": 0.00248745
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 462,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "latest_error": {
+    "type": "IncompleteRead",
+    "message": "IncompleteRead(22737 bytes read)"
+  },
+  "resume_events_utc": [],
+  "state_path": "runs/booksum-v4/20260512t023337z__booksum-v4__chapter_fast-v3__30m_minimax-m2.5__30m_minimax-m2.5_thinking_v1.state.json",
+  "samples_path": "runs/booksum-v4/20260512t023337z__booksum-v4__chapter_fast-v3__30m_minimax-m2.5__30m_minimax-m2.5_thinking_v1.samples.jsonl",
+  "out_path": "runs/booksum-v4/20260512t023337z__booksum-v4__chapter_fast-v3__30m_minimax-m2.5__30m_minimax-m2.5_thinking_v1.json",
+  "updated_at_utc": "2026-05-12T02:48:32.235845+00:00"
+}
