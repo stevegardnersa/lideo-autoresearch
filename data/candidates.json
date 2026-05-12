@@ -860,6 +860,7 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
+        "provider": null,
         "extra_body": {
           "thinking": {
             "type": "enabled"
@@ -883,6 +884,7 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
+        "provider": null,
         "extra_body": {
           "thinking": {
             "type": "enabled"
@@ -930,6 +932,7 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
+        "provider": null,
         "extra_body": {
           "thinking": {
             "type": "disabled"
@@ -953,6 +956,7 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
+        "provider": null,
         "extra_body": {
           "thinking": {
             "type": "disabled"
@@ -1000,6 +1004,7 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
+        "provider": null,
         "extra_body": {
           "thinking": {
             "type": "enabled"
@@ -1023,6 +1028,7 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
+        "provider": null,
         "extra_body": {
           "thinking": {
             "type": "enabled"
@@ -1070,6 +1076,7 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
+        "provider": null,
         "extra_body": {
           "thinking": {
             "type": "disabled"
@@ -1093,6 +1100,7 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
+        "provider": null,
         "extra_body": {
           "thinking": {
             "type": "disabled"

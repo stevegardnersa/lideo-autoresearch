@@ -236,6 +236,21 @@ python3 tools/add_candidate.py --model-full "openai/gpt-5-mini" --dry-run
 
 # List all profiles in the candidates JSON
 python3 tools/add_candidate.py --list
+
+# Remove profiles matching a regex pattern (dry-run first!)
+python3 tools/add_candidate.py --remove "mimo-v2-flash" --dry-run
+python3 tools/add_candidate.py --remove "mimo-v2-flash"
+
+# With provider routing (force OpenRouter to try only a specific provider).
+python3 tools/add_candidate.py --model-full "openai/gpt-5-mini" --provider-route '{"only":["openai"]}'
+
+python3 tools/add_candidate.py --model-full "openai/gpt-5-mini" --provider-route '{"order":["openai"]}'
+
+python3 tools/add_candidate.py --model-full "openai/gpt-5-mini" --provider-route '{"allow":["openai"]}'
+
+python3 tools/add_candidate.py --model-full "openai/gpt-5-mini" --provider-route '{"avoid":["openai"]}'
+
+python3 tools/add_candidate.py --model-full "deepseek/deepseek-v4-flash" --provider-route '{"order": ["deepseek", "anyscale", "together"], "avoid": ["openai"]}'
 ```
 
 The script probes the model for (a) JSON schema support, (b) thinking mode, (c) non-thinking mode — and creates one profile per supported mode. If the model supports both thinking and non-thinking, two profiles are created (e.g. `30m_deepseek-v4-flash_thinking` and `30m_deepseek-v4-flash_notthinking`).

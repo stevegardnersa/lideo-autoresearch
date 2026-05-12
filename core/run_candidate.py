@@ -1926,16 +1926,8 @@ def _run_single(
             "judge_model": args.judge_model,
             "use_json_schema": spec.use_json_schema,
             "thinking_enabled": _is_thinking_enabled(spec),
-            "provider_preferences": {
-                "chapter": {
-                    "order": list(spec.chapter_stage.provider_order),
-                    "allow_fallbacks": bool(spec.chapter_stage.allow_fallbacks),
-                },
-                "composer": {
-                    "order": list(spec.composer_stage.provider_order),
-                    "allow_fallbacks": bool(spec.composer_stage.allow_fallbacks),
-                },
-            },
+            "chapter_provider": spec.chapter_stage.provider,
+            "composer_provider": spec.composer_stage.provider,
             "prompt_hashes": prompt_hashes,
             "catalog_snapshot": display_path(catalog_snapshot_path) if catalog_snapshot_path else "",
             "price_snapshot": display_path(price_snapshot_path) if price_snapshot_path else "",
