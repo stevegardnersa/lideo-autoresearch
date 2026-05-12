@@ -17,7 +17,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
@@ -100,7 +100,7 @@ def _slug(model: str) -> str:
     return model
 
 
-def _build_stage_config(model: str, thinking: bool, schema_ok: bool) -> Dict[str, Any]:
+def _build_stage_config(model: str, thinking: bool, schema_ok: bool, provider: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     extra_body = {"thinking": {"type": "enabled"}} if thinking else {"thinking": {"type": "disabled"}}
     return {
         "model": model,
@@ -118,12 +118,13 @@ def _build_stage_config(model: str, thinking: bool, schema_ok: bool) -> Dict[str
             "terminology_policy": "keep_source_terms",
             "anti_fluff_policy": "hard",
         },
+        "provider": provider,
         "extra_body": extra_body,
         "use_json_schema": schema_ok,
     }
 
 
-def _build_composer_config(model: str, thinking: bool, schema_ok: bool) -> Dict[str, Any]:
+def _build_composer_config(model: str, thinking: bool, schema_ok: bool, provider: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     extra_body = {"thinking": {"type": "enabled"}} if thinking else {"thinking": {"type": "disabled"}}
     return {
         "model": model,
@@ -141,20 +142,21 @@ def _build_composer_config(model: str, thinking: bool, schema_ok: bool) -> Dict[
             "terminology_policy": "keep_source_terms",
             "anti_fluff_policy": "hard",
         },
+        "provider": provider,
         "extra_body": extra_body,
         "use_json_schema": schema_ok,
     }
 
 
-def _build_profile(model: str, thinking: bool, schema_ok: bool, time_budget: str = "30m") -> Dict[str, Any]:
+def _build_profile(model: str, thinking: bool, schema_ok: bool, time_budget: str = "30m", provider: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     mode = "thinking" if thinking else "notthinking"
     slug = _slug(model)
     full_profile = f"{time_budget}_{slug}_{mode}"
     return {
         "name": f"{full_profile}_v1",
         "profile": full_profile,
-        "chapter_stage": _build_stage_config(model, thinking, schema_ok),
-        "composer_stage": _build_composer_config(model, thinking, schema_ok),
+        "chapter_stage": _build_stage_config(model, thinking, schema_ok, provider),
+        "composer_stage": _build_composer_config(model, thinking, schema_ok, provider),
         "composer_mode": "summaries_only",
         "length_control": {
             "max_passes": 5,
@@ -209,6 +211,7 @@ def add_candidates(
     dry_run: bool = False,
     dry_run_only: bool = False,
     time_budgets: Optional[List[str]] = None,
+    provider: Optional[Dict[str, Any]] = None,
 ) -> List[str]:
     if time_budgets is None:
         time_budgets = ["30m", "60m"]
@@ -231,7 +234,7 @@ def add_candidates(
             if not thinking and not notthinking_ok:
                 continue
 
-            p = _build_profile(model, thinking=thinking, schema_ok=schema_ok, time_budget=tb)
+            p = _build_profile(model, thinking=thinking, schema_ok=schema_ok, time_budget=tb, provider=provider)
             created.append(p["profile"])
             print(f"\n  → Will create profile: {p['profile']}")
 
@@ -263,6 +266,7 @@ def add_candidates(
                 thinking=("notthinking" not in profile_name),
                 schema_ok=schema_ok,
                 time_budget=profile_name.split("_")[0],
+                provider=provider,
             )
             data["profiles"][profile_name] = profile_data
             added.append(profile_name)
@@ -305,9 +309,89 @@ def list_profiles(candidates_path: Path) -> None:
         print(f"  {name}: {notes}")
 
 
+def _find_runs_by_pattern(pattern: str, runs_dir: Path) -> List[Path]:
+    import re
+    run_files: List[Path] = []
+    compiled = re.compile(pattern)
+    benchmarks = [d for d in runs_dir.iterdir() if d.is_dir()] if runs_dir.exists() else []
+    for benchmark_dir in benchmarks:
+        for run_file in benchmark_dir.iterdir():
+            if not run_file.is_file():
+                continue
+            if compiled.search(run_file.name):
+                run_files.append(run_file)
+    return run_files
+
+
+def _find_runs_for_profiles(profile_names: List[str], runs_dir: Path) -> List[Path]:
+    run_files: List[Path] = []
+    benchmarks = [d for d in runs_dir.iterdir() if d.is_dir()] if runs_dir.exists() else []
+    for benchmark_dir in benchmarks:
+        for run_file in benchmark_dir.iterdir():
+            if not run_file.is_file():
+                continue
+            stem = run_file.stem
+            for profile_name in profile_names:
+                if profile_name in stem:
+                    run_files.append(run_file)
+                    break
+    return run_files
+
+
+def remove_candidates(
+    pattern: str,
+    *,
+    candidates_path: Path,
+    runs_dir: Path = Path("runs"),
+    dry_run: bool = False,
+) -> List[str]:
+    import re
+    data = _load_candidates(candidates_path)
+    profiles = data.get("profiles", {})
+    compiled = re.compile(pattern)
+    matched = [k for k in profiles if compiled.search(k)]
+
+    run_files = _find_runs_by_pattern(pattern, runs_dir)
+
+    if not matched and not run_files:
+        print(f"No profiles or runs match pattern: {pattern}")
+        return []
+
+    if matched:
+        print(f"Removing {len(matched)} profile(s) matching '{pattern}':")
+        for name in sorted(matched):
+            print(f"  - {name}")
+
+    if run_files:
+        print(f"Found {len(run_files)} run file(s) matching '{pattern}':")
+        for rf in run_files:
+            print(f"  - {rf}")
+
+    if dry_run:
+        print("(dry-run — no changes written)")
+        return matched
+
+    for name in matched:
+        del profiles[name]
+    data["profiles"] = profiles
+    candidates_path.write_text(json.dumps(data, indent=2) + "\n")
+
+    if run_files:
+        for rf in run_files:
+            rf.unlink()
+        print(f"Removed {len(run_files)} run file(s)")
+
+    if matched:
+        from tools.gen_profile_literal import update_candidate_spec_py
+        update_candidate_spec_py(profiles)
+        print(f"Regenerated candidate_spec.py")
+    return matched
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Auto-probe a model and add candidate profile(s)")
     parser.add_argument("--provider", help="Provider slug (e.g., deepseek, xai)")
+    parser.add_argument("--provider-route", help="Provider routing config as JSON (e.g., '{\"order\":[\"deepseek\"]}')")
     parser.add_argument("--model", help="Model slug (e.g., deepseek-v4-flash)")
     parser.add_argument("--model-full", help="Full model ID (e.g., deepseek/deepseek-v4-flash), overrides --provider/--model")
     parser.add_argument(
@@ -322,12 +406,21 @@ def main() -> None:
                         help="Print what would be created without writing")
     parser.add_argument("--list", action="store_true",
                         help="List all profiles in candidates JSON")
+    parser.add_argument("--remove", metavar="PATTERN", help="Remove profiles matching regex pattern")
     parser.add_argument("--timeout", type=int, default=60,
                         help="Timeout per probe call in seconds")
     args = parser.parse_args()
 
     if args.list:
         list_profiles(args.out)
+        return
+
+    if args.remove is not None:
+        remove_candidates(
+            args.remove,
+            candidates_path=args.out,
+            dry_run=args.dry_run,
+        )
         return
 
     if not args.model_full and not (args.provider and args.model):
@@ -338,12 +431,21 @@ def main() -> None:
     else:
         model = f"{args.provider}/{args.model}"
 
+    provider = None
+    if args.provider_route:
+        import json as _json
+        try:
+            provider = _json.loads(args.provider_route)
+        except Exception:
+            print(f"Warning: failed to parse --provider-route as JSON: {args.provider_route}")
+
     add_candidates(
         model,
         candidates_path=args.out,
         dry_run=args.dry_run,
         dry_run_only=args.dry_run,
         time_budgets=args.time_budget,
+        provider=provider,
     )
 
 

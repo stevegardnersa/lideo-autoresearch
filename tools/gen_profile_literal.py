@@ -47,6 +47,11 @@ def build_candidates_dict(profiles: dict) -> str:
         ba = spec.get("budget_allocator", {})
 
         def stage_str(s):
+            provider_val = s.get("provider")
+            if provider_val is None:
+                provider_repr = "None"
+            else:
+                provider_repr = json.dumps(provider_val)
             return (
                 f'StageConfig('
                 f'model="{s.get("model", "")}", '
@@ -56,6 +61,7 @@ def build_candidates_dict(profiles: dict) -> str:
                 f'format_mode="{s.get("format_mode", "markdown_sections")}", '
                 f'context_mode="{s.get("context_mode", "chapter_plus_toc_and_meta")}", '
                 f'prompt_components={json.dumps(s.get("prompt_components", {}))}, '
+                f'provider={provider_repr}, '
                 f'extra_body={json.dumps(s.get("extra_body"))}'
                 f')'
             )
