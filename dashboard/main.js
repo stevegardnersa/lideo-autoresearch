@@ -28,6 +28,8 @@ function getProvider(model) {
   return model.split('/')[0]
 }
 
+const STORAGE_KEY = 'scatter_explorer_state'
+
 let runs = []
 let currentMode = 'price_quality'
 let activeFilters = {}
@@ -35,6 +37,43 @@ let showLabels = false
 let highlightQuadrant = true
 let fixedYRange = false
 let selectedRunId = null
+let explicitFieldChanges = { xField: false, yField: false, sizeField: false, colorField: false, labelField: false }
+
+function loadPersistedState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
+}
+
+function savePersistedState(state) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  } catch {
+  }
+}
+
+function persistState() {
+  const currentSaved = loadPersistedState()
+  savePersistedState({
+    version: 1,
+    currentMode,
+    selectedRunId,
+    searchText: document.getElementById('searchInput')?.value || '',
+    xField: explicitFieldChanges.xField ? (document.getElementById('xSelect')?.value || '') : (currentSaved?.xField || document.getElementById('xSelect')?.value || ''),
+    yField: explicitFieldChanges.yField ? (document.getElementById('ySelect')?.value || '') : (currentSaved?.yField || document.getElementById('ySelect')?.value || ''),
+    sizeField: explicitFieldChanges.sizeField ? (document.getElementById('sizeSelect')?.value || '') : (currentSaved?.sizeField || document.getElementById('sizeSelect')?.value || ''),
+    colorField: explicitFieldChanges.colorField ? (document.getElementById('colorSelect')?.value || '') : (currentSaved?.colorField || 'provider'),
+    labelField: explicitFieldChanges.labelField ? (document.getElementById('labelSelect')?.value || '') : (currentSaved?.labelField || 'candidate_name'),
+    showLabels,
+    highlightQuadrant,
+    fixedYRange,
+    activeFilters
+  })
+}
 
 const numericFields = [
   'mean_quality', 'mean_utility', 'mean_faithfulness', 'mean_concept_coverage',
@@ -60,7 +99,7 @@ async function findRunJsonFiles() {
   }
 }
 
-async function loadRuns() {
+async function loadRuns(doRender = true) {
   try {
     const files = await findRunJsonFiles()
     runs = []
@@ -129,7 +168,7 @@ async function loadRuns() {
     runs.sort((a, b) => a.run_id.localeCompare(b.run_id))
     populateRunSelect()
     populateSelects()
-    renderChart()
+    if (doRender) renderChart()
   } catch (e) {
     console.error('Failed to load runs:', e)
   }
@@ -205,6 +244,7 @@ function renderChart() {
   const yField = document.getElementById('ySelect').value || 'mean_quality'
   const sizeField = document.getElementById('sizeSelect').value || 'mean_passes_used'
   const colorField = document.getElementById('colorSelect').value || 'provider'
+  const labelField = document.getElementById('labelSelect').value || 'candidate_name'
 
   svg.innerHTML = ''
 
@@ -381,7 +421,7 @@ function renderChart() {
       text.setAttribute('x', xScale(d.x) + sizeScale(d.size) + 3)
       text.setAttribute('y', yScale(d.y) + 4)
       text.setAttribute('class', 'tick-label')
-      text.textContent = (d.run.candidate_name || d.run.run_id).substring(0, 12)
+      text.textContent = (d.run[labelField] || d.run.candidate_name || d.run.run_id).substring(0, 12)
       g.appendChild(text)
     }
   })
@@ -480,6 +520,7 @@ function renderLegend(data, colorField) {
       else activeFilters[colorField].push(val)
       item.classList.toggle('off')
       renderChart()
+      persistState()
     })
     legend.appendChild(item)
   })
@@ -503,34 +544,85 @@ function updateMode(mode) {
   document.getElementById('panelSub').textContent = `X: ${defaults.x} · Y: ${defaults.y} · Bubble size: ${defaults.size}`
 
   renderChart()
+  persistState()
 }
 
+let savedState = null
+
 document.addEventListener('DOMContentLoaded', () => {
+  savedState = loadPersistedState()
+
+  if (savedState) {
+    currentMode = savedState.currentMode || 'price_quality'
+    selectedRunId = savedState.selectedRunId || null
+    showLabels = savedState.showLabels ?? false
+    highlightQuadrant = savedState.highlightQuadrant ?? true
+    fixedYRange = savedState.fixedYRange ?? false
+    activeFilters = savedState.activeFilters || {}
+    explicitFieldChanges = { xField: false, yField: false, sizeField: false, colorField: false, labelField: false }
+
+    document.getElementById('searchInput').value = savedState.searchText || ''
+    document.getElementById('runSelect').value = savedState.selectedRunId || ''
+    document.getElementById('labelToggle').checked = showLabels
+    document.getElementById('quadToggle').checked = highlightQuadrant
+    document.getElementById('fixedYRange').checked = fixedYRange
+
+    document.querySelectorAll('.tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.mode === currentMode)
+    })
+
+    const titles = {
+      price_quality: 'Price vs. Quality',
+      price_faithfulness: 'Price vs. Faithfulness',
+      custom: 'Custom'
+    }
+    document.getElementById('panelTitle').textContent = titles[currentMode] || 'Custom'
+  }
+
   document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => updateMode(tab.dataset.mode))
+    tab.addEventListener('click', () => {
+      updateMode(tab.dataset.mode)
+      persistState()
+    })
   })
 
-  ;['xSelect', 'ySelect', 'sizeSelect', 'colorSelect'].forEach(id => {
-    document.getElementById(id)?.addEventListener('change', renderChart)
+  ;['xSelect', 'ySelect', 'sizeSelect', 'colorSelect', 'labelSelect'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', e => {
+      const fieldMap = { xSelect: 'xField', ySelect: 'yField', sizeSelect: 'sizeField', colorSelect: 'colorField', labelSelect: 'labelField' }
+      const field = fieldMap[e.target.id]
+      if (field) explicitFieldChanges[field] = true
+      renderChart()
+      persistState()
+    })
   })
 
   document.getElementById('labelToggle')?.addEventListener('change', e => {
     showLabels = e.target.checked
     renderChart()
+    persistState()
   })
 
   document.getElementById('quadToggle')?.addEventListener('change', e => {
     highlightQuadrant = e.target.checked
     renderChart()
+    persistState()
   })
 
   document.getElementById('fixedYRange')?.addEventListener('change', e => {
     fixedYRange = e.target.checked
     renderChart()
+    persistState()
   })
 
-  document.getElementById('searchInput')?.addEventListener('input', renderChart)
-  document.getElementById('runSelect')?.addEventListener('change', renderChart)
+  document.getElementById('searchInput')?.addEventListener('input', () => {
+    renderChart()
+    persistState()
+  })
+  document.getElementById('runSelect')?.addEventListener('change', () => {
+    selectedRunId = document.getElementById('runSelect').value || null
+    renderChart()
+    persistState()
+  })
 
   document.getElementById('downloadBtn')?.addEventListener('click', () => {
     const svg = document.getElementById('chart')
@@ -551,5 +643,28 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('fullscreenBtn')?.classList.toggle('expanded', isFullscreen)
   })
 
-  loadRuns()
+  if (savedState) {
+    loadRuns(false).then(() => {
+      const titles = {
+        price_quality: 'Price vs. Quality',
+        price_faithfulness: 'Price vs. Faithfulness',
+        custom: 'Custom'
+      }
+      document.getElementById('panelTitle').textContent = titles[currentMode] || 'Custom'
+
+      document.getElementById('xSelect').value = savedState.xField || modeDefaults[currentMode].x
+      document.getElementById('ySelect').value = savedState.yField || modeDefaults[currentMode].y
+      document.getElementById('sizeSelect').value = savedState.sizeField || modeDefaults[currentMode].size
+      document.getElementById('colorSelect').value = savedState.colorField || 'provider'
+      document.getElementById('labelSelect').value = savedState.labelField || 'candidate_name'
+
+      document.getElementById('panelSub').textContent = `X: ${document.getElementById('xSelect').value} · Y: ${document.getElementById('ySelect').value} · Bubble size: ${document.getElementById('sizeSelect').value}`
+
+      renderChart()
+      savedState = null
+      explicitFieldChanges = { xField: false, yField: false, sizeField: false, colorField: false, labelField: false }
+    })
+  } else {
+    loadRuns()
+  }
 })
