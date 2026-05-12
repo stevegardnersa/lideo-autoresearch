@@ -841,11 +841,11 @@
       "disable_composer": false,
       "notes": "Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 60m, notthinking, schema=True"
     },
-    "30m_mimo-v2.5-pro_thinking": {
-      "name": "30m_mimo-v2.5-pro_thinking_v1",
-      "profile": "30m_mimo-v2.5-pro_thinking",
+    "30m_minimax-m2.7_thinking": {
+      "name": "30m_minimax-m2.7_thinking_v1",
+      "profile": "30m_minimax-m2.7_thinking",
       "chapter_stage": {
-        "model": "xiaomi/mimo-v2.5-pro",
+        "model": "minimax/minimax-m2.7",
         "temperature": 0.2,
         "seed": 42,
         "max_tokens": 8192,
@@ -869,7 +869,7 @@
         "use_json_schema": true
       },
       "composer_stage": {
-        "model": "xiaomi/mimo-v2.5-pro",
+        "model": "minimax/minimax-m2.7",
         "temperature": 0.2,
         "seed": 42,
         "max_tokens": 8192,
@@ -911,13 +911,13 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: xiaomi/mimo-v2.5-pro chapter+composer, 30m, thinking, schema=True"
+      "notes": "Auto-generated: minimax/minimax-m2.7 chapter+composer, 30m, thinking, schema=True"
     },
-    "30m_mimo-v2.5-pro_notthinking": {
-      "name": "30m_mimo-v2.5-pro_notthinking_v1",
-      "profile": "30m_mimo-v2.5-pro_notthinking",
+    "30m_minimax-m2.7_notthinking": {
+      "name": "30m_minimax-m2.7_notthinking_v1",
+      "profile": "30m_minimax-m2.7_notthinking",
       "chapter_stage": {
-        "model": "xiaomi/mimo-v2.5-pro",
+        "model": "minimax/minimax-m2.7",
         "temperature": 0.2,
         "seed": 42,
         "max_tokens": 8192,
@@ -941,7 +941,7 @@
         "use_json_schema": true
       },
       "composer_stage": {
-        "model": "xiaomi/mimo-v2.5-pro",
+        "model": "minimax/minimax-m2.7",
         "temperature": 0.2,
         "seed": 42,
         "max_tokens": 8192,
@@ -983,13 +983,13 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: xiaomi/mimo-v2.5-pro chapter+composer, 30m, notthinking, schema=True"
+      "notes": "Auto-generated: minimax/minimax-m2.7 chapter+composer, 30m, notthinking, schema=True"
     },
-    "60m_mimo-v2.5-pro_thinking": {
-      "name": "60m_mimo-v2.5-pro_thinking_v1",
-      "profile": "60m_mimo-v2.5-pro_thinking",
+    "60m_minimax-m2.7_thinking": {
+      "name": "60m_minimax-m2.7_thinking_v1",
+      "profile": "60m_minimax-m2.7_thinking",
       "chapter_stage": {
-        "model": "xiaomi/mimo-v2.5-pro",
+        "model": "minimax/minimax-m2.7",
         "temperature": 0.2,
         "seed": 42,
         "max_tokens": 8192,
@@ -1013,7 +1013,7 @@
         "use_json_schema": true
       },
       "composer_stage": {
-        "model": "xiaomi/mimo-v2.5-pro",
+        "model": "minimax/minimax-m2.7",
         "temperature": 0.2,
         "seed": 42,
         "max_tokens": 8192,
@@ -1055,13 +1055,13 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: xiaomi/mimo-v2.5-pro chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: minimax/minimax-m2.7 chapter+composer, 60m, thinking, schema=True"
     },
-    "60m_mimo-v2.5-pro_notthinking": {
-      "name": "60m_mimo-v2.5-pro_notthinking_v1",
-      "profile": "60m_mimo-v2.5-pro_notthinking",
+    "60m_minimax-m2.7_notthinking": {
+      "name": "60m_minimax-m2.7_notthinking_v1",
+      "profile": "60m_minimax-m2.7_notthinking",
       "chapter_stage": {
-        "model": "xiaomi/mimo-v2.5-pro",
+        "model": "minimax/minimax-m2.7",
         "temperature": 0.2,
         "seed": 42,
         "max_tokens": 8192,
@@ -1085,7 +1085,7 @@
         "use_json_schema": true
       },
       "composer_stage": {
-        "model": "xiaomi/mimo-v2.5-pro",
+        "model": "minimax/minimax-m2.7",
         "temperature": 0.2,
         "seed": 42,
         "max_tokens": 8192,
@@ -1127,7 +1127,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: xiaomi/mimo-v2.5-pro chapter+composer, 60m, notthinking, schema=True"
+      "notes": "Auto-generated: minimax/minimax-m2.7 chapter+composer, 60m, notthinking, schema=True"
     }
   }
 }
