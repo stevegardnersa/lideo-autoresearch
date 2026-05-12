@@ -193,7 +193,7 @@ function renderChart() {
     y: r[yField] ?? 0,
     size: sizeField ? (r[sizeField] ?? 1) : 1,
     colorVal: r[colorField] || 'unknown'
-  })).filter(d => d.x !== undefined && d.y !== undefined)
+  })).filter(d => d.x !== undefined && d.y !== undefined && !activeFilters[colorField]?.includes(d.colorVal))
 
   if (data.length === 0) return
 
@@ -366,7 +366,14 @@ function renderChart() {
   })
 
   svg.appendChild(g)
-  renderLegend(data, colorField)
+  const allData = filtered.map(r => ({
+    run: r,
+    x: r[xField] ?? 0,
+    y: r[yField] ?? 0,
+    size: sizeField ? (r[sizeField] ?? 1) : 1,
+    colorVal: r[colorField] || 'unknown'
+  })).filter(d => d.x !== undefined && d.y !== undefined)
+  renderLegend(allData, colorField)
 }
 
 function showTooltip(e, d) {
