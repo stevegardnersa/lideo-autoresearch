@@ -5,8 +5,9 @@ const COLOR_MAP = {
   'deepseek/deepseek-v4-flash': '#fb923c',
   'deepseek/deepseek-v3.2': '#ea580c',
   'minimax/minimax-m2.7': '#22c55e',
-  'openai/gpt-5-mini': '#6366f1',
-  'openai/gpt-4o': '#8b5cf6',
+  'openai/gpt-5-mini': '#000000',
+  'openai/gpt-4o': '#000000',
+  'openai/gpt-oss-120b': '#000000',
   'google/gemini-3.1-pro-preview': '#14b8a6',
   'google/gemini-3-flash-preview': '#2dd4bf',
   'anthropic/claude-opus-4': '#0ea5e9',
@@ -16,8 +17,23 @@ const COLOR_MAP = {
   'xiaomi/mimo-v2-flash': '#f472b6',
 }
 
+const JUDGE_COLOR_MAP = {
+  'LLM:gpt-4o': '#8b5cf6',
+  'LLM:claude-sonnet-4': '#38bdf8',
+  'LLM:claude-sonnet-4.6': '#7dd3fc',
+  'LLM:claude-opus-4': '#0ea5e9',
+  'LLM:gemini-3.1-pro-preview': '#14b8a6',
+  'LLM:gemini-3-flash-preview': '#2dd4bf',
+  'LLM:deepseek-v4-pro': '#f97316',
+  'LLM:deepseek-v4-flash': '#fb923c',
+  'LLM:deepseek-v3.2': '#ea580c',
+  'LLM:gpt-5-mini': '#6366f1',
+  'LLM:minimax-m2.7': '#22c55e',
+}
+
 function getColor(key, value) {
   if (key === 'model' && COLOR_MAP[value]) return COLOR_MAP[value]
+  if (key === 'judge_type' && JUDGE_COLOR_MAP[value]) return JUDGE_COLOR_MAP[value]
   let h = 0
   for (let i = 0; i < value.length; i++) h = ((h << 5) - h) + value.charCodeAt(i) | 0
   return `hsl(${Math.abs(h) % 360}, 55%, 48%)`
@@ -37,6 +53,8 @@ let showLabels = false
 let highlightQuadrant = true
 let fixedYRange = false
 let selectedRunId = null
+let selectedJudgeType = ''
+let judgeVisibility = { deterministic: true, LLM: true }
 let explicitFieldChanges = { xField: false, yField: false, sizeField: false, colorField: false, labelField: false }
 
 function loadPersistedState() {
@@ -59,18 +77,20 @@ function savePersistedState(state) {
 function persistState() {
   const currentSaved = loadPersistedState()
   savePersistedState({
-    version: 1,
+    version: 2,
     currentMode,
     selectedRunId,
+    selectedJudgeType,
     searchText: document.getElementById('searchInput')?.value || '',
-    xField: explicitFieldChanges.xField ? (document.getElementById('xSelect')?.value || '') : (currentSaved?.xField || document.getElementById('xSelect')?.value || ''),
-    yField: explicitFieldChanges.yField ? (document.getElementById('ySelect')?.value || '') : (currentSaved?.yField || document.getElementById('ySelect')?.value || ''),
-    sizeField: explicitFieldChanges.sizeField ? (document.getElementById('sizeSelect')?.value || '') : (currentSaved?.sizeField || document.getElementById('sizeSelect')?.value || ''),
-    colorField: explicitFieldChanges.colorField ? (document.getElementById('colorSelect')?.value || '') : (currentSaved?.colorField || 'provider'),
-    labelField: explicitFieldChanges.labelField ? (document.getElementById('labelSelect')?.value || '') : (currentSaved?.labelField || 'candidate_name'),
+    xField: document.getElementById('xSelect')?.value || '',
+    yField: document.getElementById('ySelect')?.value || '',
+    sizeField: document.getElementById('sizeSelect')?.value || '',
+    colorField: document.getElementById('colorSelect')?.value || '',
+    labelField: document.getElementById('labelSelect')?.value || '',
     showLabels,
     highlightQuadrant,
     fixedYRange,
+    judgeVisibility,
     activeFilters
   })
 }
@@ -78,7 +98,7 @@ function persistState() {
 const numericFields = [
   'mean_quality', 'mean_utility', 'mean_faithfulness', 'mean_concept_coverage',
   'mean_final_length_error_pct', 'mean_first_pass_length_error_pct', 'mean_passes_used',
-  'mean_generation_cost', 'mean_uncached_cost', 'hard_fail_rate', 'n_genre_macros',
+  'mean_generation_cost', 'mean_uncached_cost', 'mean_llm_judge_cost', 'mean_total_cost', 'hard_fail_rate', 'n_genre_macros',
   'genre_macro_spread_utility', 'avg_time_per_chapter_seconds'
 ]
 
@@ -132,6 +152,10 @@ async function loadRuns(doRender = true) {
           avgTimePerChapterSeconds = (isNaN(secs) || !isFinite(secs)) ? null : secs
         }
 
+        const judgeVersion = manifest.judge_version_resolved || ''
+        const isLlmJudged = !!(manifest.judge_model && judgeVersion.includes('judge-absolute-v1'))
+        const judgeModelSlug = isLlmJudged ? manifest.judge_model.split('/').pop() : ''
+
         const run = {
           run_id: manifest.run_id || file.replace('.json', ''),
           profile: manifest.profile || '',
@@ -142,6 +166,10 @@ async function loadRuns(doRender = true) {
           benchmark_version: manifest.benchmark_version || '',
           provider: getProvider(manifest.chapter_model),
           model: manifest.chapter_model || '',
+          judge_model: manifest.judge_model || '',
+          judge_version_resolved: judgeVersion,
+          is_llm_judged: isLlmJudged,
+          judge_type: isLlmJudged ? `LLM:${judgeModelSlug}` : 'deterministic',
           n_samples: score.n_samples || 0,
           hard_fail_rate: score.hard_fail_rate ?? 0,
           mean_quality: score.mean_quality ?? 0,
@@ -151,8 +179,10 @@ async function loadRuns(doRender = true) {
           mean_final_length_error_pct: score.mean_final_length_error_pct ?? 0,
           mean_first_pass_length_error_pct: score.mean_first_pass_length_error_pct ?? 0,
           mean_passes_used: score.mean_passes_used ?? 0,
-          mean_uncached_cost: score.mean_uncached_cost ?? score.mean_uncached_generation_cost ?? 0,
-          mean_generation_cost: score.mean_generation_cost ?? 0,
+          mean_uncached_cost: score.mean_uncached_cost ?? score.mean_uncached_generation_cost ?? manifest.mean_uncached_cost ?? 0,
+          mean_generation_cost: manifest.mean_generation_cost ?? score.mean_generation_cost ?? 0,
+          mean_llm_judge_cost: manifest.mean_llm_judge_cost ?? 0,
+          mean_total_cost: manifest.mean_total_cost ?? 0,
           worst_genre_macro: score.worst_genre_macro?.slice_value || '',
           n_genre_macros: score.n_genre_macros || 0,
           genre_macro_spread_utility: score.genre_macro_spread_utility || 0,
@@ -165,7 +195,11 @@ async function loadRuns(doRender = true) {
       }
     }
 
-    runs.sort((a, b) => a.run_id.localeCompare(b.run_id))
+    runs.sort((a, b) => {
+      const idA = `${a.run_id}__${a.judge_type}`
+      const idB = `${b.run_id}__${b.judge_type}`
+      return idA.localeCompare(idB)
+    })
     populateRunSelect()
     populateSelects()
     if (doRender) renderChart()
@@ -185,10 +219,19 @@ function populateRunSelect() {
 
   runs.forEach(run => {
     const option = document.createElement('option')
-    option.value = run.run_id
-    option.textContent = `${run.candidate_name || run.run_id} (${run.bench || run.benchmark_version || 'unknown'})`
+    option.value = `${run.run_id}__${run.judge_type}`
+    const judgeLabel = run.is_llm_judged ? ' [LLM]' : ' [det]'
+    option.textContent = `${run.candidate_name || run.run_id}${judgeLabel} (${run.bench || run.benchmark_version || 'unknown'})`
     select.appendChild(option)
   })
+}
+
+function getRunKey(run) {
+  return `${run.run_id}__${run.judge_type}`
+}
+
+function findRunByKey(runId, judgeType) {
+  return runs.find(r => r.run_id === runId && r.judge_type === judgeType)
 }
 
 function populateSelects() {
@@ -198,19 +241,19 @@ function populateSelects() {
 
   const fields = ['', ...numericFields]
 
-  ;[xSelect, ySelect, sizeSelect].forEach((select, idx) => {
-    const currentVal = select.value
-    select.innerHTML = ''
-    fields.forEach(f => {
-      const opt = document.createElement('option')
-      opt.value = f
-      opt.textContent = f || '(none)'
-      select.appendChild(opt)
+    ;[xSelect, ySelect, sizeSelect].forEach((select, idx) => {
+      const currentVal = select.value
+      select.innerHTML = ''
+      fields.forEach(f => {
+        const opt = document.createElement('option')
+        opt.value = f
+        opt.textContent = f || '(none)'
+        select.appendChild(opt)
+      })
+      if (idx === 0) select.value = modeDefaults[currentMode].x
+      if (idx === 1) select.value = modeDefaults[currentMode].y
+      if (idx === 2) select.value = modeDefaults[currentMode].size
     })
-    if (idx === 0) select.value = modeDefaults[currentMode].x
-    if (idx === 1) select.value = modeDefaults[currentMode].y
-    if (idx === 2) select.value = modeDefaults[currentMode].size
-  })
 }
 
 function getFilteredRuns() {
@@ -228,7 +271,15 @@ function getFilteredRuns() {
 
   const selectedRun = document.getElementById('runSelect').value
   if (selectedRun) {
-    filtered = filtered.filter(r => r.run_id === selectedRun)
+    const [rid, jtype] = selectedRun.split('__')
+    filtered = filtered.filter(r => r.run_id === rid && r.judge_type === jtype)
+  }
+
+  if (!judgeVisibility.LLM) {
+    filtered = filtered.filter(r => !r.judge_type.startsWith('LLM'))
+  }
+  if (!judgeVisibility.deterministic) {
+    filtered = filtered.filter(r => r.judge_type !== 'deterministic')
   }
 
   return filtered
@@ -409,11 +460,17 @@ function renderChart() {
     circle.setAttribute('cy', yScale(d.y))
     circle.setAttribute('r', sizeScale(d.size))
     circle.setAttribute('fill', getColor(colorField, d.colorVal))
+    if (d.run.is_llm_judged) {
+      circle.style.stroke = '#8b5cf6'
+      circle.style.strokeWidth = '3'
+    }
     circle.setAttribute('class', 'point')
     circle.dataset.runId = d.run.run_id
+    circle.dataset.judgeType = d.run.judge_type
     circle.addEventListener('mouseenter', e => showTooltip(e, d))
     circle.addEventListener('mouseleave', hideTooltip)
-    circle.addEventListener('click', () => selectRun(d.run.run_id, true))
+    circle.addEventListener('click', () => selectRun(d.run.run_id, d.run.judge_type, false))
+    circle.addEventListener('dblclick', () => selectRun(d.run.run_id, d.run.judge_type, true))
     g.appendChild(circle)
 
     if (showLabels) {
@@ -442,12 +499,18 @@ function showTooltip(e, d) {
   const plotWrap = document.getElementById('chart').parentElement
   const rect = plotWrap.getBoundingClientRect()
   const run = d.run
+  const judgeTag = run.is_llm_judged
+    ? `<span style="background:#8b5cf6;color:white;border-radius:3px;padding:1px 6px;font-size:11px">LLM:${run.judge_model.split('/').pop()}</span>`
+    : `<span style="background:#6b7280;color:white;border-radius:3px;padding:1px 6px;font-size:11px">det</span>`
   tooltip.innerHTML = `
-    <strong>${run.candidate_name || run.run_id}</strong>
+    <strong>${run.candidate_name || run.run_id}</strong> ${judgeTag}
     <div>X: ${d.x.toFixed(4)} (${document.getElementById('xSelect').value})</div>
     <div>Y: ${d.y.toFixed(4)} (${document.getElementById('ySelect').value})</div>
     <div>Bubble: ${d.size.toFixed(2)} (${document.getElementById('sizeSelect').value})</div>
     ${run.avg_time_per_chapter_seconds != null ? `<div>avg_time/chap: ${run.avg_time_per_chapter_seconds.toFixed(1)}s</div>` : ''}
+    ${run.mean_generation_cost > 0 ? `<div>gen_cost: ${run.mean_generation_cost.toFixed(4)}</div>` : ''}
+    ${run.mean_llm_judge_cost > 0 ? `<div>judge_cost: ${run.mean_llm_judge_cost.toFixed(4)}</div>` : ''}
+    ${run.mean_total_cost > 0 ? `<div>total_cost: ${run.mean_total_cost.toFixed(4)}</div>` : ''}
     <div style="margin-top:6px;color:#9ca3af">${run.bench || run.profile || ''}</div>
   `
   tooltip.style.display = 'block'
@@ -467,40 +530,47 @@ function hideTooltip() {
   document.getElementById('tooltip').style.display = 'none'
 }
 
-function selectRun(runId, openExplorer = false) {
+function selectRun(runId, judgeType = '', openExplorer = false) {
   selectedRunId = runId
-  const run = runs.find(r => r.run_id === runId)
+  selectedJudgeType = judgeType
+  const run = runs.find(r => r.run_id === runId && r.judge_type === judgeType)
   if (!run) return
 
   if (openExplorer) {
-    window.open(`/explorer.html?run_id=${encodeURIComponent(runId)}`, '_blank')
+    window.open(`/explorer.html?run_id=${encodeURIComponent(runId)}&judge_type=${encodeURIComponent(judgeType)}`, '_blank')
   }
 
   const card = document.getElementById('detailCard')
+  const judgeTag = run.is_llm_judged
+    ? `<span style="background:#8b5cf6;color:white;border-radius:3px;padding:1px 6px;font-size:11px;vertical-align:middle">LLM:${run.judge_model.split('/').pop()}</span>`
+    : `<span style="background:#6b7280;color:white;border-radius:3px;padding:1px 6px;font-size:11px;vertical-align:middle">deterministic</span>`
   card.innerHTML = `
-    <div class="detail-title">${run.candidate_name || run.run_id}</div>
+    <div class="detail-title">${run.candidate_name || run.run_id} ${judgeTag}</div>
     <div class="detail-meta">${run.bench || run.profile || ''} · ${run.n_samples} samples</div>
     <div class="kv">
       <div>run_id</div><div class="mono">${run.run_id}</div>
       <div>profile</div><div>${run.profile}</div>
       <div>bench</div><div>${run.bench}</div>
       <div>model</div><div>${run.model}</div>
+      <div>judge</div><div>${run.judge_type}${run.judge_model ? ' · ' + run.judge_model.split('/').pop() : ''}</div>
       <div>mean_quality</div><div>${run.mean_quality.toFixed(4)}</div>
       <div>mean_utility</div><div>${run.mean_utility.toFixed(4)}</div>
       <div>mean_faithfulness</div><div>${run.mean_faithfulness.toFixed(4)}</div>
       <div>mean_concept_coverage</div><div>${run.mean_concept_coverage.toFixed(4)}</div>
       <div>mean_passes_used</div><div>${run.mean_passes_used.toFixed(2)}</div>
       <div>mean_generation_cost</div><div>${run.mean_generation_cost.toFixed(6)}</div>
+      ${run.mean_llm_judge_cost > 0 ? `<div>mean_llm_judge_cost</div><div>${run.mean_llm_judge_cost.toFixed(6)}</div>` : ''}
+      ${run.mean_total_cost > 0 ? `<div>mean_total_cost</div><div>${run.mean_total_cost.toFixed(6)}</div>` : ''}
       <div>hard_fail_rate</div><div>${run.hard_fail_rate.toFixed(2)}</div>
       ${run.avg_time_per_chapter_seconds != null ? `<div>avg_time_per_chapter_seconds</div><div>${run.avg_time_per_chapter_seconds.toFixed(1)}s</div>` : ''}
     </div>
     <button class="btn" id="explorerBtn" style="margin-top:12px;width:100%">Open in Run Explorer</button>
   `
   document.getElementById('explorerBtn')?.addEventListener('click', () => {
-    window.open(`/explorer.html?run_id=${encodeURIComponent(runId)}`, '_blank')
+    window.open(`/explorer.html?run_id=${encodeURIComponent(run.run_id)}&judge_type=${encodeURIComponent(run.judge_type)}`, '_blank')
   })
   document.querySelectorAll('.point').forEach(p => {
-    p.classList.toggle('active', p.dataset.runId === runId)
+    p.classList.toggle('active', p.dataset.runId === runId && p.dataset.judgeType === run.judge_type)
   })
 }
 
@@ -509,7 +579,7 @@ function renderLegend(data, colorField) {
   legend.innerHTML = ''
 
   const uniqueValues = [...new Set(data.map(d => d.colorVal))]
-  uniqueValues.slice(0, 15).forEach(val => {
+  uniqueValues.forEach(val => {
     const item = document.createElement('button')
     item.className = 'legend-item' + (activeFilters[colorField]?.includes(val) ? ' off' : '')
     item.innerHTML = `<span class="swatch" style="background:${getColor(colorField, val)}"></span>${val}`
@@ -555,17 +625,28 @@ document.addEventListener('DOMContentLoaded', () => {
   if (savedState) {
     currentMode = savedState.currentMode || 'price_quality'
     selectedRunId = savedState.selectedRunId || null
+    selectedJudgeType = savedState.selectedJudgeType || ''
     showLabels = savedState.showLabels ?? false
     highlightQuadrant = savedState.highlightQuadrant ?? true
     fixedYRange = savedState.fixedYRange ?? false
+    judgeVisibility = savedState.judgeVisibility ?? { deterministic: true, LLM: true }
     activeFilters = savedState.activeFilters || {}
     explicitFieldChanges = { xField: false, yField: false, sizeField: false, colorField: false, labelField: false }
 
     document.getElementById('searchInput').value = savedState.searchText || ''
-    document.getElementById('runSelect').value = savedState.selectedRunId || ''
+    if (savedState.selectedRunId && savedState.selectedJudgeType) {
+      document.getElementById('runSelect').value = `${savedState.selectedRunId}__${savedState.selectedJudgeType}`
+    }
     document.getElementById('labelToggle').checked = showLabels
     document.getElementById('quadToggle').checked = highlightQuadrant
     document.getElementById('fixedYRange').checked = fixedYRange
+
+    document.querySelectorAll('.judge-toggle').forEach(btn => {
+      const judge = btn.dataset.judge
+      const isActive = judgeVisibility[judge] ?? true
+      btn.classList.toggle('jt-off', !isActive)
+      btn.classList.toggle('active', isActive)
+    })
 
     document.querySelectorAll('.tab').forEach(t => {
       t.classList.toggle('active', t.dataset.mode === currentMode)
@@ -586,15 +667,15 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   })
 
-  ;['xSelect', 'ySelect', 'sizeSelect', 'colorSelect', 'labelSelect'].forEach(id => {
-    document.getElementById(id)?.addEventListener('change', e => {
-      const fieldMap = { xSelect: 'xField', ySelect: 'yField', sizeSelect: 'sizeField', colorSelect: 'colorField', labelSelect: 'labelField' }
-      const field = fieldMap[e.target.id]
-      if (field) explicitFieldChanges[field] = true
-      renderChart()
-      persistState()
+    ;['xSelect', 'ySelect', 'sizeSelect', 'colorSelect', 'labelSelect'].forEach(id => {
+      document.getElementById(id)?.addEventListener('change', e => {
+        const fieldMap = { xSelect: 'xField', ySelect: 'yField', sizeSelect: 'sizeField', colorSelect: 'colorField', labelSelect: 'labelField' }
+        const field = fieldMap[e.target.id]
+        if (field) explicitFieldChanges[field] = true
+        renderChart()
+        persistState()
+      })
     })
-  })
 
   document.getElementById('labelToggle')?.addEventListener('change', e => {
     showLabels = e.target.checked
@@ -614,12 +695,28 @@ document.addEventListener('DOMContentLoaded', () => {
     persistState()
   })
 
+  document.querySelectorAll('.judge-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const judge = btn.dataset.judge
+      const isCurrentlyEnabled = !btn.classList.contains('jt-off')
+      btn.classList.toggle('jt-off', isCurrentlyEnabled)
+      btn.classList.toggle('active', !isCurrentlyEnabled)
+      judgeVisibility[judge] = !isCurrentlyEnabled
+      renderChart()
+      persistState()
+    })
+  })
+
   document.getElementById('searchInput')?.addEventListener('input', () => {
     renderChart()
     persistState()
   })
   document.getElementById('runSelect')?.addEventListener('change', () => {
-    selectedRunId = document.getElementById('runSelect').value || null
+    const val = document.getElementById('runSelect').value
+    const [rid, jtype] = val ? val.split('__') : ['', '']
+    selectedRunId = rid || null
+    selectedJudgeType = jtype || ''
+    selectRun(selectedRunId, selectedJudgeType)
     renderChart()
     persistState()
   })

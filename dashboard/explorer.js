@@ -3,13 +3,32 @@ import './style.css'
 
 function getRunIdFromUrl() {
   const params = new URLSearchParams(window.location.search)
-  return params.get('run_id') || ''
+  return {
+    runId: params.get('run_id') || '',
+    judgeType: params.get('judge_type') || '',
+  }
+}
+
+async function findRunFile(runId, judgeType) {
+  const files = await fetch('/runs-list').then(r => r.json())
+  if (!runId) return null
+
+  const isLlm = judgeType.startsWith('LLM:')
+  const targetSuffix = isLlm ? '__llmj_' : '.json'
+
+  const candidates = files.filter(f => {
+    if (!f.endsWith('.json') || f.includes('/mock/') || f.endsWith('.state.json')) return false
+    if (!f.includes(runId)) return false
+    return !isLlm ? !f.includes('__llmj_') : f.includes('__llmj_')
+  })
+
+  return candidates[0] || null
 }
 
 async function loadRunManifest(runId) {
   try {
-    const files = await fetch('/runs-list').then(r => r.json())
-    const runFile = files.find(f => f.endsWith('.json') && !f.includes('/mock/') && !f.endsWith('.state.json') && f.includes(runId))
+    const { runId: rid, judgeType } = getRunIdFromUrl()
+    const runFile = await findRunFile(rid, judgeType)
     if (!runFile) return null
 
     const response = await fetch(`/runs/${runFile}`)
@@ -22,8 +41,21 @@ async function loadRunManifest(runId) {
 
 async function loadRunSamples(runId) {
   try {
+    const { judgeType } = getRunIdFromUrl()
     const files = await fetch('/runs-list').then(r => r.json())
-    const sampleFile = files.find(f => f.endsWith('.samples.jsonl') && !f.includes('/mock/') && f.includes(runId))
+    if (!runId) return []
+
+    const isLlm = judgeType.startsWith('LLM:')
+    const targetSuffix = isLlm ? '__llmj_' : '.samples.jsonl'
+    const baseExclude = isLlm ? '__llmj_' : '__llmj_'
+
+    const candidates = files.filter(f => {
+      if (!f.endsWith('.samples.jsonl') || f.includes('/mock/')) return false
+      if (!f.includes(runId)) return false
+      return !isLlm ? !f.includes('__llmj_') : f.includes('__llmj_')
+    })
+
+    const sampleFile = candidates[0]
     if (!sampleFile) return []
 
     const response = await fetch(`/runs/${sampleFile}`)
@@ -204,7 +236,7 @@ async function handleChapterSelect(samples) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const runId = getRunIdFromUrl()
+  const { runId, judgeType } = getRunIdFromUrl()
   if (!runId) {
     document.getElementById('runSubtitle').textContent = 'No run_id provided.'
     return

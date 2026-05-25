@@ -40,24 +40,29 @@ def _save_candidates(path: Path, data: Dict[str, Any]) -> None:
 
 
 def _probe_json_schema(client, model: str) -> bool:
-    """Return True if model accepts use_json_schema=True with our schema."""
+    """Return True if model accepts response_format json_schema with our schema.
+
+    Sends payload in the same format as build_openrouter_request uses at runtime.
+    """
     payload = {
         "model": model,
         "messages": [
-            {"role": "system", "content": SYS_PROMPT},
+            {"role": "system", "content": "Respond using JSON format matching the provided schema.\n\n" + SYS_PROMPT},
             {"role": "user", "content": USER_PROMPT},
         ],
         "max_tokens": 30,
-        "use_json_schema": True,
-        "json_schema": {
-            "name": "summary_response_30m",
-            "strict": True,
-            "schema": {
-                "type": "object",
-                "properties": {
-                    "test": {"type": "string"},
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "probe",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "test": {"type": "string"},
+                    },
+                    "required": ["test"],
+                    "additionalProperties": False,
                 },
-                "required": ["test"],
             },
         },
     }

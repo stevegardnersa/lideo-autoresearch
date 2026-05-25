@@ -326,6 +326,11 @@ class OpenRouterClient:
                     error_payload=error_payload,
                 )
                 if exc.code not in {408, 409, 429, 500, 502, 503, 504} or attempt >= self.max_retries:
+                    body_snippet = json.dumps(payload)[:2000] if payload else "no body"
+                    print(f"OpenRouter HTTP {exc.code} for {path}")
+                    print(f"  request body (first 2000 chars): {body_snippet}")
+                    print(f"  response message: {message[:500]}")
+                    print(f"  response keys: {list(error_payload.keys()) if isinstance(error_payload, dict) else 'N/A'}")
                     raise last_error
                 if exc.code == 429:
                     retry_after = exc.headers.get("Retry-After")
