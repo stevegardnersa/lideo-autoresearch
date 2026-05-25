@@ -453,3 +453,36 @@ select { cursor: pointer; }
   .sidebar { border-left: 0; border-top: 1px solid var(--line); overflow: visible; }
   .plot-wrap { min-height: clamp(300px, 55vh, 500px); }
 }
+
+.judge-toggles {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.judge-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: left;
+  transition: opacity 0.15s, filter 0.15s, border-color 0.15s;
+}
+
+.judge-toggle.jt-off {
+  opacity: 0.35;
+  filter: grayscale(0.9);
+}
+
+.jt-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}

@@ -362,6 +362,65 @@ The overall results table now includes:
 
 That makes it easier to reject systems that win overall but collapse on one important nonfiction genre.
 
+## Re-judging Runs
+
+`core/judge_existing.py` re-runs the LLM judge on already-completed runs. Results are written to separate `.llmj.*` files alongside the originals, which are never modified.
+
+The script targets runs where:
+- `judge_model` is empty (not yet judged)
+- `judge_version_resolved` contains `deterministic`
+
+**Enumerate runs without calling the judge (`--dry-run`):**
+
+```bash
+python3 core/judge_existing.py --bench booksum-v4 --judge-model openai/gpt-5.4-mini --dry-run
+```
+
+**Filter with `--profile` (substring match):**
+
+```bash
+# All nemotron runs
+python3 core/judge_existing.py --bench booksum-v4 --judge-model openai/gpt-5.4-mini --profile nemotron-3 --dry-run
+
+# Only the "thinking" variant
+python3 core/judge_existing.py --bench booksum-v4 --judge-model openai/gpt-5.4-mini --profile _thinking --dry-run
+
+# Only the "notthinking" variant
+python3 core/judge_existing.py --bench booksum-v4 --judge-model openai/gpt-5.4-mini --profile _notthinking --dry-run
+```
+
+**Target a single run by exact run-id:**
+
+```bash
+python3 core/judge_existing.py --bench booksum-v4 --judge-model openai/gpt-5.4-mini \
+  --run-id 20260512t075446z__booksum-v4__chapter_fast-v3__30m_nemotron-3-s__30m_nemotron-3-super-120b-a12b_thinking_v1
+```
+
+**Actually run judging** (drop `--dry-run`):
+
+```bash
+# All nemotron runs, rejudge with GPT-4o
+python3 core/judge_existing.py --bench booksum-v4 --judge-model openai/gpt-4o --profile nemotron-3
+
+# Limit to first N samples per run for a smoke test
+python3 core/judge_existing.py --bench booksum-v4 --judge-model openai/gpt-4o --profile nemotron-3 --max-samples 5
+```
+
+By default the script skips runs where `__llmj_<model>` output files already exist. Use `--force-overwrite` to rejudge and overwrite:
+
+```bash
+python3 core/judge_existing.py --bench booksum-v4 --judge-model openai/gpt-4o --profile nemotron-3 --force-overwrite
+```
+
+**Output files (`<run-id>__llmj_<model>.{json,state.json,samples.jsonl}` alongside originals):**
+- `<run-id>__llmj_gpt-5.4-mini.json` — manifest with `judge_model`, `judge_version_resolved`, `dataset_score`, `sample_scores`
+- `<run-id>__llmj_gpt-5.4-mini.state.json` — state with `judge_model`, `judge_version_resolved`
+- `<run-id>__llmj_gpt-5.4-mini.samples.jsonl` — samples with `judge_scores` and `trace.judge_rationale` per sample
+
+Original run files (`.json`, `.state.json`, `.samples.jsonl`) are never modified.
+
+**Note:** The script looks for rubric files under the `data_dir` recorded in the run manifest. If those rubrics have moved, the judging will fail on samples that can't locate their rubric. The `--max-samples 0` means all samples (default).
+
 ## Make targets
 
 ```bash

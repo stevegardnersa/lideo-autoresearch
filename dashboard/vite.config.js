@@ -34,6 +34,6 @@ export default defineConfig({
   root: '.',
   plugins: [scanRunsPlugin()],
   server: {
-    port: 3000
+    port: 3001
   }
 })

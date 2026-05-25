@@ -108,12 +108,13 @@
 
             <div class="field">
               <label class="small" for="colorSelect">Color by</label>
-              <select id="colorSelect">
+                <select id="colorSelect">
                 <option value="provider">provider</option>
                 <option value="model">model</option>
                 <option value="bench">bench</option>
                 <option value="profile">profile</option>
                 <option value="candidate_name">candidate_name</option>
+                <option value="judge_type">judge_type</option>
               </select>
             </div>
 
@@ -143,6 +144,20 @@
             <label class="small">
               <input type="checkbox" id="fixedYRange" /> Fixed Y: 0–1
             </label>
+            </div>
+
+            <div class="field">
+              <label class="small">Show</label>
+              <div class="judge-toggles">
+                <button class="judge-toggle active" data-judge="deterministic">
+                  <span class="jt-dot" style="background:#6b7280"></span>
+                  deterministic
+                </button>
+                <button class="judge-toggle active" data-judge="LLM">
+                  <span class="jt-dot" style="background:#8b5cf6"></span>
+                  LLM
+                </button>
+              </div>
             </div>
 
             <div class="detail-card" id="detailCard">
