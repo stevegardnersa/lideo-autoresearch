@@ -107,6 +107,7 @@ h1 {
 
 .status-fail { color: #ef4444; }
 .status-pass { color: #22c55e; }
+.metric-fail { color: #ef4444; font-weight: 700; }
 
 .shell {
   flex: 1;
