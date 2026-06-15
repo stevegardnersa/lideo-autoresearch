@@ -5,8 +5,22 @@ const ORIGINAL_CHAPTER = '__original__'
 let currentManifest = null
 let allProfiles = []
 let selectedChapterKey = ''
-let paneSelection = { left: null, right: ORIGINAL_CHAPTER }
+let paneSelectionsByTimeBudget = {}
 let currentTimeBudget = '30m'
+
+function getPaneSelection(side) {
+  if (!paneSelectionsByTimeBudget[currentTimeBudget]) {
+    paneSelectionsByTimeBudget[currentTimeBudget] = { left: null, right: ORIGINAL_CHAPTER }
+  }
+  return paneSelectionsByTimeBudget[currentTimeBudget][side]
+}
+
+function setPaneSelection(side, value) {
+  if (!paneSelectionsByTimeBudget[currentTimeBudget]) {
+    paneSelectionsByTimeBudget[currentTimeBudget] = { left: null, right: ORIGINAL_CHAPTER }
+  }
+  paneSelectionsByTimeBudget[currentTimeBudget][side] = value
+}
 let profileSamplesCache = {}
 let originalTextCache = {}
 let currentSamples = []
@@ -202,7 +216,7 @@ function populatePaneSelects() {
 
   ;[leftSelect, rightSelect].forEach((sel, idx) => {
     const side = idx === 0 ? 'left' : 'right'
-    const prevSelection = paneSelection[side]
+    const prevSelection = getPaneSelection(side)
     sel.innerHTML = ''
     const origOption = document.createElement('option')
     origOption.value = ORIGINAL_CHAPTER
@@ -222,14 +236,14 @@ function populatePaneSelects() {
       const firstActive = allProfiles.find(p => !isProfileDisabled(p))
       if (firstActive) {
         sel.value = firstActive.candidateName
-        paneSelection.left = firstActive.candidateName
+        setPaneSelection('left', firstActive.candidateName)
       } else {
         sel.value = ORIGINAL_CHAPTER
-        paneSelection[side] = ORIGINAL_CHAPTER
+        setPaneSelection(side, ORIGINAL_CHAPTER)
       }
     } else {
       sel.value = ORIGINAL_CHAPTER
-      paneSelection[side] = ORIGINAL_CHAPTER
+      setPaneSelection(side, ORIGINAL_CHAPTER)
     }
   })
 }
@@ -282,7 +296,16 @@ function renderSummaryHTML(sample) {
   return marked.parse(html)
 }
 
-function renderPaneMetrics(side, sample, score, isOriginal, originalText) {
+function getScoringGates(candidateName) {
+  const prefix = (candidateName || '').split('_')[0]
+  const gates = {
+    '30m': { minFaith: 0.50, minConcept: 0.15 },
+    '60m': { minFaith: 0.60, minConcept: 0.50 },
+  }
+  return gates[prefix] || { minFaith: 0.70, minConcept: 0.60 }
+}
+
+function renderPaneMetrics(side, sample, score, isOriginal, originalText, thresholds) {
   const container = document.getElementById(`${side}Metrics`)
   if (!container) return
 
@@ -313,6 +336,7 @@ function renderPaneMetrics(side, sample, score, isOriginal, originalText) {
   let qualityVal = '-', utilityVal = '-', faithVal = '-', conceptVal = '-', readabilityVal = '-'
   let statusText = '-', statusClass = ''
   let gradeVal = '-'
+  let actualLengthCls = '', faithFailCls = '', conceptFailCls = ''
 
   if (score) {
     qualityVal = (score.quality || 0).toFixed(2)
@@ -325,6 +349,10 @@ function renderPaneMetrics(side, sample, score, isOriginal, originalText) {
     if (score.hard_fail) {
       statusText = 'FAIL'
       statusClass = 'status-fail'
+      const reasons = score.hard_fail_reasons || []
+      if (reasons.includes('length_outside_hard_tolerance')) actualLengthCls = 'metric-fail'
+      if (reasons.includes('faithfulness_below_threshold')) faithFailCls = 'metric-fail'
+      if (reasons.includes('concept_coverage_below_threshold')) conceptFailCls = 'metric-fail'
     } else {
       statusText = 'PASS'
       statusClass = 'status-pass'
@@ -334,7 +362,7 @@ function renderPaneMetrics(side, sample, score, isOriginal, originalText) {
   container.innerHTML = `
     <div class="metric-card">
       <div class="metric-label">Target / Actual</div>
-      <div class="metric-value"><span>${(sample.target_words || '-').toLocaleString()}</span> / <span>${summaryWords.toLocaleString()}</span></div>
+      <div class="metric-value"><span>${(sample.target_words || '-').toLocaleString()}</span> / <span class="${actualLengthCls}">${summaryWords.toLocaleString()}</span></div>
     </div>
     <div class="metric-card">
       <div class="metric-label">Cost / Passes</div>
@@ -346,7 +374,7 @@ function renderPaneMetrics(side, sample, score, isOriginal, originalText) {
     </div>
     <div class="metric-card">
       <div class="metric-label">Faith / Concept</div>
-      <div class="metric-value"><span>${faithVal}</span> / <span>${conceptVal}</span></div>
+      <div class="metric-value"><span class="${faithFailCls}" title="threshold: ${thresholds?.minFaith ?? '?'}">${faithVal}</span> / <span class="${conceptFailCls}" title="threshold: ${thresholds?.minConcept ?? '?'}">${conceptVal}</span></div>
     </div>
     <div class="metric-card">
       <div class="metric-label">Summary Grade</div>
@@ -361,7 +389,7 @@ function renderPaneMetrics(side, sample, score, isOriginal, originalText) {
 
 async function renderPane(side) {
   const contentEl = document.getElementById(`${side}Content`)
-  const selection = paneSelection[side]
+  const selection = getPaneSelection(side)
   const isOriginal = selection === ORIGINAL_CHAPTER
 
   if (!selectedChapterKey) {
@@ -377,7 +405,7 @@ async function renderPane(side) {
     }
     const text = originalTextCache[selectedChapterKey]
     contentEl.innerHTML = marked.parse(text)
-    renderPaneMetrics(side, null, null, true, text)
+    renderPaneMetrics(side, null, null, true, text, null)
     return
   }
 
@@ -388,6 +416,7 @@ async function renderPane(side) {
     return
   }
 
+  const thresholds = getScoringGates(profile.candidateName)
   const samples = await getProfileSamples(profile)
   const sample = getMatchingSample(samples, selectedChapterKey)
   if (!sample) {
@@ -398,7 +427,7 @@ async function renderPane(side) {
 
   const score = getScoreForSample(profile.manifest, sample.sample_id || sample.item_key)
   contentEl.innerHTML = renderSummaryHTML(sample)
-  renderPaneMetrics(side, sample, score, false, '')
+  renderPaneMetrics(side, sample, score, false, '', thresholds)
 }
 
 async function updateGenreSubtext() {
@@ -423,7 +452,7 @@ async function handleChapterChange() {
 
 async function handleProfileChange(side) {
   const select = document.getElementById(`${side}ProfileSelect`)
-  paneSelection[side] = select.value
+  setPaneSelection(side, select.value)
   await renderPane(side)
 }
 
@@ -440,7 +469,7 @@ async function handleTimeToggle(timeBudget) {
 
   ;[leftSelect, rightSelect].forEach((sel, idx) => {
     const side = idx === 0 ? 'left' : 'right'
-    const prevVal = paneSelection[side]
+    const prevVal = getPaneSelection(side)
     sel.innerHTML = ''
     const origOption = document.createElement('option')
     origOption.value = ORIGINAL_CHAPTER
@@ -461,14 +490,14 @@ async function handleTimeToggle(timeBudget) {
       const firstActive = allProfiles.find(p => !isProfileDisabled(p))
       if (firstActive) {
         sel.value = firstActive.candidateName
-        paneSelection.left = firstActive.candidateName
+        setPaneSelection('left', firstActive.candidateName)
       } else {
         sel.value = ORIGINAL_CHAPTER
-        paneSelection[side] = ORIGINAL_CHAPTER
+        setPaneSelection(side, ORIGINAL_CHAPTER)
       }
     } else {
       sel.value = ORIGINAL_CHAPTER
-      paneSelection[side] = ORIGINAL_CHAPTER
+      setPaneSelection(side, ORIGINAL_CHAPTER)
     }
   })
 
@@ -501,6 +530,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   allProfiles = await discoverProfiles(timeBudget)
 
   populatePaneSelects()
+
+  const profileName = runManifest.candidate_name
+  if (profileName) {
+    const matching = allProfiles.find(p => p.candidateName === profileName && !isProfileDisabled(p))
+    if (matching) {
+      setPaneSelection('left', profileName)
+      document.getElementById('leftProfileSelect').value = profileName
+    }
+  }
 
   currentSamples = await loadRunSamples(runId)
   if (currentSamples.length === 0) {
