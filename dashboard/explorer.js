@@ -565,4 +565,100 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('.time-pill').forEach(pill => {
     pill.addEventListener('click', () => handleTimeToggle(pill.dataset.time))
   })
+
+  // ── Chapter notes ───────────────────────────────────────────
+  let notesActiveTags = new Set()
+  const notesToggle = document.getElementById('notesToggle')
+  const notesBody = document.getElementById('notesBody')
+  const notesList = document.getElementById('notesList')
+  const notesTextarea = document.getElementById('notesTextarea')
+  const notesSubmit = document.getElementById('notesSubmit')
+
+  notesToggle.addEventListener('click', () => {
+    const collapsed = notesBody.classList.toggle('collapsed')
+    notesToggle.classList.toggle('collapsed', collapsed)
+    notesToggle.innerHTML = collapsed ? '&#9654;' : '&#9660;'
+  })
+
+  document.querySelectorAll('#notesTagsRow .tag-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const tag = chip.dataset.tag
+      if (notesActiveTags.has(tag)) {
+        notesActiveTags.delete(tag)
+        chip.classList.remove('active')
+      } else {
+        notesActiveTags.add(tag)
+        chip.classList.add('active')
+      }
+    })
+  })
+
+  notesSubmit.addEventListener('click', async () => {
+    const text = notesTextarea.value.trim()
+    if (!text || !selectedChapterKey) return
+    notesSubmit.disabled = true
+    try {
+      const leftSelection = getPaneSelection('left')
+      const [bookId, chapterId] = selectedChapterKey.split(':')
+      const note = {
+        book_id: bookId,
+        chapter_id: chapterId,
+        item_key: selectedChapterKey,
+        candidate_name: leftSelection && leftSelection !== ORIGINAL_CHAPTER ? leftSelection : null,
+        tags: [...notesActiveTags],
+        text,
+        timestamp: new Date().toISOString(),
+      }
+      await fetch('/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(note),
+      })
+      notesTextarea.value = ''
+      await loadAndRenderNotes()
+    } catch (e) {
+      console.error('Failed to save note:', e)
+    } finally {
+      notesSubmit.disabled = false
+    }
+  })
+
+  async function loadAndRenderNotes() {
+    if (!selectedChapterKey) {
+      notesList.innerHTML = '<div class="placeholder-text">Select a chapter to see notes.</div>'
+      return
+    }
+    try {
+      const all = await fetch('/notes/all').then(r => r.json())
+      const mine = all.filter(n => n.item_key === selectedChapterKey || (n.book_id && n.chapter_id && `${n.book_id}:${n.chapter_id}` === selectedChapterKey))
+      if (mine.length === 0) {
+        notesList.innerHTML = '<div class="placeholder-text">No notes for this chapter yet.</div>'
+        return
+      }
+      mine.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''))
+      notesList.innerHTML = mine.map(n => {
+        const tagsHTML = (n.tags || []).map(t => `<span class="note-tag">${t}</span>`).join('')
+        const candidateHTML = n.candidate_name ? `<span class="note-candidate">${n.candidate_name}</span>` : ''
+        const timeStr = n.timestamp ? new Date(n.timestamp).toLocaleString() : ''
+        return `<div class="note-item">
+          <div class="note-meta">${candidateHTML}<span class="note-tags">${tagsHTML}</span></div>
+          <div class="note-text">${n.text}</div>
+          <div class="note-time">${timeStr}</div>
+        </div>`
+      }).join('')
+    } catch (e) {
+      console.error('Failed to load notes:', e)
+      notesList.innerHTML = '<div class="placeholder-text">Failed to load notes.</div>'
+    }
+  }
+
+  const origHandleChapterChange = handleChapterChange
+  handleChapterChange = async function() {
+    await origHandleChapterChange()
+    await loadAndRenderNotes()
+  }
+
+  if (selectedChapterKey) {
+    await loadAndRenderNotes()
+  }
 })
