@@ -1,0 +1,8 @@
+{
+  "worktrees": {
+    "86d427nuq": {
+      "path": "/workspace/repos/autoresearch/.hermes/worktrees/86d427nuq",
+      "branch": "feature/86d427nuq-e2e-pipeline-test-3-full-run"
+    }
+  }
+}

@@ -2,14 +2,17 @@
 
 Orchestrates:
 1. Read chapter notes from data/chapter_notes.jsonl
-2. Parse signals per candidate × dimension
+2. Parse signals per candidate x dimension
 3. Generate optimization variants (hill-climb or grid search)
-4. Run benchmarks for each variant
-5. Compare results, pick best
-6. Generate report
+4. Run benchmarks for each variant via temp-file evaluation
+5. Record results in permutation files (data/optimized_prompts/)
+6. Mark best version per stage
+7. Generate report
 
 Usage:
-    python -m autoresearch.agent [--model MODEL] [--budget 30m|60m] [--thinking thinking|notthinking]
+    python -m autoresearch.agent [--model MODEL] [--budget 30m|60m]
+        [--thinking thinking|notthinking] [--stage chapter|composer]
+        [--mode hill_climb|grid_search|auto]
 
 If no flags given, operates on all models with notes.
 """
@@ -37,13 +40,15 @@ from .optimizer import (
     generate_variants_grid_search,
     generate_variants_hill_climb,
     read_spec_file,
-    add_variant_to_specs,
-    write_spec_file,
     evaluate_variant,
+    evaluate_variant_tempfile,
     parse_variant_name,
     make_components_from_spec,
     components_to_dimensions,
 )
+from . import permutation_store
+from .permutation_store import extract_permutation_key
+
 
 NOTES_FILE = os.path.join(os.getcwd(), "data", "chapter_notes.jsonl")
 
@@ -56,7 +61,6 @@ def find_candidates_for_model(
     time_budget: Optional[str] = None,
     thinking: Optional[str] = None,
 ) -> List[str]:
-    """Return profile keys (candidate names) matching the given filters."""
     matches: List[str] = []
     for profile, spec in specs.items():
         name = spec.get("name", "")
@@ -69,7 +73,6 @@ def find_candidates_for_model(
         if thinking is not None:
             expected = f"_{thinking}"
             if not name.endswith(expected):
-                # Check if the name contains the thinking mode at the right position
                 parts = name.split("_")
                 if thinking not in parts:
                     continue
@@ -81,11 +84,9 @@ def resolve_base_candidate(
     candidate_name: str,
     specs: Dict[str, dict],
 ) -> Optional[dict]:
-    """Find the CandidateSpec dict for a given candidate name."""
     for profile, spec in specs.items():
         if spec.get("name") == candidate_name:
             return spec
-    # Try matching by profile key
     for profile, spec in specs.items():
         if profile == candidate_name:
             return spec
@@ -98,17 +99,13 @@ def run_hill_climb(
     candidate_name: str,
     base_spec: dict,
     signals: Signals,
-    specs: Dict[str, dict],
     max_iterations: int = 5,
     dry_run: bool = False,
+    stage: str = "chapter",
 ) -> OptimizationRun:
-    """Run hill-climb optimization for one candidate.
-
-    Each iteration: generate variants for active dimensions, evaluate
-    each, keep the best if it beats the current champion.
-    """
     parsed = parse_variant_name(candidate_name)
     base_root = parsed[0] if parsed else candidate_name
+    perm_key = extract_permutation_key(candidate_name)
 
     opt_run = OptimizationRun(
         model_name=base_spec.get("chapter_stage", {}).get("model", ""),
@@ -116,15 +113,26 @@ def run_hill_climb(
         thinking="thinking" if "_thinking" in candidate_name else "notthinking",
         base_profile=base_spec.get("profile", ""),
         base_variant_name=candidate_name,
+        stage=stage,
     )
 
-    # Evaluate baseline
+    # Evaluate baseline (v1, already in candidate_spec)
     print(f"\n{'='*60}")
     print(f"Evaluating baseline: {candidate_name}")
     if not dry_run:
         baseline_result = evaluate_variant(candidate_name)
     else:
         baseline_result = _dummy_result(candidate_name, 0.70, 0.55, 0.40, 0.80)
+
+    # Record baseline in permutation store
+    base_components = make_components_from_spec(base_spec)
+    permutation_store.add_history_entry(
+        perm_key, stage, candidate_name, base_components, [], 0,
+        baseline_result.avg_quality, baseline_result.avg_faithfulness,
+        baseline_result.avg_concept_coverage, baseline_result.pass_rate,
+        baseline_result.total_cost, baseline_result.samples_scored,
+    )
+
     opt_run.best_result = baseline_result
     print(f"  Baseline composite: {baseline_result.composite_score:.4f}")
     if baseline_result.error:
@@ -132,6 +140,7 @@ def run_hill_climb(
 
     current_best = baseline_result
     current_name = candidate_name
+    best_recorded_version = 1  # baseline is version 1
 
     for iteration in range(max_iterations):
         active_dims = get_active_dimensions(signals, current_name)
@@ -143,7 +152,7 @@ def run_hill_climb(
         print(f"  Active dimensions: {active_dims}")
 
         variants = generate_variants_hill_climb(
-            base_spec, signals, current_name,
+            base_spec, signals, current_name, stage=stage,
         )
         if not variants:
             print("  No variants to try. Stopping.")
@@ -162,13 +171,8 @@ def run_hill_climb(
                 new_opt = new_dims.get(dim, "?")
                 print(f"      {dim}: {old_opt} -> {new_opt}")
 
-            # Write variant to candidate_spec.py
-            new_specs = dict(specs)
-            add_variant_to_specs(variant, base_spec, new_specs)
-            write_spec_file(new_specs, backup=True)
-
             if not dry_run:
-                result = evaluate_variant(variant.name)
+                result = evaluate_variant_tempfile(variant.name, variant.components)
             else:
                 result = _dummy_result(
                     variant.name,
@@ -177,6 +181,16 @@ def run_hill_climb(
                     baseline_result.avg_concept_coverage + 0.01,
                     baseline_result.pass_rate + 0.05,
                 )
+
+            # Record in permutation store
+            recorded_v = permutation_store.add_history_entry(
+                perm_key, stage, variant.profile,
+                variant.components, variant.changed_dimensions,
+                result.composite_score,
+                result.avg_quality, result.avg_faithfulness,
+                result.avg_concept_coverage, result.pass_rate,
+                result.total_cost, result.samples_scored,
+            )
 
             step = OptimizationStep(variant=variant, result=result)
             opt_run.steps.append(step)
@@ -190,14 +204,17 @@ def run_hill_climb(
                 print(f"    >> IMPROVED! New best.")
                 current_best = result
                 opt_run.best_result = result
+                opt_run.best_variant = variant
                 current_name = variant.name
-                # Update base_spec for next iteration
-                base_spec = new_specs.get(variant.profile, base_spec)
+                best_recorded_version = recorded_v
                 improved = True
 
         if not improved:
             print(f"\n  No improvement this iteration. Converged.")
             break
+
+    # Mark best version in permutation store
+    permutation_store.set_current_best(perm_key, stage, best_recorded_version)
 
     opt_run.best_result = current_best
     return opt_run
@@ -209,17 +226,19 @@ def run_grid_search(
     candidate_name: str,
     base_spec: dict,
     signals: Signals,
-    specs: Dict[str, dict],
     max_variants: int = 12,
     dry_run: bool = False,
+    stage: str = "chapter",
 ) -> OptimizationRun:
-    """Run a grid-search sweep over negatively-rated dimensions."""
+    perm_key = extract_permutation_key(candidate_name)
+
     opt_run = OptimizationRun(
         model_name=base_spec.get("chapter_stage", {}).get("model", ""),
         time_budget=candidate_name.split("_")[0] if "_" in candidate_name else "30m",
         thinking="thinking" if "_thinking" in candidate_name else "notthinking",
         base_profile=base_spec.get("profile", ""),
         base_variant_name=candidate_name,
+        stage=stage,
     )
 
     # Evaluate baseline
@@ -229,10 +248,19 @@ def run_grid_search(
         baseline_result = evaluate_variant(candidate_name)
     else:
         baseline_result = _dummy_result(candidate_name, 0.70, 0.55, 0.40, 0.80)
+
+    base_components = make_components_from_spec(base_spec)
+    permutation_store.add_history_entry(
+        perm_key, stage, candidate_name, base_components, [], 0,
+        baseline_result.avg_quality, baseline_result.avg_faithfulness,
+        baseline_result.avg_concept_coverage, baseline_result.pass_rate,
+        baseline_result.total_cost, baseline_result.samples_scored,
+    )
+
     opt_run.best_result = baseline_result
     print(f"  Baseline composite: {baseline_result.composite_score:.4f}")
 
-    variants = generate_variants_grid_search(base_spec, signals, candidate_name, max_variants)
+    variants = generate_variants_grid_search(base_spec, signals, candidate_name, max_variants, stage=stage)
     if not variants:
         print("  No variants generated. Exiting.")
         return opt_run
@@ -244,12 +272,8 @@ def run_grid_search(
     for i, variant in enumerate(variants):
         print(f"\n[{i+1}/{len(variants)}] Testing: {variant.name} (changes: {variant.changed_dimensions})")
 
-        new_specs = dict(specs)
-        add_variant_to_specs(variant, base_spec, new_specs)
-        write_spec_file(new_specs, backup=True)
-
         if not dry_run:
-            result = evaluate_variant(variant.name)
+            result = evaluate_variant_tempfile(variant.name, variant.components)
         else:
             result = _dummy_result(
                 variant.name,
@@ -258,6 +282,15 @@ def run_grid_search(
                 baseline_result.avg_concept_coverage + 0.01,
                 baseline_result.pass_rate + 0.03,
             )
+
+        permutation_store.add_history_entry(
+            perm_key, stage, variant.profile,
+            variant.components, variant.changed_dimensions,
+            result.composite_score,
+            result.avg_quality, result.avg_faithfulness,
+            result.avg_concept_coverage, result.pass_rate,
+            result.total_cost, result.samples_scored,
+        )
 
         step = OptimizationStep(variant=variant, result=result)
         opt_run.steps.append(step)
@@ -271,6 +304,11 @@ def run_grid_search(
             best_variant = variant
             print(f"    >> NEW BEST!")
 
+    if best_variant:
+        best_version = [i+2 for i, e in enumerate(permutation_store.load_permutation(perm_key).get(stage, {}).get("history", [])) if e.get("profile") == best_variant.profile]
+        if best_version:
+            permutation_store.set_current_best(perm_key, stage, best_version[0])
+
     opt_run.best_result = best
     opt_run.best_variant = best_variant
     return opt_run
@@ -282,27 +320,19 @@ def main():
     parser = argparse.ArgumentParser(
         description="Autoresearch — optimize prompt components using human notes.",
     )
-    parser.add_argument("--model", type=str, default=None,
-                        help="Model name filter (e.g. 'deepseek-v4-flash')")
-    parser.add_argument("--budget", type=str, choices=["30m", "60m"], default=None,
-                        help="Time budget filter")
-    parser.add_argument("--thinking", type=str, choices=["thinking", "notthinking"], default=None,
-                        help="Thinking mode filter")
-    parser.add_argument("--candidate", type=str, default=None,
-                        help="Specific candidate name to optimize")
-    parser.add_argument("--mode", type=str, choices=["hill_climb", "grid_search", "auto"], default="auto",
-                        help="Optimization strategy (auto picks based on signal count)")
-    parser.add_argument("--max-iter", type=int, default=5,
-                        help="Max hill-climb iterations per candidate")
-    parser.add_argument("--max-variants", type=int, default=12,
-                        help="Max grid search variants")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="Use dummy scores, no actual benchmark")
-    parser.add_argument("--output", type=str, default=None,
-                        help="Path to write optimization run JSON")
+    parser.add_argument("--model", type=str, default=None)
+    parser.add_argument("--budget", type=str, choices=["30m", "60m"], default=None)
+    parser.add_argument("--thinking", type=str, choices=["thinking", "notthinking"], default=None)
+    parser.add_argument("--candidate", type=str, default=None)
+    parser.add_argument("--mode", type=str, choices=["hill_climb", "grid_search", "auto"], default="auto")
+    parser.add_argument("--max-iter", type=int, default=5)
+    parser.add_argument("--max-variants", type=int, default=12)
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--output", type=str, default=None)
+    parser.add_argument("--stage", type=str, choices=["chapter", "composer"], default="chapter",
+                        help="Which pipeline stage to optimize (default: chapter)")
     args = parser.parse_args()
 
-    # Load notes
     if not os.path.exists(NOTES_FILE):
         print(f"No notes file found at {NOTES_FILE}. Add notes first.", file=sys.stderr)
         print("Use the Run Explorer UI to annotate chapter summaries.", file=sys.stderr)
@@ -319,10 +349,8 @@ def main():
         dims = list(csig.dimensions.keys())
         print(f"  {cname}: {csig.total_signals} notes, dimensions={dims}")
 
-    # Load current specs
     specs = read_spec_file()
 
-    # Determine which candidates to optimize
     if args.candidate:
         candidate_names = [args.candidate]
     else:
@@ -331,7 +359,6 @@ def main():
                 specs, args.model, args.budget, args.thinking,
             )
         else:
-            # Optimize all candidates that have notes
             candidate_names = sorted(signals.candidates.keys())
 
     candidate_names = [n for n in candidate_names if n in signals.candidates]
@@ -352,19 +379,20 @@ def main():
 
         mode = args.mode
         if mode == "auto":
-            active_dims = get_active_dimensions(signals, cname)
             mode = "grid_search" if n_signals >= 5 else "hill_climb"
 
         print(f"\n{'#'*60}")
-        print(f"# Running {mode} for {cname} ({n_signals} signals)")
+        print(f"# Running {mode} for {cname} ({n_signals} signals, stage={args.stage})")
         print(f"{'#'*60}")
 
         if mode == "hill_climb":
-            opt_run = run_hill_climb(cname, base_spec, signals, specs,
-                                     max_iterations=args.max_iter, dry_run=args.dry_run)
+            opt_run = run_hill_climb(cname, base_spec, signals,
+                                     max_iterations=args.max_iter, dry_run=args.dry_run,
+                                     stage=args.stage)
         else:
-            opt_run = run_grid_search(cname, base_spec, signals, specs,
-                                      max_variants=args.max_variants, dry_run=args.dry_run)
+            opt_run = run_grid_search(cname, base_spec, signals,
+                                      max_variants=args.max_variants, dry_run=args.dry_run,
+                                      stage=args.stage)
         all_runs.append(opt_run)
 
     # Summary
@@ -373,7 +401,7 @@ def main():
     print(f"{'='*60}")
     for opt_run in all_runs:
         best = opt_run.best_result
-        print(f"\n{opt_run.base_variant_name}:")
+        print(f"\n{opt_run.base_variant_name} (stage={opt_run.stage}):")
         print(f"  Best composite: {best.composite_score:.4f}" if best else "  No result")
         if best and best.success:
             print(f"  Quality: {best.avg_quality:.2f}  Faith: {best.avg_faithfulness:.2f}  "
@@ -382,6 +410,7 @@ def main():
         if opt_run.best_variant:
             print(f"  Best variant: {opt_run.best_variant.name}  "
                   f"Changed: {opt_run.best_variant.changed_dimensions}")
+        print(f"  Permutation key: {extract_permutation_key(opt_run.base_variant_name)}")
 
     if args.output:
         output = {
@@ -390,6 +419,7 @@ def main():
                     "base_variant": r.base_variant_name,
                     "model": r.model_name,
                     "time_budget": r.time_budget,
+                    "stage": r.stage,
                     "best_composite": r.best_result.composite_score if r.best_result else 0,
                     "best_quality": r.best_result.avg_quality if r.best_result else 0,
                     "best_faithfulness": r.best_result.avg_faithfulness if r.best_result else 0,
@@ -397,6 +427,8 @@ def main():
                     "best_pass_rate": r.best_result.pass_rate if r.best_result else 0,
                     "steps": len(r.steps),
                     "best_variant_name": r.best_variant.name if r.best_variant else None,
+                    "best_changes": r.best_variant.changed_dimensions if r.best_variant else [],
+                    "permutation_key": extract_permutation_key(r.base_variant_name),
                 }
                 for r in all_runs
             ],
