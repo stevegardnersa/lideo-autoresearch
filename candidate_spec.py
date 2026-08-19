@@ -1757,9 +1757,33 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
 
 }
 def get_candidate(profile: Profile) -> CandidateSpec:
-    if profile not in PROFILE_CANDIDATES:
-        raise KeyError(f"Unknown profile: {profile}")
-    return PROFILE_CANDIDATES[profile]
+    if profile in PROFILE_CANDIDATES:
+        spec = PROFILE_CANDIDATES[profile]
+        # Check for optimized prompt component overrides from permutation files
+        _apply_permutation_overrides(profile, spec)
+        return spec
+
+    # Try resolving v2+ variants from permutation history
+    from autoresearch.permutation_store import resolve_variant
+    spec = resolve_variant(profile)
+    if spec is not None:
+        return spec
+    raise KeyError(f"Unknown profile: {profile}")
+
+
+def _apply_permutation_overrides(profile: Profile, spec: CandidateSpec):
+    """Apply optimized prompt components from permutation files if they exist."""
+    try:
+        from autoresearch.permutation_store import get_prompt_override
+    except ImportError:
+        return
+    for stage_name, attr_name in [("chapter", "chapter_stage"), ("composer", "composer_stage")]:
+        stage = getattr(spec, attr_name, None)
+        if stage is None:
+            continue
+        override = get_prompt_override(profile, stage_name)
+        if override:
+            stage.prompt_components.update(override)
 
 def get_all_profiles() -> list[Profile]:
     return list(PROFILE_CANDIDATES.keys())

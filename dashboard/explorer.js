@@ -597,29 +597,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     const text = notesTextarea.value.trim()
     if (!text || !selectedChapterKey) return
     notesSubmit.disabled = true
+    notesSubmit.textContent = 'Saving...'
     try {
       const leftSelection = getPaneSelection('left')
       const [bookId, chapterId] = selectedChapterKey.split(':')
+      const hasManualTags = notesActiveTags.size > 0
       const note = {
         book_id: bookId,
         chapter_id: chapterId,
         item_key: selectedChapterKey,
         candidate_name: leftSelection && leftSelection !== ORIGINAL_CHAPTER ? leftSelection : null,
-        tags: [...notesActiveTags],
+        tags: hasManualTags ? [...notesActiveTags] : [],
         text,
         timestamp: new Date().toISOString(),
       }
-      await fetch('/notes', {
+      const resp = await fetch('/notes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(note),
       })
+      const saved = await resp.json()
+      if (saved.ok && !hasManualTags && saved.tags && saved.tags.length > 0) {
+        // Server auto-tagged the note — flash tags briefly
+        console.log(`[notes] Auto-tagged via ${saved.auto_tag_source}:`, saved.tags)
+      }
       notesTextarea.value = ''
+      // Clear manual tag selections (actual tags are server-side when empty)
+      notesActiveTags.clear()
+      document.querySelectorAll('#notesTagsRow .tag-chip').forEach(chip => chip.classList.remove('active'))
       await loadAndRenderNotes()
     } catch (e) {
       console.error('Failed to save note:', e)
     } finally {
       notesSubmit.disabled = false
+      notesSubmit.textContent = 'Add Note'
     }
   })
 
@@ -640,8 +651,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const tagsHTML = (n.tags || []).map(t => `<span class="note-tag">${t}</span>`).join('')
         const candidateHTML = n.candidate_name ? `<span class="note-candidate">${n.candidate_name}</span>` : ''
         const timeStr = n.timestamp ? new Date(n.timestamp).toLocaleString() : ''
+        const sentimentBadge = (n.sentiment != null && n.sentiment !== 0)
+          ? `<span class="note-sentiment ${n.sentiment < 0 ? 'neg' : 'pos'}">${n.sentiment < 0 ? '&#9660;' : '&#9650;'} ${Math.abs(n.sentiment).toFixed(2)}</span>` : ''
+        const autoTagBadge = n.auto_tag_source && n.auto_tag_source !== 'empty_text'
+          ? `<span class="note-auto-tag" title="Auto-tagged via ${n.auto_tag_source}">auto</span>` : ''
         return `<div class="note-item">
-          <div class="note-meta">${candidateHTML}<span class="note-tags">${tagsHTML}</span></div>
+          <div class="note-meta">${candidateHTML}<span class="note-tags">${tagsHTML}</span>${sentimentBadge}${autoTagBadge}</div>
           <div class="note-text">${n.text}</div>
           <div class="note-time">${timeStr}</div>
         </div>`

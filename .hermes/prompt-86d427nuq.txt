@@ -1,0 +1,3 @@
+Task: E2E Pipeline Test 3 — full run
+
+Write the specification to **specs/86d427nuq-e2e-pipeline-test-3-full-run.md**, commit it, and write a concise summary (~2-3K chars) to **spec-summary-86d427nuq.txt**.

@@ -404,6 +404,34 @@ option:disabled {
   color: var(--muted);
 }
 
+.note-item .note-sentiment {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.note-item .note-sentiment.pos {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.note-item .note-sentiment.neg {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.note-item .note-auto-tag {
+  font-size: 8px;
+  padding: 1px 5px;
+  background: #ede9fe;
+  color: #5b21b6;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  font-weight: 600;
+}
+
 .note-item .note-text {
   color: var(--text);
 }

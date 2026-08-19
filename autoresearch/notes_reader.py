@@ -1,9 +1,10 @@
 """Parse chapter_notes.jsonl into structured optimization signals.
 
 Each note carries: item_key, candidate_name, tags (dimension labels),
-text (freeform), and timestamp. This module aggregates notes per
-candidate × dimension and produces a ``Signals`` data structure
-the optimizer can read.
+text (freeform), timestamp, sentiment (LLM score or 0), auto_tag_source.
+
+Sentiment comes from the LLM auto-tagger (or keyword fallback). No
+client-side keyword scanning here — the server handles classification.
 """
 
 from __future__ import annotations
@@ -27,13 +28,13 @@ DIMENSION_SLUGS: Set[str] = {
 
 # Maps each dimension to the candidate_spec policy table key + valid option IDs
 DIMENSION_TO_POLICY_KEY: Dict[str, str] = {
-    "style": "system_style",          # CHAPTER_SYSTEM_STYLES
-    "detail": "detail_policy",         # DETAIL_POLICIES
-    "qualifier": "qualifier_policy",   # QUALIFIER_POLICIES
-    "structure": "structure_policy",   # STRUCTURE_POLICIES
-    "example": "example_policy",       # EXAMPLE_POLICIES
-    "terminology": "terminology_policy", # TERMINOLOGY_POLICIES
-    "anti_fluff": "anti_fluff_policy", # ANTI_FLUFF_POLICIES
+    "style": "system_style",
+    "detail": "detail_policy",
+    "qualifier": "qualifier_policy",
+    "structure": "structure_policy",
+    "example": "example_policy",
+    "terminology": "terminology_policy",
+    "anti_fluff": "anti_fluff_policy",
 }
 
 # Valid option IDs per dimension (from candidate_spec.py policy dict keys)
@@ -62,6 +63,8 @@ class NoteSignal:
     dimension: str
     text: str
     timestamp: str
+    sentiment: float = 0.0  # LLM-assigned sentiment [-1, 1]
+    auto_tag_source: str = ""
 
     @staticmethod
     def from_note(note: dict) -> List["NoteSignal"]:
@@ -73,6 +76,8 @@ class NoteSignal:
         candidate_name = note.get("candidate_name")
         text = note.get("text", "")
         timestamp = note.get("timestamp", "")
+        sentiment = float(note.get("sentiment", 0) or 0)
+        auto_tag_source = note.get("auto_tag_source", "")
         for tag in note.get("tags", []):
             tag = tag.strip()
             if tag in DIMENSION_SLUGS:
@@ -84,6 +89,8 @@ class NoteSignal:
                     dimension=tag,
                     text=text,
                     timestamp=timestamp,
+                    sentiment=sentiment,
+                    auto_tag_source=auto_tag_source,
                 ))
         return signals
 
@@ -94,9 +101,9 @@ class DimensionFeedback:
     total_signals: int = 0
     chapter_keys: Set[str] = field(default_factory=set)
     text_samples: List[str] = field(default_factory=list)
-    # Positive/negative heuristic from keyword scanning
-    positive_count: int = 0
-    negative_count: int = 0
+    # LLM sentiment aggregation
+    sentiment_sum: float = 0.0
+    sentiment_count: int = 0
 
 
 @dataclass
@@ -123,38 +130,14 @@ class Signals:
         return self.candidates[name]
 
 
-# ── Keyword heuristics ─────────────────────────────────────────────────
-
-# Words that suggest the current policy option is GOOD
-POSITIVE_WORDS: Set[str] = {
-    "good", "great", "excellent", "strong", "accurate", "faithful",
-    "well", "clear", "detailed", "dense", "correct", "right",
-    "perfect", "solid", "nice", "fine", "helps", "helping", "works",
-    "effective", "useful", "keep", "preserve", "maintain",
-}
-
-# Words that suggest the current policy option is BAD
-NEGATIVE_WORDS: Set[str] = {
-    "bad", "poor", "weak", "wrong", "missing", "loses", "lost",
-    "fluff", "fluffy", "vague", "generic", "shallow", "surface",
-    "incomplete", "misses", "missed", "drop", "dropped", "omits",
-    "omit", "lacks", "lack", "bland", "repetitive", "repeats",
-    "too", "insufficient", "not", "fail", "should", "could",
-}
-
-
-def _sentiment_scan(text: str) -> Tuple[int, int]:
-    """Crude positive/negative keyword counter."""
-    lower = text.lower()
-    pos = sum(1 for w in POSITIVE_WORDS if w in lower)
-    neg = sum(1 for w in NEGATIVE_WORDS if w in lower)
-    return pos, neg
-
-
 # ── Main parser ─────────────────────────────────────────────────────────
 
 def parse_notes_file(filepath: str) -> Signals:
-    """Read chapter_notes.jsonl and return structured Signals."""
+    """Read chapter_notes.jsonl and return structured Signals.
+
+    Sentiment comes from the LLM auto-tagger stored in the note's
+    ``sentiment`` field (raw keyword scanning removed from this module).
+    """
     signals = Signals()
     try:
         with open(filepath, "r", encoding="utf-8") as f:
@@ -186,9 +169,8 @@ def parse_notes_file(filepath: str) -> Signals:
             cand.total_signals += 1
             fb.chapter_keys.add(ns.item_key)
             fb.text_samples.append(ns.text[:200])
-            pos, neg = _sentiment_scan(ns.text)
-            fb.positive_count += pos
-            fb.negative_count += neg
+            fb.sentiment_sum += ns.sentiment
+            fb.sentiment_count += 1
 
     return signals
 
@@ -203,14 +185,10 @@ def get_active_dimensions(signals: Signals, candidate_name: str) -> List[str]:
 
 
 def get_dimension_sentiment(fb: DimensionFeedback) -> float:
-    """Return a net sentiment score in [-1, 1]. Positive = happy, negative = unhappy."""
-    if fb.total_signals == 0:
+    """Return mean LLM sentiment in [-1, 1]. Positive = happy, negative = unhappy."""
+    if fb.sentiment_count == 0:
         return 0.0
-    total_pos = fb.positive_count
-    total_neg = fb.negative_count
-    if total_pos + total_neg == 0:
-        return 0.0
-    return (total_pos - total_neg) / (total_pos + total_neg)
+    return fb.sentiment_sum / fb.sentiment_count
 
 
 def get_current_option(

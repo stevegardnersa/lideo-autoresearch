@@ -18,6 +18,7 @@ class RunSummary:
     base_variant: str
     model: str
     time_budget: str
+    stage: str = "chapter"
     signal_count: int = 0
     dimensions_with_notes: List[str] = None
     baseline_composite: float = 0.0
@@ -54,6 +55,7 @@ def render_run_markdown(run: RunSummary) -> str:
     lines.append(f"## {run.base_variant}\n")
     lines.append(f"**Model:** {run.model}  ")
     lines.append(f"**Budget:** {run.time_budget}  ")
+    lines.append(f"**Stage:** {run.stage}  ")
     lines.append(f"**Notes received:** {run.signal_count}  ")
     lines.append(f"**Dimensions:** {', '.join(run.dimensions_with_notes) if run.dimensions_with_notes else 'none'}\n")
 
@@ -113,6 +115,7 @@ def report_from_agent_output(
             base_variant=r.get("base_variant", "?"),
             model=r.get("model", "?"),
             time_budget=r.get("time_budget", "?"),
+            stage=r.get("stage", "chapter"),
             signal_count=r.get("signal_count", 0),
             dimensions_with_notes=r.get("dimensions_with_notes", []),
             baseline_composite=r.get("baseline_composite", 0),
@@ -193,6 +196,7 @@ def report_from_optimization_runs(
             base_variant=opt_run.base_variant_name,
             model=opt_run.model_name,
             time_budget=opt_run.time_budget,
+            stage=opt_run.stage,
             signal_count=signal_count,
             dimensions_with_notes=dims,
             baseline_composite=baseline_result.composite_score if baseline_result else 0,
