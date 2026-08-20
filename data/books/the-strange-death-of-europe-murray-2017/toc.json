@@ -1,0 +1,152 @@
+[
+  {
+    "title": "Cover",
+    "level": 1,
+    "href": "cover.xhtml"
+  },
+  {
+    "title": "Half-title Page",
+    "level": 1,
+    "href": "halftitle.xhtml"
+  },
+  {
+    "title": "Title Page",
+    "level": 1,
+    "href": "title.xhtml"
+  },
+  {
+    "title": "Contents",
+    "level": 1,
+    "href": "toc.xhtml"
+  },
+  {
+    "title": "Introduction",
+    "level": 1,
+    "href": "chapter01.xhtml#fm1"
+  },
+  {
+    "title": "1. The beginning",
+    "level": 1,
+    "href": "chapter02.xhtml#ch1"
+  },
+  {
+    "title": "2. How we got hooked on immigration",
+    "level": 1,
+    "href": "chapter03.xhtml#ch2"
+  },
+  {
+    "title": "3. The excuses we told ourselves",
+    "level": 1,
+    "href": "chapter04.xhtml#ch3"
+  },
+  {
+    "title": "4. ‘Welcome to Europe’",
+    "level": 1,
+    "href": "chapter05.xhtml#ch4"
+  },
+  {
+    "title": "5. ‘We have seen everything’",
+    "level": 1,
+    "href": "chapter06.xhtml#ch5"
+  },
+  {
+    "title": "6. Multiculturalism",
+    "level": 1,
+    "href": "chapter07.xhtml#ch6"
+  },
+  {
+    "title": "7. They are here",
+    "level": 1,
+    "href": "chapter08.xhtml#ch7"
+  },
+  {
+    "title": "8. Prophets without honour",
+    "level": 1,
+    "href": "chapter09.xhtml#ch8"
+  },
+  {
+    "title": "9. Early-warning sirens",
+    "level": 1,
+    "href": "chapter10.xhtml#ch9"
+  },
+  {
+    "title": "10. The tyranny of guilt",
+    "level": 1,
+    "href": "chapter11.xhtml#ch10"
+  },
+  {
+    "title": "11. The pretence of repatriation",
+    "level": 1,
+    "href": "chapter12.xhtml#ch11"
+  },
+  {
+    "title": "12. Learning to live with it",
+    "level": 1,
+    "href": "chapter13.xhtml#ch12"
+  },
+  {
+    "title": "13. Tiredness",
+    "level": 1,
+    "href": "chapter14.xhtml#ch13"
+  },
+  {
+    "title": "14. We’re stuck with this",
+    "level": 1,
+    "href": "chapter15.xhtml#ch14"
+  },
+  {
+    "title": "15. Controlling the backlash",
+    "level": 1,
+    "href": "chapter16.xhtml#ch15"
+  },
+  {
+    "title": "16. The feeling that the story has run out",
+    "level": 1,
+    "href": "chapter17.xhtml#ch16"
+  },
+  {
+    "title": "17. The end",
+    "level": 1,
+    "href": "chapter18.xhtml#ch17"
+  },
+  {
+    "title": "18. What might have been",
+    "level": 1,
+    "href": "chapter19.xhtml#ch18"
+  },
+  {
+    "title": "19. What will be",
+    "level": 1,
+    "href": "chapter20.xhtml#ch19"
+  },
+  {
+    "title": "Afterword",
+    "level": 1,
+    "href": "backmatter00.xhtml#bm1"
+  },
+  {
+    "title": "Notes",
+    "level": 1,
+    "href": "backmatter01.xhtml#bm2"
+  },
+  {
+    "title": "Acknowledgements",
+    "level": 1,
+    "href": "backmatter02.xhtml#bm3"
+  },
+  {
+    "title": "A Note on the Author",
+    "level": 1,
+    "href": "backmatter03.xhtml#bm4"
+  },
+  {
+    "title": "Index",
+    "level": 1,
+    "href": "backmatter04.xhtml#bm5"
+  },
+  {
+    "title": "Copyright Page",
+    "level": 1,
+    "href": "copyright.xhtml"
+  }
+]

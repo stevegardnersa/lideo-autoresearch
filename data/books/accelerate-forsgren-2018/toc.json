@@ -1,0 +1,198 @@
+[
+  {
+    "title": "Cover Page",
+    "level": 1,
+    "href": "OEBPS/00-Cover.xhtml"
+  },
+  {
+    "title": "Praise for Accelerate",
+    "level": 1,
+    "href": "OEBPS/01-praise.xhtml"
+  },
+  {
+    "title": "Half Title",
+    "level": 1,
+    "href": "OEBPS/02-half-title.xhtml"
+  },
+  {
+    "title": "Full Title",
+    "level": 1,
+    "href": "OEBPS/03-full-title.xhtml"
+  },
+  {
+    "title": "Copyright",
+    "level": 1,
+    "href": "OEBPS/04-copyright.xhtml"
+  },
+  {
+    "title": "Contents",
+    "level": 1,
+    "href": "OEBPS/05-content.xhtml"
+  },
+  {
+    "title": "Figures",
+    "level": 1,
+    "href": "OEBPS/06-figures.xhtml"
+  },
+  {
+    "title": "Foreword by Martin Fowler",
+    "level": 1,
+    "href": "OEBPS/07-foreword-1.xhtml"
+  },
+  {
+    "title": "Foreword by Courtney Kissler",
+    "level": 1,
+    "href": "OEBPS/08-foreword-2.xhtml"
+  },
+  {
+    "title": "Quick Reference: Capabilities to Drive Improvement",
+    "level": 1,
+    "href": "OEBPS/09-quick.xhtml"
+  },
+  {
+    "title": "Preface",
+    "level": 1,
+    "href": "OEBPS/10-preface.xhtml"
+  },
+  {
+    "title": "Part One: What We Found",
+    "level": 1,
+    "href": "OEBPS/11-part_1.xhtml",
+    "children": [
+      {
+        "title": "Chapter 1 - Accelerate",
+        "level": 2,
+        "href": "OEBPS/12-ch1.xhtml"
+      },
+      {
+        "title": "Chapter 2 - Measuring Performance",
+        "level": 2,
+        "href": "OEBPS/13-ch2.xhtml"
+      },
+      {
+        "title": "Chapter 3 - Measuring and Changing Culture",
+        "level": 2,
+        "href": "OEBPS/14-ch3.xhtml"
+      },
+      {
+        "title": "Chapter 4 - Technical Practices",
+        "level": 2,
+        "href": "OEBPS/15-ch4.xhtml"
+      },
+      {
+        "title": "Chapter 5 - Architecture",
+        "level": 2,
+        "href": "OEBPS/16-ch5.xhtml"
+      },
+      {
+        "title": "Chapter 6 - Integrating Infosec into the Delivery Lifecycle",
+        "level": 2,
+        "href": "OEBPS/17-ch6.xhtml"
+      },
+      {
+        "title": "Chapter 7 - Management Practices for Software",
+        "level": 2,
+        "href": "OEBPS/18-ch7.xhtml"
+      },
+      {
+        "title": "Chapter 8 - Product Development",
+        "level": 2,
+        "href": "OEBPS/19-ch8.xhtml"
+      },
+      {
+        "title": "Chapter 9 - Making Work Sustainable",
+        "level": 2,
+        "href": "OEBPS/20-ch9.xhtml"
+      },
+      {
+        "title": "Chapter 10 - Employee Satisfaction, Identity, and Engagement",
+        "level": 2,
+        "href": "OEBPS/21-ch10.xhtml"
+      },
+      {
+        "title": "Chapter 11 - Leaders and Managers",
+        "level": 2,
+        "href": "OEBPS/22-ch11.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part Two: The Research",
+    "level": 1,
+    "href": "OEBPS/23-part2.xhtml",
+    "children": [
+      {
+        "title": "Chapter 12 - The Science Behind This Book",
+        "level": 2,
+        "href": "OEBPS/24-ch12.xhtml"
+      },
+      {
+        "title": "Chapter 13 - Introduction to Psychometrics",
+        "level": 2,
+        "href": "OEBPS/25-ch13.xhtml"
+      },
+      {
+        "title": "Chapter 14 - Why Use a Survey",
+        "level": 2,
+        "href": "OEBPS/26-ch14.xhtml"
+      },
+      {
+        "title": "Chapter 15 - The Data for the Project",
+        "level": 2,
+        "href": "OEBPS/27-ch15.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part Three: Transformation",
+    "level": 1,
+    "href": "OEBPS/28-part3.xhtml",
+    "children": [
+      {
+        "title": "Chapter 16 - High-Performance Leadership and Management",
+        "level": 2,
+        "href": "OEBPS/29-ch16.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Conclusion",
+    "level": 1,
+    "href": "OEBPS/31-conclusion.xhtml"
+  },
+  {
+    "title": "Appendix A: Capabilities to Drive Improvement",
+    "level": 1,
+    "href": "OEBPS/32-app_A.xhtml"
+  },
+  {
+    "title": "Appendix B: The Stats",
+    "level": 1,
+    "href": "OEBPS/33-app_B.xhtml"
+  },
+  {
+    "title": "Appendix C: Statistical Methods Used in Our Research",
+    "level": 1,
+    "href": "OEBPS/34-app_C.xhtml"
+  },
+  {
+    "title": "Acknowledgments",
+    "level": 1,
+    "href": "OEBPS/35-ackno.xhtml"
+  },
+  {
+    "title": "Bibliography",
+    "level": 1,
+    "href": "OEBPS/36-biblio.xhtml"
+  },
+  {
+    "title": "Index",
+    "level": 1,
+    "href": "OEBPS/37-index.xhtml"
+  },
+  {
+    "title": "About the Authors",
+    "level": 1,
+    "href": "OEBPS/38-about.xhtml"
+  }
+]

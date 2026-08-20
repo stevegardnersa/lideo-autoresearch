@@ -1,0 +1,31 @@
+# Table of contents
+
+- Message from the Author + Dedication
+- Epigraph
+- 1. The Dangerous Deed
+- 2. A Daily Philosophy on Becoming Legendary
+- 3. An Unexpected Encounter with a Surprising Stranger
+- 4. Letting Go of Mediocrity and All That’s Ordinary
+- 5. A Bizarre Adventure into Morning Mastery
+- 6. A Flight to Peak Productivity, Virtuosity and Undefeatability
+- 7. Preparation for a Transformation Begins in Paradise
+- 8. The 5 AM Method: The Morning Routine of World-Builders
+- 9. A Framework for the Expression of Greatness
+- 10. The 4 Focuses of History-Makers
+- 11. Navigating the Tides of Life
+- 12. The 5 AM Club Discovers The Habit Installation Protocol
+- 13. The 5 AM Club Learns The 20/20/20 Formula
+- 14. The 5 AM Club Grasps the Essentialness of Sleep
+- 15. The 5 AM Club Is Mentored on The 10 Tactics of Lifelong Genius
+- 16. The 5 AM Club Embraces The Twin Cycles of Elite Performance
+- 17. The 5 AM Club Members Become Heroes of Their Lives
+- Epilogue: Five Years Later
+- Also by Robin Sharma
+- About the Publisher
+
+## Excluded from benchmark corpus
+
+- Title Page
+- Copyright
+- Contents
+- About the Author

@@ -1,0 +1,233 @@
+# Table of contents
+
+- Praise for Designing with Data
+- Foreword
+- Preface
+  - Design and Data: A Perfect Synergy
+  - Our Focus: A/B Testing
+  - Some Orienting Principles
+  - Who Is This Book For?
+  - Scope
+  - About Us
+    - A Word from Rochelle
+    - A Word from Elizabeth
+    - A Word from Caitlin
+  - How This Book Is Organized
+  - How to Read This Book
+    - Introducing our “Running a Camp” Metaphor
+  - O’Reilly Safari
+  - How to Contact Us
+    - Rochelle
+    - Elizabeth
+    - Caitlin
+- 1. Introducing a Data Mindset
+  - Data as a Trend
+  - Three Ways to Think About Data
+  - What Does This Mean for You as a Designer?
+  - Data Can Help to Align Design with Business
+    - On Data Quality
+  - With a Little Help from Your Friends...
+    - Data Producers
+    - Data Consumers
+  - What If You Don’t Have Data Friends (Yet)?
+  - Themes You’ll See in This Book
+  - Summary
+  - Questions to Ask Yourself
+- 2. The ABCs of Using Data
+  - The Diversity of Data
+    - Many Dimensions of Data
+    - Why are you collecting data?
+  - When is the data collected?
+  - How is the data collected?
+    - How much data to collect?
+  - Why Experiment?
+    - Learning About Causality
+    - Statistically Significant, not Anecdotal
+    - Informed Opinions about what will happen in the Wild
+  - Basics of Experimentation
+    - Language and Concepts
+    - Race to the Campsite!
+    - Experimentation in the Internet Age
+  - A/B Testing: Online Experiments
+    - Sampling Your Users Online
+    - Cohorts and segments
+    - Demographic information
+  - New users versus existing users
+    - Metrics: The Dependent Variable of A/B Testing
+    - Detecting a Difference in Your Groups
+    - How big is the difference you want to measure?
+  - A big enough sample to power your test
+    - Significance level
+  - Your Hypothesis and Why It Matters
+    - Defining a Hypothesis or Hypotheses
+    - Know What You Want to Learn
+  - Running Creative A/B Tests
+    - Data Triangulation: Strength in Mixed Methods
+    - The Landscape of Design Activities
+    - Exploring and evaluating Ideas
+    - Thinking Global and Thinking Local
+  - Summary
+  - Questions to Ask Yourself
+- 3. A Framework for Experimentation
+  - Introducing Our Framework
+    - Working with Data Should Feel Familiar...
+  - Three Phases: Definition, Execution, and Analysis
+    - The Definition Phase
+    - The Execution Phase
+    - The Analysis Phase
+  - Examples: Data and Design in Action
+  - Summary
+  - Questions to Ask Yourself
+- 4. The Definition Phase (How to Frame Your Experiments)
+  - Getting Started: Defining Your Goal
+    - Defining Your Metric of Interest
+    - Metric sensitivity
+    - Tracking multiple metrics
+    - Getting the full picture
+    - Your metrics may change over time
+  - Competing metrics
+    - Refining Your Goals with Data
+  - Identifying the Problem You Are Solving
+    - Remember Where You Are
+  - Building Hypotheses for the Problem at Hand
+    - Example: A Summer Camp Hypothesis
+    - Example: Netflix—transitioning from DVD rentals to Streaming
+  - The Importance of Going Broad
+    - Multiple Ways to Influence a Metric
+    - Focus on New and Existing Users
+    - Revisit the Scope of Your Problem
+    - Example: Netflix on the PlayStation 3
+    - Involve Your Team and Your Data Friends
+  - Which Hypotheses to Choose?
+    - Consider Potential Impact
+    - Using What You Already Know
+    - Using Other Methods to Evaluate Your Hypotheses
+    - Consider the Reality of Your Test
+    - How much measurable impact do you believe your hypothesis can make?
+    - Can you draw all the conclusions you want to draw from your test?
+    - Balancing learning and speed
+    - Keep Your Old Hypotheses in Your Back Pocket
+  - Summary
+  - Questions to Ask Yourself
+- 5. The Execution Phase (How to Put Your Experiments into Action)
+  - Designing to Learn
+    - Engaging Your Users in a Conversation
+    - Having Quality Conversations
+    - Designing to extremes to learn about your users
+  - Revisiting the minimum detectable effect
+  - Designing the Best Representation of Your Hypothesis
+    - Understanding Your Variables
+  - Not all variables are visible
+    - Your Design Can Influence Your Data
+    - Example: Netflix Wii
+    - Revisiting the Space of Design Activities
+    - Avoiding Local Maxima
+  - Different problems for summer camp
+    - Directional testing: “Painted door” tests
+    - Picking the right level of granularity for your experiment
+    - Example: Netflix on Playstation 3
+    - Example: Spotify Navigation
+    - Experiment 1: Defining the hypothesis to get early directional feedback
+    - Experiment 1: Designing the hypotheses
+    - Interlude: Quick explorations using prototypes and usability testing
+    - Experiment 2: Refining the “tabbed” navigation
+    - “Designing” your tests
+    - Other Considerations When Designing to Learn
+    - Polishing your design too much, too early
+    - Edge cases and “worst-case” scenarios
+    - Taking advantage of other opportunities to learn about your design
+    - Identifying the Right Level of Testing for Different Stages of Experimentation
+  - Running parallel experiments
+  - Thinking about “Experiment 0”
+  - Summary
+  - Questions to Ask Yourself
+- 6. The Analysis Phase (Getting Answers From Your Experiments)
+  - Vetting Your Designs Ahead of Launch
+    - Lab Studies: Interviews and Usability Testing
+    - Surveys
+    - Working with Your Peers in Data
+  - Launching Your Design
+    - Balancing Trade Offs to Power Your Test
+    - Weighing sample size and significance level
+    - Getting the sample that you need (rollout % versus test time)
+    - Who are you including in your sample?
+    - Practical Implementation Details
+  - Is your experience “normal” right now?
+    - Sanity check: Questions to ask yourself
+  - Evaluating Your Results
+    - Revisiting Statistical Significance
+  - What Does the Data Say?
+    - Expected (“Positive”) Results
+    - Unexpected and Undesirable (“Negative”) Results
+    - When the World is Flat
+    - Errors
+    - Replication
+    - Using secondary metrics
+    - Using multiple test cells
+    - Rolling out to more users
+  - Revisiting “thick” data
+    - Getting Trustworthy Data
+    - Novelty effect
+  - Seasonality bias
+  - Rolling Out Your Experience, or Not
+    - What’s Next for Your Designs?
+    - Were you exploring or evaluating?
+    - Was your problem global or local?
+    - Knowing when to stop
+    - Ramp Up
+    - Holdback Groups
+    - Taking Communication into Account
+  - Case Study: Netflix on PlayStation 3
+    - Many Treatments of the Four Hypotheses
+    - Evolving the Design Through Iterative Tests
+    - What If You Still Believe?
+  - Summary
+  - Questions to Ask Yourself
+- 7. Creating the Right Environment for Data-Aware Design
+  - Principle 1: Shared Company Culture and Values
+    - Depth: Communicating Across Levels
+    - Breadth: Beyond Design and Product
+    - The Importance of a Learning Culture
+    - The rewards of taking risks: Redefining “failure”
+    - The value of developing your customer instinct
+  - Principle 2: Hiring and Growing the Right People
+    - Establishing a Data-Aware Environment Through Your Peers
+    - Hiring for Success
+    - Building the team with data involved from the start
+  - Principle 3: Processes to Support and Align
+    - Establishing a Knowledge Baseline
+    - Establishing a Common Vocabulary
+    - Developing a Rhythm Around Data Collection and Sharing
+    - Project review meetings
+  - Spreading data across the organization
+    - Creating a Presence in the Office
+    - Learning from the Past
+  - Summary
+  - Questions to Ask Yourself
+- 8. Conclusion
+  - Ethical Considerations
+    - Ethics in Online Experimentation
+    - Design Experimentation Versus Social Experimentation
+    - Two “Power of Suggestion” Experiments
+    - Toward Ethical A/B Testing
+    - Key Concepts
+    - Asking Questions, Thinking Ethically
+  - Last Words
+- A. Resources
+  - Keywords
+    - Chapter 1
+    - Chapter 2
+    - Chapter 3
+    - Chapters 4, 5, and 6
+    - Chapter 7
+    - Chapter 8
+  - Books
+  - Online Articles, Papers, and Blogs
+  - Courses
+  - Tools
+  - Professional Groups, Meetups, and Societies
+
+## Excluded from benchmark corpus
+
+- Acknowledgments
+- Index

@@ -1,0 +1,97 @@
+# Table of contents
+
+- Cover page
+- Praise for How To Think About AI
+- Copyright page
+- Dedication page
+- Epigraph
+- Personal Note
+- Introduction
+- Part One Understanding AI
+  - Chapter 1. The Summer of AI
+    - What AI Can Do
+    - A Very Short History of AI
+    - Later Breakthroughs
+  - Chapter 2. On Technology
+    - Digital Technology
+    - Four, Five, or Even Six Stages of Human Progress
+    - Some Biases
+    - Future Capability
+- Part Two Thinking Differently
+  - Chapter 3. Process-Thinking and Outcome-Thinking
+    - Two Cultures of AI
+    - Thinking Differently
+    - Reflections
+  - Chapter 4. Confusions
+    - Muddled Thinking about the Threat of AI
+    - Not-Us Thinking
+    - AI and Professional Work
+    - AI Fallacy
+    - What Machines Cannot Do
+  - Chapter 5. We Don’t Have the Words
+    - Language
+    - Judgement and Quasi-Judgement
+    - Empathy and Quasi-Empathy
+    - Creativity and Quasi-Creativity
+- Part Three Making AI Work
+  - Chapter 6. Automation, Innovation, Elimination
+    - Automation
+    - Innovation
+    - Elimination
+    - Examples
+  - Chapter 7. Radical Structural Change
+    - Transformation
+    - Vision-Based Restructuring
+    - New Vehicles
+    - Research and Development (R&D)
+- Part Four Confronting the Risks
+  - Chapter 8. Categories of Risk
+    - A Classification of Risks
+    - Initial Reflections
+  - Chapter 9. Harnessing AI
+    - Why Have We Waited So Long?
+    - Preparing for Much Worse
+    - On AI Ethics
+    - On Law and Regulation
+    - Upgrading Our Justice System
+    - A Multidisciplinary Approach
+- Part Five Contemplating the Future
+  - Chapter 10. Conscious Machines?
+    - Human Consciousness
+    - AI and Consciousness
+    - Recollecting an Evening in the Mid-1980s
+  - Chapter 11. Coming Soon
+    - Brain–Computer Interface
+    - Virtual Reality
+    - Reality?
+  - Chapter 12. The Great Schism
+    - Evolution and AI
+    - Options for Our Future
+    - Duties to the Future
+    - Verdict
+- Conclusion
+  - Personal Note
+  - Introduction
+  - Chapter 1
+  - Chapter 2
+  - Chapter 3
+  - Chapter 4
+  - Chapter 5
+  - Chapter 6
+  - Chapter 7
+  - Chapter 8
+  - Chapter 9
+  - Chapter 10
+  - Chapter 11
+  - Chapter 12
+- Top Thirty AI Books
+- Publisher Acknowledgements
+
+## Excluded from benchmark corpus
+
+- Title page
+- Acknowledgements
+- Contents
+- Notes
+- Acknowledgements
+- Index

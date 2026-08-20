@@ -1,0 +1,79 @@
+{
+  "headings": [],
+  "core_concepts": [
+    "CHAPTER 7",
+    "MANAGEMENT PRACTICES FOR SOFTWARE",
+    "The theory and practice of management in the context of software delivery has gone through significant change over the decades, with multiple paradigms in play",
+    "Meanwhile, ideas from the Lean movement in manufacturing began to be applied to software",
+    "In this chapter, we discuss management practices derived from the Lean movement and how they drive software delivery performance",
+    "LEAN MANAGEMENT PRACTICES",
+    "In our research, we modeled Lean management and its application to software delivery with three components (Figure 7.1 along with lightweight change management, discussed later in this chapter)",
+    "Limiting work in progress (WIP), and using these limits to drive process improvement and increase throughput Creating and maintaining visual displays showing key quality and productivity metrics and the current status",
+    "The use of WIP limits and visual displays is well known in the Lean community",
+    "It is also worth going into a bit more detail on what exactly we’re measuring",
+    "In the case of visual displays, we ask if visual displays or dashboards are used to share information, and if teams use tools such as kanban or storyboards to organize their work",
+    "We hypothesized that in combination these practices increase delivery performance—and indeed they do"
+  ],
+  "mechanisms_or_explanations": [
+    "In this chapter, we discuss management practices derived from the Lean movement and how they drive software delivery performance",
+    "It’s only when they’re combined with the use of visual displays and have a feedback loop from production monitoring tools back to delivery teams or the business that we see a strong effect",
+    "When teams use these tools together, we see a much stronger positive effect on software delivery performance",
+    "In the case of WIP, we’re not just asking teams whether they are good at limiting their WIP and have processes in place to do so",
+    "We’re also asking if their WIP limits make obstacles to higher flow visible, and if teams remove these obstacles through process improvement, leading to improved throughput",
+    "WIP limits are no good if they don’t lead to improvements that increase flow",
+    "In the case of visual displays, we ask if visual displays or dashboards are used to share information, and if teams use tools such as kanban or storyboards to organize their work",
+    "We also ask whether information on quality and productivity is readily available, if failures or defect rates are shown publicly using visual displays, and how readily this information is available",
+    "The central concepts here are the types of information being displayed, how broadly it is being shared, and how easy it is to access",
+    "Figure 7.2: Impacts of Lean Management Practices IMPLEMENT A LIGHTWEIGHT CHANGE MANAGEMENT PROCESS Every organization will have some kind of process for making changes to their production environments",
+    "In a startup, this change management process may be something as simple as calling over another developer to review your code before pushing a change live",
+    "In large organizations, we often see change management processes that take days or weeks, requiring each change to be reviewed by a change advisory board (CAB) external to the team in addition to team-level reviews, s"
+  ],
+  "critical_qualifiers": [
+    "They are used to ensure that teams don’t become overburdened (which may lead to longer lead times) and to expose obstacles to flow",
+    "In a startup, this change management process may be something as simple as calling over another developer to review your code before pushing a change live",
+    "In large organizations, we often see change management processes that take days or weeks, requiring each change to be reviewed by a change advisory board (CAB) external to the team in addition to team-level reviews, s",
+    "However, it certainly slows things down",
+    "This process can be used for all kinds of changes, including code, infrastructure, and database changes",
+    "In regulated industries, segregation of duties is often required either explicitly in the wording of the regulation (for instance, in the case of PCI DSS) or by auditors",
+    "However, implementing this control does not require the use of a CAB or separate operations team",
+    "There are two mechanisms which can be effectively used to satisfy both the letter and the spirit of this control",
+    "This can be somebody on the same team",
+    "That is, no changes should be able to be made to production unless they have been committed to version control, validated by the standard build and test process, and then deployed through an automated process triggere"
+  ],
+  "important_examples": [
+    "In regulated industries, segregation of duties is often required either explicitly in the wording of the regulation (for instance, in the case of PCI DSS) or by auditors"
+  ],
+  "key_entities_or_numbers": [
+    "CHAPTER 7 MANAGEMENT PRACTICES FOR SOFTWARE The theory and practice of management in the context of software delivery has gone through significant change over the decades, with multiple paradigms in play",
+    "For many years, the project and program management paradigm, found in frameworks such as the Project Management Institute and PRINCE2, dominated",
+    "Following the release of the Agile Manifesto in 2001, Agile methods rapidly gained traction",
+    "LEAN MANAGEMENT PRACTICES In our research, we modeled Lean management and its application to software delivery with three components (Figure 7.1 along with lightweight change management, discussed later in this chapte",
+    "As shown in Figure 7.2, these Lean management practices both decrease burnout (which we discuss in Chapter 9) and lead to a more generative culture (as described in Westrum’s model in Chapter 3)",
+    "Figure 7.2: Impacts of Lean Management Practices IMPLEMENT A LIGHTWEIGHT CHANGE MANAGEMENT PROCESS Every organization will have some kind of process for making changes to their production environments",
+    "2001",
+    "7.1",
+    "7.2"
+  ],
+  "key_terms": [
+    "The",
+    "For",
+    "Project Management Institute",
+    "Following",
+    "Agile Manifesto",
+    "Agile",
+    "Meanwhile",
+    "Lean",
+    "This",
+    "Toyota",
+    "Japanese",
+    "Companies",
+    "Honda",
+    "The Lean",
+    "Mary",
+    "Tom Poppendieck",
+    "Lean Software Development",
+    "Limiting",
+    "Creating",
+    "Using"
+  ]
+}

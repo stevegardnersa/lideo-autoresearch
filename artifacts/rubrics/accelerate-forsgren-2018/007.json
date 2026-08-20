@@ -1,0 +1,82 @@
+{
+  "headings": [],
+  "core_concepts": [
+    "CHAPTER 5",
+    "ARCHITECTURE",
+    "We’ve seen that adopting continuous delivery practices improves delivery performance, impacts culture, and reduces burnout and deployment pain",
+    "Furthermore, DevOps and continuous delivery originated in web-based systems, so it’s legitimate to ask if they can be applied to mainframe systems, firmware, or to an average big-ball-of-mud enterprise environment (Fo",
+    "We set out to discover the impact of architectural decisions and constraints on delivery performance, and what makes an effective architecture",
+    "This key architectural property enables teams to easily test and deploy individual components or services even as the organization and the number of systems it operates grow—that is, it allows organizations to increas",
+    "TYPES OF SYSTEMS AND DELIVERY PERFORMANCE",
+    "We examined a large number of types of systems to discover if there was a correlation between the type of system and team performance",
+    "Greenfield: new systems that have not yet been released Systems of engagement (used directly by end users) Systems of record (used to store business-critical information where data consistency and integrity is critica",
+    "In the rest of the cases, there was no significant correlation between system type and delivery performance",
+    "This reinforces the importance of focusing on the architectural characteristics, discussed below, rather than the implementation details of your architecture",
+    "As we said in Chapter 2, given that software delivery performance impacts organizational performance, it’s important to invest in your capabilities to create and evolve the core, strategic software products and servic"
+  ],
+  "mechanisms_or_explanations": [
+    "However, the architecture of your software and the services it depends on can be a significant barrier to increasing both the tempo and stability of the release process and the systems delivered",
+    "Furthermore, DevOps and continuous delivery originated in web-based systems, so it’s legitimate to ask if they can be applied to mainframe systems, firmware, or to an average big-ball-of-mud enterprise environment (Fo",
+    "TYPES OF SYSTEMS AND DELIVERY PERFORMANCE We examined a large number of types of systems to discover if there was a correlation between the type of system and team performance",
+    "However, it’s essential to be very strict about these outcomes when implementing such architectures",
+    "A LOOSELY COUPLED ARCHITECTURE ENABLES SCALING If we achieve a loosely coupled, well-encapsulated architecture with an organizational structure to match, two important things happen",
+    "However, when looking at number of deploys per day per developer for respondents who deploy at least once per day, we see the results plotted in Figure 5.1",
+    "When teams can decide which tools they use, it contributes to software delivery performance and, in turn, to organizational performance",
+    "A key element of this is ensuring that information security teams make preapproved, easy-to-consume libraries, packages, toolchains, and processes available for developers and IT operations to use in their work",
+    "When the tools provided actually make life easier for the engineers who use them, they will adopt them of their own free will",
+    "A focus on usability and customer satisfaction is as important when choosing or building tools for internal customers as it is when building products for external customers, and allowing your engineers to choose wheth",
+    "What tools or technologies you use is irrelevant if the people who must use them hate using them, or if they don’t achieve the outcomes and enable the behaviors we care about"
+  ],
+  "critical_qualifiers": [
+    "However, the architecture of your software and the services it depends on can be a significant barrier to increasing both the tempo and stability of the release process and the systems delivered",
+    "Furthermore, DevOps and continuous delivery originated in web-based systems, so it’s legitimate to ask if they can be applied to mainframe systems, firmware, or to an average big-ball-of-mud enterprise environment (Fo",
+    "We looked at the following types of systems, both as the primary system under development and as a service being integrated against: Greenfield: new systems that have not yet been released Systems of engagement (used",
+    "Those who agreed with the following statements were more likely to be in the high-performing group: We can do most of our testing without requiring an integrated environment",
+    "We can and do deploy or release our application independently of other applications/services it depends on.It appears that these characteristics of architectural decisions, which we refer to as testability and deploya",
+    "To achieve these characteristics, design systems are loosely coupled—that is, can be changed and validated independently of each other",
+    "However, it’s essential to be very strict about these outcomes when implementing such architectures",
+    "The goal of a loosely coupled architecture is to ensure that the available communication bandwidth isn’t overwhelmed by fine-grained decision-making at the implementation level, so we can instead use that bandwidth fo",
+    "First, we can achieve better delivery performance, increasing both tempo and stability while reducing the burnout and the pain of deployment",
+    "Second, we can substantially grow the size of our engineering organization and increase productivity linearly—or better than linearly—as we do so"
+  ],
+  "important_examples": [
+    "Similar results have been found in other studies of technical professionals (e.g., Forsgren et al",
+    "Another example is Steve Yegge’s description of Amazon’s move to an SOA, in which he notes, “Debugging problems with someone else’s code gets a LOT harder, and is basically impossible unless there is a universal stand"
+  ],
+  "key_entities_or_numbers": [
+    "CHAPTER 5 ARCHITECTURE We’ve seen that adopting continuous delivery practices improves delivery performance, impacts culture, and reduces burnout and deployment pain",
+    "As we said in Chapter 2, given that software delivery performance impacts organizational performance, it’s important to invest in your capabilities to create and evolve the core, strategic software products and servic",
+    "In the 2017 survey, we expanded our analysis to test the extent to which a loosely coupled, well-encapsulated architecture drives IT performance",
+    "We discovered that it does; indeed, the biggest contributor to continuous delivery in the 2017 analysis—larger even than test and deployment automation—is whether teams can: Make large-scale changes to the design of t",
+    "are constrained to produce designs which are copies of the communication structures of these organizations” (Conway 1968)",
+    "However, when looking at number of deploys per day per developer for respondents who deploy at least once per day, we see the results plotted in Figure 5.1",
+    "Figure 5.1: Deploys per Developer per Day As the number of developers increases, we found: Low performers deploy with decreasing frequency",
+    "2016), suggesting that the upsides of delegating tool choice to teams may outweigh the disadvantages",
+    "The benefits of a standardized operational platform are discussed at length by Humble (2017)",
+    "1997",
+    "2017",
+    "1968"
+  ],
+  "key_terms": [
+    "However",
+    "Furthermore",
+    "Foote",
+    "Yoder",
+    "This",
+    "Greenfield",
+    "Systems",
+    "Custom",
+    "Packaged",
+    "Embedded",
+    "Software",
+    "Non",
+    "Mainframe",
+    "Low",
+    "Interestingly",
+    "The",
+    "Although",
+    "Those",
+    "Make",
+    "Complete"
+  ]
+}

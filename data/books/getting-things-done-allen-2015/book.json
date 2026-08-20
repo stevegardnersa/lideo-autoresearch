@@ -1,0 +1,148 @@
+{
+  "book_id": "getting-things-done-allen-2015",
+  "book_title": "Getting Things Done",
+  "genre_macro": "business_economics_productivity",
+  "genre_micro": "productivity",
+  "narrative_vs_expository": "expository",
+  "prescriptive_vs_analytical": "prescriptive",
+  "quantitative_density": "low",
+  "chapter_length_profile": "mixed",
+  "benchmark_pool": "balanced",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "000",
+      "title": "Contents",
+      "source_path": "original/1.md"
+    },
+    {
+      "chapter_id": "001",
+      "title": "About the Author",
+      "source_path": "original/2.md"
+    },
+    {
+      "chapter_id": "002",
+      "title": "Praise for the previous edition of",
+      "source_path": "original/3.md"
+    },
+    {
+      "chapter_id": "003",
+      "title": "Acknowledgments",
+      "source_path": "original/4.md"
+    },
+    {
+      "chapter_id": "004",
+      "title": "Foreword",
+      "source_path": "original/5.md"
+    },
+    {
+      "chapter_id": "005",
+      "title": "Introduction to the Revised Edition",
+      "source_path": "original/15.md"
+    },
+    {
+      "chapter_id": "006",
+      "title": "Welcome to Getting Things Done",
+      "source_path": "original/16.md"
+    },
+    {
+      "chapter_id": "007",
+      "title": "A New Practice for a New Reality",
+      "source_path": "original/38.md"
+    },
+    {
+      "chapter_id": "008",
+      "title": "Getting Control of Your Life: The Five Steps of Mastering Workflow",
+      "source_path": "original/72.md"
+    },
+    {
+      "chapter_id": "009",
+      "title": "Getting Projects Creatively Under Way: The Five Phases of Project Planning",
+      "source_path": "original/98.md"
+    },
+    {
+      "chapter_id": "010",
+      "title": "Getting Started: Setting Up the Time, Space, and Tools",
+      "source_path": "original/120.md"
+    },
+    {
+      "chapter_id": "011",
+      "title": "Capturing: Corralling Your “Stuff”",
+      "source_path": "original/138.md"
+    },
+    {
+      "chapter_id": "012",
+      "title": "Clarifying: Getting “In” to Empty",
+      "source_path": "original/159.md"
+    },
+    {
+      "chapter_id": "013",
+      "title": "Organizing: Setting Up the Right Buckets",
+      "source_path": "original/196.md"
+    },
+    {
+      "chapter_id": "014",
+      "title": "Reflecting: Keeping It All Fresh and Functional",
+      "source_path": "original/209.md"
+    },
+    {
+      "chapter_id": "015",
+      "title": "Engaging: Making the Best Action Choices",
+      "source_path": "original/221.md"
+    },
+    {
+      "chapter_id": "016",
+      "title": "Getting Projects Under Control",
+      "source_path": "original/238.md"
+    },
+    {
+      "chapter_id": "017",
+      "title": "The Power of the Capturing Habit",
+      "source_path": "original/249.md"
+    },
+    {
+      "chapter_id": "018",
+      "title": "The Power of the Next-Action Decision",
+      "source_path": "original/259.md"
+    },
+    {
+      "chapter_id": "019",
+      "title": "The Power of Outcome Focusing",
+      "source_path": "original/266.md"
+    },
+    {
+      "chapter_id": "020",
+      "title": "GTD and Cognitive Science",
+      "source_path": "original/274.md"
+    },
+    {
+      "chapter_id": "021",
+      "title": "The Path of GTD Mastery",
+      "source_path": "original/287.md"
+    },
+    {
+      "chapter_id": "022",
+      "title": "Conclusion",
+      "source_path": "original/288.md"
+    },
+    {
+      "chapter_id": "023",
+      "title": "Appendix",
+      "source_path": "original/289.md"
+    },
+    {
+      "chapter_id": "024",
+      "title": "PENGUIN BOOKS",
+      "source_path": "original/290.md"
+    },
+    {
+      "chapter_id": "025",
+      "title": "THE BEGINNING",
+      "source_path": "original/291.md"
+    }
+  ],
+  "toc_json_path": "toc.json",
+  "google_books_volume_id": "B6MvBgAAQBAJ",
+  "isbn_13": "9781760141295"
+}

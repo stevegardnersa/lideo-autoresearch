@@ -1,0 +1,92 @@
+{
+  "headings": [
+    "Chapter 3",
+    "Process-Thinking and Outcome-Thinking",
+    "Two Cultures of AI",
+    "Thinking Differently",
+    "Reflections"
+  ],
+  "core_concepts": [
+    "Chapter 3 Process-Thinking and Outcome-Thinking In the aftermath of the launch of ChatGPT, I was struck by the published reactions of two remarkable public intellectuals—Henry Kissinger and Noam Chomsky",
+    "Two Cultures of AI On the topic of AI, however, Kissinger and Chomsky seemed to be entirely at odds",
+    "Chomsky, on the other hand, also backed up by credible colleagues, assumed a very different posture",
+    "Which is it—a change to the fabric of reality or so little a thing?",
+    "My answer is that Kissinger and Chomsky represent two very different perspectives and cultures in the world of AI",
+    "Process-thinkers are interested in how complex systems work",
+    "Thinking Differently The process-thinkers themselves fall largely into three categories",
+    "A second type of process-thinker in artificial intelligence is primarily interested in how the human mind and brain work",
+    "Still other process-thinkers belong to a third group, and they are fascinated by the way that AI systems can cast light on the human mind",
+    "In contrast with process-thinkers, outcome-thinkers focus on the output of AI systems—the social consequences, the economic impact, the practical uses, the regulatory challenges, the business results, the ethical impl",
+    "This distinction between process-thinking and outcome-thinking helps us make sense of the divide between Chomsky and Kissinger",
+    "Kissinger, in stark contrast, is focused on impact and implications"
+  ],
+  "mechanisms_or_explanations": [
+    "Chapter 3 Process-Thinking and Outcome-Thinking In the aftermath of the launch of ChatGPT, I was struck by the published reactions of two remarkable public intellectuals—Henry Kissinger and Noam Chomsky",
+    "They dismissed the system as ‘something so trivial when contrasted with the human mind’ and advised that ‘predictions of machine learning systems will always be superficial and dubious’.2 A damning indictment",
+    "How do we make sense of such radically different views?",
+    "How can it be that two of the most fertile human minds have come to conclusions about machines that are so palpably at variance?",
+    "I call these process-thinking and outcome-thinking",
+    "Snow, who famously argued that ‘two polar groups’, the arts and sciences, ‘split the intellectual life of the whole of western society’.3 I see an analogous split in the world of AI, featuring process-thinkers and out",
+    "Process-thinkers are interested in how complex systems work",
+    "Process-thinkers are interested in the architecture of systems",
+    "Process-thinkers tend to be ‘bottom-up’ thinkers, intrigued by the operational details",
+    "Thinking Differently The process-thinkers themselves fall largely into three categories",
+    "The first group is primarily interested in how AI systems work",
+    "They are preoccupied, for example, with algorithms, data, machine architecture, computer processing, neural networks, graphics processing units, machine learning, weights, tokens, and much else"
+  ],
+  "critical_qualifiers": [
+    "Two Cultures of AI On the topic of AI, however, Kissinger and Chomsky seemed to be entirely at odds",
+    "How can it be that two of the most fertile human minds have come to conclusions about machines that are so palpably at variance?",
+    "While these engineers might fall into different camps, favouring one technique or technology over others, they have in common a deep engagement with the actual design and operations of machines",
+    "This insight can help us in the design and development of AI systems",
+    "It can also reveal limitations in the machines we are building",
+    "Still other process-thinkers belong to a third group, and they are fascinated by the way that AI systems can cast light on the human mind",
+    "Under this heading come policymakers, business people, ethicists, lawyers, economists, as well as all sorts of users of technology and AI",
+    "He is not an expert on the inner workings of machines or minds, but he can see the impact AI might have",
+    "But people often lapse into one variant of process-thinking when they question the potential of AI",
+    "He may instead be contemplating the death of the great art of translating, say, the ancient Greek philosophers into English or perhaps the art of converting the finest Russian prose into wonderful French"
+  ],
+  "important_examples": [
+    "They are preoccupied, for example, with algorithms, data, machine architecture, computer processing, neural networks, graphics processing units, machine learning, weights, tokens, and much else",
+    "He would perhaps note their great potential in, say, medical diagnostics, treatment, and disease prevention, or indeed their profound threat to humanity if, for example, AI is weaponized in the wrong hands",
+    "Two fine examples here are the erstwhile political opponents Tony Blair and William Hague",
+    "Another powerful example of outcome-thinking comes from Bill Gates, a man who can comfortably switch to world-class process-thinking when the circumstances require",
+    "As a process-thinker, I agonized, for example, over the way that legal knowledge could be represented and stored in computer systems and the way that these systems could draw legal conclusions"
+  ],
+  "key_entities_or_numbers": [
+    "Chapter 3 Process-Thinking and Outcome-Thinking In the aftermath of the launch of ChatGPT, I was struck by the published reactions of two remarkable public intellectuals—Henry Kissinger and Noam Chomsky",
+    "Writing about ChatGPT in the Wall Street Journal in late February 2023, Kissinger effused with his eminent co-authors, declaring that generative AI ‘will redefine human knowledge, accelerate changes in the fabric of o",
+    "It facilitates the summary and interrogation of the world’s knowledge far more effectively than any existing technological or human interface.’1 Chomsky, on the other hand, also backed up by credible colleagues, assum",
+    "In the New York Times, he claimed in early March 2023 that ‘It is at once comic and tragic…that so much money and attention should be concentrated on so little a thing…Given the amorality, faux science and linguistic",
+    "They dismissed the system as ‘something so trivial when contrasted with the human mind’ and advised that ‘predictions of machine learning systems will always be superficial and dubious’.2 A damning indictment",
+    "Snow, who famously argued that ‘two polar groups’, the arts and sciences, ‘split the intellectual life of the whole of western society’.3 I see an analogous split in the world of AI, featuring process-thinkers and out",
+    "Margaret Boden, a central figure in the UK AI community, was quoted in 1992 in the New Scientist, as saying ‘I don’t give a damn about computers",
+    "I’m interested in the human mind, not computers…I think I would probably refer to myself now as a “computational psychologist”’.4 This is a fine illustration of category-3 process-thinking",
+    "Chomsky is a category-2 process-thinker, and he concludes, broadly, that the human mind is immeasurably more fascinating and capable than AI systems; indeed much too complex and sophisticated to be modelled by machine",
+    "In the 1980s, the bible of aspiring AI gurus was the Pulitzer prize-winner Gödel, Escher, Bach by Douglas Hofstadter.5 In that book and elsewhere, Hofstadter showed himself to be one of the great thinkers on AI, which",
+    "An unlikely duo, perhaps, but they joined forces in 2023 to write a compelling report, ‘A New National Purpose: AI Promises a World-Leading Future of Britain’",
+    "Businesses will distinguish themselves by how well they use it.’ And he also describes how AI ‘can reduce some of the world’s worst inequities’, especially relating to health, education, and climate change.8 It is har"
+  ],
+  "key_terms": [
+    "Chapter 3",
+    "Process-Thinking and Outcome-Thinking",
+    "Process",
+    "Thinking and Outcome",
+    "Thinking",
+    "Two Cultures of AI",
+    "Thinking Differently",
+    "Reflections",
+    "Outcome",
+    "Thinking In",
+    "Henry Kissinger",
+    "Noam Chomsky",
+    "Both",
+    "American",
+    "Two Cultures",
+    "Kissinger",
+    "Chomsky",
+    "Writing",
+    "Wall Street Journal",
+    "February"
+  ]
+}

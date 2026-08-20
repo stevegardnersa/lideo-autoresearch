@@ -1,0 +1,277 @@
+[
+  {
+    "title": "Cover",
+    "level": 1,
+    "href": "CoverPage.xhtml"
+  },
+  {
+    "title": "Title Page",
+    "level": 1,
+    "href": "section-0001.xhtml"
+  },
+  {
+    "title": "Table of Contents",
+    "level": 1,
+    "href": "TableOfContents.xhtml"
+  },
+  {
+    "title": "Preface: How This Book Was Written—and Why",
+    "level": 1,
+    "href": "preface.xhtml"
+  },
+  {
+    "title": "Part I Fundamental Facts You Should Know About Worry",
+    "level": 1,
+    "href": "section-0002.xhtml",
+    "children": [
+      {
+        "title": "Chapter 1 Live in “Day-tight Compartments”",
+        "level": 2,
+        "href": "section-0003.xhtml"
+      },
+      {
+        "title": "Chapter 2 A Magic Formula for Solving Worry Situations",
+        "level": 2,
+        "href": "section-0004.xhtml"
+      },
+      {
+        "title": "Chapter 3 What Worry May Do to You",
+        "level": 2,
+        "href": "section-0005.xhtml"
+      },
+      {
+        "title": "Part One: In A Nutshell",
+        "level": 2,
+        "href": "section-0006.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part II Basic Techniques in Analysing Worry",
+    "level": 1,
+    "href": "section-0007.xhtml",
+    "children": [
+      {
+        "title": "Chapter 4 How to Analyse and Solve Worry Problems",
+        "level": 2,
+        "href": "section-0008.xhtml"
+      },
+      {
+        "title": "Chapter 5 How to Eliminate Fifty Per Cent of Tour Business Worries",
+        "level": 2,
+        "href": "section-0009.xhtml"
+      },
+      {
+        "title": "Part Two: In A Nutshell",
+        "level": 2,
+        "href": "section-0010.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part III How to Break the Worry Habit Before It Breaks You",
+    "level": 1,
+    "href": "section-0011.xhtml",
+    "children": [
+      {
+        "title": "Chapter 6 How to Crowd Worry Out of Tour Mind",
+        "level": 2,
+        "href": "section-0012.xhtml"
+      },
+      {
+        "title": "Chapter 7 Don’t Let the Beetles Get You Down",
+        "level": 2,
+        "href": "section-0013.xhtml"
+      },
+      {
+        "title": "Chapter 8 A Law That Will Outlaw Many of Tour Worries",
+        "level": 2,
+        "href": "section-0014.xhtml"
+      },
+      {
+        "title": "Chapter 9 Co-Operate with the Inevitable",
+        "level": 2,
+        "href": "section-0015.xhtml"
+      },
+      {
+        "title": "Chapter 10 Put a “Stop-Loss” Order on Your Worries",
+        "level": 2,
+        "href": "section-0016.xhtml"
+      },
+      {
+        "title": "Chapter 11 Don’t Try to Saw Sawdust",
+        "level": 2,
+        "href": "section-0017.xhtml"
+      },
+      {
+        "title": "Part Three: In A Nutshell: How to Break the Worry Habit Before It Breaks You",
+        "level": 2,
+        "href": "section-0018.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part IV Seven Ways to Cultivate a Mental Attitude that Will Bring You Peace and Happiness",
+    "level": 1,
+    "href": "section-0019.xhtml",
+    "children": [
+      {
+        "title": "Chapter 12 Eight Words that Can Transform Your Life",
+        "level": 2,
+        "href": "section-0020.xhtml"
+      },
+      {
+        "title": "Chapter 13 The High Cost of Getting Even",
+        "level": 2,
+        "href": "section-0021.xhtml"
+      },
+      {
+        "title": "Chapter 14 If You Do This, You Will Never Worry About Ingratitude",
+        "level": 2,
+        "href": "section-0022.xhtml"
+      },
+      {
+        "title": "Chapter 15 Would You Take a Million Dollars for What You Have?",
+        "level": 2,
+        "href": "section-0023.xhtml"
+      },
+      {
+        "title": "Chapter 16 Find Yourself and Be Yourself: Remember There Is No One Else on Earth Like You",
+        "level": 2,
+        "href": "section-0024.xhtml"
+      },
+      {
+        "title": "Chapter 17 If You Have a Lemon, Make a Lemonade",
+        "level": 2,
+        "href": "section-0024a.xhtml"
+      },
+      {
+        "title": "Chapter 18 How to Cure Melancholy in Fourteen Days",
+        "level": 2,
+        "href": "section-0025.xhtml"
+      },
+      {
+        "title": "Part Four: In A Nutshell: Seven Ways to Cultivate a Mental Attitude that Will Bring You Peace and Happiness",
+        "level": 2,
+        "href": "section-0026.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part V The Golden Rule for Conquering Worry",
+    "level": 1,
+    "href": "section-0027.xhtml",
+    "children": [
+      {
+        "title": "Chapter 19 How My Mother and Father Conquered Worry",
+        "level": 2,
+        "href": "section-0028.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part VI How to Keep from Worrying About Criticism",
+    "level": 1,
+    "href": "section-0029.xhtml",
+    "children": [
+      {
+        "title": "Chapter 20 Remember that No One Ever Kicks a Dead Dog",
+        "level": 2,
+        "href": "section-0030.xhtml"
+      },
+      {
+        "title": "Chapter 21 Do This—and Criticism Can’t Hurt You",
+        "level": 2,
+        "href": "section-0031.xhtml"
+      },
+      {
+        "title": "Chapter 22 Fool Things I Have Done",
+        "level": 2,
+        "href": "section-0032.xhtml"
+      },
+      {
+        "title": "Part Six: In a Nutshell: How to Keep from Worrying About Criticism",
+        "level": 2,
+        "href": "section-0033.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part VII Six Ways to Prevent Fatigue and Worry and Keep Your Energy and Spirits High",
+    "level": 1,
+    "href": "section-0034.xhtml",
+    "children": [
+      {
+        "title": "Chapter 23 How to Add 6One Hour a Day to Tour Waking Life",
+        "level": 2,
+        "href": "section-0035.xhtml"
+      },
+      {
+        "title": "Chapter 24 What Makes You Tired-and What You Can Do About It",
+        "level": 2,
+        "href": "section-0036.xhtml"
+      },
+      {
+        "title": "Chapter 25 How the Housewife Can Avoid Fatigue-and Keep Looking Young",
+        "level": 2,
+        "href": "section-0037.xhtml"
+      },
+      {
+        "title": "Chapter 26 Four Good Working Habits That Will Help Prevent Fatigue and Worry",
+        "level": 2,
+        "href": "section-0038.xhtml"
+      },
+      {
+        "title": "Chapter 27: How to Banish the Boredom that Produces Fatigue, Worry, and Resentment",
+        "level": 2,
+        "href": "section-0039.xhtml"
+      },
+      {
+        "title": "Chapter 28 How to Keep from Worrying About Insomnia",
+        "level": 2,
+        "href": "section-0040.xhtml"
+      },
+      {
+        "title": "Part Seven: In A Nutshell: Six Ways to Prevent Fatigue and Worry and Keep Your Energy and Spirits High",
+        "level": 2,
+        "href": "section-0041.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part VIII How to Find the Kind of Work in Which You May Be Happy and Successful",
+    "level": 1,
+    "href": "part08.xhtml",
+    "children": [
+      {
+        "title": "Chapter 29 The Major Decision of Tour Life",
+        "level": 2,
+        "href": "section-0042.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part IX How To Lessen Your Financial Worries",
+    "level": 1,
+    "href": "part09.xhtml",
+    "children": [
+      {
+        "title": "Chapter 30 “Seventy Per Cent of All Our Worries ...”",
+        "level": 2,
+        "href": "section-0043.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part X “How I Conquered Worry”",
+    "level": 1,
+    "href": "part10.xhtml",
+    "children": [
+      {
+        "title": "Chapter 32 True Stories",
+        "level": 2,
+        "href": "section-0044.xhtml"
+      }
+    ]
+  }
+]

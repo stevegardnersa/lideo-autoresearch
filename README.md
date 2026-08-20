@@ -120,7 +120,7 @@ If your book directory already contains chapter markdown like `0.md`, `1.md`, `2
 The simplest case is now:
 
 ```bash
-python tools/bootstrap_book.py \
+python3 tools/bootstrap_book.py \
   --book-dir data/books/my-book \
   --chapter-glob '*.md' \
   --copy-raw-json
@@ -137,7 +137,7 @@ If `.env` contains `GOOGLE_BOOKS_API_KEY`, the script will also try to look up t
 You can still override everything manually:
 
 ```bash
-python tools/bootstrap_book.py \
+python3 tools/bootstrap_book.py \
   --book-dir data/books/my-book \
   --chapter-glob '*.md' \
   --volume-json /path/to/google_books_volume.json \
@@ -186,19 +186,19 @@ bench/
 Build frozen rubrics from the source chapters:
 
 ```bash
-python tools/build_rubrics.py --books-root data/books --artifacts-root artifacts
+python3 tools/build_rubrics.py --books-root data/books --artifacts-root artifacts
 ```
 
 Check that the corpus has reasonable genre coverage:
 
 ```bash
-python tools/corpus_report.py --books-root data/books
+python3 tools/corpus_report.py --books-root data/books
 ```
 
 Build the benchmark splits. The default mode is **genre-aware** and will balance the selected books across `genre_macro` while respecting `benchmark_pool`:
 
 ```bash
-python tools/build_bench.py \
+python3 tools/build_bench.py \
   --books-root data/books \
   --bench-dir bench \
   --dev-books 10 \
@@ -210,7 +210,7 @@ python tools/build_bench.py \
 For the included sample corpus, rebuild with:
 
 ```bash
-python tools/build_bench.py \
+python3 tools/build_bench.py \
   --books-root data/books \
   --bench-dir bench \
   --dev-books 1 \
@@ -219,42 +219,139 @@ python tools/build_bench.py \
   --seed 42
 ```
 
-Run a smoke test without API calls:
+### Adding a New Candidate
+
+**Step 1 — Auto-generate profiles from a model name:**
 
 ```bash
-python core/run_candidate.py --bench chapter_fast --profile 30m --mock
-python core/run_candidate.py --bench book_gate --profile 30m --mock
+# Both 30m and 60m profiles (default)
+python3 tools/add_candidate.py --model-full "minimax/minimax-1.5-flash"
+python3 tools/add_candidate.py --model-full "deepseek/deepseek-v4-flash"
+
+# 30m profiles only
+python3 tools/add_candidate.py --model-full "openai/gpt-5-mini" --time-budget 30m
+
+# Preview what would be created (no API calls, no file writes)
+python3 tools/add_candidate.py --model-full "openai/gpt-5-mini" --dry-run
+
+# List all profiles in the candidates JSON
+python3 tools/add_candidate.py --list
+
+# Remove profiles matching a regex pattern (dry-run first!)
+python3 tools/add_candidate.py --remove "mimo-v2-flash" --dry-run
+python3 tools/add_candidate.py --remove "mimo-v2-flash"
+
+# With provider routing (force OpenRouter to try only a specific provider).
+python3 tools/add_candidate.py --model-full "openai/gpt-5-mini" --provider-route '{"only":["openai"]}'
+
+python3 tools/add_candidate.py --model-full "openai/gpt-5-mini" --provider-route '{"order":["openai"]}'
+
+python3 tools/add_candidate.py --model-full "openai/gpt-5-mini" --provider-route '{"allow":["openai"]}'
+
+python3 tools/add_candidate.py --model-full "openai/gpt-5-mini" --provider-route '{"avoid":["openai"]}'
+
+python3 tools/add_candidate.py --model-full "deepseek/deepseek-v4-flash" --provider-route '{"order": ["deepseek", "anyscale", "together"], "avoid": ["openai"]}'
 ```
 
-Run a real benchmark with OpenRouter:
+The script probes the model for (a) JSON schema support, (b) thinking mode, (c) non-thinking mode — and creates one profile per supported mode. If the model supports both thinking and non-thinking, two profiles are created (e.g. `30m_deepseek-v4-flash_thinking` and `30m_deepseek-v4-flash_notthinking`).
+
+Key `--time-budget` values:
+- `30m` — only 30-minute whole-book summary profiles
+- `60m` — only 60-minute whole-book summary profiles
+- `30m 60m` — both (default)
+
+Profiles are written to `data/candidates.json`.
+
+**Step 2 — Compile profiles into the active harness:**
+
+```bash
+python3 tools/gen_profile_literal.py
+```
+
+This regenerates `Profile` union type and `_CANDIDATES` dict in `candidate_spec.py` from `data/candidates.json`. Run this whenever you add or update profiles.
+
+**Step 3 — Smoke test:**
+
+```bash
+python3 core/run_candidate.py --bench chapter_fast --profile <name> --mock --write-results
+```
+
+### Run a smoke test without API calls:
+
+```bash
+# Single profile smoke test
+python3 core/run_candidate.py --bench chapter_fast --profile 30m_minimax_notthinking --mock
+
+# All 30m profiles smoke test (sequential, no LLM calls)
+python3 core/run_candidate.py --bench chapter_fast --profile all --time 30m --mock
+
+# All 60m profiles smoke test
+python3 core/run_candidate.py --bench chapter_fast --profile all --time 60m --mock
+```
+
+### Run a real benchmark with OpenRouter:
 
 ```bash
 export OPENROUTER_API_KEY=...
-python core/run_candidate.py --bench chapter_fast --profile 30m --judge-model openai/gpt-5-mini --write-results
+# Single profile
+python3 core/run_candidate.py --bench chapter_fast --profile 30m_minimax_notthinking --judge-model openai/gpt-5-mini --write-results
+
+# All 30m profiles (sequential)
+python3 core/run_candidate.py --bench chapter_fast --profile all --time 30m --judge-model openai/gpt-5-mini --write-results
 ```
 
+**Profile selection:**
+- `--profile <name>` — run a single named profile (e.g. `30m_minimax_notthinking`, `60m_deepseek-v4-flash_thinking`)
+- `--profile all --time 30m` — run all 30m-prefixed profiles sequentially
+- `--profile all --time 60m` — run all 60m-prefixed profiles sequentially
+- `--profile all --time all` — run all profiles sequentially (default with `--profile all`)
+
+**Scoring gates by profile:**
+- `30m_*` profiles → min_faithfulness=0.50, min_concept_coverage=0.15 (permissive)
+- `60m_*` profiles → min_faithfulness=0.60, min_concept_coverage=0.50 (moderate)
+- bare `30m`/`60m` → min_faithfulness=0.70, min_concept_coverage=0.60 (strict default)
+
+**Judge behavior:**
+- With `--judge-model openai/gpt-5-mini` — LLM judge evaluates summaries; results include `judge_no_fluff`, `judge_structure_quality`, `judge_concept_coverage`, `judge_concept_coverage_faithfulness`, `judge_overall_quality`
+- Without `--judge-model` — scoring uses only deterministic metrics (faithfulness proxy from keyword overlap, concept coverage proxy, length error). All judge fields are absent from results. Useful for fast iteration without LLM cost.
+
+**Common flag combinations:**
+- `--mock` — run without any LLM API calls; uses fake responses to test pipeline logic end-to-end
+- `--write-results` — persist results JSON and samples JSONL to `runs/` (without this flag results are only printed to stdout)
+- `--mock --write-results` — smoke test that saves artifacts locally; useful to verify the full pipeline before real runs
+
 Promote only winning candidates to `book_gate`, then evaluate finalists once on `book_holdout`.
+
+**Step 4 — Promote through benchmark splits:**
+
+| Split | Purpose | Gate |
+|-------|---------|------|
+| `chapter_fast` | Rapid iteration on chapter summarization | min_faithfulness=0.50, min_concept_coverage=0.15 (30m) |
+| `book_gate` | Full-book evaluation, used to select finalists | Same gates as fast |
+| `book_holdout` | Final evaluation of winning candidates on unseen books | Same gates |
+
+Promote a candidate from `chapter_fast` → `book_gate` only if its leaderboard scores are competitive. Finalists on `book_holdout` determine which candidates are production-ready.
 
 ## Leaderboards
 
 Overall leaderboard:
 
 ```bash
-python tools/leaderboard.py --bench chapter_fast --profile 30m
+python3 tools/leaderboard.py --bench chapter_fast --profile 30m
 ```
 
 Per-genre leaderboard:
 
 ```bash
-python tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field genre_macro
+python3 tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field genre_macro
 ```
 
 Other useful slices:
 
 ```bash
-python tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field narrative_vs_expository
-python tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field prescriptive_vs_analytical
-python tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field quantitative_density
+python3 tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field narrative_vs_expository
+python3 tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field prescriptive_vs_analytical
+python3 tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field quantitative_density
 ```
 
 The overall results table now includes:
@@ -264,6 +361,65 @@ The overall results table now includes:
 - `n_genre_macros`
 
 That makes it easier to reject systems that win overall but collapse on one important nonfiction genre.
+
+## Re-judging Runs
+
+`core/judge_existing.py` re-runs the LLM judge on already-completed runs. Results are written to separate `.llmj.*` files alongside the originals, which are never modified.
+
+The script targets runs where:
+- `judge_model` is empty (not yet judged)
+- `judge_version_resolved` contains `deterministic`
+
+**Enumerate runs without calling the judge (`--dry-run`):**
+
+```bash
+python3 core/judge_existing.py --bench booksum-v4 --judge-model openai/gpt-5.4-mini --dry-run
+```
+
+**Filter with `--profile` (substring match):**
+
+```bash
+# All nemotron runs
+python3 core/judge_existing.py --bench booksum-v4 --judge-model openai/gpt-5.4-mini --profile nemotron-3 --dry-run
+
+# Only the "thinking" variant
+python3 core/judge_existing.py --bench booksum-v4 --judge-model openai/gpt-5.4-mini --profile _thinking --dry-run
+
+# Only the "notthinking" variant
+python3 core/judge_existing.py --bench booksum-v4 --judge-model openai/gpt-5.4-mini --profile _notthinking --dry-run
+```
+
+**Target a single run by exact run-id:**
+
+```bash
+python3 core/judge_existing.py --bench booksum-v4 --judge-model openai/gpt-5.4-mini \
+  --run-id 20260512t075446z__booksum-v4__chapter_fast-v3__30m_nemotron-3-s__30m_nemotron-3-super-120b-a12b_thinking_v1
+```
+
+**Actually run judging** (drop `--dry-run`):
+
+```bash
+# All nemotron runs, rejudge with GPT-4o
+python3 core/judge_existing.py --bench booksum-v4 --judge-model openai/gpt-4o --profile nemotron-3
+
+# Limit to first N samples per run for a smoke test
+python3 core/judge_existing.py --bench booksum-v4 --judge-model openai/gpt-4o --profile nemotron-3 --max-samples 5
+```
+
+By default the script skips runs where `__llmj_<model>` output files already exist. Use `--force-overwrite` to rejudge and overwrite:
+
+```bash
+python3 core/judge_existing.py --bench booksum-v4 --judge-model openai/gpt-4o --profile nemotron-3 --force-overwrite
+```
+
+**Output files (`<run-id>__llmj_<model>.{json,state.json,samples.jsonl}` alongside originals):**
+- `<run-id>__llmj_gpt-5.4-mini.json` — manifest with `judge_model`, `judge_version_resolved`, `dataset_score`, `sample_scores`
+- `<run-id>__llmj_gpt-5.4-mini.state.json` — state with `judge_model`, `judge_version_resolved`
+- `<run-id>__llmj_gpt-5.4-mini.samples.jsonl` — samples with `judge_scores` and `trace.judge_rationale` per sample
+
+Original run files (`.json`, `.state.json`, `.samples.jsonl`) are never modified.
+
+**Note:** The script looks for rubric files under the `data_dir` recorded in the run manifest. If those rubrics have moved, the judging will fail on samples that can't locate their rubric. The `--max-samples 0` means all samples (default).
 
 ## Make targets
 
@@ -281,3 +437,23 @@ make leaderboard
 - The judge is optional. If you omit `--judge-model`, the scorer falls back to deterministic proxies.
 - `candidate_spec.py` contains two separate task profiles: `30m` and `60m`.
 - The benchmark is designed so you can start with one **general nonfiction system** and later branch into **genre-specific systems** while keeping the general winner as the fallback.
+
+## Resetting the Benchmark
+
+To clear all runs, results, and snapshot data and start fresh:
+
+```bash
+python3 reset_benchmark.py
+```
+
+This interactive script asks for confirmation before deleting:
+- `bench/book_gate.jsonl` — gate set (books selected for benchmark evaluation)
+- `artifacts/runs/` — all run outputs
+- `results.tsv` — experiment log
+- `data/candidates.json` — saved candidates snapshot
+- `snapshots/catalog/*.json` — catalog snapshots
+- `snapshots/pricing/*.json` — pricing snapshots
+- **`Profile` Literal[] in `candidate_spec.py`** — all profile type aliases
+- **`PROFILE_CANDIDATES` in `candidate_spec.py`** — all candidate definitions
+
+After resetting, you have a blank slate. Add profiles to `data/candidates.json` via `python tools/add_candidate.py`, then run `python tools/gen_profile_literal.py` to update `candidate_spec.py`.

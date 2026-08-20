@@ -1,0 +1,76 @@
+{
+  "headings": [],
+  "core_concepts": [
+    "APPENDIX B",
+    "THE STATS",
+    "Want to know what we’ve found from a statistical standpoint?",
+    "As a reminder",
+    "Correlation looks at how closely two variables move together (or don’t) but it doesn’t tell us if one variable’s movement predicts or causes the movement in another variable",
+    "Prediction talks about the impact of one construct on another",
+    "ORGANIZATIONAL PERFORMANCE",
+    "High performers are twice as likely to exceed organizational performance goals as low performers: profitability, productivity, market share, number of customers",
+    "The four measures of software delivery performance (deploy frequency, lead time, mean time to restore, change fail percentage) are good classifiers for the software delivery performance profile",
+    "Unplanned work and rework: High performers reported spending 49% of their time on new work and 21% on unplanned work or rework",
+    "Differences are not statistically significant between medium and low performers for configuration management and testing",
+    "BURNOUT AND DEPLOYMENT PAIN"
+  ],
+  "mechanisms_or_explanations": [
+    "As a reminder: Correlation looks at how closely two variables move together (or don’t) but it doesn’t tell us if one variable’s movement predicts or causes the movement in another variable",
+    "It helps us understand the impact of HR policies, organizational behavior, and motivation, and helps us measure how technology affects such outcomes as user satisfaction, team efficiency, and organizational performance",
+    "Inferential design is used when purely experimental design is not possible and field experiments are preferred—for example, in business, where data collection happens in complex organizations, not in sterile lab envir",
+    "For those who worked for publicly traded companies, we found the following (this analysis was not replicated in later years because our dataset was not large enough): High performers had 50% higher market capitalizati",
+    "Manual work: High performers report the lowest amount of manual work across all practices (configuration management, testing, deployments, change approval process) at statistically significant levels",
+    "Medium performers do more manual work than low performers when it comes to deployment and change approval processes, and these differences are statistically significant",
+    "Teams that reported no approval process or used peer review achieved higher software delivery performance",
+    "A lightweight change approval process predicts software delivery performance.LEAN PRODUCT MANAGEMENT CAPABILITIES The ability to take an experimental approach to product development is highly correlated with the techn",
+    "What matters is not what industry you’re in or how big you are; even large, highly regulated organizations are able to develop and deliver software with high performance, and then leverage these capabilities to delive"
+  ],
+  "critical_qualifiers": [
+    "As a reminder: Correlation looks at how closely two variables move together (or don’t) but it doesn’t tell us if one variable’s movement predicts or causes the movement in another variable",
+    "Two variables moving together can always be due to a third variable or, sometimes, just chance",
+    "Low performers have the longest integration times and branch lifetimes, with branch life and integration typically lasting days or weeks",
+    "High-performing teams were more likely to respond positively to the following statements: We can do most of our testing without requiring an integrated environment",
+    "We can and do deploy/release our applications independently of other applications/services they depend on"
+  ],
+  "important_examples": [
+    "Inferential design is used when purely experimental design is not possible and field experiments are preferred—for example, in business, where data collection happens in complex organizations, not in sterile lab envir",
+    "High performers spend 50% less time remediating security issues than low performers.ARCHITECTURE CAPABILITIES There was no correlation between a particular type of system (e.g., system of engagement or system of recor",
+    "Low performers were more likely to say that the software they were building—or the set of services they had to interact with—was “custom software developed by another company (e.g., an outsourcing partner).” Low perfo"
+  ],
+  "key_entities_or_numbers": [
+    "In a follow-up survey to the initial 2014 data collection effort, we gathered stock ticker data and performed additional analysis on responses from just over 1,000 respondents across 355 companies who volunteered the",
+    "For those who worked for publicly traded companies, we found the following (this analysis was not replicated in later years because our dataset was not large enough): High performers had 50% higher market capitalizati",
+    "The more painful code deployments are, the poorer the software delivery performance and culture.QUALITY Unplanned work and rework: High performers reported spending 49% of their time on new work and 21% on unplanned w",
+    "Low performers spend 38% of their time on new work and 27% on unplanned work or rework",
+    "Medium performers spend more time on unplanned rework than low performers, with 32% of their time spent on unplanned work or rework",
+    "See Table B.1 for manual work percentages in high, medium, and low performers.Table B.1 Manual Work Percentages Differences are not statistically significant between medium and low performers for configuration managem",
+    "High performers spend 50% less time remediating security issues than low performers.ARCHITECTURE CAPABILITIES There was no correlation between a particular type of system (e.g., system of engagement or system of recor",
+    "In the 2017 dataset, this was the biggest contributor to continuous delivery",
+    "Employees in high-performing organizations were 2.2 times more likely to recommend their organization as a great place to work",
+    "Employees in high-performing teams are 1.8 times more likely to recommend their team as a great place to work",
+    "Teams with the top 10% of reported transformational leadership characteristics were equally or even less likely to be high performers, compared to the entire population of teams represented in survey results",
+    "33% of our respondents report working on teams with no women"
+  ],
+  "key_terms": [
+    "Want",
+    "Here",
+    "Correlation",
+    "Two",
+    "Prediction",
+    "Specifically",
+    "Inferential",
+    "Analysis",
+    "Appendix",
+    "High",
+    "For",
+    "The",
+    "Our",
+    "Software",
+    "Change",
+    "Deploy",
+    "Lead",
+    "Unplanned",
+    "Low",
+    "There"
+  ]
+}

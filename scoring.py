@@ -165,6 +165,33 @@ class ScoringConfig:
 DEFAULT_SCORING_CONFIG = ScoringConfig()
 
 
+def apply_gates_override(
+    config: ScoringConfig,
+    *,
+    min_faithfulness: Optional[float] = None,
+    min_concept_coverage: Optional[float] = None,
+    max_final_length_error_pct: Optional[float] = None,
+    max_passes: Optional[int] = None,
+) -> ScoringConfig:
+    if min_faithfulness is None and min_concept_coverage is None and max_final_length_error_pct is None and max_passes is None:
+        return config
+
+    gates = config.gates
+    new_gates = GateConfig(
+        max_final_length_error_pct=max_final_length_error_pct if max_final_length_error_pct is not None else gates.max_final_length_error_pct,
+        max_passes=max_passes if max_passes is not None else gates.max_passes,
+        min_faithfulness=min_faithfulness if min_faithfulness is not None else gates.min_faithfulness,
+        min_concept_coverage=min_concept_coverage if min_concept_coverage is not None else gates.min_concept_coverage,
+    )
+    return ScoringConfig(
+        weights=config.weights,
+        gates=new_gates,
+        penalties=config.penalties,
+        target_tolerance_pct=config.target_tolerance_pct,
+        zero_accuracy_at_error_pct=config.zero_accuracy_at_error_pct,
+    )
+
+
 PAIRWISE_JUDGE_JSON_SCHEMA: Dict[str, object] = {
     "name": "pairwise_summary_judge",
     "strict": True,
@@ -510,7 +537,15 @@ def hard_fail_reasons(
     reasons: List[str] = []
     if sample.malformed:
         reasons.append("malformed_output")
-    if metrics.final_length_error_pct > config.gates.max_final_length_error_pct:
+
+    # Unified length gate: fail if diff > 100 words AND pct error > max_final_length_error_pct (10%)
+    word_diff = abs(metrics.visible_words - sample.target_words)
+    target = sample.target_words
+
+    pct_error = word_diff / target if target > 0 else 0
+    length_fails = word_diff > 100 and pct_error > config.gates.max_final_length_error_pct
+
+    if length_fails:
         reasons.append("length_outside_hard_tolerance")
     if sample.passes_used > config.gates.max_passes:
         reasons.append("too_many_passes")

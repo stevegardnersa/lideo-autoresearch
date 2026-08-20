@@ -1,0 +1,75 @@
+{
+  "headings": [],
+  "core_concepts": [
+    "CHAPTER 8",
+    "PRODUCT DEVELOPMENT",
+    "The Agile brand has more or less won the methodology wars",
+    "Eric Ries’ book The Lean Startup (Ries 2011) created a surge of interest in lightweight approaches to exploring new business models and product ideas in conditions of uncertainty",
+    "We wanted to test whether these practices have a direct impact on organizational performance, measured in terms of productivity, market share, and profitability",
+    "LEAN PRODUCT DEVELOPMENT PRACTICES",
+    "We examined four capabilities which make up our model of a Lean approach to product development (see also Figure 8.1)",
+    "The extent to which teams slice up products and features into small batches that can be completed in less than a week and released frequently, including the use of MVPs (minimum viable products)",
+    "Figure 8.1: Components of Lean Product Management",
+    "Working in Small Batches",
+    "The key to working in small batches is to have work decomposed into features that allow for rapid development, instead of complex features developed on branches and released infrequently",
+    "In software organizations, the capability to work and deliver in small batches is especially important because it allows you to gather user feedback quickly using techniques such as A/B testing"
+  ],
+  "mechanisms_or_explanations": [
+    "However, much of what has been implemented is faux Agile—people following some of the common practices while failing to address wider organizational culture and processes",
+    "Whether development teams have the authority to create and change specifications as part of the development process without requiring approval.Analysis showed that these factors were statistically significant in predi",
+    "In software organizations, the capability to work and deliver in small batches is especially important because it allows you to gather user feedback quickly using techniques such as A/B testing",
+    "One of the points of Agile development is to seek input from customers throughout the development process, including early stages",
+    "But if a development team isn’t allowed, without authorization from some outside body, to change requirements or specifications in response to what they discover, their ability to innovate is sharply inhibited",
+    "Our analysis showed that the ability of teams to try out new ideas and create and update specifications during the development process, without requiring the approval of people outside the team, is an important factor",
+    "To be effective, experimentation should be combined with the other capabilities we measure here: working in small batches, making the flow of work through the delivery process visible to everyone, and incorporating cu",
+    "If we combine the models across years, it becomes a reciprocal model or, colloquially, a virtuous cycle",
+    "Figure 8.2: Impacts of Lean Product Management In software organizations, the ability to work and deliver in small batches is especially important because it enables teams to integrate user research into product devel"
+  ],
+  "critical_qualifiers": [
+    "However, much of what has been implemented is faux Agile—people following some of the common practices while failing to address wider organizational culture and processes",
+    "This approach, based on our research, includes building and validating prototypes from the beginning, working in small batches, and evolving or “pivoting” products and the business models behind them early and often",
+    "The extent to which teams slice up products and features into small batches that can be completed in less than a week and released frequently, including the use of MVPs (minimum viable products)",
+    "This idea can be applied at both the feature and the product level",
+    "This restriction can create some real problems and can result in products that don’t actually delight and engage customers and won’t deliver the expected business results",
+    "But if a development team isn’t allowed, without authorization from some outside body, to change requirements or specifications in response to what they discover, their ability to innovate is sharply inhibited"
+  ],
+  "important_examples": [
+    "For example, in larger companies it’s still common to see months spent on budgeting, analysis, and requirements-gathering before work starts; to see work batched into big projects with infrequent releases; and for cus"
+  ],
+  "key_entities_or_numbers": [
+    "CHAPTER 8 PRODUCT DEVELOPMENT The Agile brand has more or less won the methodology wars",
+    "Eric Ries’ book The Lean Startup (Ries 2011) created a surge of interest in lightweight approaches to exploring new business models and product ideas in conditions of uncertainty",
+    "Ries’ work is a synthesis of ideas from the Lean movement, design thinking, and the work of entrepreneur Steve Blank (Blank 2013), which emphasizes the importance of taking an experimental approach to product development",
+    "LEAN PRODUCT DEVELOPMENT PRACTICES We examined four capabilities which make up our model of a Lean approach to product development (see also Figure 8.1)",
+    "Figure 8.1: Components of Lean Product Management Working in Small Batches The key to working in small batches is to have work decomposed into features that allow for rapid development, instead of complex features dev",
+    "EFFECTIVE PRODUCT MANAGEMENT DRIVES PERFORMANCE We conducted our analysis of Lean product management capabilities over two years, from 2016-2017",
+    "The virtuous cycle of increased delivery performance and Lean product management practices drives better outcomes for your organization (see Figure 8.2)",
+    "Figure 8.2: Impacts of Lean Product Management In software organizations, the ability to work and deliver in small batches is especially important because it enables teams to integrate user research into product devel",
+    "2011",
+    "2013",
+    "8.1",
+    "2016"
+  ],
+  "key_terms": [
+    "The Agile",
+    "However",
+    "Agile",
+    "For",
+    "Lean",
+    "Eric Ries",
+    "The Lean Startup",
+    "Ries",
+    "Steve Blank",
+    "Blank",
+    "This",
+    "The",
+    "Whether",
+    "Analysis",
+    "Improving",
+    "Components",
+    "Lean Product Management Working",
+    "Small Batches The",
+    "Working",
+    "Gathering"
+  ]
+}

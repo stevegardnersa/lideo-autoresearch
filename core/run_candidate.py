@@ -15,7 +15,8 @@ The only file autoresearch should edit is ``candidate_spec.py``.
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict, dataclass
+import csv
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 import importlib.util
 import json
@@ -34,6 +35,8 @@ from core.book_data import BookTaxonomy, taxonomy_from_manifest
 from core.judge import AbsoluteJudgeResult, judge_summary_absolute
 from core.openrouter_client import (
     GenerationResult,
+    OpenRouterAPIError,
+    OpenRouterHTTPError,
     OpenRouterClient,
     OpenRouterInsufficientCreditsError,
     UsageRecord,
@@ -47,7 +50,7 @@ from core.versioning import (
     save_json,
     sha256_file,
 )
-from scoring import JudgeScores, Rubric, SummarySample, score_dataset, visible_word_count
+from scoring import JudgeScores, Rubric, SummarySample, readability_metrics, score_dataset, visible_word_count, DEFAULT_SCORING_CONFIG, apply_gates_override
 
 
 @dataclass(frozen=True)
@@ -100,8 +103,21 @@ def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def utc_now_ts() -> str:
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+
 def _json_safe(payload: Any) -> Any:
     return json.loads(json.dumps(payload, ensure_ascii=False, default=str))
+
+
+def _is_thinking_enabled(spec) -> bool:
+    chapter_extra = spec.chapter_stage.extra_body or {}
+    thinking_cfg = chapter_extra.get("thinking")
+    if thinking_cfg and isinstance(thinking_cfg, dict):
+        if thinking_cfg.get("type") == "disabled":
+            return False
+    return True
 
 
 def error_to_dict(exc: BaseException) -> Dict[str, Any]:
@@ -387,7 +403,10 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--spec", default=str(ROOT / "candidate_spec.py"))
     parser.add_argument("--bench", required=True, help="Benchmark name (chapter_fast, book_gate, book_holdout) or path to JSONL")
-    parser.add_argument("--profile", required=True, choices=["30m", "60m"])
+    parser.add_argument("--time", default="all", choices=["all", "30m", "60m"],
+                        help="Filter candidates by time budget: '30m', '60m', or 'all' (default: all)")
+    parser.add_argument("--profile", required=True,
+                        help="Profile name to run (e.g. '30m_deepseek-v4-flash_notthinking'). Use 'all' with --time to run all matching profiles.")
     parser.add_argument("--data-dir", default=str(ROOT / "data" / "books"))
     parser.add_argument("--results-tsv", default=str(ROOT / "results.tsv"))
     parser.add_argument("--runs-dir", default=str(ROOT / "runs"))
@@ -548,6 +567,7 @@ def make_client(args: argparse.Namespace) -> Optional[OpenRouterClient]:
         pricing_snapshot_path=args.pricing_snapshot,
         referer=args.referer,
         title=args.title,
+        timeout=600,
     )
 
 
@@ -646,7 +666,9 @@ def invoke_generation(
 ) -> GenerationResult:
     if client is None:
         source = current_summary_md if current_summary_md and visible_word_count(current_summary_md) > target_words else mock_source_md
-        summary_md = extractive_mock_summary(source, target_words=target_words)
+        if not source.strip():
+            source = "placeholder content"
+        summary_md = extractive_mock_summary(source, target_words=max(1, target_words))
         usage = UsageRecord()
         payload = json.dumps({"summary_md": summary_md, "estimated_visible_words": visible_word_count(summary_md)})
         return GenerationResult(
@@ -656,7 +678,25 @@ def invoke_generation(
             usage=usage,
             raw_response={"mock": True},
         )
-    return client.chat_completion(request_body)
+    try:
+        return client.chat_completion(request_body)
+    except (OpenRouterAPIError, OpenRouterHTTPError) as e:
+        if isinstance(e, OpenRouterHTTPError):
+            model_in_request = request_body.get("model", "unknown") if isinstance(request_body, dict) else "unknown"
+            print(f"OpenRouter HTTP error: status_code={e.status_code}, path={e.path}, model={model_in_request}")
+            if e.error_payload:
+                error_info = e.error_payload.get('error', {})
+                print(f"  error_payload.message: {error_info.get('message', 'unknown')}")
+                print(f"  error_payload.type: {error_info.get('type', 'unknown')}")
+                print(f"  error_payload.code: {error_info.get('code', 'unknown')}")
+                print(f"  error_payload keys: {list(error_info.keys()) if isinstance(error_info, dict) else 'not a dict'}")
+                print(f"  full error_payload: {e.error_payload}")
+            else:
+                print(f"  error_payload: None")
+            print(f"  response_text (first 1000 chars): {e.response_text[:1000] if e.response_text else 'empty'}")
+        else:
+            print(f"OpenRouter API error: {e}")
+        raise
 
 
 def run_length_controlled_stage(
@@ -705,12 +745,13 @@ def run_length_controlled_stage(
         )
 
     if passes_used <= 0 or not summary_md:
+        use_json_schema = stage_config.use_json_schema if stage_config.use_json_schema is not None else spec.use_json_schema
         request = build_openrouter_request(
             stage=stage_config,
             system_prompt=system_prompt,
             user_prompt=initial_user_prompt,
             schema_name=spec.json_schema_name,
-            use_json_schema=spec.use_json_schema,
+            use_json_schema=use_json_schema,
         )
         result = invoke_generation(client, request, mock_source_md=mock_source_md, target_words=target_words)
         passes_used = 1
@@ -754,12 +795,13 @@ def run_length_controlled_stage(
                     retrieved_source_excerpts=retrieved_source_excerpts,
                 )
             current_for_mock = summary_md
+        use_json_schema = stage_config.use_json_schema if stage_config.use_json_schema is not None else spec.use_json_schema
         repair_request = build_openrouter_request(
             stage=stage_config,
             system_prompt=system_prompt,
             user_prompt=repair_user_prompt,
             schema_name=spec.json_schema_name,
-            use_json_schema=spec.use_json_schema,
+            use_json_schema=use_json_schema,
         )
         result = invoke_generation(
             client,
@@ -840,6 +882,7 @@ def run_chapter_sample(
     judge_source_char_limit: int,
     resume_progress: Optional[Mapping[str, Any]] = None,
     progress_callback: Optional[Callable[[Mapping[str, Any]], None]] = None,
+    run_dir: Optional[Path] = None,
 ) -> Tuple[SummarySample, Dict[str, Any]]:
     book_id = str(item["book_id"])
     chapter_id = str(item["chapter_id"])
@@ -952,6 +995,51 @@ def run_chapter_sample(
         "judge_rationale": judge_result.rationale if judge_result else "",
     }
     trace.update(taxonomy_trace_payload(book.taxonomy))
+    if spec.disable_composer and judge_result and judge_result.scores and run_dir:
+        chapter_runs_dir = run_dir / "chapter_runs"
+        chapter_runs_dir.mkdir(parents=True, exist_ok=True)
+        chapter_csv_path = chapter_runs_dir / f"{sample_id}.csv"
+        rm = readability_metrics(stage_run.summary_md) if stage_run.summary_md else None
+        fieldnames = [
+            "sample_id", "chapter_id", "chapter_title", "target_words", "output_words",
+            "passes_used", "generation_cost", "uncached_generation_cost",
+            "judge_faithfulness", "judge_concept_coverage", "judge_qualifier_preservation",
+            "judge_no_fluff", "judge_structure_quality",
+            "flesch_reading_ease", "flesch_kincaid_grade", "sentence_count",
+        ]
+        row = {
+            "sample_id": sample_id,
+            "chapter_id": chapter_id,
+            "chapter_title": chapter.chapter_title,
+            "target_words": target_words,
+            "output_words": visible_word_count(stage_run.summary_md),
+            "passes_used": stage_run.passes_used,
+            "generation_cost": stage_run.generation_cost,
+            "uncached_generation_cost": stage_run.uncached_generation_cost,
+            "judge_faithfulness": judge_result.scores.faithfulness,
+            "judge_concept_coverage": judge_result.scores.concept_coverage,
+            "judge_qualifier_preservation": judge_result.scores.qualifier_preservation,
+            "judge_no_fluff": judge_result.scores.no_fluff,
+            "judge_structure_quality": judge_result.scores.structure_quality,
+        }
+        if rm:
+            row["flesch_reading_ease"] = rm.flesch_reading_ease
+            row["flesch_kincaid_grade"] = rm.flesch_kincaid_grade
+            row["sentence_count"] = rm.sentence_count
+        if chapter_csv_path.exists():
+            existing_rows: List[Dict[str, Any]] = []
+            with open(chapter_csv_path, newline="", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for r in reader:
+                    existing_rows.append(r)
+            existing_keys = {(r.get("sample_id", ""), r.get("chapter_id", "")) for r in existing_rows}
+            if (sample_id, chapter_id) in existing_keys:
+                chapter_csv_path = chapter_runs_dir / f"{sample_id}_{utc_now_ts()}.csv"
+        with open(chapter_csv_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerow(row)
+        trace["chapter_runs_csv"] = str(chapter_csv_path)
     progress.clear()
     progress.update(base_progress)
     progress["phase"] = "completed"
@@ -983,6 +1071,7 @@ def run_book_sample(
     judge_source_char_limit: int,
     resume_progress: Optional[Mapping[str, Any]] = None,
     progress_callback: Optional[Callable[[Mapping[str, Any]], None]] = None,
+    run_dir: Optional[Path] = None,
 ) -> Tuple[SummarySample, Dict[str, Any]]:
     book_id = str(item["book_id"])
     sample_id = str(item.get("sample_id", book_id))
@@ -1027,6 +1116,21 @@ def run_book_sample(
         if chapter_key and isinstance(stage_payload, Mapping):
             completed_map[chapter_key] = deserialize_stage_run(stage_payload)
 
+    chapter_judge_scores: Dict[str, JudgeScores] = {}
+    chapter_judge_payload = progress.get("chapter_judge_scores")
+    if isinstance(chapter_judge_payload, Mapping):
+        for ch_id, scores_payload in chapter_judge_payload.items():
+            scores = judge_scores_from_dict(scores_payload)
+            if scores is not None:
+                chapter_judge_scores[str(ch_id)] = scores
+
+    chapter_runs_rows: List[Dict[str, Any]] = []
+    saved_rows = progress.get("chapter_runs_rows")
+    if isinstance(saved_rows, list):
+        for row in saved_rows:
+            if isinstance(row, Mapping):
+                chapter_runs_rows.append(dict(row))
+
     chapter_outputs: List[Tuple[ChapterContext, StageRun]] = []
     chapter_passes: List[int] = []
     completed_generation_cost = sum(stage.generation_cost for stage in completed_map.values())
@@ -1048,6 +1152,25 @@ def run_book_sample(
             chapter_run = completed_map[chapter.chapter_id]
             chapter_outputs.append((chapter, chapter_run))
             chapter_passes.append(chapter_run.passes_used)
+            total_generation_cost += chapter_run.generation_cost
+            total_uncached_cost += chapter_run.uncached_generation_cost
+            existing_row = next((r for r in chapter_runs_rows if r.get("chapter_id") == chapter.chapter_id), None)
+            if existing_row is None:
+                chapter_row: Dict[str, Any] = {
+                    "chapter_id": chapter.chapter_id,
+                    "chapter_title": chapter.chapter_title,
+                    "target_words": target_words,
+                    "output_words": visible_word_count(chapter_run.summary_md),
+                    "passes_used": chapter_run.passes_used,
+                    "generation_cost": chapter_run.generation_cost,
+                    "uncached_generation_cost": chapter_run.uncached_generation_cost,
+                }
+                if chapter_run.summary_md:
+                    rm = readability_metrics(chapter_run.summary_md)
+                    chapter_row["flesch_reading_ease"] = rm.flesch_reading_ease
+                    chapter_row["flesch_kincaid_grade"] = rm.flesch_kincaid_grade
+                    chapter_row["sentence_count"] = rm.sentence_count
+                chapter_runs_rows.append(chapter_row)
             continue
 
         chapter_user_prompt = candidate_module.render_chapter_user(
@@ -1102,6 +1225,41 @@ def run_book_sample(
         chapter_passes.append(chapter_run.passes_used)
         total_generation_cost += chapter_run.generation_cost
         total_uncached_cost += chapter_run.uncached_generation_cost
+
+        if spec.disable_composer and client is not None and judge_model:
+            chapter_judge_result = judge_if_requested(
+                client,
+                judge_model,
+                summary_md=chapter_run.summary_md,
+                rubric=chapter.rubric,
+                source_md=chapter.source_md,
+                source_char_limit=judge_source_char_limit,
+            )
+            if chapter_judge_result is not None and chapter_judge_result.scores is not None:
+                chapter_judge_scores[chapter.chapter_id] = chapter_judge_result.scores
+
+        chapter_row = {
+            "chapter_id": chapter.chapter_id,
+            "chapter_title": chapter.chapter_title,
+            "target_words": target_words,
+            "output_words": visible_word_count(chapter_run.summary_md),
+            "passes_used": chapter_run.passes_used,
+            "generation_cost": chapter_run.generation_cost,
+            "uncached_generation_cost": chapter_run.uncached_generation_cost,
+            "judge_faithfulness": chapter_judge_scores.get(chapter.chapter_id, {}).get("faithfulness"),
+            "judge_concept_coverage": chapter_judge_scores.get(chapter.chapter_id, {}).get("concept_coverage"),
+            "judge_qualifier_preservation": chapter_judge_scores.get(chapter.chapter_id, {}).get("qualifier_preservation"),
+            "judge_no_fluff": chapter_judge_scores.get(chapter.chapter_id, {}).get("no_fluff"),
+            "judge_structure_quality": chapter_judge_scores.get(chapter.chapter_id, {}).get("structure_quality"),
+            "judge_rationale": chapter_judge_scores.get(chapter.chapter_id, ""),
+        }
+        if chapter_run.summary_md:
+            rm = readability_metrics(chapter_run.summary_md)
+            chapter_row["flesch_reading_ease"] = rm.flesch_reading_ease
+            chapter_row["flesch_kincaid_grade"] = rm.flesch_kincaid_grade
+            chapter_row["sentence_count"] = rm.sentence_count
+        chapter_runs_rows.append(chapter_row)
+
         progress.clear()
         progress.update(base_progress)
         progress["phase"] = "chapters"
@@ -1110,6 +1268,11 @@ def run_book_sample(
         progress["chapter_passes"] = list(chapter_passes)
         progress["total_generation_cost"] = total_generation_cost
         progress["total_uncached_cost"] = total_uncached_cost
+        progress["chapter_runs_rows"] = chapter_runs_rows
+        if spec.disable_composer and chapter_judge_scores:
+            progress["chapter_judge_scores"] = {
+                ch_id: judge_scores_to_dict(scores) for ch_id, scores in chapter_judge_scores.items()
+            }
         progress["current_stage"] = None
         emit()
 
@@ -1129,7 +1292,7 @@ def run_book_sample(
     composer_run_payload = progress.get("composer_stage_run") if isinstance(progress.get("composer_stage_run"), Mapping) else None
     composer_run = deserialize_stage_run(composer_run_payload) if composer_run_payload else None
     current_stage = progress.get("current_stage") if isinstance(progress.get("current_stage"), Mapping) else {}
-    if composer_run is None:
+    if composer_run is None and not spec.disable_composer:
         composer_system_prompt = candidate_module.render_composer_system(spec)
         composer_user_prompt = candidate_module.render_composer_user(
             spec,
@@ -1198,20 +1361,51 @@ def run_book_sample(
         progress["current_stage"] = None
         emit()
     else:
-        if "total_generation_cost" not in progress:
-            total_generation_cost += composer_run.generation_cost
-        if "total_uncached_cost" not in progress:
-            total_uncached_cost += composer_run.uncached_generation_cost
+        if composer_run is not None:
+            if "total_generation_cost" not in progress:
+                total_generation_cost += composer_run.generation_cost
+            if "total_uncached_cost" not in progress:
+                total_uncached_cost += composer_run.uncached_generation_cost
 
-    source_md = join_book_source(book)
-    judge_result = judge_if_requested(
-        client,
-        judge_model,
-        summary_md=composer_run.summary_md,
-        rubric=book.book_rubric,
-        source_md=source_md,
-        source_char_limit=judge_source_char_limit,
-    )
+    if spec.disable_composer:
+        composer_run = StageRun(
+            summary_md=chapter_summaries_md,
+            first_pass_summary_md=chapter_summaries_md,
+            passes_used=0,
+            generation_cost=0.0,
+            uncached_generation_cost=0.0,
+            raw_responses=(),
+        )
+        progress["composer_stage_run"] = serialize_stage_run(composer_run)
+
+    if spec.disable_composer and chapter_judge_scores:
+        all_scores = list(chapter_judge_scores.values())
+        if all_scores:
+            aggregated_scores = JudgeScores(
+                faithfulness=sum(s.faithfulness for s in all_scores) / len(all_scores),
+                concept_coverage=sum(s.concept_coverage for s in all_scores) / len(all_scores),
+                qualifier_preservation=sum(s.qualifier_preservation for s in all_scores) / len(all_scores),
+                no_fluff=sum(s.no_fluff for s in all_scores) / len(all_scores),
+                structure_quality=sum(s.structure_quality for s in all_scores) / len(all_scores),
+            )
+            judge_result = AbsoluteJudgeResult(
+                scores=aggregated_scores,
+                rationale="Aggregated from chapter-level judges (composer disabled)",
+                raw_response={},
+            )
+        else:
+            judge_result = None
+        source_md = join_book_source(book)
+    else:
+        source_md = join_book_source(book)
+        judge_result = judge_if_requested(
+            client,
+            judge_model,
+            summary_md=composer_run.summary_md,
+            rubric=book.book_rubric,
+            source_md=source_md,
+            source_char_limit=judge_source_char_limit,
+        )
     sample = SummarySample(
         sample_id=sample_id,
         level="book",
@@ -1239,6 +1433,28 @@ def run_book_sample(
         "chapter_targets": {chapter.chapter_id: target for chapter, target in zip(book.chapters, chapter_targets)},
         "judge_rationale": judge_result.rationale if judge_result else "",
     }
+    if spec.disable_composer and chapter_judge_scores:
+        all_scores = list(chapter_judge_scores.values())
+        sorted_faith = sorted(s.faithfulness for s in all_scores)
+        sorted_cov = sorted(s.concept_coverage for s in all_scores)
+        n = len(all_scores)
+        trace["chapter_judge_scores"] = {
+            ch_id: judge_scores_to_dict(scores)
+            for ch_id, scores in chapter_judge_scores.items()
+        }
+        trace["agg_faithfulness"] = sum(s.faithfulness for s in all_scores) / n
+        trace["agg_concept_coverage"] = sum(s.concept_coverage for s in all_scores) / n
+        trace["worst_chapter_faithfulness"] = sorted_faith[0]
+        trace["worst_chapter_id_faithfulness"] = [
+            ch_id for ch_id, s in chapter_judge_scores.items()
+            if s.faithfulness == sorted_faith[0]
+        ][0]
+        trace["best_chapter_faithfulness"] = sorted_faith[-1]
+        trace["faithfulness_p10"] = sorted_faith[n // 10] if n >= 10 else sorted_faith[0]
+        trace["faithfulness_p90"] = sorted_faith[(n * 9) // 10] if n >= 10 else sorted_faith[-1]
+        trace["faithfulness_std"] = (
+            (sum((s.faithfulness - trace["agg_faithfulness"]) ** 2 for s in all_scores) / n) ** 0.5
+        )
     trace.update(taxonomy_trace_payload(book.taxonomy))
     progress.clear()
     progress.update(base_progress)
@@ -1253,6 +1469,34 @@ def run_book_sample(
     progress["current_stage"] = None
     progress["sample_record"] = build_sample_record(sample, trace, item_key=sample_id)
     emit()
+
+    if spec.disable_composer and chapter_runs_rows and run_dir:
+        chapter_runs_dir = run_dir / "chapter_runs"
+        chapter_runs_dir.mkdir(parents=True, exist_ok=True)
+        chapter_csv_path = chapter_runs_dir / f"{sample_id}.csv"
+        if chapter_csv_path.exists():
+            existing_rows: List[Dict[str, Any]] = []
+            with open(chapter_csv_path, newline="", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    existing_rows.append(row)
+            existing_ids = {r.get("sample_id", "") for r in existing_rows}
+            if sample_id in existing_ids:
+                chapter_csv_path = chapter_runs_dir / f"{sample_id}_{utc_now_ts()}.csv"
+        fieldnames = [
+            "sample_id", "chapter_id", "chapter_title", "target_words", "output_words",
+            "passes_used", "generation_cost", "uncached_generation_cost",
+            "judge_faithfulness", "judge_concept_coverage", "judge_qualifier_preservation",
+            "judge_no_fluff", "judge_structure_quality",
+            "flesch_reading_ease", "flesch_kincaid_grade", "sentence_count",
+        ]
+        with open(chapter_csv_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            for row in chapter_runs_rows:
+                writer.writerow({**row, "sample_id": sample_id})
+        progress["chapter_runs_csv"] = str(chapter_csv_path)
+
     return sample, trace
 
 
@@ -1394,7 +1638,7 @@ def append_results_tsv(
     header = (
         "timestamp\trun_id\tbenchmark_version\tcorpus_version\trubric_version\tscoring_version\tjudge_version\t"
         "profile\tbench\tcandidate_name\tcandidate_sha256\thypothesis\tchapter_model\tcomposer_model\tjudge_model\t"
-        "mean_quality\tmean_utility\tmean_faithfulness\tmean_concept_coverage\tmean_final_length_error_pct\t"
+        "use_json_schema\tthinking\tmean_quality\tmean_utility\tmean_faithfulness\tmean_concept_coverage\tmean_final_length_error_pct\t"
         "mean_first_pass_length_error_pct\tmean_passes_used\tmean_uncached_generation_cost\tmean_generation_cost\t"
         "hard_fail_rate\tworst_genre_macro\tworst_genre_macro_utility\tworst_genre_macro_quality\t"
         "genre_macro_spread_utility\tn_genre_macros\trun_artifact\tcatalog_snapshot\tprice_snapshot\tnotes\n"
@@ -1418,6 +1662,8 @@ def append_results_tsv(
         str(run_manifest.get("chapter_model", "")),
         str(run_manifest.get("composer_model", "")),
         str(run_manifest.get("judge_model", "")),
+        str(run_manifest.get("use_json_schema", "")),
+        str(run_manifest.get("thinking_enabled", "")),
         f"{dataset_score.mean_quality:.6f}",
         f"{dataset_score.mean_utility:.6f}",
         f"{dataset_score.mean_faithfulness:.6f}",
@@ -1521,6 +1767,58 @@ def main() -> None:
 
     spec_path = resolve_path(args.spec)
     candidate_module = load_module_from_path("candidate_spec_runtime", spec_path)
+
+    if args.profile == "all":
+        if args.resume:
+            print("Error: --resume is not supported with --profile all. Resume a specific run instead.")
+            raise SystemExit(1)
+        profiles = candidate_module.get_profiles_by_time(args.time)
+        if not profiles:
+            print(f"No profiles found for time budget: {args.time}")
+            raise SystemExit(1)
+        print(f"Running {len(profiles)} profile(s) for time={args.time}: {profiles}")
+        run_all_profiles(profiles, args, benchmark_manifest, spec_path)
+    else:
+        _run_single(args, benchmark_manifest, spec_path, inherited_run_id=None)
+
+
+def run_all_profiles(
+    profiles: Sequence[str],
+    args: argparse.Namespace,
+    benchmark_manifest: Dict[str, Any],
+    spec_path: Path,
+) -> None:
+    """Run benchmark for multiple profiles sequentially."""
+    for profile in profiles:
+        print(f"\n{'='*60}")
+        print(f"Running profile: {profile}")
+        print(f"{'='*60}\n")
+        args.profile = profile
+        runs_root = resolve_path(args.runs_dir)
+        benchmark_version = str(benchmark_manifest.get("benchmark_version", "benchmark"))
+        check_dir = runs_root / benchmark_version
+        candidates = sorted(check_dir.glob(f"*__{profile}_v*.state.json"), reverse=True)
+        if candidates:
+            state_path = candidates[0]
+            state = load_json(state_path)
+            completed = state.get("completed_count", 0)
+            total = state.get("n_total_samples", 0)
+            if completed >= total and total > 0:
+                print(f"Skipping {profile}: already completed ({completed}/{total}). Use --resume to inspect.")
+                continue
+        _run_single(args, benchmark_manifest, spec_path, inherited_run_id=None)
+
+
+def _run_single(
+    args: argparse.Namespace,
+    benchmark_manifest: Dict[str, Any],
+    spec_path: Path,
+    inherited_run_id: Optional[str],
+) -> str:
+    if inherited_run_id:
+        args.run_id = inherited_run_id
+    spec_path = resolve_path(args.spec)
+    candidate_module = load_module_from_path("candidate_spec_runtime", spec_path)
     spec = candidate_module.get_candidate(args.profile)
     client = make_client(args)
 
@@ -1533,7 +1831,10 @@ def main() -> None:
     data_dir = resolve_path(args.data_dir)
     runs_root = resolve_path(args.runs_dir)
     benchmark_version = str(benchmark_manifest.get("benchmark_version", "benchmark"))
-    run_dir = runs_root / benchmark_version
+    if args.mock:
+        run_dir = runs_root / "mock" / benchmark_version
+    else:
+        run_dir = runs_root / benchmark_version
     run_dir.mkdir(parents=True, exist_ok=True)
 
     if args.resume:
@@ -1607,7 +1908,7 @@ def main() -> None:
         run_manifest = {
             "run_id": run_id,
             "created_at_utc": timestamp_iso,
-            "benchmark_manifest_path": display_path(benchmark_manifest_path),
+            "benchmark_manifest_path": display_path(resolve_path(args.benchmark_manifest)),
             "benchmark_version": benchmark_manifest.get("benchmark_version", ""),
             "corpus_version": benchmark_manifest.get("corpus_version", ""),
             "rubric_version": benchmark_manifest.get("rubric_version", ""),
@@ -1623,16 +1924,10 @@ def main() -> None:
             "chapter_model": spec.chapter_stage.model,
             "composer_model": spec.composer_stage.model,
             "judge_model": args.judge_model,
-            "provider_preferences": {
-                "chapter": {
-                    "order": list(spec.chapter_stage.provider_order),
-                    "allow_fallbacks": bool(spec.chapter_stage.allow_fallbacks),
-                },
-                "composer": {
-                    "order": list(spec.composer_stage.provider_order),
-                    "allow_fallbacks": bool(spec.composer_stage.allow_fallbacks),
-                },
-            },
+            "use_json_schema": spec.use_json_schema,
+            "thinking_enabled": _is_thinking_enabled(spec),
+            "chapter_provider": spec.chapter_stage.provider,
+            "composer_provider": spec.composer_stage.provider,
             "prompt_hashes": prompt_hashes,
             "catalog_snapshot": display_path(catalog_snapshot_path) if catalog_snapshot_path else "",
             "price_snapshot": display_path(price_snapshot_path) if price_snapshot_path else "",
@@ -1707,6 +2002,7 @@ def main() -> None:
                         judge_source_char_limit=args.judge_source_char_limit,
                         resume_progress=current_progress,
                         progress_callback=progress_callback,
+                        run_dir=run_dir,
                     )
                 else:
                     sample, trace = run_book_sample(
@@ -1719,6 +2015,7 @@ def main() -> None:
                         judge_source_char_limit=args.judge_source_char_limit,
                         resume_progress=current_progress,
                         progress_callback=progress_callback,
+                        run_dir=run_dir,
                     )
 
                 append_sample_checkpoint(
@@ -1773,7 +2070,25 @@ def main() -> None:
                 save_run_state(state_path, state)
                 raise
 
-    dataset_score = score_dataset(samples)
+    scoring_config = DEFAULT_SCORING_CONFIG
+    profile_name = spec.profile
+    if profile_name.startswith("30m_"):
+        gate_key = "30m"
+    elif profile_name.startswith("60m_"):
+        gate_key = "60m"
+    else:
+        gate_key = "default"
+    gates = benchmark_manifest.get("scoring_gates", {}).get(gate_key)
+    if gates:
+        scoring_config = apply_gates_override(
+            scoring_config,
+            min_faithfulness=gates.get("min_faithfulness"),
+            min_concept_coverage=gates.get("min_concept_coverage"),
+            max_final_length_error_pct=gates.get("max_final_length_error_pct"),
+            max_passes=gates.get("max_passes"),
+        )
+
+    dataset_score = score_dataset(samples, config=scoring_config)
     mean_generation_cost = _mean([sample.generation_cost for sample in samples])
     run_manifest = dict(state.get("run_manifest") or run_manifest)
     resume_events = list(state.get("resume_events_utc") or [])
@@ -1790,6 +2105,10 @@ def main() -> None:
     )
     dataset_payload = dict(artifact_payload.get("dataset_score") or {})
     worst_genre_macro = dict(dataset_payload.get("worst_genre_macro") or {})
+    scoring_gates_override_dict = asdict(scoring_config) if gate_key != "default" else None
+    if scoring_gates_override_dict is not None:
+        artifact_payload["scoring_gates_override"] = scoring_gates_override_dict
+
     summary_block = {
         "run_id": run_id,
         "benchmark_version": benchmark_manifest.get("benchmark_version", ""),
@@ -1797,6 +2116,7 @@ def main() -> None:
         "profile": spec.profile,
         "candidate_name": spec.name,
         "n_samples": dataset_score.n_samples,
+        "scoring_gates_override": scoring_gates_override_dict,
         "hard_fail_rate": dataset_score.hard_fail_rate,
         "mean_quality": dataset_score.mean_quality,
         "mean_utility": dataset_score.mean_utility,

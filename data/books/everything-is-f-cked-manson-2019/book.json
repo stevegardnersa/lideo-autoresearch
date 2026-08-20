@@ -1,0 +1,63 @@
+{
+  "book_id": "everything-is-f-cked-manson-2019",
+  "book_title": "Everything Is F*cked",
+  "genre_macro": "psychology_health_self_development",
+  "genre_micro": "philosophy_and_psychology",
+  "narrative_vs_expository": "expository",
+  "prescriptive_vs_analytical": "analytical",
+  "quantitative_density": "high",
+  "chapter_length_profile": "mixed",
+  "benchmark_pool": "balanced",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "001",
+      "title": "Chapter 1: The Uncomfortable Truth",
+      "source_path": "original/5.md"
+    },
+    {
+      "chapter_id": "002",
+      "title": "Chapter 2: Self-Control Is an Illusion",
+      "source_path": "original/6.md"
+    },
+    {
+      "chapter_id": "003",
+      "title": "Chapter 3: Newton\u2019s Laws of Emotion",
+      "source_path": "original/7.md"
+    },
+    {
+      "chapter_id": "004",
+      "title": "Chapter 4: How to Make All Your Dreams Come True",
+      "source_path": "original/8.md"
+    },
+    {
+      "chapter_id": "005",
+      "title": "Chapter 5: Hope Is Fucked",
+      "source_path": "original/9.md"
+    },
+    {
+      "chapter_id": "006",
+      "title": "Chapter 6: The Formula of Humanity",
+      "source_path": "original/11.md"
+    },
+    {
+      "chapter_id": "007",
+      "title": "Chapter 7: Pain Is the Universal Constant",
+      "source_path": "original/12.md"
+    },
+    {
+      "chapter_id": "008",
+      "title": "Chapter 8: The Feelings Economy",
+      "source_path": "original/13.md"
+    },
+    {
+      "chapter_id": "009",
+      "title": "Chapter 9: The Final Religion",
+      "source_path": "original/14.md"
+    }
+  ],
+  "toc_json_path": "toc.json",
+  "google_books_volume_id": "XYdgDwAAQBAJ",
+  "isbn_13": "9780062888471"
+}

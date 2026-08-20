@@ -1,0 +1,308 @@
+{
+  "book_id": "concorde-bannister-2022",
+  "book_title": "Concorde",
+  "genre_macro": "history_biography_politics_social_analysis",
+  "genre_micro": "aviation_history",
+  "narrative_vs_expository": "mixed",
+  "prescriptive_vs_analytical": "analytical",
+  "quantitative_density": "high",
+  "chapter_length_profile": "mixed",
+  "benchmark_pool": "balanced",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "000",
+      "title": "Mike Bannister",
+      "source_path": "original/1.md"
+    },
+    {
+      "chapter_id": "001",
+      "title": "About the Author",
+      "source_path": "original/2.md"
+    },
+    {
+      "chapter_id": "002",
+      "title": "Chapter 3",
+      "source_path": "original/3.md"
+    },
+    {
+      "chapter_id": "003",
+      "title": "Prologue",
+      "source_path": "original/5.md"
+    },
+    {
+      "chapter_id": "004",
+      "title": "1",
+      "source_path": "original/6.md"
+    },
+    {
+      "chapter_id": "005",
+      "title": "2",
+      "source_path": "original/7.md"
+    },
+    {
+      "chapter_id": "006",
+      "title": "3",
+      "source_path": "original/8.md"
+    },
+    {
+      "chapter_id": "007",
+      "title": "4",
+      "source_path": "original/9.md"
+    },
+    {
+      "chapter_id": "008",
+      "title": "5",
+      "source_path": "original/10.md"
+    },
+    {
+      "chapter_id": "009",
+      "title": "6",
+      "source_path": "original/11.md"
+    },
+    {
+      "chapter_id": "010",
+      "title": "7",
+      "source_path": "original/12.md"
+    },
+    {
+      "chapter_id": "011",
+      "title": "8",
+      "source_path": "original/13.md"
+    },
+    {
+      "chapter_id": "012",
+      "title": "9",
+      "source_path": "original/14.md"
+    },
+    {
+      "chapter_id": "013",
+      "title": "10",
+      "source_path": "original/15.md"
+    },
+    {
+      "chapter_id": "014",
+      "title": "11",
+      "source_path": "original/16.md"
+    },
+    {
+      "chapter_id": "015",
+      "title": "12",
+      "source_path": "original/17.md"
+    },
+    {
+      "chapter_id": "016",
+      "title": "13",
+      "source_path": "original/18.md"
+    },
+    {
+      "chapter_id": "017",
+      "title": "14",
+      "source_path": "original/19.md"
+    },
+    {
+      "chapter_id": "018",
+      "title": "15",
+      "source_path": "original/20.md"
+    },
+    {
+      "chapter_id": "019",
+      "title": "16",
+      "source_path": "original/21.md"
+    },
+    {
+      "chapter_id": "020",
+      "title": "17",
+      "source_path": "original/22.md"
+    },
+    {
+      "chapter_id": "021",
+      "title": "18",
+      "source_path": "original/23.md"
+    },
+    {
+      "chapter_id": "022",
+      "title": "19",
+      "source_path": "original/24.md"
+    },
+    {
+      "chapter_id": "023",
+      "title": "20",
+      "source_path": "original/25.md"
+    },
+    {
+      "chapter_id": "024",
+      "title": "21",
+      "source_path": "original/26.md"
+    },
+    {
+      "chapter_id": "025",
+      "title": "22",
+      "source_path": "original/27.md"
+    },
+    {
+      "chapter_id": "026",
+      "title": "23",
+      "source_path": "original/28.md"
+    },
+    {
+      "chapter_id": "027",
+      "title": "24",
+      "source_path": "original/29.md"
+    },
+    {
+      "chapter_id": "028",
+      "title": "25",
+      "source_path": "original/30.md"
+    },
+    {
+      "chapter_id": "029",
+      "title": "26",
+      "source_path": "original/31.md"
+    },
+    {
+      "chapter_id": "030",
+      "title": "27",
+      "source_path": "original/32.md"
+    },
+    {
+      "chapter_id": "031",
+      "title": "28",
+      "source_path": "original/33.md"
+    },
+    {
+      "chapter_id": "032",
+      "title": "29",
+      "source_path": "original/34.md"
+    },
+    {
+      "chapter_id": "033",
+      "title": "30",
+      "source_path": "original/35.md"
+    },
+    {
+      "chapter_id": "034",
+      "title": "31",
+      "source_path": "original/36.md"
+    },
+    {
+      "chapter_id": "035",
+      "title": "32",
+      "source_path": "original/37.md"
+    },
+    {
+      "chapter_id": "036",
+      "title": "33",
+      "source_path": "original/38.md"
+    },
+    {
+      "chapter_id": "037",
+      "title": "34",
+      "source_path": "original/39.md"
+    },
+    {
+      "chapter_id": "038",
+      "title": "35",
+      "source_path": "original/40.md"
+    },
+    {
+      "chapter_id": "039",
+      "title": "36",
+      "source_path": "original/41.md"
+    },
+    {
+      "chapter_id": "040",
+      "title": "37",
+      "source_path": "original/42.md"
+    },
+    {
+      "chapter_id": "041",
+      "title": "38",
+      "source_path": "original/43.md"
+    },
+    {
+      "chapter_id": "042",
+      "title": "39",
+      "source_path": "original/44.md"
+    },
+    {
+      "chapter_id": "043",
+      "title": "40",
+      "source_path": "original/45.md"
+    },
+    {
+      "chapter_id": "044",
+      "title": "41",
+      "source_path": "original/46.md"
+    },
+    {
+      "chapter_id": "045",
+      "title": "42",
+      "source_path": "original/47.md"
+    },
+    {
+      "chapter_id": "046",
+      "title": "43",
+      "source_path": "original/48.md"
+    },
+    {
+      "chapter_id": "047",
+      "title": "44",
+      "source_path": "original/49.md"
+    },
+    {
+      "chapter_id": "048",
+      "title": "45",
+      "source_path": "original/50.md"
+    },
+    {
+      "chapter_id": "049",
+      "title": "46",
+      "source_path": "original/51.md"
+    },
+    {
+      "chapter_id": "050",
+      "title": "47",
+      "source_path": "original/52.md"
+    },
+    {
+      "chapter_id": "051",
+      "title": "48",
+      "source_path": "original/53.md"
+    },
+    {
+      "chapter_id": "052",
+      "title": "Epilogue",
+      "source_path": "original/54.md"
+    },
+    {
+      "chapter_id": "053",
+      "title": "Acknowledgements",
+      "source_path": "original/56.md"
+    },
+    {
+      "chapter_id": "054",
+      "title": "Picture permissions",
+      "source_path": "original/57.md"
+    },
+    {
+      "chapter_id": "055",
+      "title": "Deeper Insights",
+      "source_path": "original/58.md"
+    },
+    {
+      "chapter_id": "056",
+      "title": "Index",
+      "source_path": "original/60.md"
+    },
+    {
+      "chapter_id": "057",
+      "title": "Chapter 58",
+      "source_path": "original/61.md"
+    }
+  ],
+  "toc_json_path": "toc.json",
+  "google_books_volume_id": "QSthEAAAQBAJ",
+  "isbn_13": "9780241557020"
+}
