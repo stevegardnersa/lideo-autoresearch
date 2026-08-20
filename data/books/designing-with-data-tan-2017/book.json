@@ -1,0 +1,67 @@
+{
+  "book_id": "designing-with-data-tan-2017",
+  "book_title": "Designing with Data",
+  "genre_macro": "science_technology_environment",
+  "genre_micro": "ux_design_and_data_science",
+  "narrative_vs_expository": "expository",
+  "prescriptive_vs_analytical": "analytical",
+  "quantitative_density": "high",
+  "chapter_length_profile": "mixed",
+  "benchmark_pool": "balanced",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "000",
+      "title": "Foreword",
+      "source_path": "original/0.md"
+    },
+    {
+      "chapter_id": "001",
+      "title": "Preface",
+      "source_path": "original/1.md"
+    },
+    {
+      "chapter_id": "002",
+      "title": "Chapter 1: Introducing a Data Mindset",
+      "source_path": "original/21.md"
+    },
+    {
+      "chapter_id": "003",
+      "title": "Chapter 2: The ABCs of Using Data",
+      "source_path": "original/34.md"
+    },
+    {
+      "chapter_id": "004",
+      "title": "Chapter 3: A Framework for Experimentation",
+      "source_path": "original/69.md"
+    },
+    {
+      "chapter_id": "005",
+      "title": "Chapter 4: The Definition Phase",
+      "source_path": "original/79.md"
+    },
+    {
+      "chapter_id": "006",
+      "title": "Chapter 5: The Execution Phase",
+      "source_path": "original/110.md"
+    },
+    {
+      "chapter_id": "007",
+      "title": "Chapter 6: The Analysis Phase",
+      "source_path": "original/143.md"
+    },
+    {
+      "chapter_id": "008",
+      "title": "Chapter 7: Creating the Right Environment",
+      "source_path": "original/186.md"
+    },
+    {
+      "chapter_id": "009",
+      "title": "Chapter 8: Conclusion",
+      "source_path": "original/207.md"
+    }
+  ],
+  "toc_json_path": "toc.json",
+  "isbn_13": "9781491954393"
+}

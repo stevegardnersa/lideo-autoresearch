@@ -1,0 +1,123 @@
+{
+  "book_id": "the-strange-death-of-europe-murray-2017",
+  "book_title": "The Strange Death of Europe",
+  "genre_macro": "history_biography_politics_social_analysis",
+  "genre_micro": "politics_social_analysis",
+  "narrative_vs_expository": "expository",
+  "prescriptive_vs_analytical": "analytical",
+  "quantitative_density": "high",
+  "chapter_length_profile": "mixed",
+  "benchmark_pool": "balanced",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "000",
+      "title": "Introduction",
+      "source_path": "original/4.md"
+    },
+    {
+      "chapter_id": "001",
+      "title": "1. The beginning",
+      "source_path": "original/5.md"
+    },
+    {
+      "chapter_id": "002",
+      "title": "2. How we got hooked on immigration",
+      "source_path": "original/6.md"
+    },
+    {
+      "chapter_id": "003",
+      "title": "3. The excuses we told ourselves",
+      "source_path": "original/7.md"
+    },
+    {
+      "chapter_id": "004",
+      "title": "4. \u2018Welcome to Europe\u2019",
+      "source_path": "original/8.md"
+    },
+    {
+      "chapter_id": "005",
+      "title": "5. \u2018We have seen everything\u2019",
+      "source_path": "original/9.md"
+    },
+    {
+      "chapter_id": "006",
+      "title": "6. Multiculturalism",
+      "source_path": "original/10.md"
+    },
+    {
+      "chapter_id": "007",
+      "title": "7. They are here",
+      "source_path": "original/11.md"
+    },
+    {
+      "chapter_id": "008",
+      "title": "8. Prophets without honour",
+      "source_path": "original/12.md"
+    },
+    {
+      "chapter_id": "009",
+      "title": "9. Early-warning sirens",
+      "source_path": "original/13.md"
+    },
+    {
+      "chapter_id": "010",
+      "title": "10. The tyranny of guilt",
+      "source_path": "original/14.md"
+    },
+    {
+      "chapter_id": "011",
+      "title": "11. The pretence of repatriation",
+      "source_path": "original/15.md"
+    },
+    {
+      "chapter_id": "012",
+      "title": "12. Learning to live with it",
+      "source_path": "original/16.md"
+    },
+    {
+      "chapter_id": "013",
+      "title": "13. Tiredness",
+      "source_path": "original/17.md"
+    },
+    {
+      "chapter_id": "014",
+      "title": "14. We\u2019re stuck with this",
+      "source_path": "original/18.md"
+    },
+    {
+      "chapter_id": "015",
+      "title": "15. Controlling the backlash",
+      "source_path": "original/19.md"
+    },
+    {
+      "chapter_id": "016",
+      "title": "16. The feeling that the story has run out",
+      "source_path": "original/20.md"
+    },
+    {
+      "chapter_id": "017",
+      "title": "17. The end",
+      "source_path": "original/21.md"
+    },
+    {
+      "chapter_id": "018",
+      "title": "18. What might have been",
+      "source_path": "original/22.md"
+    },
+    {
+      "chapter_id": "019",
+      "title": "19. What will be",
+      "source_path": "original/23.md"
+    },
+    {
+      "chapter_id": "020",
+      "title": "Afterword",
+      "source_path": "original/24.md"
+    }
+  ],
+  "toc_json_path": "toc.json",
+  "google_books_volume_id": "Hl5CDgAAQBAJ",
+  "isbn_13": "9781472942258"
+}

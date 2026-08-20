@@ -1,0 +1,164 @@
+[
+  {
+    "title": "Cover",
+    "level": 1,
+    "href": "9780063098633_Cover.xhtml#cover"
+  },
+  {
+    "title": "Title Page",
+    "level": 1,
+    "href": "9780063098633_Titlepage.xhtml#title"
+  },
+  {
+    "title": "Dedication",
+    "level": 1,
+    "href": "9780063098633_Dedication.xhtml#ded"
+  },
+  {
+    "title": "Contents",
+    "level": 1,
+    "href": "9780063098633_Contents.xhtml"
+  },
+  {
+    "title": "Introduction: How We Got Toughness Wrong and Where to Go",
+    "level": 1,
+    "href": "9780063098633_Introduction.xhtml#intro",
+    "children": [
+      {
+        "title": "Chapter 1: From Tough Coaches, Tough Parents, and Tough Guys to Finding Real Inner Strength",
+        "level": 2,
+        "href": "9780063098633_Chapter_1.xhtml#ch1"
+      },
+      {
+        "title": "Chapter 2: Sink or Swim: How We Took the Wrong Lesson from the Military",
+        "level": 2,
+        "href": "9780063098633_Chapter_2.xhtml#ch2"
+      }
+    ]
+  },
+  {
+    "title": "The First Pillar of Toughness: Ditch the Facade, Embrace Reality",
+    "level": 1,
+    "href": "9780063098633_Part_1.xhtml#pt1",
+    "children": [
+      {
+        "title": "Chapter 3: Accept What You Are Capable Of",
+        "level": 2,
+        "href": "9780063098633_Chapter_3.xhtml#ch3"
+      },
+      {
+        "title": "Chapter 4: True Confidence Is Quiet; Insecurity Is Loud",
+        "level": 2,
+        "href": "9780063098633_Chapter_4.xhtml#ch4"
+      },
+      {
+        "title": "Chapter 5: Know When to Hold ’Em and When to Fold ’Em",
+        "level": 2,
+        "href": "9780063098633_Chapter_5.xhtml#ch5"
+      }
+    ]
+  },
+  {
+    "title": "The Second Pillar of Toughness: Listen to Your Body",
+    "level": 1,
+    "href": "9780063098633_Part_2.xhtml#pt2",
+    "children": [
+      {
+        "title": "Chapter 6: Your Emotions Are Messengers, Not Dictators",
+        "level": 2,
+        "href": "9780063098633_Chapter_6.xhtml#ch6"
+      },
+      {
+        "title": "Chapter 7: Own the Voice in Your Head",
+        "level": 2,
+        "href": "9780063098633_Chapter_7.xhtml#ch7"
+      }
+    ]
+  },
+  {
+    "title": "The Third Pillar of Toughness: Respond Instead of React",
+    "level": 1,
+    "href": "9780063098633_Part_3.xhtml#pt3",
+    "children": [
+      {
+        "title": "Chapter 8: Keep Your Mind Steady",
+        "level": 2,
+        "href": "9780063098633_Chapter_8.xhtml#ch8"
+      },
+      {
+        "title": "Chapter 9: Turn the Dial So You Don’t Spiral",
+        "level": 2,
+        "href": "9780063098633_Chapter_9.xhtml#ch9"
+      }
+    ]
+  },
+  {
+    "title": "The Fourth Pillar of Toughness: Transcend Discomfort",
+    "level": 1,
+    "href": "9780063098633_Part_4.xhtml#pt4",
+    "children": [
+      {
+        "title": "Chapter 10: Build the Foundation to Do Hard Things",
+        "level": 2,
+        "href": "9780063098633_Chapter_10.xhtml#ch10"
+      },
+      {
+        "title": "Chapter 11: Find Meaning in Discomfort",
+        "level": 2,
+        "href": "9780063098633_Chapter_11.xhtml#ch11"
+      }
+    ]
+  },
+  {
+    "title": "Acknowledgments",
+    "level": 1,
+    "href": "9780063098633_Acknowledgments.xhtml#ack"
+  },
+  {
+    "title": "Read an excerpt from Win the Inside Game: How to Move from Surviving to Thriving, and Free Yourself Up to Perform",
+    "level": 1,
+    "href": "WIN_Ann.xhtml#toc_1",
+    "children": [
+      {
+        "title": "Chapter 1: We Are All in Survival Mode",
+        "level": 2,
+        "href": "WIN_Excerpt.xhtml#toc_1"
+      }
+    ]
+  },
+  {
+    "title": "Notes",
+    "level": 1,
+    "href": "9780063098633_Notes.xhtml#notes"
+  },
+  {
+    "title": "Index",
+    "level": 1,
+    "href": "9780063098633_Index.xhtml#index"
+  },
+  {
+    "title": "About the Author",
+    "level": 1,
+    "href": "About_the_Author.xhtml#ata"
+  },
+  {
+    "title": "Advance Praise for Do Hard Things",
+    "level": 1,
+    "href": "9780063098633_Praise.xhtml#pra"
+  },
+  {
+    "title": "Also by Steve Magness",
+    "level": 1,
+    "href": "9780063098633_Also_by.xhtml#also"
+  },
+  {
+    "title": "Copyright",
+    "level": 1,
+    "href": "9780063098633_Copyright.xhtml#copy"
+  },
+  {
+    "title": "About the Publisher",
+    "level": 1,
+    "href": "About_the_Publisher.xhtml#atp"
+  }
+]

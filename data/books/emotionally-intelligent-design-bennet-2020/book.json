@@ -1,0 +1,72 @@
+{
+  "book_id": "emotionally-intelligent-design-bennet-2020",
+  "book_title": "Emotionally Intelligent Design",
+  "genre_macro": "science_technology_environment",
+  "genre_micro": "design_and_ux",
+  "narrative_vs_expository": "mixed",
+  "prescriptive_vs_analytical": "prescriptive",
+  "quantitative_density": "low",
+  "chapter_length_profile": "mixed",
+  "benchmark_pool": "balanced",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "000",
+      "title": "That Feeling When (TFW)\u2026",
+      "source_path": "original/1.md"
+    },
+    {
+      "chapter_id": "001",
+      "title": "The True Story Behind This Book",
+      "source_path": "original/2.md"
+    },
+    {
+      "chapter_id": "002",
+      "title": "How You Fit into This Story",
+      "source_path": "original/3.md"
+    },
+    {
+      "chapter_id": "003",
+      "title": "Here\u2019s the Short Version",
+      "source_path": "original/4.md"
+    },
+    {
+      "chapter_id": "004",
+      "title": "Chapter 1: Our Emotional Relationship with Technology",
+      "source_path": "original/6.md"
+    },
+    {
+      "chapter_id": "005",
+      "title": "Chapter 2: The History and Future of Emotional Design",
+      "source_path": "original/18.md"
+    },
+    {
+      "chapter_id": "006",
+      "title": "Chapter 3: Designing, with Feeling",
+      "source_path": "original/61.md"
+    },
+    {
+      "chapter_id": "007",
+      "title": "Chapter 4: Cultivate Human\u2013Machine Harmony",
+      "source_path": "original/79.md"
+    },
+    {
+      "chapter_id": "008",
+      "title": "Chapter 5: Crafting Emotional Interventions",
+      "source_path": "original/106.md"
+    },
+    {
+      "chapter_id": "009",
+      "title": "Chapter 6: Forecasting the Future with Feelings",
+      "source_path": "original/130.md"
+    },
+    {
+      "chapter_id": "010",
+      "title": "Chapter 7: Toward an Emotionally Intelligent Future",
+      "source_path": "original/150.md"
+    }
+  ],
+  "toc_json_path": "toc.json",
+  "isbn_13": "9781492030126"
+}

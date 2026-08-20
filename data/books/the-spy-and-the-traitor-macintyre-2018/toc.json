@@ -1,0 +1,175 @@
+[
+  {
+    "title": "Cover",
+    "level": 1,
+    "href": "titlepage.xhtml"
+  },
+  {
+    "title": "Title Page",
+    "level": 1,
+    "href": "OPS/xhtml/title.xhtml"
+  },
+  {
+    "title": "About the Author",
+    "level": 1,
+    "href": "OPS/xhtml/about_author.xhtml"
+  },
+  {
+    "title": "Dedication",
+    "level": 1,
+    "href": "OPS/xhtml/dedication.xhtml"
+  },
+  {
+    "title": "List of Illustrations",
+    "level": 1,
+    "href": "OPS/xhtml/listofillustration.xhtml"
+  },
+  {
+    "title": "Introduction: 18 May 1985",
+    "level": 1,
+    "href": "OPS/xhtml/introduction.xhtml"
+  },
+  {
+    "title": "Part One",
+    "level": 1,
+    "href": "OPS/xhtml/part001_split_000.xhtml",
+    "children": [
+      {
+        "title": "1. The KGB",
+        "level": 2,
+        "href": "OPS/xhtml/chapter001.xhtml"
+      },
+      {
+        "title": "2. Uncle Gormsson",
+        "level": 2,
+        "href": "OPS/xhtml/chapter002.xhtml"
+      },
+      {
+        "title": "3. SUNBEAM",
+        "level": 2,
+        "href": "OPS/xhtml/chapter003.xhtml"
+      },
+      {
+        "title": "4. Green Ink and Microfilm",
+        "level": 2,
+        "href": "OPS/xhtml/chapter004.xhtml"
+      },
+      {
+        "title": "5. A Plastic Bag and a Mars Bar",
+        "level": 2,
+        "href": "OPS/xhtml/chapter005.xhtml"
+      },
+      {
+        "title": "6. Agent BOOT",
+        "level": 2,
+        "href": "OPS/xhtml/chapter006.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part Two",
+    "level": 1,
+    "href": "OPS/xhtml/part002_split_000.xhtml",
+    "children": [
+      {
+        "title": "7. The Safe House",
+        "level": 2,
+        "href": "OPS/xhtml/chapter007.xhtml"
+      },
+      {
+        "title": "8. Operation RYAN",
+        "level": 2,
+        "href": "OPS/xhtml/chapter008.xhtml"
+      },
+      {
+        "title": "9. Koba",
+        "level": 2,
+        "href": "OPS/xhtml/chapter009.xhtml"
+      },
+      {
+        "title": "10. Mr Collins and Mrs Thatcher",
+        "level": 2,
+        "href": "OPS/xhtml/chapter010.xhtml"
+      },
+      {
+        "title": "11. Russian Roulette",
+        "level": 2,
+        "href": "OPS/xhtml/chapter011.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part Three",
+    "level": 1,
+    "href": "OPS/xhtml/part003_split_000.xhtml",
+    "children": [
+      {
+        "title": "12. Cat and Mouse",
+        "level": 2,
+        "href": "OPS/xhtml/chapter012.xhtml"
+      },
+      {
+        "title": "13. The Dry-Cleaner",
+        "level": 2,
+        "href": "OPS/xhtml/chapter013.xhtml"
+      },
+      {
+        "title": "14. Friday, 19 July",
+        "level": 2,
+        "href": "OPS/xhtml/chapter014.xhtml"
+      },
+      {
+        "title": "15. Finlandia",
+        "level": 2,
+        "href": "OPS/xhtml/chapter015.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Epilogue",
+    "level": 1,
+    "href": "OPS/xhtml/epilogue_split_000.xhtml",
+    "children": [
+      {
+        "title": "16. Passport for PIMLICO",
+        "level": 2,
+        "href": "OPS/xhtml/chapter016.xhtml"
+      },
+      {
+        "title": "17. Afterword",
+        "level": 2,
+        "href": "OPS/xhtml/afterword.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Illustrations",
+    "level": 1,
+    "href": "OPS/xhtml/illustrations_split_000.xhtml"
+  },
+  {
+    "title": "Codenames and Aliases",
+    "level": 1,
+    "href": "OPS/xhtml/appendix.xhtml"
+  },
+  {
+    "title": "References",
+    "level": 1,
+    "href": "OPS/xhtml/chapter001_notes.xhtml"
+  },
+  {
+    "title": "Select Bibliography",
+    "level": 1,
+    "href": "OPS/xhtml/selectbibliography.xhtml"
+  },
+  {
+    "title": "Acknowledgements",
+    "level": 1,
+    "href": "OPS/xhtml/acknowledgements.xhtml"
+  },
+  {
+    "title": "Copyright Page",
+    "level": 1,
+    "href": "OPS/xhtml/copyright.xhtml"
+  }
+]

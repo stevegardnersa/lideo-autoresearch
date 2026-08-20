@@ -1,0 +1,213 @@
+{
+  "book_id": "open-an-autobiography-agassi-2009",
+  "book_title": "Open: An Autobiography",
+  "genre_macro": "history_biography_politics_social_analysis",
+  "genre_micro": "biography_memoir",
+  "narrative_vs_expository": "narrative",
+  "prescriptive_vs_analytical": "analytical",
+  "quantitative_density": "medium",
+  "chapter_length_profile": "mixed",
+  "benchmark_pool": "balanced",
+  "toc_path": "toc.md",
+  "metadata_path": "metadata.md",
+  "chapters": [
+    {
+      "chapter_id": "000",
+      "title": "Open",
+      "source_path": "original/0.md"
+    },
+    {
+      "chapter_id": "001",
+      "title": "Copyright",
+      "source_path": "original/1.md"
+    },
+    {
+      "chapter_id": "002",
+      "title": "Dedication",
+      "source_path": "original/2.md"
+    },
+    {
+      "chapter_id": "003",
+      "title": "Epigraph",
+      "source_path": "original/3.md"
+    },
+    {
+      "chapter_id": "004",
+      "title": "Contents",
+      "source_path": "original/4.md"
+    },
+    {
+      "chapter_id": "005",
+      "title": "The End",
+      "source_path": "original/5.md"
+    },
+    {
+      "chapter_id": "006",
+      "title": "1",
+      "source_path": "original/6.md"
+    },
+    {
+      "chapter_id": "007",
+      "title": "2",
+      "source_path": "original/7.md"
+    },
+    {
+      "chapter_id": "008",
+      "title": "3",
+      "source_path": "original/8.md"
+    },
+    {
+      "chapter_id": "009",
+      "title": "4",
+      "source_path": "original/9.md"
+    },
+    {
+      "chapter_id": "010",
+      "title": "5",
+      "source_path": "original/10.md"
+    },
+    {
+      "chapter_id": "011",
+      "title": "6",
+      "source_path": "original/11.md"
+    },
+    {
+      "chapter_id": "012",
+      "title": "7",
+      "source_path": "original/12.md"
+    },
+    {
+      "chapter_id": "013",
+      "title": "8",
+      "source_path": "original/13.md"
+    },
+    {
+      "chapter_id": "014",
+      "title": "9",
+      "source_path": "original/14.md"
+    },
+    {
+      "chapter_id": "015",
+      "title": "10",
+      "source_path": "original/15.md"
+    },
+    {
+      "chapter_id": "016",
+      "title": "11",
+      "source_path": "original/16.md"
+    },
+    {
+      "chapter_id": "017",
+      "title": "12",
+      "source_path": "original/17.md"
+    },
+    {
+      "chapter_id": "018",
+      "title": "13",
+      "source_path": "original/18.md"
+    },
+    {
+      "chapter_id": "019",
+      "title": "14",
+      "source_path": "original/19.md"
+    },
+    {
+      "chapter_id": "020",
+      "title": "15",
+      "source_path": "original/20.md"
+    },
+    {
+      "chapter_id": "021",
+      "title": "16",
+      "source_path": "original/21.md"
+    },
+    {
+      "chapter_id": "022",
+      "title": "17",
+      "source_path": "original/22.md"
+    },
+    {
+      "chapter_id": "023",
+      "title": "18",
+      "source_path": "original/23.md"
+    },
+    {
+      "chapter_id": "024",
+      "title": "19",
+      "source_path": "original/24.md"
+    },
+    {
+      "chapter_id": "025",
+      "title": "20",
+      "source_path": "original/25.md"
+    },
+    {
+      "chapter_id": "026",
+      "title": "21",
+      "source_path": "original/26.md"
+    },
+    {
+      "chapter_id": "027",
+      "title": "22",
+      "source_path": "original/27.md"
+    },
+    {
+      "chapter_id": "028",
+      "title": "23",
+      "source_path": "original/28.md"
+    },
+    {
+      "chapter_id": "029",
+      "title": "24",
+      "source_path": "original/29.md"
+    },
+    {
+      "chapter_id": "030",
+      "title": "25",
+      "source_path": "original/30.md"
+    },
+    {
+      "chapter_id": "031",
+      "title": "26",
+      "source_path": "original/31.md"
+    },
+    {
+      "chapter_id": "032",
+      "title": "27",
+      "source_path": "original/32.md"
+    },
+    {
+      "chapter_id": "033",
+      "title": "28",
+      "source_path": "original/33.md"
+    },
+    {
+      "chapter_id": "034",
+      "title": "29",
+      "source_path": "original/34.md"
+    },
+    {
+      "chapter_id": "035",
+      "title": "The Beginning",
+      "source_path": "original/35.md"
+    },
+    {
+      "chapter_id": "036",
+      "title": "Acknowledgments",
+      "source_path": "original/36.md"
+    },
+    {
+      "chapter_id": "037",
+      "title": "About the Author",
+      "source_path": "original/37.md"
+    },
+    {
+      "chapter_id": "038",
+      "title": "About the Publisher",
+      "source_path": "original/38.md"
+    }
+  ],
+  "toc_json_path": "toc.json",
+  "google_books_volume_id": "mZndqHgbvn0C",
+  "isbn_13": "9780007346301"
+}

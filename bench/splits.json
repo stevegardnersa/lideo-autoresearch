@@ -3,106 +3,176 @@
   "split_mode": "balanced_genre",
   "stratify_field": "genre_macro",
   "development": [
-    "example-systems-book"
+    "accelerate-forsgren-2018",
+    "atomic-habits-clear-2018",
+    "concorde-bannister-2022",
+    "designing-with-data-tan-2017",
+    "do-hard-things-magness-2022",
+    "everything-is-f-cked-manson-2019",
+    "getting-things-done-allen-2015",
+    "open-an-autobiography-agassi-2009",
+    "outlive-attia-2023",
+    "pattern-breakers-jr-2024"
   ],
   "gate": [
-    "example-experiments-book"
+    "emotionally-intelligent-design-bennet-2020",
+    "how-to-stop-worrying-and-start-living-carnegie-2022",
+    "the-5-am-club-own-your-morning-elevate-your-life-sharma-2018",
+    "the-strange-death-of-europe-murray-2017"
   ],
   "holdout": [
-    "example-smoke-book"
+    "garden-city-comer-2015",
+    "how-to-think-about-ai-susskind-2025",
+    "the-practice-godin-2020",
+    "the-spy-and-the-traitor-macintyre-2018"
   ],
   "coverage": {
     "overall_counts": {
-      "n_books": 3,
+      "n_books": 18,
       "genre_macro": {
-        "business_economics_productivity": 1,
-        "explanatory_science_technology_environment": 1,
-        "psychology_health_self_development": 1
+        "business_economics_productivity": 4,
+        "history_biography_politics_social_analysis": 4,
+        "psychology_health_self_development": 6,
+        "science_technology_environment": 4
       },
       "benchmark_pool": {
-        "balanced": 3
+        "balanced": 18
       }
     },
     "by_split": {
       "development": {
         "book_ids": [
-          "example-systems-book"
+          "accelerate-forsgren-2018",
+          "atomic-habits-clear-2018",
+          "concorde-bannister-2022",
+          "designing-with-data-tan-2017",
+          "do-hard-things-magness-2022",
+          "everything-is-f-cked-manson-2019",
+          "getting-things-done-allen-2015",
+          "open-an-autobiography-agassi-2009",
+          "outlive-attia-2023",
+          "pattern-breakers-jr-2024"
         ],
-        "n_books": 1,
+        "n_books": 10,
         "genre_macro": {
-          "business_economics_productivity": 1
+          "business_economics_productivity": 2,
+          "history_biography_politics_social_analysis": 2,
+          "psychology_health_self_development": 4,
+          "science_technology_environment": 2
         },
         "genre_micro": {
-          "systems_thinking": 1
+          "aviation_history": 1,
+          "biography_memoir": 1,
+          "habits_and_productivity": 1,
+          "health_and_longevity": 1,
+          "performance_and_resilience": 1,
+          "philosophy_and_psychology": 1,
+          "productivity": 1,
+          "software_engineering_and_devops": 1,
+          "startup_strategy": 1,
+          "ux_design_and_data_science": 1
         },
         "benchmark_pool": {
-          "balanced": 1
+          "balanced": 10
         },
         "narrative_vs_expository": {
-          "expository": 1
+          "expository": 8,
+          "mixed": 1,
+          "narrative": 1
         },
         "prescriptive_vs_analytical": {
-          "mixed": 1
+          "analytical": 5,
+          "prescriptive": 5
         },
         "quantitative_density": {
+          "high": 7,
+          "low": 2,
           "medium": 1
         },
         "chapter_length_profile": {
-          "medium": 1
+          "medium": 1,
+          "mixed": 9
         }
       },
       "gate": {
         "book_ids": [
-          "example-experiments-book"
+          "emotionally-intelligent-design-bennet-2020",
+          "how-to-stop-worrying-and-start-living-carnegie-2022",
+          "the-5-am-club-own-your-morning-elevate-your-life-sharma-2018",
+          "the-strange-death-of-europe-murray-2017"
         ],
-        "n_books": 1,
+        "n_books": 4,
         "genre_macro": {
-          "explanatory_science_technology_environment": 1
+          "business_economics_productivity": 1,
+          "history_biography_politics_social_analysis": 1,
+          "psychology_health_self_development": 1,
+          "science_technology_environment": 1
         },
         "genre_micro": {
-          "research_methods": 1
+          "design_and_ux": 1,
+          "habits_and_productivity": 1,
+          "politics_social_analysis": 1,
+          "self_help_mindset": 1
         },
         "benchmark_pool": {
-          "balanced": 1
+          "balanced": 4
         },
         "narrative_vs_expository": {
-          "expository": 1
+          "expository": 2,
+          "mixed": 2
         },
         "prescriptive_vs_analytical": {
-          "analytical": 1
+          "analytical": 1,
+          "prescriptive": 3
         },
         "quantitative_density": {
+          "high": 1,
+          "low": 2,
           "medium": 1
         },
         "chapter_length_profile": {
-          "medium": 1
+          "mixed": 4
         }
       },
       "holdout": {
         "book_ids": [
-          "example-smoke-book"
+          "garden-city-comer-2015",
+          "how-to-think-about-ai-susskind-2025",
+          "the-practice-godin-2020",
+          "the-spy-and-the-traitor-macintyre-2018"
         ],
-        "n_books": 1,
+        "n_books": 4,
         "genre_macro": {
-          "psychology_health_self_development": 1
+          "business_economics_productivity": 1,
+          "history_biography_politics_social_analysis": 1,
+          "psychology_health_self_development": 1,
+          "science_technology_environment": 1
         },
         "genre_micro": {
-          "learning_and_habits": 1
+          "artificial_intelligence": 1,
+          "creativity_marketing": 1,
+          "espionage_history": 1,
+          "purpose_and_work": 1
         },
         "benchmark_pool": {
-          "balanced": 1
+          "balanced": 4
         },
         "narrative_vs_expository": {
-          "mixed": 1
+          "expository": 2,
+          "mixed": 1,
+          "narrative": 1
         },
         "prescriptive_vs_analytical": {
-          "prescriptive": 1
+          "analytical": 2,
+          "prescriptive": 2
         },
         "quantitative_density": {
-          "low": 1
+          "high": 2,
+          "low": 1,
+          "medium": 1
         },
         "chapter_length_profile": {
-          "short": 1
+          "mixed": 4
         }
       }
     }

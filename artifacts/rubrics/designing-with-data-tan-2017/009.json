@@ -1,0 +1,62 @@
+{
+  "headings": [
+    "Ethics in Online Experimentation"
+  ],
+  "core_concepts": [
+    "Ethics in Online Experimentation Ethics in philosophy addresses the moral principles that govern a person’s behavior",
+    "The area of research ethics is always in flux, responding to unexpected ramifications and unforeseen consequences of research engagements",
+    "As authors of this book, we personally advocate that anyone whose work touches people’s lives should take time to be aware of legal and ethical concerns and engage in company discussions around the ethics of data coll",
+    "We aren’t suggesting you become an expert in research ethics, unless you wish to investigate the area further for your own interest and satisfaction",
+    "Research Ethics refers to the correct rules of conduct necessary for carrying out research, including experimentation at scale, as with A/B tests",
+    "Indeed, there is a long history of concern about experimentation with human participants in modern science, dating back at least as far as the 1930s",
+    "As much as we have focused in this book on designing rigorous experiments to understand the impact of your work on human behavior, it is equally important to consider whether your users are inconvenienced or exposed t",
+    "As you think through potential issues, you will need to make a judgment call as to whether the research is justified or not",
+    "Yet the internet industry is gaining better insight as to potential hazards to users of poor experimentation, poor data management practices, and flawed data analysis",
+    "As an industry, we are becoming more aware of the importance of exploring and addressing ethical questions up-front",
+    "Our aim here is neither to scare you away from this type of research, nor to undermine its many benefits",
+    "Of course, moral issues rarely involve unambiguous right or wrong answers; they involve judgment"
+  ],
+  "mechanisms_or_explanations": [
+    "Examples include: the Tuskegee Syphilis Study, which ran from 1932 until 1972, where researchers sponsored by the US Department of Health withheld treatment from 400 African American men, even when penicillin became w",
+    "Rather, we hope to empower you with a nuanced view of both the benefits and potential detriments of A/B testing so that you can be an active participant in the discourse around experimenting at scale with human partic"
+  ],
+  "critical_qualifiers": [
+    "We aren’t suggesting you become an expert in research ethics, unless you wish to investigate the area further for your own interest and satisfaction",
+    "Rather, we hope to empower you with a nuanced view of both the benefits and potential detriments of A/B testing so that you can be an active participant in the discourse around experimenting at scale with human partic"
+  ],
+  "important_examples": [
+    "Examples include: the Tuskegee Syphilis Study, which ran from 1932 until 1972, where researchers sponsored by the US Department of Health withheld treatment from 400 African American men, even when penicillin became w",
+    "As much as we have focused in this book on designing rigorous experiments to understand the impact of your work on human behavior, it is equally important to consider whether your users are inconvenienced or exposed t"
+  ],
+  "key_entities_or_numbers": [
+    "Indeed, there is a long history of concern about experimentation with human participants in modern science, dating back at least as far as the 1930s",
+    "Examples include: the Tuskegee Syphilis Study, which ran from 1932 until 1972, where researchers sponsored by the US Department of Health withheld treatment from 400 African American men, even when penicillin became w",
+    "In 1974 Congress passed the National Research Act and in 1979, the National Commission released The Belmont Report, a report that lays out guidelines for ethical research on human subjects",
+    "1932",
+    "1972",
+    "400",
+    "1974",
+    "1979"
+  ],
+  "key_terms": [
+    "Ethics in Online Experimentation",
+    "Ethics",
+    "Online Experimentation Ethics",
+    "Research Ethics",
+    "The",
+    "Indeed",
+    "Examples",
+    "Tuskegee Syphilis Study",
+    "Department",
+    "Health",
+    "African American",
+    "Stanley Milgram",
+    "Congress",
+    "National Research Act",
+    "National Commission",
+    "The Belmont Report",
+    "Yet",
+    "Our",
+    "Rather"
+  ]
+}

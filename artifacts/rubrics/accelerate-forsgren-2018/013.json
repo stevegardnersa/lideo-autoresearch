@@ -1,0 +1,83 @@
+{
+  "headings": [],
+  "core_concepts": [
+    "CHAPTER 11",
+    "LEADERS AND MANAGERS",
+    "Over the years, our research has investigated the effects of various technical and Lean management practices on software delivery performance as well as team culture",
+    "This chapter will present our findings on the role of leaders and managers in technology transformations, as well as outline some steps that leaders can take to improve the culture in their own teams",
+    "TRANSFORMATIONAL LEADERSHIP",
+    "Not sure of how important technology leadership is?",
+    "That’s because leadership really does have a powerful impact on results",
+    "In our opinion, the role of leadership on technology transformation has been one of the more overlooked topics in DevOps, despite the fact that transformational leadership is essential for",
+    "Establishing and supporting generative and high-trust cultural norms Creating technologies that enable developer productivity, reducing code deployment lead times and supporting more reliable infrastructures Supportin",
+    "And yet, one of the most common questions we hear is, “How do we get leaders on board, so we can make the necessary changes?” We all recognize that engaged leadership is essential for successful DevOps transformations",
+    "To capture transformational leadership, we used a model that includes five dimensions (Rafferty and Griffin 2004)",
+    "Vision"
+  ],
+  "mechanisms_or_explanations": [
+    "This chapter will present our findings on the role of leaders and managers in technology transformations, as well as outline some steps that leaders can take to improve the culture in their own teams",
+    "TRANSFORMATIONAL LEADERSHIP Not sure of how important technology leadership is?",
+    "That’s because leadership really does have a powerful impact on results",
+    "A good leader affects a team’s ability to deliver code, architect good systems, and apply Lean principles to how the team manages its work and develops products",
+    "Leaders have the authority and budget to make the large-scale changes that are often needed, to provide air cover when a transformation is underway, and to change the incentives of entire groups of technical professio",
+    "Praises and acknowledges achievement of goals and improvements in work quality; personally compliments others when they do outstanding work.What Is Transformational Leadership?",
+    "We also selected transformational leadership as the model to use in our research because it is more predictive of performance outcomes in other contexts, and we were interested in understanding how to improve performa",
+    "(Personal recognition) Commends me when I do a better than average job",
+    "Personally compliments me when I do outstanding work.Our analysis found that these characteristics of transformational leadership are highly correlated with software delivery performance",
+    "When we take our analysis one step further, we find that teams with the least transformative leaders are far less likely to be high performers",
+    "This validates our common experience: though we often hear stories of DevOps and technology transformation success coming from the grassroots, it is far easier to achieve success when you have leadership support",
+    "This makes sense, because leaders cannot achieve goals on their own"
+  ],
+  "critical_qualifiers": [
+    "However, in the early years of the project, we hadn’t directly studied the effects of leadership on DevOps practices",
+    "This chapter will present our findings on the role of leaders and managers in technology transformations, as well as outline some steps that leaders can take to improve the culture in their own teams",
+    "However, these effects on organizational and noncommercial goals are all indirect, through the technical and Lean practices that leaders support in their teams",
+    "And yet, one of the most common questions we hear is, “How do we get leaders on board, so we can make the necessary changes?” We all recognize that engaged leadership is essential for successful DevOps transformations",
+    "Leaders have the authority and budget to make the large-scale changes that are often needed, to provide air cover when a transformation is underway, and to change the incentives of entire groups of technical professio",
+    "It has been observed that there are similarities between servant leadership and transformational leadership, but they differ in the leader’s focus",
+    "This validates our common experience: though we often hear stories of DevOps and technology transformation success coming from the grassroots, it is far easier to achieve success when you have leadership support",
+    "One might think that these teams would have better than average performance",
+    "However, these teams were equally or even less likely to be high performers compared to the entire population of teams represented in survey results",
+    "When those leaders are managers, they may have an even bigger role in affecting change"
+  ],
+  "important_examples": [
+    "Consider this: by 2020, half of the CIOs who have not transformed their teams’ capabilities will be displaced from their organizations’ digital leadership teams (Gartner)",
+    "Such leaders encourage their teams to work toward a common goal through their vision, values, communication, example-setting, and their evident caring about their followers’ personal needs"
+  ],
+  "key_entities_or_numbers": [
+    "CHAPTER 11 LEADERS AND MANAGERS Over the years, our research has investigated the effects of various technical and Lean management practices on software delivery performance as well as team culture",
+    "Consider this: by 2020, half of the CIOs who have not transformed their teams’ capabilities will be displaced from their organizations’ digital leadership teams (Gartner)",
+    "To capture transformational leadership, we used a model that includes five dimensions (Rafferty and Griffin 2004)",
+    "We measured transformational leadership using survey questions adapted from Rafferty and Griffin (2004): My leader or manager: (Vision) Has a clear understanding of where we are going",
+    "We show this in Figure 11.1",
+    "We looked at the performance of teams with the strongest transformational leaders—those with the top 10% of reported transformational leadership characteristics",
+    "Figure 11.1: Impacts of Transformational Leadership on Technical and Lean Capabilities In summary, we found that leadership helps build great teams, great technology, and great organizations—but indirectly, leadership",
+    "Give staff dedicated time, such as 20% time or several days after a release, to experiment with new tools and technologies",
+    "That way, should a real large-scale disaster ever strike, these people will already have strong working relationships” (ACMQueue 2012)",
+    "Some companies, like 3M and Google, have famously set aside a portion of time (15% and 20%, respectively) for focused free-thinking and exploration of side projects",
+    "This is backed up in the data: one of the major contributors to job satisfaction is whether employees feel they have the tools and resources to do their job (see Chapter 10)",
+    "We also see this in our data as one of the predictors of continuous delivery: teams that are empowered to choose their own tools drive software delivery performance (see Chapter 5)"
+  ],
+  "key_terms": [
+    "Over",
+    "Lean",
+    "However",
+    "This",
+    "Not",
+    "Consider",
+    "Gartner",
+    "That",
+    "Being",
+    "All",
+    "These",
+    "Establishing",
+    "Creating",
+    "Supporting",
+    "Working",
+    "And",
+    "How",
+    "Leaders",
+    "Rafferty",
+    "Griffin"
+  ]
+}

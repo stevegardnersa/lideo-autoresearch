@@ -1,0 +1,1642 @@
+[
+  {
+    "title": "Getting Things Done",
+    "level": 1,
+    "href": "Text/title.xhtml"
+  },
+  {
+    "title": "Contents",
+    "level": 1,
+    "href": "Text/toc.xhtml"
+  },
+  {
+    "title": "About the Author",
+    "level": 1,
+    "href": "Text/aboutauthor.xhtml"
+  },
+  {
+    "title": "Praise for the previous edition of Getting Things Done and the GTD method",
+    "level": 1,
+    "href": "Text/praises.xhtml"
+  },
+  {
+    "title": "Acknowledgments",
+    "level": 1,
+    "href": "Text/acknowledgments.xhtml"
+  },
+  {
+    "title": "Foreword",
+    "level": 1,
+    "href": "Text/foreword.xhtml"
+  },
+  {
+    "title": "Introduction to the Revised Edition",
+    "level": 1,
+    "href": "Text/introduction.xhtml",
+    "children": [
+      {
+        "title": "What’s New",
+        "level": 2,
+        "href": "Text/introduction.xhtml#sigil_toc_id_1",
+        "children": [
+          {
+            "title": "The Rise of Digital Technology",
+            "level": 3,
+            "href": "Text/introduction.xhtml#sigil_toc_id_2"
+          },
+          {
+            "title": "The 24-7 World",
+            "level": 3,
+            "href": "Text/introduction.xhtml#sigil_toc_id_3"
+          },
+          {
+            "title": "The Globalization of GTD Methodology",
+            "level": 3,
+            "href": "Text/introduction.xhtml#sigil_toc_id_4"
+          },
+          {
+            "title": "An Approach That Is More Inclusive of a Larger Population of Readers and Users",
+            "level": 3,
+            "href": "Text/introduction.xhtml#sigil_toc_id_5"
+          },
+          {
+            "title": "A Greater Awareness of the Time and Energy Required for the Full Implementation of the GTD Process, and the Behavioral Changes Required to Maintain It",
+            "level": 3,
+            "href": "Text/introduction.xhtml#sigil_toc_id_6"
+          },
+          {
+            "title": "Information from Cognitive Science Research That Has Validated the Efficacy of the GTD Methodology",
+            "level": 3,
+            "href": "Text/introduction.xhtml#sigil_toc_id_7"
+          }
+        ]
+      },
+      {
+        "title": "If You Are New to This . . .",
+        "level": 2,
+        "href": "Text/introduction.xhtml#sigil_toc_id_8"
+      },
+      {
+        "title": "If You Already Have Some Getting Things Done Experience . . .",
+        "level": 2,
+        "href": "Text/introduction.xhtml#sigil_toc_id_9"
+      }
+    ]
+  },
+  {
+    "title": "Welcome to Getting Things Done",
+    "level": 1,
+    "href": "Text/welcome001.xhtml"
+  },
+  {
+    "title": "Part 1 The Art of Getting Things Done",
+    "level": 1,
+    "href": "Text/part001.xhtml",
+    "children": [
+      {
+        "title": "1 A New Practice for a New Reality",
+        "level": 2,
+        "href": "Text/chapter001.xhtml",
+        "children": [
+          {
+            "title": "The Problem: New Demands, Insufficient Resources",
+            "level": 3,
+            "href": "Text/chapter001.xhtml#sigil_toc_id_10",
+            "children": [
+              {
+                "title": "Work No Longer Has Clear Boundaries",
+                "level": 4,
+                "href": "Text/chapter001.xhtml#sigil_toc_id_11"
+              },
+              {
+                "title": "Our Jobs (and Lives) Keep Changing",
+                "level": 4,
+                "href": "Text/chapter001.xhtml#sigil_toc_id_12"
+              },
+              {
+                "title": "The Old Models and Habits Are Insufficient",
+                "level": 4,
+                "href": "Text/chapter001.xhtml#sigil_toc_id_13"
+              },
+              {
+                "title": "The Big Picture vs. the Nitty-Gritty",
+                "level": 4,
+                "href": "Text/chapter001.xhtml#sigil_toc_id_14"
+              }
+            ]
+          },
+          {
+            "title": "The Promise: The “Ready State” of the Martial Artist",
+            "level": 3,
+            "href": "Text/chapter001.xhtml#sigil_toc_id_15",
+            "children": [
+              {
+                "title": "The “Mind Like Water” Simile",
+                "level": 4,
+                "href": "Text/chapter001.xhtml#sigil_toc_id_16"
+              },
+              {
+                "title": "Can You Get into Your “Productive State” When Required?",
+                "level": 4,
+                "href": "Text/chapter001.xhtml#sigil_toc_id_17"
+              }
+            ]
+          },
+          {
+            "title": "The Principle: Dealing Effectively with Internal Commitments",
+            "level": 3,
+            "href": "Text/chapter001.xhtml#sigil_toc_id_18",
+            "children": [
+              {
+                "title": "The Basic Requirements for Managing Commitments",
+                "level": 4,
+                "href": "Text/chapter001.xhtml#sigil_toc_id_19"
+              },
+              {
+                "title": "An Important Exercise to Test This Model",
+                "level": 4,
+                "href": "Text/chapter001.xhtml#sigil_toc_id_20"
+              },
+              {
+                "title": "The Real Work of Knowledge Work",
+                "level": 4,
+                "href": "Text/chapter001.xhtml#sigil_toc_id_21"
+              },
+              {
+                "title": "Why Things Are on Your Mind",
+                "level": 4,
+                "href": "Text/chapter001.xhtml#sigil_toc_id_22"
+              },
+              {
+                "title": "Your Mind Doesn’t Have a Mind of Its own",
+                "level": 4,
+                "href": "Text/chapter001.xhtml#sigil_toc_id_23"
+              },
+              {
+                "title": "The Transformation of “Stuff”",
+                "level": 4,
+                "href": "Text/chapter001.xhtml#sigil_toc_id_24"
+              }
+            ]
+          },
+          {
+            "title": "The Process: Managing Action",
+            "level": 3,
+            "href": "Text/chapter001.xhtml#sigil_toc_id_25",
+            "children": [
+              {
+                "title": "Managing Action Is the Prime Challenge",
+                "level": 4,
+                "href": "Text/chapter001.xhtml#sigil_toc_id_26"
+              },
+              {
+                "title": "The Value of a Bottom-Up Approach",
+                "level": 4,
+                "href": "Text/chapter001.xhtml#sigil_toc_id_27"
+              },
+              {
+                "title": "Horizontal and Vertical Action Management",
+                "level": 4,
+                "href": "Text/chapter001.xhtml#sigil_toc_id_28"
+              },
+              {
+                "title": "The Major Change: Getting It All Out of Your Head",
+                "level": 4,
+                "href": "Text/chapter001.xhtml#sigil_toc_id_29"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "2 Getting Control of Your Life: The Five Steps of Mastering Workflow",
+        "level": 2,
+        "href": "Text/chapter002.xhtml",
+        "children": [
+          {
+            "title": "Capture",
+            "level": 3,
+            "href": "Text/chapter002.xhtml#sigil_toc_id_30",
+            "children": [
+              {
+                "title": "Gathering 100 Percent of the “Incompletes”",
+                "level": 4,
+                "href": "Text/chapter002.xhtml#sigil_toc_id_31"
+              },
+              {
+                "title": "The Capture Tools",
+                "level": 4,
+                "href": "Text/chapter002.xhtml#sigil_toc_id_32",
+                "children": [
+                  {
+                    "title": "The Physical In‑Tray",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_33"
+                  },
+                  {
+                    "title": "Writing Paper and Pads",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_34"
+                  },
+                  {
+                    "title": "Digital and Voice Note Taking",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_35"
+                  },
+                  {
+                    "title": "E‑mail and Texting",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_36"
+                  },
+                  {
+                    "title": "Technolog y Integration",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_37"
+                  }
+                ]
+              },
+              {
+                "title": "The Success Factors for Capturing",
+                "level": 4,
+                "href": "Text/chapter002.xhtml#sigil_toc_id_38",
+                "children": [
+                  {
+                    "title": "Get It All Out of Your Head",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_39"
+                  },
+                  {
+                    "title": "Minimize the Number of Capture Locations",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_40"
+                  },
+                  {
+                    "title": "Empty the Capture Tools Regularly",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_41"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Clarify",
+            "level": 3,
+            "href": "Text/chapter002.xhtml#sigil_toc_id_42",
+            "children": [
+              {
+                "title": "What Is It?",
+                "level": 4,
+                "href": "Text/chapter002.xhtml#sigil_toc_id_43"
+              },
+              {
+                "title": "Is It Actionable?",
+                "level": 4,
+                "href": "Text/chapter002.xhtml#sigil_toc_id_44"
+              }
+            ]
+          },
+          {
+            "title": "Organize",
+            "level": 3,
+            "href": "Text/chapter002.xhtml#sigil_toc_id_45",
+            "children": [
+              {
+                "title": "Projects",
+                "level": 4,
+                "href": "Text/chapter002.xhtml#sigil_toc_id_46",
+                "children": [
+                  {
+                    "title": "Project Support Material",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_47"
+                  }
+                ]
+              },
+              {
+                "title": "The Next-Action Categories",
+                "level": 4,
+                "href": "Text/chapter002.xhtml#sigil_toc_id_48",
+                "children": [
+                  {
+                    "title": "Calendar",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_49"
+                  },
+                  {
+                    "title": "The “Next Actions” List(s)",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_50"
+                  }
+                ]
+              },
+              {
+                "title": "Nonactionable Items",
+                "level": 4,
+                "href": "Text/chapter002.xhtml#sigil_toc_id_51",
+                "children": [
+                  {
+                    "title": "Trash",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_52"
+                  },
+                  {
+                    "title": "Incubation",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_53"
+                  },
+                  {
+                    "title": "Reference Material",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_54"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Reflect",
+            "level": 3,
+            "href": "Text/chapter002.xhtml#sigil_toc_id_55",
+            "children": [
+              {
+                "title": "What to Review When",
+                "level": 4,
+                "href": "Text/chapter002.xhtml#sigil_toc_id_56"
+              },
+              {
+                "title": "Critical Success Factor: The Weekly Review",
+                "level": 4,
+                "href": "Text/chapter002.xhtml#sigil_toc_id_57"
+              }
+            ]
+          },
+          {
+            "title": "Engage",
+            "level": 3,
+            "href": "Text/chapter002.xhtml#sigil_toc_id_58",
+            "children": [
+              {
+                "title": "Three Models for Making Action Choices",
+                "level": 4,
+                "href": "Text/chapter002.xhtml#sigil_toc_id_59",
+                "children": [
+                  {
+                    "title": "1. The Four‑Criteria Model for Choosing Actions in the Moment",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_60"
+                  },
+                  {
+                    "title": "2. The Threefold Model for Identifying Daily Work",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_61"
+                  },
+                  {
+                    "title": "3. The Six‑Level Model for Reviewing Your Own Work",
+                    "level": 5,
+                    "href": "Text/chapter002.xhtml#sigil_toc_id_62"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "3 Getting Projects Creatively Under Way: The Five Phases of Project Planning",
+        "level": 2,
+        "href": "Text/chapter003.xhtml",
+        "children": [
+          {
+            "title": "Enhancing Vertical Focus",
+            "level": 3,
+            "href": "Text/chapter003.xhtml#sigil_toc_id_63"
+          },
+          {
+            "title": "The Natural Planning Model",
+            "level": 3,
+            "href": "Text/chapter003.xhtml#sigil_toc_id_64",
+            "children": [
+              {
+                "title": "A Simple Example: Planning Dinner Out",
+                "level": 4,
+                "href": "Text/chapter003.xhtml#sigil_toc_id_65"
+              },
+              {
+                "title": "Natural Planning Is Not Necessarily Normal",
+                "level": 4,
+                "href": "Text/chapter003.xhtml#sigil_toc_id_66"
+              }
+            ]
+          },
+          {
+            "title": "The Unnatural Planning Model",
+            "level": 3,
+            "href": "Text/chapter003.xhtml#sigil_toc_id_67",
+            "children": [
+              {
+                "title": "When the “Good” Idea Is a bad Idea",
+                "level": 4,
+                "href": "Text/chapter003.xhtml#sigil_toc_id_68"
+              }
+            ]
+          },
+          {
+            "title": "The Reactive Planning Model",
+            "level": 3,
+            "href": "Text/chapter003.xhtml#sigil_toc_id_69"
+          },
+          {
+            "title": "Natural Planning Techniques: The Five Phases",
+            "level": 3,
+            "href": "Text/chapter003.xhtml#sigil_toc_id_70",
+            "children": [
+              {
+                "title": "Purpose",
+                "level": 4,
+                "href": "Text/chapter003.xhtml#sigil_toc_id_71",
+                "children": [
+                  {
+                    "title": "The Value of Thinking About Why",
+                    "level": 5,
+                    "href": "Text/chapter003.xhtml#sigil_toc_id_72"
+                  }
+                ]
+              },
+              {
+                "title": "Principles",
+                "level": 4,
+                "href": "Text/chapter003.xhtml#sigil_toc_id_73"
+              },
+              {
+                "title": "Vision/Outcome",
+                "level": 4,
+                "href": "Text/chapter003.xhtml#sigil_toc_id_74",
+                "children": [
+                  {
+                    "title": "The Power of Focus",
+                    "level": 5,
+                    "href": "Text/chapter003.xhtml#sigil_toc_id_75"
+                  },
+                  {
+                    "title": "Clarifying Outcomes",
+                    "level": 5,
+                    "href": "Text/chapter003.xhtml#sigil_toc_id_76"
+                  }
+                ]
+              },
+              {
+                "title": "Brainstorming",
+                "level": 4,
+                "href": "Text/chapter003.xhtml#sigil_toc_id_77",
+                "children": [
+                  {
+                    "title": "Capturing Your Ideas",
+                    "level": 5,
+                    "href": "Text/chapter003.xhtml#sigil_toc_id_78"
+                  },
+                  {
+                    "title": "Distributed Cognition",
+                    "level": 5,
+                    "href": "Text/chapter003.xhtml#sigil_toc_id_79"
+                  },
+                  {
+                    "title": "Brainstorming Keys",
+                    "level": 5,
+                    "href": "Text/chapter003.xhtml#sigil_toc_id_80"
+                  }
+                ]
+              },
+              {
+                "title": "Organizing",
+                "level": 4,
+                "href": "Text/chapter003.xhtml#sigil_toc_id_81",
+                "children": [
+                  {
+                    "title": "The Basics of Organizing",
+                    "level": 5,
+                    "href": "Text/chapter003.xhtml#sigil_toc_id_82"
+                  }
+                ]
+              },
+              {
+                "title": "Next Actions",
+                "level": 4,
+                "href": "Text/chapter003.xhtml#sigil_toc_id_83",
+                "children": [
+                  {
+                    "title": "The Basics",
+                    "level": 5,
+                    "href": "Text/chapter003.xhtml#sigil_toc_id_84"
+                  }
+                ]
+              },
+              {
+                "title": "How Much Planning Do You Really Need to Do?",
+                "level": 4,
+                "href": "Text/chapter003.xhtml#sigil_toc_id_85",
+                "children": [
+                  {
+                    "title": "Need More Clarity?",
+                    "level": 5,
+                    "href": "Text/chapter003.xhtml#sigil_toc_id_86"
+                  },
+                  {
+                    "title": "Need More to Be Happening?",
+                    "level": 5,
+                    "href": "Text/chapter003.xhtml#sigil_toc_id_87"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Part 2 Practicing Stress-Free Productivity",
+    "level": 1,
+    "href": "Text/part002.xhtml",
+    "children": [
+      {
+        "title": "4 Getting Started: Setting Up the Time, Space, and Tools",
+        "level": 2,
+        "href": "Text/chapter004.xhtml",
+        "children": [
+          {
+            "title": "Implementation—Whether All-Out or Casual—Is a Lot About “Tricks”",
+            "level": 3,
+            "href": "Text/chapter004.xhtml#sigil_toc_id_88"
+          },
+          {
+            "title": "Setting Aside the Time",
+            "level": 3,
+            "href": "Text/chapter004.xhtml#sigil_toc_id_89"
+          },
+          {
+            "title": "Setting Up the Space",
+            "level": 3,
+            "href": "Text/chapter004.xhtml#sigil_toc_id_90",
+            "children": [
+              {
+                "title": "If You Go to an office, You’ll Still Need a Space at Home",
+                "level": 4,
+                "href": "Text/chapter004.xhtml#sigil_toc_id_91",
+                "children": [
+                  {
+                    "title": "An Office Space in Transit",
+                    "level": 5,
+                    "href": "Text/chapter004.xhtml#sigil_toc_id_92"
+                  },
+                  {
+                    "title": "Don’t Share Space!",
+                    "level": 5,
+                    "href": "Text/chapter004.xhtml#sigil_toc_id_93"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Getting the Tools You’ll Need",
+            "level": 3,
+            "href": "Text/chapter004.xhtml#sigil_toc_id_94",
+            "children": [
+              {
+                "title": "The Basic Processing Tools",
+                "level": 4,
+                "href": "Text/chapter004.xhtml#sigil_toc_id_95",
+                "children": [
+                  {
+                    "title": "Paper‑Holding Trays",
+                    "level": 5,
+                    "href": "Text/chapter004.xhtml#sigil_toc_id_96"
+                  },
+                  {
+                    "title": "Plain Paper",
+                    "level": 5,
+                    "href": "Text/chapter004.xhtml#sigil_toc_id_97"
+                  },
+                  {
+                    "title": "Post‑its, Clips, Stapler, Etc.",
+                    "level": 5,
+                    "href": "Text/chapter004.xhtml#sigil_toc_id_98"
+                  },
+                  {
+                    "title": "Labeler",
+                    "level": 5,
+                    "href": "Text/chapter004.xhtml#sigil_toc_id_99"
+                  },
+                  {
+                    "title": "File Folders",
+                    "level": 5,
+                    "href": "Text/chapter004.xhtml#sigil_toc_id_100"
+                  },
+                  {
+                    "title": "Calendar",
+                    "level": 5,
+                    "href": "Text/chapter004.xhtml#sigil_toc_id_101"
+                  },
+                  {
+                    "title": "Wastebasket/Recycling Bins",
+                    "level": 5,
+                    "href": "Text/chapter004.xhtml#sigil_toc_id_102"
+                  },
+                  {
+                    "title": "Do You Need an Organizer?",
+                    "level": 5,
+                    "href": "Text/chapter004.xhtml#sigil_toc_id_103"
+                  }
+                ]
+              },
+              {
+                "title": "The Critical Factor of a Filing System",
+                "level": 4,
+                "href": "Text/chapter004.xhtml#sigil_toc_id_104",
+                "children": [
+                  {
+                    "title": "Success Factors for Filing",
+                    "level": 5,
+                    "href": "Text/chapter004.xhtml#sigil_toc_id_105"
+                  },
+                  {
+                    "title": "Filing as a Success Factor Itself",
+                    "level": 5,
+                    "href": "Text/chapter004.xhtml#sigil_toc_id_106"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "title": "One Final Thing to Prepare . . .",
+            "level": 3,
+            "href": "Text/chapter004.xhtml#sigil_toc_id_107"
+          }
+        ]
+      },
+      {
+        "title": "5 Capturing: Corralling Your “Stuff”",
+        "level": 2,
+        "href": "Text/chapter005.xhtml",
+        "children": [
+          {
+            "title": "Ready, Set . . .",
+            "level": 3,
+            "href": "Text/chapter005.xhtml#sigil_toc_id_108"
+          },
+          {
+            "title": ". . . Go!",
+            "level": 3,
+            "href": "Text/chapter005.xhtml#sigil_toc_id_109",
+            "children": [
+              {
+                "title": "Physical Gathering",
+                "level": 4,
+                "href": "Text/chapter005.xhtml#sigil_toc_id_110",
+                "children": [
+                  {
+                    "title": "What Stays Where It Is",
+                    "level": 5,
+                    "href": "Text/chapter005.xhtml#sigil_toc_id_111"
+                  },
+                  {
+                    "title": "Issues About Capturing",
+                    "level": 5,
+                    "href": "Text/chapter005.xhtml#sigil_toc_id_112"
+                  },
+                  {
+                    "title": "Start with Your Desktop",
+                    "level": 5,
+                    "href": "Text/chapter005.xhtml#sigil_toc_id_113"
+                  },
+                  {
+                    "title": "Desk Drawers",
+                    "level": 5,
+                    "href": "Text/chapter005.xhtml#sigil_toc_id_114"
+                  },
+                  {
+                    "title": "Countertops",
+                    "level": 5,
+                    "href": "Text/chapter005.xhtml#sigil_toc_id_115"
+                  },
+                  {
+                    "title": "Inside the Cabinets",
+                    "level": 5,
+                    "href": "Text/chapter005.xhtml#sigil_toc_id_116"
+                  },
+                  {
+                    "title": "Floors, Walls, and Shelves",
+                    "level": 5,
+                    "href": "Text/chapter005.xhtml#sigil_toc_id_117"
+                  },
+                  {
+                    "title": "Equipment, Furniture, and Fixtures",
+                    "level": 5,
+                    "href": "Text/chapter005.xhtml#sigil_toc_id_118"
+                  },
+                  {
+                    "title": "Other Locations",
+                    "level": 5,
+                    "href": "Text/chapter005.xhtml#sigil_toc_id_119"
+                  },
+                  {
+                    "title": "This Is Not About Throwing Things Away That You Might Want",
+                    "level": 5,
+                    "href": "Text/chapter005.xhtml#sigil_toc_id_120"
+                  }
+                ]
+              },
+              {
+                "title": "Mental Gathering: The Mind sweep",
+                "level": 4,
+                "href": "Text/chapter005.xhtml#sigil_toc_id_121",
+                "children": [
+                  {
+                    "title": "Triggers List",
+                    "level": 5,
+                    "href": "Text/chapter005.xhtml#sigil_toc_id_122"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "title": "The “In” Inventory",
+            "level": 3,
+            "href": "Text/chapter005.xhtml#sigil_toc_id_123",
+            "children": [
+              {
+                "title": "But “In” Doesn’t Stay In “In”",
+                "level": 4,
+                "href": "Text/chapter005.xhtml#sigil_toc_id_124"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "6 Clarifying: Getting “In” to Empty",
+        "level": 2,
+        "href": "Text/chapter006.xhtml",
+        "children": [
+          {
+            "title": "Processing Guidelines",
+            "level": 3,
+            "href": "Text/chapter006.xhtml#sigil_toc_id_125",
+            "children": [
+              {
+                "title": "Top Item First",
+                "level": 4,
+                "href": "Text/chapter006.xhtml#sigil_toc_id_126",
+                "children": [
+                  {
+                    "title": "Emergency Scanning Is Not Clarifying",
+                    "level": 5,
+                    "href": "Text/chapter006.xhtml#sigil_toc_id_127"
+                  },
+                  {
+                    "title": "LIFO or FIFO?",
+                    "level": 5,
+                    "href": "Text/chapter006.xhtml#sigil_toc_id_128"
+                  },
+                  {
+                    "title": "One Item at a Time",
+                    "level": 5,
+                    "href": "Text/chapter006.xhtml#sigil_toc_id_129"
+                  },
+                  {
+                    "title": "The Multitasking Exception",
+                    "level": 5,
+                    "href": "Text/chapter006.xhtml#sigil_toc_id_130"
+                  }
+                ]
+              },
+              {
+                "title": "Nothing Goes Back Into “In”",
+                "level": 4,
+                "href": "Text/chapter006.xhtml#sigil_toc_id_131"
+              }
+            ]
+          },
+          {
+            "title": "The Key Processing Question: “What’s the Next Action?”",
+            "level": 3,
+            "href": "Text/chapter006.xhtml#sigil_toc_id_132",
+            "children": [
+              {
+                "title": "What If There Is no Action?",
+                "level": 4,
+                "href": "Text/chapter006.xhtml#sigil_toc_id_133",
+                "children": [
+                  {
+                    "title": "Trash",
+                    "level": 5,
+                    "href": "Text/chapter006.xhtml#sigil_toc_id_134"
+                  },
+                  {
+                    "title": "Incubate",
+                    "level": 5,
+                    "href": "Text/chapter006.xhtml#sigil_toc_id_135"
+                  },
+                  {
+                    "title": "Reference",
+                    "level": 5,
+                    "href": "Text/chapter006.xhtml#sigil_toc_id_136"
+                  }
+                ]
+              },
+              {
+                "title": "And If There Is an Action . . . What Is It?",
+                "level": 4,
+                "href": "Text/chapter006.xhtml#sigil_toc_id_137",
+                "children": [
+                  {
+                    "title": "The Action Step Needs to Be the Absolute Next Physical Thing to Do",
+                    "level": 5,
+                    "href": "Text/chapter006.xhtml#sigil_toc_id_138"
+                  }
+                ]
+              },
+              {
+                "title": "Once You Decide What the Action Step Is",
+                "level": 4,
+                "href": "Text/chapter006.xhtml#sigil_toc_id_139",
+                "children": [
+                  {
+                    "title": "Do It",
+                    "level": 5,
+                    "href": "Text/chapter006.xhtml#sigil_toc_id_140"
+                  },
+                  {
+                    "title": "Delegate It",
+                    "level": 5,
+                    "href": "Text/chapter006.xhtml#sigil_toc_id_141"
+                  },
+                  {
+                    "title": "Defer It",
+                    "level": 5,
+                    "href": "Text/chapter006.xhtml#sigil_toc_id_142"
+                  }
+                ]
+              },
+              {
+                "title": "The Pending Things That Are left",
+                "level": 4,
+                "href": "Text/chapter006.xhtml#sigil_toc_id_143"
+              }
+            ]
+          },
+          {
+            "title": "Identifying the Projects You Have",
+            "level": 3,
+            "href": "Text/chapter006.xhtml#sigil_toc_id_144"
+          }
+        ]
+      },
+      {
+        "title": "7 Organizing: Setting Up the Right Buckets",
+        "level": 2,
+        "href": "Text/chapter007.xhtml",
+        "children": [
+          {
+            "title": "The Basic Categories",
+            "level": 3,
+            "href": "Text/chapter007.xhtml#sigil_toc_id_145",
+            "children": [
+              {
+                "title": "The Importance of Hard Edges",
+                "level": 4,
+                "href": "Text/chapter007.xhtml#sigil_toc_id_146"
+              },
+              {
+                "title": "All You Really Need Are Lists and Folders",
+                "level": 4,
+                "href": "Text/chapter007.xhtml#sigil_toc_id_147"
+              }
+            ]
+          },
+          {
+            "title": "Organizing Action Reminders",
+            "level": 3,
+            "href": "Text/chapter007.xhtml#sigil_toc_id_148",
+            "children": [
+              {
+                "title": "The Actions That Go on Your Calendar",
+                "level": 4,
+                "href": "Text/chapter007.xhtml#sigil_toc_id_149"
+              },
+              {
+                "title": "Organizing As-Soon-As-Possible Actions by Context",
+                "level": 4,
+                "href": "Text/chapter007.xhtml#sigil_toc_id_150",
+                "children": [
+                  {
+                    "title": "The Most Common Categories of Action Reminders",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_151"
+                  }
+                ]
+              },
+              {
+                "title": "Organizing “Waiting For”",
+                "level": 4,
+                "href": "Text/chapter007.xhtml#sigil_toc_id_152"
+              },
+              {
+                "title": "Using the Original Item as Its Own Action Reminder",
+                "level": 4,
+                "href": "Text/chapter007.xhtml#sigil_toc_id_153",
+                "children": [
+                  {
+                    "title": "Managing Paper‑Based Workflow",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_154"
+                  },
+                  {
+                    "title": "Managing E‑mail‑Based Workflow",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_155"
+                  },
+                  {
+                    "title": "A Caution About Dispersing Reminders of Your Actions",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_156"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Organizing Project Reminders",
+            "level": 3,
+            "href": "Text/chapter007.xhtml#sigil_toc_id_157",
+            "children": [
+              {
+                "title": "The Projects List(s)",
+                "level": 4,
+                "href": "Text/chapter007.xhtml#sigil_toc_id_158",
+                "children": [
+                  {
+                    "title": "The Value of a Complete Projects List",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_159"
+                  },
+                  {
+                    "title": "Where to Look for Projects Still to Uncover",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_160"
+                  },
+                  {
+                    "title": "One List, or Subdivided?",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_161"
+                  },
+                  {
+                    "title": "Some Common Ways to Subsort Projects",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_162"
+                  },
+                  {
+                    "title": "What About Subprojects?",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_163"
+                  }
+                ]
+              },
+              {
+                "title": "Project Support Materials",
+                "level": 4,
+                "href": "Text/chapter007.xhtml#sigil_toc_id_164",
+                "children": [
+                  {
+                    "title": "Organizing Ad Hoc Project Thinking",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_165"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Organizing Nonactionable Data",
+            "level": 3,
+            "href": "Text/chapter007.xhtml#sigil_toc_id_166",
+            "children": [
+              {
+                "title": "Reference Materials",
+                "level": 4,
+                "href": "Text/chapter007.xhtml#sigil_toc_id_167",
+                "children": [
+                  {
+                    "title": "The Variety of Reference Systems",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_168"
+                  }
+                ]
+              },
+              {
+                "title": "Someday/Maybes",
+                "level": 4,
+                "href": "Text/chapter007.xhtml#sigil_toc_id_169",
+                "children": [
+                  {
+                    "title": "Someday/ Maybe List",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_170"
+                  },
+                  {
+                    "title": "Special Categories of Someday/ Maybe",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_171"
+                  },
+                  {
+                    "title": "The Danger of “Hold and Review” Files and Piles",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_172"
+                  },
+                  {
+                    "title": "Using the Calendar for Future Options",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_173"
+                  },
+                  {
+                    "title": "The “Tickler” File",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_174"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Checklists: Creative and Constructive Reminders",
+            "level": 3,
+            "href": "Text/chapter007.xhtml#sigil_toc_id_175",
+            "children": [
+              {
+                "title": "Things You Want to Pay Attention To",
+                "level": 4,
+                "href": "Text/chapter007.xhtml#sigil_toc_id_176"
+              },
+              {
+                "title": "First, Identify Inherent Projects and Action",
+                "level": 4,
+                "href": "Text/chapter007.xhtml#sigil_toc_id_177"
+              },
+              {
+                "title": "Blueprinting Key Areas of Work and Accountability",
+                "level": 4,
+                "href": "Text/chapter007.xhtml#sigil_toc_id_178",
+                "children": [
+                  {
+                    "title": "The More Novel the Situation, the More Control Required",
+                    "level": 5,
+                    "href": "Text/chapter007.xhtml#sigil_toc_id_179"
+                  }
+                ]
+              },
+              {
+                "title": "Checklists at All Levels",
+                "level": 4,
+                "href": "Text/chapter007.xhtml#sigil_toc_id_180"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "8 Reflecting: Keeping It All Fresh and Functional",
+        "level": 2,
+        "href": "Text/chapter008.xhtml",
+        "children": [
+          {
+            "title": "What to Look At, When",
+            "level": 3,
+            "href": "Text/chapter008.xhtml#sigil_toc_id_181",
+            "children": [
+              {
+                "title": "Look at Your Calendar First . . .",
+                "level": 4,
+                "href": "Text/chapter008.xhtml#sigil_toc_id_182"
+              },
+              {
+                "title": ". . . Then Your Action Lists",
+                "level": 4,
+                "href": "Text/chapter008.xhtml#sigil_toc_id_183"
+              },
+              {
+                "title": "The Right Review in the Right Context",
+                "level": 4,
+                "href": "Text/chapter008.xhtml#sigil_toc_id_184"
+              }
+            ]
+          },
+          {
+            "title": "Updating Your System",
+            "level": 3,
+            "href": "Text/chapter008.xhtml#sigil_toc_id_185",
+            "children": [
+              {
+                "title": "The Power of the Weekly Review",
+                "level": 4,
+                "href": "Text/chapter008.xhtml#sigil_toc_id_186",
+                "children": [
+                  {
+                    "title": "What Is the Weekly Review?",
+                    "level": 5,
+                    "href": "Text/chapter008.xhtml#sigil_toc_id_187"
+                  },
+                  {
+                    "title": "Get Clear",
+                    "level": 5,
+                    "href": "Text/chapter008.xhtml#sigil_toc_id_188"
+                  },
+                  {
+                    "title": "Get Current",
+                    "level": 5,
+                    "href": "Text/chapter008.xhtml#sigil_toc_id_189"
+                  },
+                  {
+                    "title": "Get Creative",
+                    "level": 5,
+                    "href": "Text/chapter008.xhtml#sigil_toc_id_190"
+                  },
+                  {
+                    "title": "The Right Time and Place for the Review",
+                    "level": 5,
+                    "href": "Text/chapter008.xhtml#sigil_toc_id_191"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "title": "The “Bigger Picture” Reviews",
+            "level": 3,
+            "href": "Text/chapter008.xhtml#sigil_toc_id_192"
+          }
+        ]
+      },
+      {
+        "title": "9 Engaging: Making the Best Action Choices",
+        "level": 2,
+        "href": "Text/chapter009.xhtml",
+        "children": [
+          {
+            "title": "The Four-Criteria Model for Choosing Actions in the Moment",
+            "level": 3,
+            "href": "Text/chapter009.xhtml#sigil_toc_id_193",
+            "children": [
+              {
+                "title": "Context",
+                "level": 4,
+                "href": "Text/chapter009.xhtml#sigil_toc_id_194",
+                "children": [
+                  {
+                    "title": "Creative Context Sorting",
+                    "level": 5,
+                    "href": "Text/chapter009.xhtml#sigil_toc_id_195"
+                  }
+                ]
+              },
+              {
+                "title": "Time Available",
+                "level": 4,
+                "href": "Text/chapter009.xhtml#sigil_toc_id_196"
+              },
+              {
+                "title": "Energy Available",
+                "level": 4,
+                "href": "Text/chapter009.xhtml#sigil_toc_id_197"
+              },
+              {
+                "title": "Priority",
+                "level": 4,
+                "href": "Text/chapter009.xhtml#sigil_toc_id_198"
+              }
+            ]
+          },
+          {
+            "title": "The Threefold Model for Evaluating Daily Work",
+            "level": 3,
+            "href": "Text/chapter009.xhtml#sigil_toc_id_199",
+            "children": [
+              {
+                "title": "The Moment-To-Moment Balancing Act",
+                "level": 4,
+                "href": "Text/chapter009.xhtml#sigil_toc_id_200"
+              }
+            ]
+          },
+          {
+            "title": "The Six-Level Model for Reviewing Your Own Work",
+            "level": 3,
+            "href": "Text/chapter009.xhtml#sigil_toc_id_201",
+            "children": [
+              {
+                "title": "Working from the Bottom Up",
+                "level": 4,
+                "href": "Text/chapter009.xhtml#sigil_toc_id_202"
+              },
+              {
+                "title": "Getting Priority Thinking off Your Mind",
+                "level": 4,
+                "href": "Text/chapter009.xhtml#sigil_toc_id_203"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "10 Getting Projects Under Control",
+        "level": 2,
+        "href": "Text/chapter010.xhtml",
+        "children": [
+          {
+            "title": "The Need for More Informal Planning",
+            "level": 3,
+            "href": "Text/chapter010.xhtml#sigil_toc_id_204"
+          },
+          {
+            "title": "What Projects Should You Be Planning?",
+            "level": 3,
+            "href": "Text/chapter010.xhtml#sigil_toc_id_205",
+            "children": [
+              {
+                "title": "Projects That Need Next Actions About planning",
+                "level": 4,
+                "href": "Text/chapter010.xhtml#sigil_toc_id_206",
+                "children": [
+                  {
+                    "title": "Typical Planning Steps",
+                    "level": 5,
+                    "href": "Text/chapter010.xhtml#sigil_toc_id_207"
+                  }
+                ]
+              },
+              {
+                "title": "Random Project Thinking",
+                "level": 4,
+                "href": "Text/chapter010.xhtml#sigil_toc_id_208"
+              }
+            ]
+          },
+          {
+            "title": "Tools and Structures That Support Project Thinking",
+            "level": 3,
+            "href": "Text/chapter010.xhtml#sigil_toc_id_209",
+            "children": [
+              {
+                "title": "Thinking Tools",
+                "level": 4,
+                "href": "Text/chapter010.xhtml#sigil_toc_id_210"
+              },
+              {
+                "title": "Writing Instruments",
+                "level": 4,
+                "href": "Text/chapter010.xhtml#sigil_toc_id_211",
+                "children": [
+                  {
+                    "title": "Paper and Pads",
+                    "level": 5,
+                    "href": "Text/chapter010.xhtml#sigil_toc_id_212"
+                  },
+                  {
+                    "title": "Easels and Whiteboards",
+                    "level": 5,
+                    "href": "Text/chapter010.xhtml#sigil_toc_id_213"
+                  },
+                  {
+                    "title": "Thinking in Your Digital Tools",
+                    "level": 5,
+                    "href": "Text/chapter010.xhtml#sigil_toc_id_214"
+                  }
+                ]
+              },
+              {
+                "title": "The Support Structures",
+                "level": 4,
+                "href": "Text/chapter010.xhtml#sigil_toc_id_215",
+                "children": [
+                  {
+                    "title": "Create File Folders or Loose‑Leaf Pages as Needed",
+                    "level": 5,
+                    "href": "Text/chapter010.xhtml#sigil_toc_id_216"
+                  },
+                  {
+                    "title": "Paper Versus Digital",
+                    "level": 5,
+                    "href": "Text/chapter010.xhtml#sigil_toc_id_217"
+                  },
+                  {
+                    "title": "Software Tools",
+                    "level": 5,
+                    "href": "Text/chapter010.xhtml#sigil_toc_id_218"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "title": "How Do I Apply All This in My World?",
+            "level": 3,
+            "href": "Text/chapter010.xhtml#sigil_toc_id_219"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Part 3 The Power of the Key Principles",
+    "level": 1,
+    "href": "Text/part003.xhtml",
+    "children": [
+      {
+        "title": "11 The Power of the Capturing Habit",
+        "level": 2,
+        "href": "Text/chapter011.xhtml",
+        "children": [
+          {
+            "title": "The Personal Benefit",
+            "level": 3,
+            "href": "Text/chapter011.xhtml#sigil_toc_id_220",
+            "children": [
+              {
+                "title": "The Source of the Negative Feelings",
+                "level": 4,
+                "href": "Text/chapter011.xhtml#sigil_toc_id_221"
+              },
+              {
+                "title": "How Do You Prevent Broken Agreements with Yourself?",
+                "level": 4,
+                "href": "Text/chapter011.xhtml#sigil_toc_id_222",
+                "children": [
+                  {
+                    "title": "Don’t Make the Agreement",
+                    "level": 5,
+                    "href": "Text/chapter011.xhtml#sigil_toc_id_223"
+                  },
+                  {
+                    "title": "Complete the Agreement",
+                    "level": 5,
+                    "href": "Text/chapter011.xhtml#sigil_toc_id_224"
+                  },
+                  {
+                    "title": "Renegotiate the Agreement",
+                    "level": 5,
+                    "href": "Text/chapter011.xhtml#sigil_toc_id_225"
+                  }
+                ]
+              },
+              {
+                "title": "The Radical Departure from Traditional Time Management",
+                "level": 4,
+                "href": "Text/chapter011.xhtml#sigil_toc_id_226"
+              },
+              {
+                "title": "How Much Capturing Is Required?",
+                "level": 4,
+                "href": "Text/chapter011.xhtml#sigil_toc_id_227"
+              }
+            ]
+          },
+          {
+            "title": "When Relationships and Organizations Have the Capture Habit",
+            "level": 3,
+            "href": "Text/chapter011.xhtml#sigil_toc_id_228"
+          }
+        ]
+      },
+      {
+        "title": "12 The Power of the Next­Action Decision",
+        "level": 2,
+        "href": "Text/chapter012.xhtml",
+        "children": [
+          {
+            "title": "The Source of the Technique",
+            "level": 3,
+            "href": "Text/chapter012.xhtml#sigil_toc_id_229"
+          },
+          {
+            "title": "Creating the Option of Doing",
+            "level": 3,
+            "href": "Text/chapter012.xhtml#sigil_toc_id_230"
+          },
+          {
+            "title": "Why Bright People Procrastinate the Most",
+            "level": 3,
+            "href": "Text/chapter012.xhtml#sigil_toc_id_231",
+            "children": [
+              {
+                "title": "Intelligent Dumbing Down",
+                "level": 4,
+                "href": "Text/chapter012.xhtml#sigil_toc_id_232"
+              }
+            ]
+          },
+          {
+            "title": "The Value of a Next-Action Decision-Making Standard",
+            "level": 3,
+            "href": "Text/chapter012.xhtml#sigil_toc_id_233",
+            "children": [
+              {
+                "title": "Clarity",
+                "level": 4,
+                "href": "Text/chapter012.xhtml#sigil_toc_id_234"
+              },
+              {
+                "title": "Accountability",
+                "level": 4,
+                "href": "Text/chapter012.xhtml#sigil_toc_id_235"
+              },
+              {
+                "title": "Productivity",
+                "level": 4,
+                "href": "Text/chapter012.xhtml#sigil_toc_id_236"
+              },
+              {
+                "title": "Empowerment",
+                "level": 4,
+                "href": "Text/chapter012.xhtml#sigil_toc_id_237"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "13 The Power of Outcome Focusing",
+        "level": 2,
+        "href": "Text/chapter013.xhtml",
+        "children": [
+          {
+            "title": "Focus and the Fast Track",
+            "level": 3,
+            "href": "Text/chapter013.xhtml#sigil_toc_id_238"
+          },
+          {
+            "title": "The Significance of Applied Outcome Thinking",
+            "level": 3,
+            "href": "Text/chapter013.xhtml#sigil_toc_id_239"
+          },
+          {
+            "title": "The Magic of Mastering the Mundane",
+            "level": 3,
+            "href": "Text/chapter013.xhtml#sigil_toc_id_240"
+          },
+          {
+            "title": "Multilevel Outcome Management",
+            "level": 3,
+            "href": "Text/chapter013.xhtml#sigil_toc_id_241"
+          },
+          {
+            "title": "The Power of Natural Planning",
+            "level": 3,
+            "href": "Text/chapter013.xhtml#sigil_toc_id_242"
+          },
+          {
+            "title": "Shifting to a Positive Organizational Culture",
+            "level": 3,
+            "href": "Text/chapter013.xhtml#sigil_toc_id_243"
+          }
+        ]
+      },
+      {
+        "title": "14 GTD and Cognitive Science",
+        "level": 2,
+        "href": "Text/chapter014.xhtml",
+        "children": [
+          {
+            "title": "GTD and Positive Psychology",
+            "level": 3,
+            "href": "Text/chapter014.xhtml#sigil_toc_id_244"
+          },
+          {
+            "title": "Distributed Cognition: The Value of an External Mind",
+            "level": 3,
+            "href": "Text/chapter014.xhtml#sigil_toc_id_245"
+          },
+          {
+            "title": "Relieving the Cognitive Load of Incompletions",
+            "level": 3,
+            "href": "Text/chapter014.xhtml#sigil_toc_id_246"
+          },
+          {
+            "title": "Flow Theory",
+            "level": 3,
+            "href": "Text/chapter014.xhtml#sigil_toc_id_247"
+          },
+          {
+            "title": "Self-Leadership Theory",
+            "level": 3,
+            "href": "Text/chapter014.xhtml#sigil_toc_id_248"
+          },
+          {
+            "title": "Goal-Striving/Attainment Via Implementation Intentions",
+            "level": 3,
+            "href": "Text/chapter014.xhtml#sigil_toc_id_249"
+          },
+          {
+            "title": "Psychological Capital (PsyCap)",
+            "level": 3,
+            "href": "Text/chapter014.xhtml#sigil_toc_id_250"
+          }
+        ]
+      },
+      {
+        "title": "15 The Path of GTD Mastery",
+        "level": 2,
+        "href": "Text/chapter015.xhtml",
+        "children": [
+          {
+            "title": "The Three Tiers of Mastery",
+            "level": 3,
+            "href": "Text/chapter015.xhtml#sigil_toc_id_251"
+          },
+          {
+            "title": "Mastering the Basics",
+            "level": 3,
+            "href": "Text/chapter015.xhtml#sigil_toc_id_252",
+            "children": [
+              {
+                "title": "It’s easy to Get off Track . . .",
+                "level": 4,
+                "href": "Text/chapter015.xhtml#sigil_toc_id_253"
+              },
+              {
+                "title": ". . . and easy to Get back on",
+                "level": 4,
+                "href": "Text/chapter015.xhtml#sigil_toc_id_254"
+              }
+            ]
+          },
+          {
+            "title": "Graduate Level—Integrated Life Management",
+            "level": 3,
+            "href": "Text/chapter015.xhtml#sigil_toc_id_255",
+            "children": [
+              {
+                "title": "When Projects Become the Heartbeat of Your Operational System",
+                "level": 4,
+                "href": "Text/chapter015.xhtml#sigil_toc_id_256"
+              },
+              {
+                "title": "Assessing and Populating Your Projects List from Your Areas of Focus",
+                "level": 4,
+                "href": "Text/chapter015.xhtml#sigil_toc_id_257"
+              },
+              {
+                "title": "An Integrated Total Life-Management System",
+                "level": 4,
+                "href": "Text/chapter015.xhtml#sigil_toc_id_258"
+              },
+              {
+                "title": "Pressure Produces Greater Rather Than Reduced Utilization of These Practices",
+                "level": 4,
+                "href": "Text/chapter015.xhtml#sigil_toc_id_259"
+              }
+            ]
+          },
+          {
+            "title": "Postgraduate: Focus, Direction, and Creativity",
+            "level": 3,
+            "href": "Text/chapter015.xhtml#sigil_toc_id_260",
+            "children": [
+              {
+                "title": "Freedom to Engage in the Most Meaningful Things",
+                "level": 4,
+                "href": "Text/chapter015.xhtml#sigil_toc_id_261"
+              },
+              {
+                "title": "Leveraging Your external Mind",
+                "level": 4,
+                "href": "Text/chapter015.xhtml#sigil_toc_id_262"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Conclusion",
+    "level": 1,
+    "href": "Text/conclusion.xhtml"
+  },
+  {
+    "title": "Appendix",
+    "level": 1,
+    "href": "Text/appendix.xhtml"
+  },
+  {
+    "title": "Imprint",
+    "level": 1,
+    "href": "Text/imprint.xhtml"
+  },
+  {
+    "title": "THE BEGINNING",
+    "level": 1,
+    "href": "Text/marketing.xhtml"
+  }
+]

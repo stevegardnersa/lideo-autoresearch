@@ -1,0 +1,146 @@
+[
+  {
+    "title": "Cover",
+    "level": 1,
+    "href": "001_cover.xhtml"
+  },
+  {
+    "title": "Title Page",
+    "level": 1,
+    "href": "002_title.xhtml"
+  },
+  {
+    "title": "Dedication",
+    "level": 1,
+    "href": "003_dedication.xhtml"
+  },
+  {
+    "title": "Contents",
+    "level": 1,
+    "href": "004_contents.xhtml"
+  },
+  {
+    "title": "Introduction: What’s Luck Got to Do with It?",
+    "level": 1,
+    "href": "005_chapter_001.xhtml"
+  },
+  {
+    "title": "Part I Pattern-Breaking Ideas: The Counterintuitive Forces That Power Revolutionary Products",
+    "level": 1,
+    "href": "006_Part_001.xhtml",
+    "children": [
+      {
+        "title": "1 A Wave of Clarity: Introducing Inflection Theory",
+        "level": 2,
+        "href": "007_chapter_002.xhtml"
+      },
+      {
+        "title": "2 Harnessing Inflections: How Pattern Breakers Change the Rules",
+        "level": 2,
+        "href": "008_chapter_003.xhtml"
+      },
+      {
+        "title": "3 Timing Is Everything: One of the Dumbest Ideas Ever and How It Broke Through",
+        "level": 2,
+        "href": "009_chapter_004.xhtml"
+      },
+      {
+        "title": "4 Different Is . . . Different: She Gave Me That “You’ve Gone off the Rails Again” Look",
+        "level": 2,
+        "href": "010_chapter_005.xhtml"
+      },
+      {
+        "title": "5 Stress-Testing Your Insights: How Valid Is Your Insight?",
+        "level": 2,
+        "href": "011_chapter_006.xhtml"
+      },
+      {
+        "title": "6 Living in the Future: Where You Will Find Your Next Insight",
+        "level": 2,
+        "href": "012_chapter_007.xhtml"
+      },
+      {
+        "title": "7 Get out of the Present: Avoiding a Common Entrepreneur Mistake",
+        "level": 2,
+        "href": "013_chapter_008.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Part II Pattern-Breaking Actions: Unconventional Tactics to Make Breakthroughs Real",
+    "level": 1,
+    "href": "014_Part_002.xhtml",
+    "children": [
+      {
+        "title": "8 Before You Cross the Rubicon: The Implementation Stress Test",
+        "level": 2,
+        "href": "015_chapter_009.xhtml"
+      },
+      {
+        "title": "9 Savoring Surprises: How Early Customers Will Lead You to the Hidden Gems",
+        "level": 2,
+        "href": "016_chapter_010.xhtml"
+      },
+      {
+        "title": "10 Co-conspirators: Recruiting Your Start-Up Team",
+        "level": 2,
+        "href": "018_chapter_012.xhtml"
+      },
+      {
+        "title": "11 Your First True Believers: Attracting the Perfect Customers and Investors",
+        "level": 2,
+        "href": "019_chapter_013.xhtml"
+      },
+      {
+        "title": "12 Launching Your Movement: Overturning the Status Quo",
+        "level": 2,
+        "href": "020_chapter_014.xhtml"
+      },
+      {
+        "title": "13 Telling Your Story: The Hero Isn’t You",
+        "level": 2,
+        "href": "021_chapter_015.xhtml"
+      },
+      {
+        "title": "14 Be Disagreeable: And Not a Jerk",
+        "level": 2,
+        "href": "023_chapter_017.xhtml"
+      },
+      {
+        "title": "15 Dancing Elephants: How Corporations Can Be Pattern Breakers",
+        "level": 2,
+        "href": "024_chapter_018.xhtml"
+      }
+    ]
+  },
+  {
+    "title": "Conclusion: No Limits",
+    "level": 1,
+    "href": "025_chapter_019.xhtml"
+  },
+  {
+    "title": "Acknowledgments",
+    "level": 1,
+    "href": "026_BM_001.xhtml"
+  },
+  {
+    "title": "Footntoes",
+    "level": 1,
+    "href": "028_footnotes.xhtml"
+  },
+  {
+    "title": "Index",
+    "level": 1,
+    "href": "027_BM_002.xhtml"
+  },
+  {
+    "title": "About the Authors",
+    "level": 1,
+    "href": "028_BM_003.xhtml"
+  },
+  {
+    "title": "Copyright",
+    "level": 1,
+    "href": "029_copyright.xhtml"
+  }
+]

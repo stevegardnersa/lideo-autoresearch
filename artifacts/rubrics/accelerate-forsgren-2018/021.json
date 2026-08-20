@@ -1,0 +1,61 @@
+{
+  "headings": [],
+  "core_concepts": [
+    "ACKNOWLEDGMENTS",
+    "This book emerged from the partnership between DORA and Puppet on the State of DevOps Reports",
+    "The authors would also like to thank several people who helped develop the hypotheses we test in the report",
+    "Several experts kindly donated their time to help review early drafts of this book",
+    "We’d like to thank Anna Noak, Todd Sattersten, and the whole IT Revolution team for all their hard work on this project",
+    "NICOLE",
+    "First and foremost, many thanks to my coauthors and collaborators, without whom this work wouldn’t be possible",
+    "A very special thank you goes to my dad for instilling in me a sense of curiosity, a need for excellence, and an inability to take sh t from people who don’t think I can do something",
+    "As always, my biggest thanks and deepest gratitude go to Xavier Velasquez",
+    "Suzie!",
+    "To my post-doc advisors, mentors, and frequent peer-review coauthors Alexandra Durcikova and Rajiv Sabherwal: you also took risks conducting research with me in a new context, and I have learned so much from our colla",
+    "Many thanks to the DevOps community, who welcomed and accepted a crazy researcher and have participated in the studies and shared your stories"
+  ],
+  "mechanisms_or_explanations": [
+    "Y’all didn’t kick me off the project when I first showed up and told you it was wrong—politely, I hope",
+    "I loved that we could hash it out until we reached agreement; when you told me I was “meticulously rigorous,” it was the best compliment ever",
+    "How did I ever get so lucky?",
+    "I had an advisor who took a gamble on a PhD student who promised you that studying tech professionals, their tools, and their environment—and how it all impacted their work—would be important and relevant",
+    "My work is better because of you, and more importantly, I am better because of you",
+    "I genuinely believe this work significantly advances our profession, by helping us better define how we improve technology work, through rigorous theory building and testing"
+  ],
+  "critical_qualifiers": [
+    "A very special thank you goes to my dad for instilling in me a sense of curiosity, a need for excellence, and an inability to take sh t from people who don’t think I can do something"
+  ],
+  "important_examples": [],
+  "key_entities_or_numbers": [
+    "From 2016, we thank Steven Bell and Karen Whitley Bell for their promptings to investigate Lean product management, and for their time spent on research and discussions with the team on the theories of value stream an",
+    "From 2017, we thank Neal Ford, Martin Fowler, and Mik Kersten for the items measuring architecture, and Amy Jo Kim and Mary Poppendieck for team experimentation",
+    "Many thanks to my mom for always being my #1 cheerleader and supporter; whatever my crazy plans, she always trusts me",
+    "The reason I’m involved with this project at all is Gene, who invited me to be part of the State of DevOps team back in 2012",
+    "And of course, thank you to Alanna Brown and Nigel Kersten at Puppet for the amazing 5+ year collaboration on State of DevOps project, from which so much of this book is based upon",
+    "2016",
+    "2017",
+    "2012"
+  ],
+  "key_terms": [
+    "This",
+    "Puppet",
+    "State",
+    "Reports",
+    "Thus",
+    "Alanna Brown",
+    "Nigel Kersten",
+    "Aliza Earnshaw",
+    "The",
+    "From",
+    "Steven Bell",
+    "Karen Whitley Bell",
+    "Lean",
+    "Neal Ford",
+    "Martin Fowler",
+    "Mik Kersten",
+    "Amy Jo Kim",
+    "Mary Poppendieck",
+    "Several",
+    "Ryn Daniels"
+  ]
+}

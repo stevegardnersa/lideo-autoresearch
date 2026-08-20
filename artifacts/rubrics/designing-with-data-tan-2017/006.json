@@ -1,0 +1,69 @@
+{
+  "headings": [
+    "Chapter 5.The Execution Phase (How to Put Your Experiments into Action)"
+  ],
+  "core_concepts": [
+    "Chapter 5.The Execution Phase (How to Put Your Experiments into Action) IN CHAPTER 4, WE focused on the importance of generating multiple hypotheses and also showed you how to evaluate and select the hypotheses you wa",
+    "First, we want to reemphasize the importance of not jumping too quickly to narrow and specific solutions; hastily moving to premature solutions is a common problem we’ve encountered time and again in the design process",
+    "Second, we note that, even though we’ve separated hypothesis generation and designing your hypothesis into two separate chapters in this book, these two activities often go hand in hand",
+    "Following the framework for experimentation outlined in Chapter 3, this chapter is focused on the execution phase (outlined in dashes in Figure 5-1)",
+    "This is where we take the hypotheses that you’ve defined and selected and then craft them into the test cells, which will make up the core of your experiments",
+    "Through experimentation, in design practice we can test out a broad range of ideas that we may otherwise dismiss too early in more traditional product development processes",
+    "As the goal of experimentation is to test more than just one idea, we now have a mechanism to get many ideas and many possible solutions in front of real users to see how they react to them",
+    "“Testing” your ideas on a small group of users means that you are able to try bolder and more wide-ranging design solutions because you don’t have to be as confident about being “right” in the same way that you might",
+    "We believe that you can apply a data-aware framework to a full range of problems that you may want to solve or areas where you would like to understand user behavior and the impact of your designed solutions much more",
+    "We recognize that for designers who haven’t worked with data before, there are cultural challenges of incorporating data and A/B tests into your product development process",
+    "Here, Chris argues that data still needs to be balanced with design considerations like creating a brand",
+    "This is a natural tendency for us all — we want to dive in and get working on the problem, designing elegant solutions, as soon as possible!"
+  ],
+  "mechanisms_or_explanations": [
+    "Chapter 5.The Execution Phase (How to Put Your Experiments into Action) IN CHAPTER 4, WE focused on the importance of generating multiple hypotheses and also showed you how to evaluate and select the hypotheses you wa",
+    "In this chapter, we will focus on the discussion of how to “design” hypotheses",
+    "First, we want to reemphasize the importance of not jumping too quickly to narrow and specific solutions; hastily moving to premature solutions is a common problem we’ve encountered time and again in the design process",
+    "Through experimentation, in design practice we can test out a broad range of ideas that we may otherwise dismiss too early in more traditional product development processes",
+    "Premature commitments and unwarranted dismissal of ideas with great promise plague many design and development processes",
+    "As the goal of experimentation is to test more than just one idea, we now have a mechanism to get many ideas and many possible solutions in front of real users to see how they react to them",
+    "As you can see in Figure 5-1, each of these solutions results in a test cell",
+    "“Testing” your ideas on a small group of users means that you are able to try bolder and more wide-ranging design solutions because you don’t have to be as confident about being “right” in the same way that you might",
+    "We recognize that for designers who haven’t worked with data before, there are cultural challenges of incorporating data and A/B tests into your product development process",
+    "In the next section, we’ll dig deeper into this topic of how data can help put learning at the center of every design exploration"
+  ],
+  "critical_qualifiers": [
+    "Second, we note that, even though we’ve separated hypothesis generation and designing your hypothesis into two separate chapters in this book, these two activities often go hand in hand",
+    "Through experimentation, in design practice we can test out a broad range of ideas that we may otherwise dismiss too early in more traditional product development processes",
+    "As you can see in Figure 5-1, each of these solutions results in a test cell",
+    "In fact, testing solutions that are more divergent and different from each other can sometimes result in deeper and broader learning",
+    "We believe that you can apply a data-aware framework to a full range of problems that you may want to solve or areas where you would like to understand user behavior and the impact of your designed solutions much more",
+    "This can range from very tactical and small things (“What is the most effective layout of this page?”) to much larger and more strategic questions as well (“What is the relationship between qualified customers and ret",
+    "We’ve heard that it can feel to some people like leaning on data requires giving up control of determining your user experience",
+    "By designing with data, designers should feel emboldened to take bigger risks in service of learning, which in turn can further hone their instincts",
+    "In the next section, we’ll dig deeper into this topic of how data can help put learning at the center of every design exploration"
+  ],
+  "important_examples": [],
+  "key_entities_or_numbers": [
+    "Chapter 5.The Execution Phase (How to Put Your Experiments into Action) IN CHAPTER 4, WE focused on the importance of generating multiple hypotheses and also showed you how to evaluate and select the hypotheses you wa",
+    "Following the framework for experimentation outlined in Chapter 3, this chapter is focused on the execution phase (outlined in dashes in Figure 5-1)",
+    "As you can see in Figure 5-1, each of these solutions results in a test cell"
+  ],
+  "key_terms": [
+    "Chapter 5.The Execution Phase (How to Put Your Experiments into Action)",
+    "The Execution Phase",
+    "How",
+    "Put Your Experiments",
+    "Action",
+    "Before",
+    "First",
+    "This",
+    "And",
+    "Second",
+    "Following",
+    "Through",
+    "Premature",
+    "Testing",
+    "What",
+    "Chris Maliwat",
+    "Warby Parker",
+    "Here",
+    "Chris"
+  ]
+}

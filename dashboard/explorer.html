@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Run explorer</title>
+  <link rel="stylesheet" href="/explorer.css" />
+</head>
+
+<body>
+  <div class="page">
+    <header class="page-header">
+      <div class="title-wrap">
+        <div class="title-dot"></div>
+        <div>
+          <h1>Run explorer</h1>
+          <div class="subtitle" id="runSubtitle">Loading run data...</div>
+        </div>
+      </div>
+      <div class="controls-wrap">
+        <div class="time-toggle" id="timeToggle">
+          <button class="time-pill active" data-time="30m">30m</button>
+          <button class="time-pill" data-time="60m">60m</button>
+        </div>
+        <div class="chapter-select-group">
+          <select id="chapterSelect">
+            <option value="">Select a chapter...</option>
+          </select>
+          <div class="genre-subtext" id="genreSubtext"></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="shell">
+      <div class="column-layout">
+        <div class="column" id="leftColumn">
+          <select class="pane-header-select" id="leftProfileSelect"></select>
+          <div class="metric-section" id="leftMetrics"></div>
+          <div class="pane-content" id="leftContent">
+            <div class="placeholder-text">Select a chapter to view.</div>
+          </div>
+        </div>
+        <div class="column-divider"></div>
+        <div class="column" id="rightColumn">
+          <select class="pane-header-select" id="rightProfileSelect"></select>
+          <div class="metric-section" id="rightMetrics"></div>
+          <div class="pane-content" id="rightContent">
+            <div class="placeholder-text">Select a chapter to view.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="notes-section" id="notesSection">
+        <div class="notes-header">
+          <span class="notes-title">Chapter Notes</span>
+          <button class="notes-toggle" id="notesToggle" title="Toggle notes">&#9660;</button>
+        </div>
+        <div class="notes-body" id="notesBody">
+          <div class="notes-list" id="notesList">
+            <div class="placeholder-text">Select a chapter to see notes.</div>
+          </div>
+          <div class="notes-input-area">
+            <textarea class="notes-textarea" id="notesTextarea" placeholder="Add a note about this chapter..."></textarea>
+            <div class="notes-tags-row" id="notesTagsRow">
+              <span class="tag-chip" data-tag="style">style</span>
+              <span class="tag-chip" data-tag="detail">detail</span>
+              <span class="tag-chip" data-tag="qualifier">qualifier</span>
+              <span class="tag-chip" data-tag="structure">structure</span>
+              <span class="tag-chip" data-tag="example">example</span>
+              <span class="tag-chip" data-tag="terminology">terminology</span>
+              <span class="tag-chip" data-tag="anti_fluff">anti_fluff</span>
+            </div>
+            <button class="notes-submit" id="notesSubmit">Add Note</button>
+          </div>
+        </div>
+      </div>
+      <div class="footer">Run explorer</div>
+    </div>
+  </div>
+  <script type="module" src="/explorer.js"></script>
+</body>
+
+</html>

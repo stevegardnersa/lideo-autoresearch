@@ -1,0 +1,89 @@
+{
+  "headings": [
+    "Chapter 11",
+    "Coming Soon",
+    "Brain–Computer Interface",
+    "Virtual Reality",
+    "Reality?"
+  ],
+  "core_concepts": [
+    "Chapter 11 Coming Soon AI is not the only technology in town",
+    "To conceive the future for humans solely in terms of AI is to miss the wider landscape, where all manner of existing, emerging, and not yet invented technologies converge, interact, and magnify one another’s impact.1",
+    "These are not the pages in which to tease out and then weave together the full set of technologies that will complement AI",
+    "Brain–Computer Interface The main aim in the field of brain–computer interface (BCI) is to set up direct links between the brain and the computer",
+    "The first is a system that analysed the brain signals of twenty-nine neurosurgical patients who were invited to listen to the same piece of music",
+    "I find it extraordinary that this system—very roughly—processed, predicted, and produced the music to which the patients were listening",
+    "The second breakthrough in BCI relates to a patient who was suffering from chronic tetraplegia—that is, paralysis affecting all limbs",
+    "More technically, two cortical implants, sixty-four electrodes in all, were positioned on the sensorimotor cortex and in this way captured the electroencephalography signals",
+    "This kind of advance in BCI could radically improve the lives of many patients who suffer from related problems",
+    "The commercial potential for BCI has also been recognized, most vocally perhaps by Elon Musk, who founded a company known as Neuralink in 2016",
+    "This takes us into very different territory",
+    "More, it is seriously envisaged by some AI scientists that human brains and digital computers will eventually come together or merge, creating a new breed of transhuman"
+  ],
+  "mechanisms_or_explanations": [
+    "If we think we have privacy problems today, mind-reading machines will take us into a whole new realm",
+    "When humans become digitally enhanced, cerebrally and prosthetically, in the words of Ray Kurzweil, ‘this technology will let us merge with the superintelligence we are creating, we will be essentially remaking oursel",
+    "Even if the chances of the deployment of BCI and AI are modest, the lesson here from Chapter 9 is that now is the time to think through the ethical and legal implications",
+    "This may sound like a step too far, but I urge you to keep an open mind, remembering once again that our machines are becoming increasingly capable at an accelerating rate",
+    "This work kept me awake for the entire journey.9 It seemed to me, then and now, that when various technologies matured, virtual reality would bring fundamental change to daily human life",
+    "I accept that what follows is more anecdote than social science, but take what I offer as a little evidence for my early hypothesis that humans in the future will indeed spend much, if not most of their time in some k",
+    "Like half of the delegates at that meeting who had a go, I couldn’t bring myself to step forward",
+    "And if we ever extend our consciousness in the manner anticipated by the Singularity Hypothesis, then the distinction between real and virtual will dissolve altogether",
+    "As our systems become increasingly capable, it won’t be a huge step to open the window and climb in",
+    "On the one hand, if the virtual environment is the only space in which a given set of experiences can be enjoyed, where, for example, the online world bears no relation to our everyday world, then it doesn’t make sens",
+    "In ‘Are You Living in a Computer Simulation?’, Bostrom observes that: If we are living in a simulation, then the cosmos that we are observing is just a tiny piece of the totality of physical existence",
+    "If we open our minds and probe into the concept of reality, we might come to doubt that the real world is the best place to be"
+  ],
+  "critical_qualifiers": [
+    "Alongside the many AI systems that I discuss in earlier chapters, BCI and VR may well help hasten a new epoch for humanity, enhancing and transforming human experience",
+    "Then, a form of predictive modelling, known as regression-based decoding, was used to reconstruct and then generate the music that they had heard.2 You can hear it online",
+    "It’s still early days in the field of BCI, but as the systems in this field become increasingly capable, it is conceivable and foreseeable that at some stage we will, to some extent, be able to direct our machines sim",
+    "Our innermost thoughts, urges, and experiences might be monitored and evaluated",
+    "Donald Hoffman, a cognitive scientist, seems to agree, suggesting that ‘AI can open new portals into consciousness, just as microscopes and telescopes open new vistas.’7 I am inspired in turn by the scientific writer",
+    "But it’s to this technology that I now turn",
+    "This may sound like a step too far, but I urge you to keep an open mind, remembering once again that our machines are becoming increasingly capable at an accelerating rate",
+    "This suggests that a classification exercise might not help us so much.10 Instead, I keep my description fairly loose and high-level",
+    "In general terms, then, most current VR involves users putting on purpose-built headsets and becoming immersed in computer-generated worlds",
+    "These might resemble planet earth (like flight simulators used to train pilots), or they may be fantasy realms (as in many online games)"
+  ],
+  "important_examples": [
+    "Nonetheless, it is a dramatic case study",
+    "On the one hand, if the virtual environment is the only space in which a given set of experiences can be enjoyed, where, for example, the online world bears no relation to our everyday world, then it doesn’t make sens"
+  ],
+  "key_entities_or_numbers": [
+    "Chapter 11 Coming Soon AI is not the only technology in town",
+    "Some of these are widely ventilated, such as quantum computing, robotics, molecular nanotechnology, 3D printing, blockchain, and the internet of things",
+    "To conceive the future for humans solely in terms of AI is to miss the wider landscape, where all manner of existing, emerging, and not yet invented technologies converge, interact, and magnify one another’s impact.1",
+    "Although research in this area dates to the 1970s, it has lately been boosted by AI",
+    "Their neural activity—their intracranial electroencephalography data—was captured via a total of 2,668 electrodes that had been implanted on the patients’ cerebral cortexes (the surface of their brains) using a proces",
+    "Then, a form of predictive modelling, known as regression-based decoding, was used to reconstruct and then generate the music that they had heard.2 You can hear it online",
+    "It is clearly (and spookily) identifiable as part of the 1979 song, ‘Another Brick in the Wall’ by Pink Floyd.3 I find it extraordinary that this system—very roughly—processed, predicted, and produced the music to whi",
+    "The commercial potential for BCI has also been recognized, most vocally perhaps by Elon Musk, who founded a company known as Neuralink in 2016",
+    "The mission of this business is to create ‘a generalized brain interface to restore autonomy to those with unmet medical needs today and unlock human potential tomorrow’.5 In other words, while the current focus is th",
+    "This is the central premise of the Singularity Hypothesis that is outlined in Chapter 2",
+    "Donald Hoffman, a cognitive scientist, seems to agree, suggesting that ‘AI can open new portals into consciousness, just as microscopes and telescopes open new vistas.’7 I am inspired in turn by the scientific writer",
+    "Imagine experiencing the taste of a catfish, the touch of a star-nosed mole or the balance of a cheetah.8 A new era of transhumanism perhaps beckons, magnifying our intellectual capabilities, expanding our consciousne"
+  ],
+  "key_terms": [
+    "Chapter 11",
+    "Coming Soon",
+    "Brain–Computer Interface",
+    "Brain",
+    "Computer Interface",
+    "Virtual Reality",
+    "Reality?",
+    "Numerous",
+    "Some",
+    "Beyond",
+    "These",
+    "Instead",
+    "The",
+    "Alongside",
+    "Computer Interface The",
+    "Although",
+    "Two",
+    "Their",
+    "Then",
+    "You"
+  ]
+}

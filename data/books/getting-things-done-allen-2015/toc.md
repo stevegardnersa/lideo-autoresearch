@@ -1,0 +1,297 @@
+# Table of contents
+
+- Getting Things Done
+- Praise for the previous edition of Getting Things Done and the GTD method
+- Foreword
+- Introduction to the Revised Edition
+  - What’s New
+    - The Rise of Digital Technology
+    - The 24-7 World
+    - The Globalization of GTD Methodology
+    - An Approach That Is More Inclusive of a Larger Population of Readers and Users
+    - A Greater Awareness of the Time and Energy Required for the Full Implementation of the GTD Process, and the Behavioral Changes Required to Maintain It
+    - Information from Cognitive Science Research That Has Validated the Efficacy of the GTD Methodology
+  - If You Are New to This . . .
+  - If You Already Have Some Getting Things Done Experience . . .
+- Welcome to Getting Things Done
+- Part 1 The Art of Getting Things Done
+  - 1 A New Practice for a New Reality
+    - The Problem: New Demands, Insufficient Resources
+      - Work No Longer Has Clear Boundaries
+      - Our Jobs (and Lives) Keep Changing
+      - The Old Models and Habits Are Insufficient
+      - The Big Picture vs. the Nitty-Gritty
+    - The Promise: The “Ready State” of the Martial Artist
+      - The “Mind Like Water” Simile
+      - Can You Get into Your “Productive State” When Required?
+    - The Principle: Dealing Effectively with Internal Commitments
+      - The Basic Requirements for Managing Commitments
+      - An Important Exercise to Test This Model
+      - The Real Work of Knowledge Work
+      - Why Things Are on Your Mind
+      - Your Mind Doesn’t Have a Mind of Its own
+      - The Transformation of “Stuff”
+    - The Process: Managing Action
+      - Managing Action Is the Prime Challenge
+      - The Value of a Bottom-Up Approach
+      - Horizontal and Vertical Action Management
+      - The Major Change: Getting It All Out of Your Head
+  - 2 Getting Control of Your Life: The Five Steps of Mastering Workflow
+    - Capture
+      - Gathering 100 Percent of the “Incompletes”
+      - The Capture Tools
+        - The Physical In‑Tray
+        - Writing Paper and Pads
+        - Digital and Voice Note Taking
+        - E‑mail and Texting
+        - Technolog y Integration
+      - The Success Factors for Capturing
+        - Get It All Out of Your Head
+        - Minimize the Number of Capture Locations
+        - Empty the Capture Tools Regularly
+    - Clarify
+      - What Is It?
+      - Is It Actionable?
+    - Organize
+      - Projects
+        - Project Support Material
+      - The Next-Action Categories
+        - Calendar
+        - The “Next Actions” List(s)
+      - Nonactionable Items
+        - Trash
+        - Incubation
+        - Reference Material
+    - Reflect
+      - What to Review When
+      - Critical Success Factor: The Weekly Review
+    - Engage
+      - Three Models for Making Action Choices
+        - 1. The Four‑Criteria Model for Choosing Actions in the Moment
+        - 2. The Threefold Model for Identifying Daily Work
+        - 3. The Six‑Level Model for Reviewing Your Own Work
+  - 3 Getting Projects Creatively Under Way: The Five Phases of Project Planning
+    - Enhancing Vertical Focus
+    - The Natural Planning Model
+      - A Simple Example: Planning Dinner Out
+      - Natural Planning Is Not Necessarily Normal
+    - The Unnatural Planning Model
+      - When the “Good” Idea Is a bad Idea
+    - The Reactive Planning Model
+    - Natural Planning Techniques: The Five Phases
+      - Purpose
+        - The Value of Thinking About Why
+      - Principles
+      - Vision/Outcome
+        - The Power of Focus
+        - Clarifying Outcomes
+      - Brainstorming
+        - Capturing Your Ideas
+        - Distributed Cognition
+        - Brainstorming Keys
+      - Organizing
+        - The Basics of Organizing
+      - Next Actions
+        - The Basics
+      - How Much Planning Do You Really Need to Do?
+        - Need More Clarity?
+        - Need More to Be Happening?
+- Part 2 Practicing Stress-Free Productivity
+  - 4 Getting Started: Setting Up the Time, Space, and Tools
+    - Implementation—Whether All-Out or Casual—Is a Lot About “Tricks”
+    - Setting Aside the Time
+    - Setting Up the Space
+      - If You Go to an office, You’ll Still Need a Space at Home
+        - An Office Space in Transit
+        - Don’t Share Space!
+    - Getting the Tools You’ll Need
+      - The Basic Processing Tools
+        - Paper‑Holding Trays
+        - Plain Paper
+        - Post‑its, Clips, Stapler, Etc.
+        - Labeler
+        - File Folders
+        - Calendar
+        - Wastebasket/Recycling Bins
+        - Do You Need an Organizer?
+      - The Critical Factor of a Filing System
+        - Success Factors for Filing
+        - Filing as a Success Factor Itself
+    - One Final Thing to Prepare . . .
+  - 5 Capturing: Corralling Your “Stuff”
+    - Ready, Set . . .
+    - . . . Go!
+      - Physical Gathering
+        - What Stays Where It Is
+        - Issues About Capturing
+        - Start with Your Desktop
+        - Desk Drawers
+        - Countertops
+        - Inside the Cabinets
+        - Floors, Walls, and Shelves
+        - Equipment, Furniture, and Fixtures
+        - Other Locations
+        - This Is Not About Throwing Things Away That You Might Want
+      - Mental Gathering: The Mind sweep
+        - Triggers List
+    - The “In” Inventory
+      - But “In” Doesn’t Stay In “In”
+  - 6 Clarifying: Getting “In” to Empty
+    - Processing Guidelines
+      - Top Item First
+        - Emergency Scanning Is Not Clarifying
+        - LIFO or FIFO?
+        - One Item at a Time
+        - The Multitasking Exception
+      - Nothing Goes Back Into “In”
+    - The Key Processing Question: “What’s the Next Action?”
+      - What If There Is no Action?
+        - Trash
+        - Incubate
+        - Reference
+      - And If There Is an Action . . . What Is It?
+        - The Action Step Needs to Be the Absolute Next Physical Thing to Do
+      - Once You Decide What the Action Step Is
+        - Do It
+        - Delegate It
+        - Defer It
+      - The Pending Things That Are left
+    - Identifying the Projects You Have
+  - 7 Organizing: Setting Up the Right Buckets
+    - The Basic Categories
+      - The Importance of Hard Edges
+      - All You Really Need Are Lists and Folders
+    - Organizing Action Reminders
+      - The Actions That Go on Your Calendar
+      - Organizing As-Soon-As-Possible Actions by Context
+        - The Most Common Categories of Action Reminders
+      - Organizing “Waiting For”
+      - Using the Original Item as Its Own Action Reminder
+        - Managing Paper‑Based Workflow
+        - Managing E‑mail‑Based Workflow
+        - A Caution About Dispersing Reminders of Your Actions
+    - Organizing Project Reminders
+      - The Projects List(s)
+        - The Value of a Complete Projects List
+        - Where to Look for Projects Still to Uncover
+        - One List, or Subdivided?
+        - Some Common Ways to Subsort Projects
+        - What About Subprojects?
+      - Project Support Materials
+        - Organizing Ad Hoc Project Thinking
+    - Organizing Nonactionable Data
+      - Reference Materials
+        - The Variety of Reference Systems
+      - Someday/Maybes
+        - Someday/ Maybe List
+        - Special Categories of Someday/ Maybe
+        - The Danger of “Hold and Review” Files and Piles
+        - Using the Calendar for Future Options
+        - The “Tickler” File
+    - Checklists: Creative and Constructive Reminders
+      - Things You Want to Pay Attention To
+      - First, Identify Inherent Projects and Action
+      - Blueprinting Key Areas of Work and Accountability
+        - The More Novel the Situation, the More Control Required
+      - Checklists at All Levels
+  - 8 Reflecting: Keeping It All Fresh and Functional
+    - What to Look At, When
+      - Look at Your Calendar First . . .
+      - . . . Then Your Action Lists
+      - The Right Review in the Right Context
+    - Updating Your System
+      - The Power of the Weekly Review
+        - What Is the Weekly Review?
+        - Get Clear
+        - Get Current
+        - Get Creative
+        - The Right Time and Place for the Review
+    - The “Bigger Picture” Reviews
+  - 9 Engaging: Making the Best Action Choices
+    - The Four-Criteria Model for Choosing Actions in the Moment
+      - Context
+        - Creative Context Sorting
+      - Time Available
+      - Energy Available
+      - Priority
+    - The Threefold Model for Evaluating Daily Work
+      - The Moment-To-Moment Balancing Act
+    - The Six-Level Model for Reviewing Your Own Work
+      - Working from the Bottom Up
+      - Getting Priority Thinking off Your Mind
+  - 10 Getting Projects Under Control
+    - The Need for More Informal Planning
+    - What Projects Should You Be Planning?
+      - Projects That Need Next Actions About planning
+        - Typical Planning Steps
+      - Random Project Thinking
+    - Tools and Structures That Support Project Thinking
+      - Thinking Tools
+      - Writing Instruments
+        - Paper and Pads
+        - Easels and Whiteboards
+        - Thinking in Your Digital Tools
+      - The Support Structures
+        - Create File Folders or Loose‑Leaf Pages as Needed
+        - Paper Versus Digital
+        - Software Tools
+    - How Do I Apply All This in My World?
+- Part 3 The Power of the Key Principles
+  - 11 The Power of the Capturing Habit
+    - The Personal Benefit
+      - The Source of the Negative Feelings
+      - How Do You Prevent Broken Agreements with Yourself?
+        - Don’t Make the Agreement
+        - Complete the Agreement
+        - Renegotiate the Agreement
+      - The Radical Departure from Traditional Time Management
+      - How Much Capturing Is Required?
+    - When Relationships and Organizations Have the Capture Habit
+  - 12 The Power of the Next­Action Decision
+    - The Source of the Technique
+    - Creating the Option of Doing
+    - Why Bright People Procrastinate the Most
+      - Intelligent Dumbing Down
+    - The Value of a Next-Action Decision-Making Standard
+      - Clarity
+      - Accountability
+      - Productivity
+      - Empowerment
+  - 13 The Power of Outcome Focusing
+    - Focus and the Fast Track
+    - The Significance of Applied Outcome Thinking
+    - The Magic of Mastering the Mundane
+    - Multilevel Outcome Management
+    - The Power of Natural Planning
+    - Shifting to a Positive Organizational Culture
+  - 14 GTD and Cognitive Science
+    - GTD and Positive Psychology
+    - Distributed Cognition: The Value of an External Mind
+    - Relieving the Cognitive Load of Incompletions
+    - Flow Theory
+    - Self-Leadership Theory
+    - Goal-Striving/Attainment Via Implementation Intentions
+    - Psychological Capital (PsyCap)
+  - 15 The Path of GTD Mastery
+    - The Three Tiers of Mastery
+    - Mastering the Basics
+      - It’s easy to Get off Track . . .
+      - . . . and easy to Get back on
+    - Graduate Level—Integrated Life Management
+      - When Projects Become the Heartbeat of Your Operational System
+      - Assessing and Populating Your Projects List from Your Areas of Focus
+      - An Integrated Total Life-Management System
+      - Pressure Produces Greater Rather Than Reduced Utilization of These Practices
+    - Postgraduate: Focus, Direction, and Creativity
+      - Freedom to Engage in the Most Meaningful Things
+      - Leveraging Your external Mind
+- Conclusion
+- Imprint
+- THE BEGINNING
+
+## Excluded from benchmark corpus
+
+- Contents
+- About the Author
+- Acknowledgments
+- Appendix

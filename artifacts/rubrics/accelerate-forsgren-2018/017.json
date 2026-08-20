@@ -1,0 +1,76 @@
+{
+  "headings": [],
+  "core_concepts": [
+    "CHAPTER 15",
+    "THE DATA FOR THE PROJECT",
+    "This project started with a desire to understand how to make technology great and how technology makes organizations better",
+    "Our research design—a cross-sectional data collection for four years—recruited professionals and organizations familiar with the word DevOps (or at least willing to read an email or social media post with the word Dev",
+    "It allowed us to focus our data collection",
+    "This data selection and research design did require some caution",
+    "However, based on prior research, our own experiences, and the experiences of those who have led technology transformations in large enterprises, we believe that many of our findings are broadly applicable to teams an",
+    "Once we defined our target population, we decided on a sampling method: How would we invite people to take the survey?",
+    "To collect the data for our research, we sent out emails and used social media",
+    "To expand our reach into the technologists and organizations developing and delivering software, we also invited referrals",
+    "Identifying the population of those who make software using DevOps methodologies is difficult or impossible",
+    "Another limitation of snowball sampling is that the data collected is strongly influenced by the initial invitations"
+  ],
+  "mechanisms_or_explanations": [
+    "CHAPTER 15 THE DATA FOR THE PROJECT This project started with a desire to understand how to make technology great and how technology makes organizations better",
+    "Specifically, we wanted to investigate the new ways, methods, and paradigms that organizations were using to develop and deliver software, with a focus on Agile and Lean processes that extended downstream from develop",
+    "This was important, because time and space were limited, and too much time spent on background definitions and a long explanation of concepts, such as continuous integration and configuration management, could risk su",
+    "If a survey reader has to spend 15 minutes learning about a concept in order to answer questions about it, they will get frustrated and annoyed and won’t complete the survey.This targeted research design was a strengt",
+    "Therefore, we never asked any respondents in our surveys if they practiced continuous integration",
+    "if automated tests are kicked off when code is checked in",
+    "Once we defined our target population, we decided on a sampling method: How would we invite people to take the survey?",
+    "We were not able to use probability sampling methods because this would require that every member of the population is known and has an equal chance of participating in the study",
+    "This isn’t possible because an exhaustive list of DevOps professionals in the world doesn’t exist",
+    "Emails were sent to our own mailing lists, which consisted of technologists and professionals who worked in DevOps (e.g., were in our database because they had participated in prior years’ studies, were in Puppet’s ma",
+    "This aspect of growing our initial sample is called referral sampling or snowball sampling because the sample grows by picking up additional respondents as it spreads, just like a snowball grows as you roll it through",
+    "Beyond this, we could not scour organization charts (even if they were publicly available) for job titles as not everyone has “DevOps” or other important keywords in their job title"
+  ],
+  "critical_qualifiers": [
+    "However, we gain explanatory power by limiting the population to those that fall into a tighter group definition",
+    "That is, some who responded to our survey might want to paint their team or organization in a favorable light, or they might have their own definition of key terms",
+    "However, based on prior research, our own experiences, and the experiences of those who have led technology transformations in large enterprises, we believe that many of our findings are broadly applicable to teams an",
+    "Even if organization charts were public, many job titles are too generic to be useful for recruitment in the study (such as “software engineer,” which can include developers working in teams using waterfall or DevOps",
+    "The population is typically and traditionally averse to being studied",
+    "Snowball sampling is a method that is ideal for populations that are often averse to being studied; by referring others to the study, they can vouch for the questions (reassuring the new participant that the questions",
+    "Finally, there may be a concern that findings will not be representative of what is actually happening in the industry, that we may have blind spots that we do not see in our data",
+    "Third, we explore the existing literature to look for patterns in other fields that may provide insights into our study",
+    "However, it precluded us from longitudinal analysis because our responses are not linked year over year",
+    "However, probability sampling methods are not always possible because of environmental or contextual factors"
+  ],
+  "important_examples": [
+    "For example, everyone knows (or claims to know) what continuous integration (CI) is, and many organizations claim CI as a core competency",
+    "For example, the use of version control and automated testing is highly likely to yield positive results, whether a team is using DevOps practices, Agile methodologies, or hoping to improve their lockstep waterfall de",
+    "Emails were sent to our own mailing lists, which consisted of technologists and professionals who worked in DevOps (e.g., were in our database because they had participated in prior years’ studies, were in Puppet’s ma"
+  ],
+  "key_entities_or_numbers": [
+    "CHAPTER 15 THE DATA FOR THE PROJECT This project started with a desire to understand how to make technology great and how technology makes organizations better",
+    "At the beginning of the project in 2014, this development and delivery methodology was widely known as “DevOps,” and so this was the term we used",
+    "If a survey reader has to spend 15 minutes learning about a concept in order to answer questions about it, they will get frustrated and annoyed and won’t complete the survey.This targeted research design was a strengt",
+    "2014"
+  ],
+  "key_terms": [
+    "This",
+    "Specifically",
+    "Agile",
+    "Lean",
+    "Our",
+    "Any",
+    "However",
+    "That",
+    "For",
+    "Therefore",
+    "Instead",
+    "Similarly",
+    "Once",
+    "How",
+    "There",
+    "Emails",
+    "Puppet",
+    "Gene Kim",
+    "Jez Humble",
+    "Special"
+  ]
+}

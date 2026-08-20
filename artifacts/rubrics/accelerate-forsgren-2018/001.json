@@ -1,0 +1,66 @@
+{
+  "headings": [],
+  "core_concepts": [
+    "FOREWORD",
+    "By Courtney Kissler",
+    "My journey started in the summer of 2011",
+    "Throughout the journey, the focus was moving to outcome-based team structures, knowing our cycle time (by understanding our value stream map), limiting the blast radius (starting with one to two teams vs",
+    "What I know to be true based on my experience is that adopting the guidance in this book will make your organization higher performing",
+    "Another thing I learned along the way is how critical it is to have senior leadership support",
+    "You will encounter skeptics along the way",
+    "Courtney KisslerVP Digital Platform Engineering, Nike",
+    "boiling the ocean), using data to drive actions and decisions, acknowledging that work is work (don’t have a backlog of features and a backlog of technical debt and a backlog of operational work; instead, have a singl",
+    "It works for all types of software delivery and is methodology agnostic",
+    "After all, people are an organization’s #1 asset, but so often that is not how organizations operate",
+    "Even though the journey will not be easy, I can say that it is definitely worth it, and not only will you see better results, your team will be happier"
+  ],
+  "mechanisms_or_explanations": [
+    "Common traps were stepped in—like trying a top-down mandate to adopt Agile, thinking it was one size fits all, not focusing on measurement (or the right things to measure), leadership behavior not changing, and treati",
+    "After all, people are an organization’s #1 asset, but so often that is not how organizations operate",
+    "As an example, when we started measuring eNPS, the teams practicing these techniques had the highest scores throughout our technology organization",
+    "Another thing I learned along the way is how critical it is to have senior leadership support",
+    "If I am a senior leader and my team doesn’t feel comfortable sharing risks, then I will never truly know reality",
+    "And, if I’m not genuinely curious and only show up when there’s a failure, then I am failing as a senior leader",
+    "It’s important to build trust and to demonstrate that failure leads to inquiry (see the Westrum model in this book)",
+    "They are a unicorn.” When I encountered the skeptics, I attempted to use external examples to influence the discussion"
+  ],
+  "critical_qualifiers": [
+    "It can work across the board",
+    "After all, people are an organization’s #1 asset, but so often that is not how organizations operate",
+    "Even though the journey will not be easy, I can say that it is definitely worth it, and not only will you see better results, your team will be happier"
+  ],
+  "important_examples": [
+    "I have personally experienced it and have multiple examples of applying these practices within mainframe environments, traditional packaged software application delivery teams, and product teams",
+    "As an example, when we started measuring eNPS, the teams practicing these techniques had the highest scores throughout our technology organization",
+    "They are a unicorn.” When I encountered the skeptics, I attempted to use external examples to influence the discussion"
+  ],
+  "key_entities_or_numbers": [
+    "FOREWORD By Courtney Kissler My journey started in the summer of 2011",
+    "Up until that point, our IT organization was optimized for cost; I shared in my DevOps Enterprise Summit 2014 presentation that one of my “aha” moments was the shift to optimizing for speed",
+    "After all, people are an organization’s #1 asset, but so often that is not how organizations operate",
+    "2011",
+    "2014"
+  ],
+  "key_terms": [
+    "By Courtney Kissler My",
+    "Nordstrom",
+    "Enterprise Summit",
+    "Common",
+    "Agile",
+    "Throughout",
+    "None",
+    "What",
+    "After",
+    "Even",
+    "Another",
+    "And",
+    "Senior",
+    "Westrum",
+    "You",
+    "Lean",
+    "They",
+    "When",
+    "Having",
+    "Don"
+  ]
+}
