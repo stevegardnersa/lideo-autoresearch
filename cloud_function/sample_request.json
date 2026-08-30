@@ -1,0 +1,22 @@
+{
+  "source_md": "## Introduction\n\nThis chapter introduces the core thesis of the book: that complex systems emerge from simple rules. We explore how cellular automata, flocking behavior, and economic markets all exhibit emergent properties that cannot be predicted from their individual components alone. Key examples include Conway's Game of Life, Reynolds' Boids model, and Hayek's knowledge problem.\n\nThe argument proceeds in three parts. First, we define emergence and distinguish it from mere complexity. Second, we examine case studies from biology, computer science, and economics. Third, we draw implications for how to design systems that harness emergence rather than fight it.\n\nA critical caveat: emergence does not imply magic. Every emergent phenomenon has a mechanistic explanation at the micro level. What makes it interesting is the *gap* between micro rules and macro behavior — a gap that often surprises even the people who designed the rules.\n\n### Key Concepts\n- Emergence: macro patterns arising from micro interactions\n- Decentralization: no central controller needed\n- Feedback loops: local information drives global order\n- Phase transitions: sudden qualitative changes at threshold values",
+  "model": "deepseek/deepseek-v4-flash",
+  "thinking": false,
+  "use_json_schema": true,
+  "system_prompt": "You write dense, source-faithful summaries of nonfiction books. Your task is compression, not simplification. Preserve concepts, explanations, terminology, distinctions, and caveats. Never invent claims, examples, or interpretations not supported by the source text. Use short markdown section headings that broadly follow the chapter's conceptual structure.",
+  "user_prompt": "Write a faithful chapter summary of approximately 400 words.\n\nReturn markdown with short section headings and dense paragraphs.\n\nSource chapter:\n\n## Introduction\n\nThis chapter introduces the core thesis of the book: that complex systems emerge from simple rules. We explore how cellular automata, flocking behavior, and economic markets all exhibit emergent properties that cannot be predicted from their individual components alone. Key examples include Conway's Game of Life, Reynolds' Boids model, and Hayek's knowledge problem.\n\nThe argument proceeds in three parts. First, we define emergence and distinguish it from mere complexity. Second, we examine case studies from biology, computer science, and economics. Third, we draw implications for how to design systems that harness emergence rather than fight it.\n\nA critical caveat: emergence does not imply magic. Every emergent phenomenon has a mechanistic explanation at the micro level. What makes it interesting is the *gap* between micro rules and macro behavior \u2014 a gap that often surprises even the people who designed the rules.\n\n### Key Concepts\n- Emergence: macro patterns arising from micro interactions\n- Decentralization: no central controller needed\n- Feedback loops: local information drives global order\n- Phase transitions: sudden qualitative changes at threshold values",
+  "base_url": "",
+  "api_key": "",
+  "target_words": 400,
+  "judge": false,
+  "judge_model": "openai/gpt-4o-mini",
+  "rubric": {
+    "headings": ["Introduction", "Key Concepts"],
+    "core_concepts": ["emergence", "complex systems from simple rules", "decentralization", "feedback loops", "phase transitions"],
+    "mechanisms_or_explanations": ["how micro interactions produce macro patterns", "gap between micro rules and macro behavior"],
+    "critical_qualifiers": ["emergence does not imply magic", "every emergent phenomenon has a mechanistic explanation"],
+    "important_examples": ["Conway's Game of Life", "Reynolds' Boids model", "Hayek's knowledge problem"],
+    "key_entities_or_numbers": [],
+    "key_terms": ["emergence", "decentralization", "feedback loops", "phase transitions"]
+  }
+}
