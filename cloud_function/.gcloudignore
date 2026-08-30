@@ -1,0 +1,13 @@
+.git/
+.gitignore
+.env
+runs/
+artifacts/
+data/books/
+snapshots/
+dashboard/
+tools/
+bench/
+__pycache__/
+*.pyc
+.DS_Store
