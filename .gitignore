@@ -31,3 +31,5 @@ Thumbs.db
 .lcm/
 .opencode/
 artifacts/
+dashboard/pnpm-lock.yaml
+.hermes/
