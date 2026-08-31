@@ -64,12 +64,26 @@ def _build_openrouter_payload(
     return payload
 
 
+ENV_API_KEY_NAMES = ("LLM_API_KEY",)
+
+
+def _resolve_api_key_env() -> str:
+    for name in ENV_API_KEY_NAMES:
+        if os.environ.get(name, "").strip():
+            return name
+    return ""
+
+
 def _build_client(
     api_key: str = "",
     base_url: str = "",
     timeout: int = 600,
 ) -> OpenRouterClient:
-    resolved_base = base_url or "https://openrouter.ai/api/v1"
+    resolved_base = (
+        base_url
+        or os.environ.get("LLM_BASE_URL", "").strip()
+        or "https://openrouter.ai/api/v1"
+    )
     if api_key:
         return OpenRouterClient(
             api_key=api_key,
@@ -77,7 +91,14 @@ def _build_client(
             timeout=timeout,
             max_retries=3,
         )
+    env_name = _resolve_api_key_env()
+    if not env_name:
+        raise ValueError(
+            "No API key available: provide 'api_key' in the request body or set "
+            f"one of {', '.join(ENV_API_KEY_NAMES)}"
+        )
     return OpenRouterClient.from_env(
+        api_key_env=env_name,
         base_url=resolved_base,
         timeout=timeout,
         max_retries=3,

@@ -413,7 +413,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--benchmark-manifest", default=str(ROOT / "benchmark_version.json"))
     parser.add_argument("--catalog-snapshots-dir", default=str(ROOT / "snapshots" / "catalog"))
     parser.add_argument("--price-snapshots-dir", default=str(ROOT / "snapshots" / "pricing"))
-    parser.add_argument("--api-key-env", default="OPENROUTER_API_KEY")
+    parser.add_argument("--api-key-env", default="LLM_API_KEY")
     parser.add_argument("--pricing-snapshot", default="")
     parser.add_argument("--referer", default="")
     parser.add_argument("--title", default="autoresearch-book-summary-benchmark")

@@ -292,7 +292,7 @@ python3 core/run_candidate.py --bench chapter_fast --profile all --time 60m --mo
 ### Run a real benchmark with OpenRouter:
 
 ```bash
-export OPENROUTER_API_KEY=...
+export LLM_API_KEY=...
 # Single profile
 python3 core/run_candidate.py --bench chapter_fast --profile 30m_minimax_notthinking --judge-model openai/gpt-5-mini --write-results
 

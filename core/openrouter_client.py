@@ -236,7 +236,7 @@ class OpenRouterClient:
     def from_env(
         cls,
         *,
-        api_key_env: str = "OPENROUTER_API_KEY",
+        api_key_env: str = "LLM_API_KEY",
         pricing_snapshot_path: str | os.PathLike[str] | None = None,
         referer: str = "",
         title: str = "",

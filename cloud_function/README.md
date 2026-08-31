@@ -74,7 +74,7 @@ python cloud_function/local_test.py
 
 ### Quick smoke test (no API cost)
 
-Set `LLM_API_KEY=sk-placeholder` and call the endpoint. The function will return a clear OpenRouter auth error, confirming routing, parsing, and error handling all work without spending credits.
+Set `LLM_API_KEY=sk-placeholder` and call the endpoint. The function will return a clear provider auth error, confirming routing, parsing, and error handling all work without spending credits.
 
 ## Deployment
 
@@ -86,13 +86,12 @@ Before deploying, create the secret or set the env var the function will use.
 
 ```bash
 # Create the secret
-printf "sk-or-v1-..." | gcloud secrets create openrouter-api-key \
-  --data-file=- \
-  --regions=us-central1
+printf "sk-or-v1-..." | gcloud secrets create llm-api-key \
+  --data-file=-
 
 # Grant the function's default compute service account access
 # (find the service account email after first deploy, or pre-create it)
-# gcloud secrets add-iam-policy-binding openrouter-api-key \
+# gcloud secrets add-iam-policy-binding llm-api-key \
 #   --member="serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
 #   --role="roles/secretmanager.secretAccessor"
 ```
@@ -122,7 +121,7 @@ gcloud functions deploy $FUNC_NAME \
   --entry-point summarize \
   --source . \
   --region $REGION \
-  --set-secrets 'LLM_API_KEY=openrouter-api-key:latest' \
+  --set-secrets 'LLM_API_KEY=llm-api-key:latest' \
   --timeout 3600 \
   --memory 1024Mi \
   --no-allow-unauthenticated
@@ -159,7 +158,7 @@ gcloud builds submit --tag gcr.io/$PROJECT/$FUNC_NAME
 # Deploy
 gcloud run deploy $FUNC_NAME \
   --image gcr.io/$PROJECT/$FUNC_NAME \
-  --set-secrets 'LLM_API_KEY=openrouter-api-key:latest' \
+  --set-secrets 'LLM_API_KEY=llm-api-key:latest' \
   --timeout 3600 \
   --memory 1024Mi \
   --no-allow-unauthenticated
@@ -184,8 +183,8 @@ This requires a `Dockerfile` (not included; CF 2nd gen auto-detects Python runti
   "user_prompt": "string",      // Composed user prompt (includes source chapter)
 
   // ── Optional — Provider ───────────────────────────────────
-  "base_url": "",               // OpenAI-compatible API base URL (default: https://openrouter.ai/api/v1)
-  "api_key": "",                // API key (omit to use env var LLM_API_KEY or OPENAI_API_KEY)
+  "base_url": "",               // OpenAI-compatible API base URL (default: LLM_BASE_URL env, else https://openrouter.ai/api/v1)
+  "api_key": "",                // API key (omit to use LLM_API_KEY env var)
 
   // ── Optional — Model parameters ───────────────────────────
   "thinking": false,            // Enable reasoning tokens (default: false)
@@ -299,12 +298,18 @@ On error:
 | Variable | Required | Purpose |
 |----------|----------|---------|
 | `LLM_API_KEY` | If no `api_key` in request | API key for the provider |
+| `LLM_BASE_URL` | No | Default OpenAI-compatible API base URL (falls back to `https://openrouter.ai/api/v1`) |
 | `OPENROUTER_HTTP_REFERER` | No | HTTP Referer header sent to provider |
 | `OPENROUTER_APP_TITLE` | No | App title sent to provider for analytics |
 
 The function resolves the API key in this order:
 1. `api_key` from request body (highest priority)
 2. `LLM_API_KEY` env var
+
+The base URL resolves in this order:
+1. `base_url` from request body
+2. `LLM_BASE_URL` env var
+3. `https://openrouter.ai/api/v1` (last resort)
 
 ## Integrating from a Separate Consumer Project
 
