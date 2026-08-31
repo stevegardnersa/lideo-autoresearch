@@ -79,7 +79,7 @@ Content-Type: application/json
 ### Flow
 
 1. `run_summarize()` in `handler.py` — builds payload via `_build_openrouter_payload()` (stdlib — no `requests`/`openai`)
-2. `_build_client()` — `OpenAIClient.from_env()` (reads API key from request body or `LLM_API_KEY` env, 600s timeout, 3 retries)
+2. `_build_client()` — `OpenRouterClient.from_env()` (reads API key from request body, else `LLM_API_KEY` env; base URL from request, else `LLM_BASE_URL` env, else OpenRouter default; 600s timeout, 3 retries)
 3. Parse structured JSON response (handles `use_json_schema=true/false`)
 4. If rubric + target_words present → create `SummarySample`, call `score_sample()`, optionally `judge_summary_absolute()`
 5. Return aggregated dict
@@ -113,7 +113,7 @@ gcloud functions deploy summarize \
   --entry-point summarize \
   --source . \
   --region us-central1 \
-  --set-secrets 'LLM_API_KEY=openrouter-api-key:latest' \
+  --set-secrets 'LLM_API_KEY=llm-api-key:latest' \
   --timeout 3600 \
   --memory 1024Mi \
   --no-allow-unauthenticated
@@ -298,15 +298,15 @@ requests.post(FUNCTION_URL, json=payload,
 
 ### Secrets
 
-For the deployed CF, the API key comes from Secret Manager: `LLM_API_KEY` → Secret Manager → bound via `--set-secrets`.
+For the deployed CF, the API key comes from Secret Manager: `LLM_API_KEY` → Secret Manager → bound via `--set-secrets`. Base URL defaults to `LLM_BASE_URL` env when set.
 
 For batch tool direct API mode, use `--api-key <key>` or `--api-key-env <env_var>`.
 
 Never hardcode keys in source or command history.
 
 ```bash
-printf "sk-or-v1-..." | gcloud secrets create openrouter-api-key \
-  --data-file=- --regions=us-central1
+printf "sk-or-v1-..." | gcloud secrets create llm-api-key \
+  --data-file=-
 ```
 
 ### Monitoring

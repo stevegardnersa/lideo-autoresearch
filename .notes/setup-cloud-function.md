@@ -162,9 +162,8 @@ The secret name can be anything; the deploy command binds it as `LLM_API_KEY` en
 ```bash
 # Paste your key (replace with your actual API key)
 printf "sk-or-v1-your-actual-api-key-here" | \
-  gcloud secrets create openrouter-api-key \
+  gcloud secrets create llm-api-key \
     --data-file=- \
-    --regions=us-central1 \
     --project $PROJECT_ID
 ```
 
@@ -172,11 +171,11 @@ printf "sk-or-v1-your-actual-api-key-here" | \
 
 **Verify:**
 ```bash
-gcloud secrets versions list openrouter-api-key --project $PROJECT_ID
+gcloud secrets versions list llm-api-key --project $PROJECT_ID
 # → NAME: 1, STATE: enabled
 ```
 
-> **Tip:** You can use any provider's key here — OpenRouter, OpenAI, Anthropic (via API proxy), or a self-hosted endpoint. The function supports any OpenAI-compatible API. The secret name `openrouter-api-key` is just a convention.
+> **Tip:** You can use any provider's key here — OpenRouter, OpenAI, Anthropic (via API proxy), or a self-hosted endpoint. The function supports any OpenAI-compatible API. The secret name `llm-api-key` is just a convention.
 
 ---
 
@@ -196,7 +195,7 @@ echo "Service account: $SA_EMAIL"
 ### 6b. Grant Secret Manager access
 
 ```bash
-gcloud secrets add-iam-policy-binding openrouter-api-key \
+gcloud secrets add-iam-policy-binding llm-api-key \
   --member="serviceAccount:$SA_EMAIL" \
   --role="roles/secretmanager.secretAccessor" \
   --project $PROJECT_ID
@@ -204,7 +203,7 @@ gcloud secrets add-iam-policy-binding openrouter-api-key \
 
 **Verify:**
 ```bash
-gcloud secrets get-iam-policy openrouter-api-key --project $PROJECT_ID
+gcloud secrets get-iam-policy llm-api-key --project $PROJECT_ID
 # → bindings:
 # →   - members: serviceAccount:123456789-compute@developer.gserviceaccount.com
 # →     role: roles/secretmanager.secretAccessor
@@ -238,7 +237,7 @@ gcloud functions deploy summarize \
   --source . \
   --region us-central1 \
   --project $PROJECT_ID \
-  --set-secrets 'LLM_API_KEY=openrouter-api-key:latest' \
+  --set-secrets 'LLM_API_KEY=llm-api-key:latest' \
   --timeout 3600 \
   --memory 1024Mi \
   --no-allow-unauthenticated
@@ -372,7 +371,7 @@ gcloud functions deploy summarize \
   --source . \
   --region us-central1 \
   --project $PROJECT_ID \
-  --set-secrets 'LLM_API_KEY=openrouter-api-key:latest' \
+  --set-secrets 'LLM_API_KEY=llm-api-key:latest' \
   --timeout 3600 \
   --memory 1024Mi \
   --no-allow-unauthenticated
@@ -431,7 +430,7 @@ gcloud functions logs read summarize \
 
 **Common causes:**
 - **Missing import or syntax error** in a file the function imports. Fix: test locally first.
-- **API key expired or invalid.** Check: `printf "test" | gcloud secrets versions access latest --secret=openrouter-api-key`
+- **API key expired or invalid.** Check: `printf "test" | gcloud secrets versions access latest --secret=llm-api-key`
 - **Environment variable not bound.** Check: `--set-secrets` flag was included in deploy command.
 
 ### 10c. Function deploys but returns 403 on test
@@ -455,12 +454,12 @@ gcloud config set builds/timeout 600
 **Verify creation:**
 ```bash
 gcloud secrets list --project $PROJECT_ID
-gcloud secrets versions list openrouter-api-key --project $PROJECT_ID
+gcloud secrets versions list llm-api-key --project $PROJECT_ID
 ```
 
 **Verify the binding:**
 ```bash
-gcloud secrets get-iam-policy openrouter-api-key --project $PROJECT_ID
+gcloud secrets get-iam-policy llm-api-key --project $PROJECT_ID
 ```
 If no binding for your service account, re-run step 6b.
 
@@ -487,7 +486,7 @@ gcloud functions delete summarize \
   --gen2 --region us-central1 --project $PROJECT_ID --quiet
 
 # Delete the secret and its versions
-gcloud secrets delete openrouter-api-key --project $PROJECT_ID --quiet
+gcloud secrets delete llm-api-key --project $PROJECT_ID --quiet
 
 # Delete the project (removes all resources, billing stops)
 gcloud projects delete $PROJECT_ID --quiet
@@ -502,7 +501,7 @@ gcloud projects delete $PROJECT_ID --quiet
 gcloud functions deploy summarize --gen2 --runtime python312 \
   --trigger-http --entry-point summarize --source . \
   --region us-central1 \
-  --set-secrets 'LLM_API_KEY=openrouter-api-key:latest' \
+  --set-secrets 'LLM_API_KEY=llm-api-key:latest' \
   --timeout 3600 --memory 1024Mi --no-allow-unauthenticated
 
 # Get URL
