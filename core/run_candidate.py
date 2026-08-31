@@ -120,6 +120,13 @@ def _is_thinking_enabled(spec) -> bool:
     return True
 
 
+def _thinking_from_request_body(request_body: Mapping[str, Any]) -> bool:
+    try:
+        return str(request_body["extra_body"]["thinking"]["type"]) == "enabled"
+    except (KeyError, TypeError):
+        return False
+
+
 def error_to_dict(exc: BaseException) -> Dict[str, Any]:
     payload: Dict[str, Any] = {
         "type": exc.__class__.__name__,
@@ -370,7 +377,9 @@ def wait_for_credits(*, client: Optional[OpenRouterClient], args: argparse.Names
     deadline = (time.time() + int(args.max_credit_wait_seconds)) if int(args.max_credit_wait_seconds) > 0 else None
     management_key = os.getenv(args.management_key_env, "")
 
-    if management_key and client is not None:
+    if _is_cloud_function(client):
+        print("[credits] management-key polling unavailable in Cloud Function mode.")
+    elif management_key and client is not None:
         while True:
             try:
                 credits = client.get_credits(api_key_override=management_key)
@@ -424,6 +433,26 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--write-results", action="store_true")
     parser.add_argument("--max-samples", type=int, default=0)
     parser.add_argument("--mock", action="store_true", help="Use a deterministic mock summarizer instead of OpenRouter")
+    parser.add_argument(
+        "--function-url",
+        default=os.getenv("FUNCTION_URL", ""),
+        help="Cloud Function URL. When non-empty, run in Cloud Function transport mode "
+        "(no local provider API key required). Defaults to the FUNCTION_URL env var.",
+    )
+    parser.add_argument(
+        "--auth-mode",
+        default=os.getenv("AUTH_MODE", "auto"),
+        choices=["auto", "oidc", "env", "none"],
+        help="Cloud Function auth mode. auto resolves to 'none' for http (local dev) and "
+        "'oidc' for https. Defaults to the AUTH_MODE env var.",
+    )
+    parser.add_argument(
+        "--function-timeout",
+        type=int,
+        default=int(os.getenv("CF_TIMEOUT", "600")),
+        help="HTTP timeout in seconds for Cloud Function calls (CF max 3600). "
+        "Defaults to the CF_TIMEOUT env var or 600.",
+    )
     parser.add_argument("--run-id", default="", help="Optional explicit run id for a new run.")
     parser.add_argument("--resume", default="", help="Resume an existing run id from its checkpoint/state files.")
     parser.add_argument(
@@ -562,6 +591,15 @@ def load_book_context(book_id: str, data_dir: Path) -> BookContext:
 def make_client(args: argparse.Namespace) -> Optional[OpenRouterClient]:
     if args.mock:
         return None
+    function_url = (args.function_url or os.getenv("FUNCTION_URL", "")).strip()
+    if function_url:
+        from core.cf_client import CloudFunctionClient
+
+        return CloudFunctionClient(
+            function_url=function_url,
+            auth_mode=args.auth_mode,
+            timeout=args.function_timeout,
+        )
     return OpenRouterClient.from_env(
         api_key_env=args.api_key_env,
         pricing_snapshot_path=args.pricing_snapshot,
@@ -569,6 +607,16 @@ def make_client(args: argparse.Namespace) -> Optional[OpenRouterClient]:
         title=args.title,
         timeout=600,
     )
+
+
+def _is_cloud_function(client) -> bool:
+    if client is None:
+        return False
+    try:
+        from core.cf_client import CloudFunctionClient
+    except ImportError:
+        return False
+    return isinstance(client, CloudFunctionClient)
 
 
 def render_composer_repair_user(
@@ -677,6 +725,17 @@ def invoke_generation(
             raw_content=payload,
             usage=usage,
             raw_response={"mock": True},
+        )
+    if _is_cloud_function(client):
+        thinking = _thinking_from_request_body(request_body)
+        use_json = bool(request_body.get("response_format")) if isinstance(request_body, dict) else True
+        return client.chat_completion(
+            request_body,
+            source_md=mock_source_md,
+            score=False,
+            target_words=0,
+            thinking=thinking,
+            use_json_schema=use_json,
         )
     try:
         return client.chat_completion(request_body)
@@ -862,6 +921,34 @@ def judge_if_requested(
 ) -> Optional[AbsoluteJudgeResult]:
     if client is None or not judge_model:
         return None
+    if _is_cloud_function(client):
+        from core.cf_client import parse_cf_judge_scores
+
+        result = client.chat_completion(
+            {"model": judge_model},
+            source_md=source_md[:source_char_limit],
+            summary_md=summary_md,
+            judge=True,
+            judge_model=judge_model,
+            rubric=rubric,
+            score=False,
+            thinking=False,
+            use_json_schema=True,
+            judge_source_char_limit=source_char_limit or 32000,
+        )
+        error = str((result.raw_response or {}).get("judge_error") or "").strip()
+        if error:
+            print(f"Judge error: {error}")
+            return None
+        parsed = parse_cf_judge_scores(result.raw_response)
+        if parsed is None:
+            return None
+        scores, rationale = parsed
+        return AbsoluteJudgeResult(
+            scores=scores,
+            rationale=rationale,
+            raw_response=result.raw_response,
+        )
     return judge_summary_absolute(
         client,
         judge_model=judge_model,
@@ -1594,6 +1681,10 @@ def capture_openrouter_snapshots(
     catalog_path: Optional[Path] = None
     price_path: Optional[Path] = None
 
+    if _is_cloud_function(client):
+        print("Cloud Function mode: skipping catalog/pricing snapshot capture.")
+        return catalog_path, price_path
+
     if client is not None:
         catalog = client.fetch_models(refresh=True)
         catalog_path = catalog_dir / f"{timestamp}__{benchmark_version}.json"
@@ -1641,10 +1732,15 @@ def append_results_tsv(
         "use_json_schema\tthinking\tmean_quality\tmean_utility\tmean_faithfulness\tmean_concept_coverage\tmean_final_length_error_pct\t"
         "mean_first_pass_length_error_pct\tmean_passes_used\tmean_uncached_generation_cost\tmean_generation_cost\t"
         "hard_fail_rate\tworst_genre_macro\tworst_genre_macro_utility\tworst_genre_macro_quality\t"
-        "genre_macro_spread_utility\tn_genre_macros\trun_artifact\tcatalog_snapshot\tprice_snapshot\tnotes\n"
+        "genre_macro_spread_utility\tn_genre_macros\trun_artifact\tcatalog_snapshot\tprice_snapshot\tnotes\ttransport\n"
     )
     if not path.exists() or path.read_text(encoding="utf-8") == "":
         path.write_text(header, encoding="utf-8")
+    elif "transport" not in (path.read_text(encoding="utf-8").split("\n", 1)[0].split("\t")):
+        existing = path.read_text(encoding="utf-8")
+        parts = existing.split("\n", 1)
+        migrated = header + (parts[1] if len(parts) > 1 else "")
+        path.write_text(migrated, encoding="utf-8")
 
     row = [
         str(run_manifest.get("created_at_utc", "")),
@@ -1683,6 +1779,7 @@ def append_results_tsv(
         str(run_manifest.get("catalog_snapshot", "")),
         str(run_manifest.get("price_snapshot", "")),
         notes,
+        str(run_manifest.get("generation_transport", "")),
     ]
     with path.open("a", encoding="utf-8") as handle:
         handle.write("\t".join(row) + "\n")
@@ -1954,6 +2051,17 @@ def _run_single(
         save_run_state(state_path, state)
         print(f"Run ID: {run_id}")
 
+    run_manifest = dict(state.get("run_manifest") or run_manifest)
+    if _is_cloud_function(client):
+        run_manifest["generation_transport"] = "cloud_function"
+        run_manifest["function_url"] = client.function_url
+        run_manifest["auth_mode"] = client.auth_mode
+    elif args.mock:
+        run_manifest["generation_transport"] = "mock"
+    else:
+        run_manifest["generation_transport"] = "direct"
+    state["run_manifest"] = run_manifest
+
     samples, traces, completed_item_keys = load_sample_checkpoints(samples_path, data_dir)
     completed_set = set(completed_item_keys)
     merged_completed_ids: List[str] = []
@@ -2091,6 +2199,17 @@ def _run_single(
     dataset_score = score_dataset(samples, config=scoring_config)
     mean_generation_cost = _mean([sample.generation_cost for sample in samples])
     run_manifest = dict(state.get("run_manifest") or run_manifest)
+    if _is_cloud_function(client):
+        if getattr(client, "scoring_version_mismatch", False):
+            run_manifest["scoring_version_mismatch"] = True
+            print(
+                "WARN: local scoring.py sha256 does not match the Cloud Function's "
+                "deployed scoring_version (see run_manifest.cloud_function_meta).",
+                file=sys.stderr,
+            )
+        cf_meta = getattr(client, "last_meta", {}) or {}
+        if cf_meta:
+            run_manifest["cloud_function_meta"] = dict(cf_meta)
     resume_events = list(state.get("resume_events_utc") or [])
     run_manifest["resume_count"] = len(resume_events)
     if resume_events:

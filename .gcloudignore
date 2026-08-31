@@ -8,6 +8,7 @@ snapshots/
 dashboard/
 tools/
 bench/
+specs/
 __pycache__/
 *.pyc
 .DS_Store

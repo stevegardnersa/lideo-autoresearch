@@ -26,10 +26,26 @@ def summarize(request):
     if not body or not isinstance(body, dict):
         return _json_error(400, "Request body must be a JSON object")
 
-    required = ["source_md", "model", "system_prompt", "user_prompt"]
+    required = ["source_md", "model"]
     missing = [f for f in required if not body.get(f)]
+    summary_md = str(body.get("summary_md") or "").strip()
+    if not summary_md:
+        for f in ("system_prompt", "user_prompt"):
+            if not body.get(f):
+                missing.append(f)
     if missing:
         return _json_error(400, f"Missing required fields: {', '.join(missing)}")
+
+    if summary_md:
+        has_judge = bool(body.get("judge", False))
+        has_rubric = bool(body.get("rubric"))
+        target_words = int(body["target_words"]) if body.get("target_words") else 0
+        has_score_input = has_rubric and target_words > 0
+        if not has_judge and not has_score_input:
+            return _json_error(
+                400,
+                "judge or rubric+target_words required when summary_md is provided",
+            )
 
     try:
         result = run_summarize(body)
