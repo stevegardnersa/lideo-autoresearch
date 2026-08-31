@@ -192,8 +192,16 @@ This requires a `Dockerfile` (not included; CF 2nd gen auto-detects Python runti
 
   // ── Optional — Scoring ────────────────────────────────────
   "target_words": 400,          // Target word count (triggers deterministic scoring)
+  "score": true,                // Skip server-side deterministic scoring when false (default: true)
   "judge": false,               // Run LLM judge (requires judge_model + rubric)
   "judge_model": "openai/gpt-4o-mini",
+  "judge_source_char_limit": 32000,  // Truncate source fed to the judge (default: 32000)
+
+  // ── Optional — judge/scoring-only mode ────────────────────
+  // When "summary_md" is a non-empty string, the function SKIPS LLM generation and
+  // only scores (rubric + target_words) and/or runs the judge against that summary.
+  // In this mode "system_prompt" and "user_prompt" are optional.
+  "summary_md": "",
 
   // ── Optional — Rubric (for scoring) ───────────────────────
   "rubric": {
@@ -232,6 +240,14 @@ This requires a `Dockerfile` (not included; CF 2nd gen auto-detects Python runti
     "generation_id": "gen-abc123",
     "provider_name": "DeepSeek",
     "model_id": "deepseek/deepseek-v4-flash"
+    // "judge_generation_cost": 0.000041  // judge LLM call cost (0.0 when no judge ran)
+  },
+
+  // ── Deploy metadata (present on every success) ────────────
+  "meta": {
+    "scoring_version": "sha256 of scoring.py at deploy",
+    "handler_version": "sha256 of cloud_function/handler.py at deploy",
+    "deployed_at_utc": "ISO-8601"
   },
 
   // ── Scoring (present only if rubric + target_words provided) ──
@@ -312,6 +328,34 @@ The base URL resolves in this order:
 3. `https://openrouter.ai/api/v1` (last resort)
 
 ## Integrating from a Separate Consumer Project
+
+### Via the bundled `core/cf_client.py` transport
+
+The repo ships a stdlib-only client that the autoresearch pipeline uses for
+authenticated Cloud Function mode. Point any consumer at it directly:
+
+```python
+from core.cf_client import CloudFunctionClient
+
+client = CloudFunctionClient(
+    function_url="https://us-central1-PROJECT.cloudfunctions.net/summarize",
+    auth_mode="auto",        # auto | oidc | env | none
+    timeout=600,
+)
+result = client.chat_completion(
+    {"model": model, "messages": [{"role": "system", "content": system_prompt},
+                                   {"role": "user", "content": user_prompt}]},
+    source_md=source_md,
+    target_words=400,
+    score=True,
+)
+judge_scores, rationale = parse_cf_judge_scores(result.raw_response)  # if judge=True
+```
+
+`auth_mode=oidc` (the default over https) resolves the bearer token from
+`GCP_IDENTITY_TOKEN` or `gcloud auth print-identity-token`, caches it, and
+refreshes it with a 300s expiry skew. `auth_mode=none` is for the local
+`functions-framework` server on `http://localhost:8080`.
 
 ### Python — via `requests`
 

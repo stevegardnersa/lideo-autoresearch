@@ -13,8 +13,12 @@ Usage:
     python -m autoresearch.agent [--model MODEL] [--budget 30m|60m]
         [--thinking thinking|notthinking] [--stage chapter|composer]
         [--mode hill_climb|grid_search|auto]
+        [--function-url FUNC_URL] [--auth-mode auto|oidc|env|none]
 
-If no flags given, operates on all models with notes.
+If no flags given, operates on all models with notes. When --function-url is
+set, every evaluation subprocess routes LLM calls through the Cloud Function
+(FUNCTION_URL/AUTH_MODE/CF_TIMEOUT are exported into the child environment), so
+no local provider API key is required.
 """
 
 from __future__ import annotations
@@ -331,7 +335,31 @@ def main():
     parser.add_argument("--output", type=str, default=None)
     parser.add_argument("--stage", type=str, choices=["chapter", "composer"], default="chapter",
                         help="Which pipeline stage to optimize (default: chapter)")
+    parser.add_argument(
+        "--function-url",
+        default=os.getenv("FUNCTION_URL", ""),
+        help="Cloud Function URL for evaluation runs. When set, all benchmark "
+        "subprocesses route LLM calls through the Function (no local provider key).",
+    )
+    parser.add_argument(
+        "--auth-mode",
+        default=os.getenv("AUTH_MODE", "auto"),
+        choices=["auto", "oidc", "env", "none"],
+        help="Cloud Function auth mode (auto: none for http, oidc for https).",
+    )
+    parser.add_argument(
+        "--function-timeout",
+        type=int,
+        default=int(os.getenv("CF_TIMEOUT", "600")),
+        help="HTTP timeout in seconds for Cloud Function calls.",
+    )
     args = parser.parse_args()
+
+    if args.function_url:
+        os.environ["FUNCTION_URL"] = args.function_url
+        os.environ["AUTH_MODE"] = args.auth_mode
+        os.environ["CF_TIMEOUT"] = str(args.function_timeout)
+        print(f"Cloud Function mode: {args.function_url} (auth={args.auth_mode})")
 
     if not os.path.exists(NOTES_FILE):
         print(f"No notes file found at {NOTES_FILE}. Add notes first.", file=sys.stderr)

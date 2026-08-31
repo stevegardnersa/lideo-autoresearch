@@ -162,6 +162,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--profile", required=True, help="Profile name from candidate_spec.py")
     parser.add_argument("--spec", default=str(ROOT / "candidate_spec.py"))
     parser.add_argument("--function-url", default="", help="Cloud Function URL (omit for direct API call)")
+    parser.add_argument(
+        "--auth-mode",
+        default=os.getenv("AUTH_MODE", "auto"),
+        choices=["auto", "oidc", "env", "none"],
+        help="Cloud Function auth mode. auto resolves to 'none' for http (local dev) and "
+        "'oidc' for https. Defaults to the AUTH_MODE env var.",
+    )
     parser.add_argument("--api-key", default="", help="API key (omit to use --api-key-env)")
     parser.add_argument("--api-key-env", default="LLM_API_KEY", help="Env var for API key (direct mode only)")
     parser.add_argument("--base-url", default="https://openrouter.ai/api/v1", help="OpenAI-compatible API base URL")
@@ -302,6 +309,7 @@ def _build_trace(
         "generation_id": str(usage.get("generation_id", "")),
         "provider_name": str(usage.get("provider_name", "")),
         "model_id": str(usage.get("model_id", "")),
+        "judge_rationale": str((resp_json.get("judge_scores") or {}).get("rationale", "") or ""),
         "error": resp_json.get("error", ""),
     }
 
@@ -332,8 +340,10 @@ async def _call_cf(
     url: str,
     payload: Dict[str, Any],
     timeout: int,
+    cf_auth: Any = None,
 ) -> Dict[str, Any]:
-    resp = await client.post(url, json=payload, timeout=timeout)
+    headers = cf_auth.auth_headers() if cf_auth is not None else None
+    resp = await client.post(url, json=payload, timeout=timeout, headers=headers)
     resp.raise_for_status()
     return resp.json()
 
@@ -408,6 +418,7 @@ async def run_batch(args: argparse.Namespace) -> None:
             if spec.chapter_stage.extra_body else False,
             "use_json_schema": spec.use_json_schema,
             "function_url": args.function_url or "(direct API)",
+            "auth_mode": args.auth_mode,
             "base_url": args.base_url,
             "judge": args.judge,
             "judge_model": args.judge_model,
@@ -431,20 +442,30 @@ async def run_batch(args: argparse.Namespace) -> None:
         print(f"  Pending: {len(items)}")
 
     client: Optional[OpenRouterClient] = None
-    if not args.function_url:
+    cf_auth: Any = None
+    if args.function_url:
+        from core.cf_client import CloudFunctionClient
+
+        cf_auth = CloudFunctionClient(
+            function_url=args.function_url,
+            auth_mode=args.auth_mode,
+            timeout=args.function_timeout,
+            api_key=args.api_key,
+        )
+    elif args.api_key:
         resolved_base = args.base_url or "https://openrouter.ai/api/v1"
-        if args.api_key:
-            client = OpenRouterClient(
-                api_key=args.api_key,
-                base_url=resolved_base,
-                timeout=args.function_timeout,
-            )
-        else:
-            client = OpenRouterClient.from_env(
-                api_key_env=args.api_key_env,
-                base_url=resolved_base,
-                timeout=args.function_timeout,
-            )
+        client = OpenRouterClient(
+            api_key=args.api_key,
+            base_url=resolved_base,
+            timeout=args.function_timeout,
+        )
+    else:
+        resolved_base = args.base_url or "https://openrouter.ai/api/v1"
+        client = OpenRouterClient.from_env(
+            api_key_env=args.api_key_env,
+            base_url=resolved_base,
+            timeout=args.function_timeout,
+        )
 
     samples: List[SummarySample] = []
     traces: List[Dict[str, Any]] = []
@@ -513,7 +534,7 @@ async def run_batch(args: argparse.Namespace) -> None:
                         base_url=args.base_url,
                     )
                     async with httpx.AsyncClient() as hc:
-                        resp_json = await _call_cf(hc, args.function_url, payload, args.function_timeout)
+                        resp_json = await _call_cf(hc, args.function_url, payload, args.function_timeout, cf_auth)
                 else:
                     or_payload = _build_chat_payload(
                         model=spec.chapter_stage.model,
