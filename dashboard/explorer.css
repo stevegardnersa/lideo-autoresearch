@@ -1,3 +1,5 @@
+@import './settings.css';
+
 :root {
   --bg: #f5f6f8;
   --panel: #ffffff;

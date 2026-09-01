@@ -1,4 +1,5 @@
 import './style.css'
+import './settings.js'
 
 const COLOR_MAP = {
   'deepseek/deepseek-v4-pro': '#f97316',
