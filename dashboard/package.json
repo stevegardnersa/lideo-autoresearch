@@ -6,9 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test",
+    "test:api": "node --test tests/api.models.test.mjs",
+    "test:ui": "node --test tests/settings.ui.test.mjs"
   },
   "devDependencies": {
+    "jsdom": "^26.1.0",
     "vite": "^6.2.6"
   },
   "dependencies": {

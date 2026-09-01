@@ -1,4 +1,5 @@
 import { marked } from 'marked'
+import './settings.js'
 
 const ORIGINAL_CHAPTER = '__original__'
 
