@@ -261,7 +261,7 @@ test('POST probe returns capability flags and created list', async () => {
     assert.equal(body.ok, true)
     assert.equal(body.model, 'newcorp/newmodel')
     assert.equal(body.compatible, true)
-    assert.deepEqual(body.probe, { schema: true, thinking: true, notthinking: false })
+    assert.deepEqual(body.probe, { schema: true, thinking: true, notthinking: false, efforts: null, effort_style: null })
     assert.deepEqual(body.created, ['30m_newmodel_thinking', '60m_newmodel_thinking'])
 
     const probeCall = runner.calls.find(c => c.args.includes('--dry-run'))
@@ -304,7 +304,7 @@ test('POST probe filters invalid budgets and reports runner failure without 500'
     assert.equal(body.ok, false)
     assert.ok(body.error.includes('boom'))
     assert.equal(body.compatible, false)
-    assert.deepEqual(body.probe, { schema: null, thinking: null, notthinking: null }, 'no probe output on runner failure')
+    assert.deepEqual(body.probe, { schema: null, thinking: null, notthinking: null, efforts: null, effort_style: null }, 'no probe output on runner failure')
   } finally {
     await closeServer(server)
   }
@@ -456,7 +456,7 @@ test('PUT creates a missing variant from create list', async () => {
         old_model: 'qwen/qwen3.6-plus',
         new_model: 'qwen/qwen3.6-plus',
         edits,
-        create: [{ time_budget: '30m', thinking: false }],
+        create: [{ time_budget: '30m', effort: 'none' }],
       },
     })
     assert.equal(body.ok, true)
@@ -465,7 +465,8 @@ test('PUT creates a missing variant from create list', async () => {
     const key = Object.keys(onDisk.profiles).find(k => k === '30m_qwen3.6-plus_notthinking')
     assert.ok(key)
     assert.equal(onDisk.profiles[key].chapter_stage.model, 'qwen/qwen3.6-plus')
-    assert.equal(onDisk.profiles[key].chapter_stage.extra_body.thinking.type, 'disabled')
+    assert.ok(!onDisk.profiles[key].chapter_stage.extra_body, 'plain (none) effort carries no extra_body thinking config')
+    assert.ok(!onDisk.profiles[key].chapter_stage.reasoning_effort)
   } finally {
     await closeServer(server)
   }

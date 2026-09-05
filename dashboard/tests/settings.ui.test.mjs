@@ -34,9 +34,55 @@ function json(payload) {
   return Promise.resolve({ ok: true, status: 200, json: async () => JSON.parse(JSON.stringify(payload)) })
 }
 
+const RUN_REGISTRY = [
+  {
+    id: 'run_candidate',
+    group: 'run',
+    title: 'Run candidate',
+    description: 'Run the frozen benchmark harness',
+    script: 'core/run_candidate.py',
+    runtimeClass: 'llm',
+    outputs: ['runs/'],
+    args: [
+      { name: 'bench', label: 'Benchmark', type: 'text', required: true, bench: true, default: 'chapter_fast' },
+      { name: 'profile', label: 'Profile', type: 'text', default: 'all' },
+      { name: 'mock', label: 'Mock (no API calls)', type: 'bool', default: false },
+      { name: 'max-samples', label: 'Max samples (0 = all)', type: 'int', default: 0, advanced: true },
+    ],
+    presets: [
+      { id: 'smoke', label: 'Smoke', args: { bench: 'chapter_fast', profile: 'all', mock: true, 'max-samples': 4 } },
+    ],
+  },
+  {
+    id: 'reset_benchmark',
+    group: 'maintenance',
+    title: 'Reset benchmark',
+    description: 'Contracts runs, results, candidates',
+    script: 'reset_benchmark.py',
+    runtimeClass: 'write',
+    destructive: true,
+    confirmPhrase: 'RESET',
+    outputs: [],
+    args: [],
+  },
+  {
+    id: 'leaderboard',
+    group: 'maintenance',
+    title: 'Leaderboard',
+    description: 'Show scoreboard',
+    script: 'tools/leaderboard.py',
+    runtimeClass: 'instant',
+    outputs: [],
+    args: [
+      { name: 'top', label: 'Top N', type: 'int', default: 10 },
+    ],
+  },
+]
+
 function makeHarness() {
   const state = {
     calls: [],
+    es: [],
     modelsGet: MODELS_PAYLOAD,
     probe: {
       ok: true,
@@ -48,6 +94,24 @@ function makeHarness() {
     add: { ok: true, added: ['30m_q_thinking_v1', '30m_q_notthinking_v1'], skipped: [], model: 'p/q' },
     put: { ok: true, plan: { removed: [], renamed: [], updated: [], created: [], model: null } },
     del: { ok: true, removedProfiles: [], removedRuns: 0 },
+    registry: {
+      ok: true,
+      groups: { corpus: 'Corpus validation', candidates: 'Candidates', run: 'Run harness', maintenance: 'Analysis & maintenance' },
+      tools: RUN_REGISTRY,
+    },
+    env: { ok: true, missingKeys: [] },
+    bench: { ok: true, benches: ['chapter_fast'] },
+    jobs: {
+      ok: true,
+      jobs: [
+        { id: 'j1', toolId: 'run_candidate', status: 'running', createdAt: '2026-09-05T10:00:00Z', startedAt: '2026-09-05T10:00:01Z', exitCode: null, resultHints: {} },
+        { id: 'j2', toolId: 'build_bench', status: 'queued', createdAt: '2026-09-05T10:00:02Z', exitCode: null, resultHints: {} },
+      ],
+    },
+    jobsPost: { ok: true, job: { id: 'j2', toolId: 'build_bench', status: 'queued', createdAt: '2026-09-05T10:00:02Z', exitCode: null, resultHints: {} } },
+    cancel: { ok: true, canceled: true },
+    clear: { ok: true, removed: 0 },
+    jobDetail: () => ({ ok: true, job: { id: 'j3', toolId: 'run_candidate', args: { bench: 'chapter_fast', profile: 'all', mock: true }, status: 'succeeded', createdAt: '2026-09-05T09:00:00Z', exitCode: 0, resultHints: {} } }),
   }
 
   const dom = new JSDOM(`<!doctype html><html><head></head><body>
@@ -69,8 +133,27 @@ function makeHarness() {
     if (url === '/api/models' && method === 'POST') return json(state.add)
     if (url === '/api/models' && method === 'PUT') return json(state.put)
     if (url === '/api/models' && method === 'DELETE') return json(state.del)
+    if (url === '/api/registry') return json(state.registry)
+    if (url === '/api/env-check') return json(state.env)
+    if (url === '/bench-list') return json(state.bench)
+    if (url.split('?')[0] === '/api/jobs' && method === 'GET') return json(state.jobs)
+    if (url === '/api/jobs' && method === 'POST') return json(state.jobsPost)
+    if (url === '/api/jobs' && method === 'DELETE') return json(state.clear)
+    if (method === 'POST' && /^\/api\/jobs\/[^/]+\/cancel$/.test(url)) return json(state.cancel)
+    const detailMatch = url.match(/^\/api\/jobs\/([^/]+)$/)
+    if (method === 'GET' && detailMatch) return json(state.jobDetail(detailMatch[1]))
     throw new Error(`unexpected fetch ${method} ${url}`)
   }
+
+  window.EventSource = class {
+    constructor(url) {
+      this.url = url
+      state.es.push(url)
+    }
+    addEventListener() {}
+    close() {}
+  }
+  window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} })
 
   const doc = window.document
   const postRender = () => {
@@ -264,9 +347,12 @@ test('edit dialog reflects existing profiles as checked rows', async () => {
 
   assert.match(postRenderInfo().title, /Edit deepseek\/deepseek-v4-flash/)
   const rows = els.rows()
-  assert.equal(rows.length, 4, 'one row per time/mode combo')
-  const checks = rows.map(r => r.querySelector('.vc-check').checked)
-  assert.deepEqual(checks, [true, false, false, true], 'only existing profiles checked')
+  assert.equal(rows.length, 16, 'one row per time/mode combo across all effort tiers')
+  const checkedCells = rows
+    .filter(r => r.querySelector('.vc-check').checked)
+    .map(r => `${r.dataset.tb}_${r.dataset.effort}`)
+    .sort()
+  assert.deepEqual(checkedCells, ['30m_thinking', '60m_none'], 'only existing profiles checked')
 })
 
 function postRenderInfo() {
@@ -285,9 +371,10 @@ test('edit save builds PUT payload with removals and temp changes', async () => 
   await new Promise(r => setImmediate(r))
 
   const rows = els.rows()
-  const firstRow = rows.find(r => r.dataset.job === '30m_true')
-  firstRow.querySelector('.vc-check').checked = false
-  rows.find(r => r.dataset.job === '60m_false').querySelector('.vc-temp').value = '0.66'
+  const removeRow = rows.find(r => r.dataset.tb === '30m' && r.dataset.effort === 'thinking')
+  const tempRow = rows.find(r => r.dataset.tb === '60m' && r.dataset.effort === 'none')
+  removeRow.querySelector('.vc-check').checked = false
+  tempRow.querySelector('.vc-temp').value = '0.66'
   click(els.create)
   await new Promise(r => setImmediate(r))
 
@@ -365,4 +452,153 @@ test('Escape key closes dialog then overlay', async () => {
   assert.ok(els.dialog.classList.contains('cm-hidden'), 'esc closes dialog')
   doc.dispatchEvent(new h.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
   assert.ok(els.overlay.classList.contains('cm-hidden'), 'esc closes overlay')
+})
+
+// ── run data section ─────────────────────────────────────────
+
+const waitUntil = async (fn, timeout = 1500) => {
+  const start = Date.now()
+  while (Date.now() - start < timeout) {
+    if (fn()) return
+    await new Promise(r => setTimeout(r, 5))
+  }
+  throw new Error('waitUntil timed out')
+}
+
+const openRun = async (h) => {
+  h.click(h.doc.querySelector('[data-settings-toggle]'))
+  await new Promise(r => setImmediate(r))
+  h.click(h.doc.querySelector('.settings-nav-item[data-section="run"]'))
+  await waitUntil(() => h.doc.querySelectorAll('.tool-card').length === RUN_REGISTRY.length)
+}
+
+test('run tab renders tool cards, groups, and empty jobs state', async () => {
+  const { doc, state } = h
+  state.jobs.jobs = []
+  await openRun(h)
+  const cards = Array.from(doc.querySelectorAll('.tool-card'))
+  assert.equal(cards.length, RUN_REGISTRY.length)
+  const groups = Array.from(doc.querySelectorAll('.tool-group-label')).map(g => g.textContent)
+  assert.ok(groups.includes('Run harness'))
+  assert.ok(groups.includes('Analysis & maintenance'))
+
+  const reset = doc.querySelector('.tool-card[data-tool="reset_benchmark"]')
+  assert.ok(reset.querySelector('.tool-warning'), 'destructive warning shown')
+  assert.ok(reset.querySelector('[data-confirm]'), 'confirm field shown')
+
+  const benchField = doc.querySelector('.tool-card[data-tool="run_candidate"] [data-arg="bench"]')
+  assert.ok(benchField.getAttribute('list') === 'benchList', 'bench input wired to datalist')
+
+  assert.match(doc.getElementById('jobsList').textContent, /No runs yet/)
+  assert.match(doc.getElementById('jobCount').textContent, /No runs/)
+  assert.equal(state.es.length, 0, 'no event sources without expanded jobs')
+})
+
+test('preset fills the form then submit POSTs collected args', async () => {
+  const { doc, click, state } = h
+  await openRun(h)
+  const card = doc.querySelector('.tool-card[data-tool="run_candidate"]')
+  click(card.querySelector('.preset-chip[data-preset="smoke"]'))
+  assert.equal(card.querySelector('[data-arg="bench"]').value, 'chapter_fast')
+  assert.equal(card.querySelector('[data-arg="mock"]').checked, true)
+  assert.equal(card.querySelector('[data-arg="max-samples"]').value, '4')
+
+  click(card.querySelector('.tool-run-btn'))
+  click(card.querySelector('.tool-run-submit'))
+  await waitUntil(() => state.calls.some(c => c.url === '/api/jobs' && c.method === 'POST'))
+  const post = state.calls.find(c => c.url === '/api/jobs' && c.method === 'POST')
+  assert.deepEqual(post.body, {
+    toolId: 'run_candidate',
+    args: { bench: 'chapter_fast', profile: 'all', mock: true, 'max-samples': 4 },
+  })
+  assert.ok(!('confirm' in post.body), 'no confirm field for non-destructive tool')
+})
+
+test('destructive run gates on typed RESET and posts confirm', async () => {
+  const { doc, click, setValue, state } = h
+  await openRun(h)
+  const card = doc.querySelector('.tool-card[data-tool="reset_benchmark"]')
+  click(card.querySelector('.tool-run-btn'))
+  const submit = card.querySelector('.tool-run-submit')
+  assert.ok(submit.disabled, 'submit disabled until RESET typed')
+  const confirmEl = card.querySelector('[data-confirm]')
+  setValue(confirmEl, 'resat')
+  assert.ok(submit.disabled, 'wrong phrase still disabled')
+  setValue(confirmEl, 'RESET')
+  assert.ok(!submit.disabled, 'correct phrase enables')
+  click(submit)
+  await waitUntil(() => state.calls.some(c => c.method === 'POST' && c.url === '/api/jobs' && c.body && c.body.toolId === 'reset_benchmark'))
+  const post = state.calls.find(c => c.method === 'POST' && c.url === '/api/jobs' && c.body && c.body.toolId === 'reset_benchmark')
+  assert.equal(post.body.confirm, 'RESET')
+  assert.deepEqual(post.body.args, {})
+})
+
+test('job rows show status badges; cancel is two-step confirm', async () => {
+  const { doc, click, state } = h
+  await openRun(h)
+  const runningRow = doc.querySelector('.job-row[data-job="j1"]')
+  assert.ok(runningRow, 'running job rendered')
+  const badge = runningRow.querySelector('.job-badge')
+  assert.ok(badge.classList.contains('st-running'))
+  assert.match(badge.textContent, /Running/)
+
+  const cancelBtn = runningRow.querySelector('.job-cancel')
+  click(cancelBtn)
+  assert.equal(cancelBtn.textContent.trim(), 'Confirm cancel?')
+  assert.equal(cancelBtn.dataset.armed, '1')
+  click(cancelBtn)
+  await waitUntil(() => state.calls.some(c => c.method === 'POST' && c.url === '/api/jobs/j1/cancel'))
+  assert.ok(state.calls.some(c => c.method === 'POST' && c.url === '/api/jobs/j1/cancel'))
+})
+
+test('re-run replays original args via detail fetch', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = [
+    {
+      id: 'j3',
+      toolId: 'run_candidate',
+      status: 'succeeded',
+      createdAt: '2026-09-05T09:00:00Z',
+      finishedAt: '2026-09-05T09:05:00Z',
+      exitCode: 0,
+      resultHints: { bench: 'chapter_fast' },
+    },
+  ]
+  await openRun(h)
+  const row = doc.querySelector('.job-row[data-job="j3"]')
+  click(row.querySelector('.job-rerun'))
+  await waitUntil(() => state.calls.some(c => c.method === 'POST' && c.url === '/api/jobs' && c.body && c.body.toolId === 'run_candidate'))
+  const post = state.calls.find(c => c.method === 'POST' && c.url === '/api/jobs' && c.body && c.body.toolId === 'run_candidate')
+  assert.deepEqual(post.body, { toolId: 'run_candidate', args: { bench: 'chapter_fast', profile: 'all', mock: true } })
+})
+
+test('expanded running job opens an EventSource stream', async () => {
+  const { doc, click, state } = h
+  await openRun(h)
+  const row = doc.querySelector('.job-row[data-job="j1"]')
+  click(row.querySelector('.job-row-head'))
+  const consoleEl = row.querySelector('.job-console')
+  assert.ok(!consoleEl.classList.contains('cm-hidden'), 'console expanded on click')
+  await waitUntil(() => state.es.length === 1)
+  assert.match(state.es[0], /\/api\/jobs\/j1\/stream/)
+})
+
+test('results-refreshed hint dispatches window event', async () => {
+  const { doc, state } = h
+  let fired = 0
+  h.window.addEventListener('dashboard:results-refreshed', () => { fired++ })
+  state.jobs.jobs = [
+    {
+      id: 'j4',
+      toolId: 'run_candidate',
+      status: 'succeeded',
+      createdAt: '2026-09-05T08:00:00Z',
+      finishedAt: '2026-09-05T08:01:00Z',
+      exitCode: 0,
+      resultHints: { resultsTsvUpdated: true },
+    },
+  ]
+  await openRun(h)
+  await waitUntil(() => fired === 1)
+  assert.equal(fired, 1)
 })

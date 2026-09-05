@@ -470,6 +470,11 @@ make smoke
 make leaderboard
 ```
 
+All of the above (plus `add_candidate`, `gen_profile_literal`, `snapshot_catalog`,
+`run_candidate`, `judge_existing`, `agent`, and `reset_benchmark`) are also
+available from the dashboard's **Run data** tab — no CLI needed. See
+[dashboard/README.md](dashboard/README.md).
+
 ## Notes
 
 - The harness optimizes **uncached generation cost**, not evaluation cost.
