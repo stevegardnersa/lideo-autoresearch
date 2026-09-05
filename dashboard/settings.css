@@ -446,6 +446,26 @@
 }
 .probe-none { font-size: 12px; color: var(--muted, #6b7280); font-style: italic; }
 
+.pricing-box {
+  margin-top: 12px;
+  background: var(--panel, #fff);
+  border: 1px solid var(--line, #d8dee8);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.pricing-label { font-size: 12px; font-weight: 650; color: var(--text, #1d2433); margin-bottom: 6px; }
+.pricing-ctx { font-size: 11px; color: var(--muted, #6b7280); margin-bottom: 6px; }
+.pricing-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.pricing-table th, .pricing-table td {
+  text-align: right;
+  padding: 3px 6px;
+  border-bottom: 1px solid var(--line, #d8dee8);
+  font-variant-numeric: tabular-nums;
+}
+.pricing-table th { color: var(--muted, #6b7280); font-weight: 600; }
+.pricing-table th:first-child, .pricing-table td:first-child { text-align: left; }
+.pricing-table tr:last-child td { border-bottom: none; }
+
 .dlg-error {
   margin-top: 12px;
   background: #fef2f2;

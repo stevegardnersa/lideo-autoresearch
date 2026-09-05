@@ -375,11 +375,40 @@ class OpenRouterClient:
         record = self.pricing_snapshot.get(model_id)
         if not record:
             return None
-        input_cost_per_million = _as_float(record.get("input_cost_per_million"))
-        output_cost_per_million = _as_float(record.get("output_cost_per_million"))
-        prompt_cost = (usage.prompt_tokens / 1_000_000.0) * input_cost_per_million
-        completion_cost = (usage.completion_tokens / 1_000_000.0) * output_cost_per_million
-        return float(prompt_cost + completion_cost)
+
+        def _to_tier(raw: Mapping[str, Any]) -> Tuple[float, float, float, float, int]:
+            return (
+                _as_float(raw.get("input_cost_per_million")) / 1_000_000.0,
+                _as_float(raw.get("output_cost_per_million")) / 1_000_000.0,
+                _as_float(raw.get("cached_input_cost_per_million")) / 1_000_000.0,
+                _as_float(raw.get("request_cost")),
+                _as_int(raw.get("min_context")),
+            )
+
+        tiers_raw = record.get("pricing_tiers")
+        tiers = [_to_tier(t) for t in tiers_raw if isinstance(t, Mapping)] if isinstance(tiers_raw, list) else []
+        if not tiers:
+            tiers = [_to_tier(record)]
+        if not tiers:
+            return None
+
+        prompt_price, completion_price, cached_price, request_cost, _ = tiers[0]
+        for input_price, output_price, cache_price, req, min_context in tiers:
+            if usage.prompt_tokens >= min_context:
+                prompt_price, completion_price, cached_price, request_cost = (
+                    input_price,
+                    output_price,
+                    cache_price,
+                    req,
+                )
+        cached = max(0, min(usage.cached_prompt_tokens, usage.prompt_tokens))
+        uncached = usage.prompt_tokens - cached
+        return float(
+            (uncached * prompt_price)
+            + (cached * cached_price)
+            + (usage.completion_tokens * completion_price)
+            + request_cost
+        )
 
     def fetch_models(self, *, refresh: bool = False) -> Dict[str, ModelInfo]:
         if self._model_cache and not refresh:

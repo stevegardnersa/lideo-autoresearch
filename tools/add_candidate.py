@@ -186,6 +186,34 @@ def probe_effort_capabilities(model: str, *, probe_legacy: bool = False) -> Dict
         print()
     if not efforts:
         caps["support_note"] = "Model failed all effort probes (including plain request)."
+
+    try:
+        info = client.fetch_models().get(model)
+    except Exception:
+        info = None
+    if info is not None and getattr(info, "pricing", None):
+        tiers = []
+        for tier in info.pricing:
+            tiers.append(
+                {
+                    "min_context": int(getattr(tier, "min_context", 0) or 0),
+                    "input_cost_per_million": float(getattr(tier, "prompt", 0.0) or 0.0) * 1_000_000.0,
+                    "output_cost_per_million": float(getattr(tier, "completion", 0.0) or 0.0) * 1_000_000.0,
+                    "cached_input_cost_per_million": float(getattr(tier, "input_cache_read", 0.0) or 0.0) * 1_000_000.0,
+                    "request_cost": float(getattr(tier, "request", 0.0) or 0.0),
+                }
+            )
+        tiers.sort(key=lambda item: item["min_context"])
+        print(
+            "PRICING "
+            + json.dumps(
+                {
+                    "context_length": int(getattr(info, "context_length", 0) or 0),
+                    "tiers": tiers,
+                },
+                ensure_ascii=False,
+            )
+        )
     return caps
 
 
