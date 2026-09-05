@@ -4873,294 +4873,6 @@
       "disable_composer": false,
       "notes": "Auto-generated: qwen/qwen3.7-max chapter+composer, 30m, notthinking, schema=True"
     },
-    "30m_muse-glimmer-30b_thinking": {
-      "name": "30m_muse-glimmer-30b_thinking_v1",
-      "profile": "30m_muse-glimmer-30b_thinking",
-      "chapter_stage": {
-        "model": "meta/muse-glimmer-30b",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "dense_faithful",
-          "detail_policy": "mechanisms_first",
-          "qualifier_policy": "strict",
-          "structure_policy": "heading_aware",
-          "example_policy": "explanatory_only",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
-      },
-      "composer_stage": {
-        "model": "meta/muse-glimmer-30b",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "architectural_synthesizer",
-          "synthesis_policy": "thesis_then_frameworks",
-          "detail_policy": "balanced_dense",
-          "qualifier_policy": "strict",
-          "structure_policy": "theme_clustered",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
-      },
-      "composer_mode": "summaries_only",
-      "length_control": {
-        "max_passes": 5,
-        "tolerance_pct": 0.08,
-        "hard_tolerance_pct": 0.15,
-        "repair_strategy": "edit_existing",
-        "repair_more_prompt_id": "expand_mechanisms_first",
-        "repair_less_prompt_id": "shrink_dedup_first"
-      },
-      "budget_allocator": {
-        "words_per_minute": 200,
-        "allocation_alpha": 0.9,
-        "min_chapter_share": 0.03,
-        "max_chapter_share": 0.18,
-        "chapter_stage_multiplier_30m": 1.2,
-        "chapter_stage_multiplier_60m": 1.0,
-        "max_summary_to_source_ratio": 0.9
-      },
-      "disable_composer": false,
-      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 30m, thinking, schema=True"
-    },
-    "30m_muse-glimmer-30b_notthinking": {
-      "name": "30m_muse-glimmer-30b_notthinking_v1",
-      "profile": "30m_muse-glimmer-30b_notthinking",
-      "chapter_stage": {
-        "model": "meta/muse-glimmer-30b",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "dense_faithful",
-          "detail_policy": "mechanisms_first",
-          "qualifier_policy": "strict",
-          "structure_policy": "heading_aware",
-          "example_policy": "explanatory_only",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
-      },
-      "composer_stage": {
-        "model": "meta/muse-glimmer-30b",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "architectural_synthesizer",
-          "synthesis_policy": "thesis_then_frameworks",
-          "detail_policy": "balanced_dense",
-          "qualifier_policy": "strict",
-          "structure_policy": "theme_clustered",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
-      },
-      "composer_mode": "summaries_only",
-      "length_control": {
-        "max_passes": 5,
-        "tolerance_pct": 0.08,
-        "hard_tolerance_pct": 0.15,
-        "repair_strategy": "edit_existing",
-        "repair_more_prompt_id": "expand_mechanisms_first",
-        "repair_less_prompt_id": "shrink_dedup_first"
-      },
-      "budget_allocator": {
-        "words_per_minute": 200,
-        "allocation_alpha": 0.9,
-        "min_chapter_share": 0.03,
-        "max_chapter_share": 0.18,
-        "chapter_stage_multiplier_30m": 1.2,
-        "chapter_stage_multiplier_60m": 1.0,
-        "max_summary_to_source_ratio": 0.9
-      },
-      "disable_composer": false,
-      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 30m, notthinking, schema=True"
-    },
-    "60m_muse-glimmer-30b_thinking": {
-      "name": "60m_muse-glimmer-30b_thinking_v1",
-      "profile": "60m_muse-glimmer-30b_thinking",
-      "chapter_stage": {
-        "model": "meta/muse-glimmer-30b",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "dense_faithful",
-          "detail_policy": "mechanisms_first",
-          "qualifier_policy": "strict",
-          "structure_policy": "heading_aware",
-          "example_policy": "explanatory_only",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
-      },
-      "composer_stage": {
-        "model": "meta/muse-glimmer-30b",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "architectural_synthesizer",
-          "synthesis_policy": "thesis_then_frameworks",
-          "detail_policy": "balanced_dense",
-          "qualifier_policy": "strict",
-          "structure_policy": "theme_clustered",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
-      },
-      "composer_mode": "summaries_only",
-      "length_control": {
-        "max_passes": 5,
-        "tolerance_pct": 0.08,
-        "hard_tolerance_pct": 0.15,
-        "repair_strategy": "edit_existing",
-        "repair_more_prompt_id": "expand_mechanisms_first",
-        "repair_less_prompt_id": "shrink_dedup_first"
-      },
-      "budget_allocator": {
-        "words_per_minute": 200,
-        "allocation_alpha": 0.9,
-        "min_chapter_share": 0.03,
-        "max_chapter_share": 0.18,
-        "chapter_stage_multiplier_30m": 1.2,
-        "chapter_stage_multiplier_60m": 1.0,
-        "max_summary_to_source_ratio": 0.9
-      },
-      "disable_composer": false,
-      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 60m, thinking, schema=True"
-    },
-    "60m_muse-glimmer-30b_notthinking": {
-      "name": "60m_muse-glimmer-30b_notthinking_v1",
-      "profile": "60m_muse-glimmer-30b_notthinking",
-      "chapter_stage": {
-        "model": "meta/muse-glimmer-30b",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "dense_faithful",
-          "detail_policy": "mechanisms_first",
-          "qualifier_policy": "strict",
-          "structure_policy": "heading_aware",
-          "example_policy": "explanatory_only",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
-      },
-      "composer_stage": {
-        "model": "meta/muse-glimmer-30b",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "architectural_synthesizer",
-          "synthesis_policy": "thesis_then_frameworks",
-          "detail_policy": "balanced_dense",
-          "qualifier_policy": "strict",
-          "structure_policy": "theme_clustered",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
-      },
-      "composer_mode": "summaries_only",
-      "length_control": {
-        "max_passes": 5,
-        "tolerance_pct": 0.08,
-        "hard_tolerance_pct": 0.15,
-        "repair_strategy": "edit_existing",
-        "repair_more_prompt_id": "expand_mechanisms_first",
-        "repair_less_prompt_id": "shrink_dedup_first"
-      },
-      "budget_allocator": {
-        "words_per_minute": 200,
-        "allocation_alpha": 0.9,
-        "min_chapter_share": 0.03,
-        "max_chapter_share": 0.18,
-        "chapter_stage_multiplier_30m": 1.2,
-        "chapter_stage_multiplier_60m": 1.0,
-        "max_summary_to_source_ratio": 0.9
-      },
-      "disable_composer": false,
-      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 60m, notthinking, schema=True"
-    },
     "30m_gpt-5.6-luna_thinking": {
       "name": "30m_gpt-5.6-luna_thinking_v1",
       "profile": "30m_gpt-5.6-luna_thinking",
@@ -6312,6 +6024,964 @@
       },
       "disable_composer": false,
       "notes": "Auto-generated: z-ai/glm-5.3-flash chapter+composer, 60m, notthinking, schema=True"
+    },
+    "30m_muse-glimmer-30b_notthinking": {
+      "name": "30m_muse-glimmer-30b_notthinking_v1",
+      "profile": "30m_muse-glimmer-30b_notthinking",
+      "chapter_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false
+      },
+      "composer_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 30m, notthinking (effort=none), schema=False"
+    },
+    "30m_muse-glimmer-30b_effort-minimal": {
+      "name": "30m_muse-glimmer-30b_effort-minimal_v1",
+      "profile": "30m_muse-glimmer-30b_effort-minimal",
+      "chapter_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 9103,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "minimal"
+        }
+      },
+      "composer_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 9103,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "minimal"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 30m, effort-minimal (effort=minimal), schema=False"
+    },
+    "30m_muse-glimmer-30b_effort-low": {
+      "name": "30m_muse-glimmer-30b_effort-low_v1",
+      "profile": "30m_muse-glimmer-30b_effort-low",
+      "chapter_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 10240,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "low"
+        }
+      },
+      "composer_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 10240,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "low"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 30m, effort-low (effort=low), schema=False"
+    },
+    "30m_muse-glimmer-30b_effort-medium": {
+      "name": "30m_muse-glimmer-30b_effort-medium_v1",
+      "profile": "30m_muse-glimmer-30b_effort-medium",
+      "chapter_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 16384,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "medium"
+        }
+      },
+      "composer_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 16384,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "medium"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 30m, effort-medium (effort=medium), schema=False"
+    },
+    "30m_muse-glimmer-30b_effort-high": {
+      "name": "30m_muse-glimmer-30b_effort-high_v1",
+      "profile": "30m_muse-glimmer-30b_effort-high",
+      "chapter_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 40960,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "high"
+        }
+      },
+      "composer_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 40960,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "high"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 30m, effort-high (effort=high), schema=False"
+    },
+    "30m_muse-glimmer-30b_effort-xhigh": {
+      "name": "30m_muse-glimmer-30b_effort-xhigh_v1",
+      "profile": "30m_muse-glimmer-30b_effort-xhigh",
+      "chapter_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 163840,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "xhigh"
+        }
+      },
+      "composer_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 163840,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "xhigh"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 30m, effort-xhigh (effort=xhigh), schema=False"
+    },
+    "30m_muse-glimmer-30b_effort-max": {
+      "name": "30m_muse-glimmer-30b_effort-max_v1",
+      "profile": "30m_muse-glimmer-30b_effort-max",
+      "chapter_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 163840,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "max"
+        }
+      },
+      "composer_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 163840,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "max"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 30m, effort-max (effort=max), schema=False"
+    },
+    "60m_muse-glimmer-30b_notthinking": {
+      "name": "60m_muse-glimmer-30b_notthinking_v1",
+      "profile": "60m_muse-glimmer-30b_notthinking",
+      "chapter_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false
+      },
+      "composer_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 60m, notthinking (effort=none), schema=False"
+    },
+    "60m_muse-glimmer-30b_effort-minimal": {
+      "name": "60m_muse-glimmer-30b_effort-minimal_v1",
+      "profile": "60m_muse-glimmer-30b_effort-minimal",
+      "chapter_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 9103,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "minimal"
+        }
+      },
+      "composer_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 9103,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "minimal"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 60m, effort-minimal (effort=minimal), schema=False"
+    },
+    "60m_muse-glimmer-30b_effort-low": {
+      "name": "60m_muse-glimmer-30b_effort-low_v1",
+      "profile": "60m_muse-glimmer-30b_effort-low",
+      "chapter_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 10240,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "low"
+        }
+      },
+      "composer_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 10240,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "low"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 60m, effort-low (effort=low), schema=False"
+    },
+    "60m_muse-glimmer-30b_effort-medium": {
+      "name": "60m_muse-glimmer-30b_effort-medium_v1",
+      "profile": "60m_muse-glimmer-30b_effort-medium",
+      "chapter_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 16384,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "medium"
+        }
+      },
+      "composer_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 16384,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "medium"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 60m, effort-medium (effort=medium), schema=False"
+    },
+    "60m_muse-glimmer-30b_effort-high": {
+      "name": "60m_muse-glimmer-30b_effort-high_v1",
+      "profile": "60m_muse-glimmer-30b_effort-high",
+      "chapter_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 40960,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "high"
+        }
+      },
+      "composer_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 40960,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "high"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 60m, effort-high (effort=high), schema=False"
+    },
+    "60m_muse-glimmer-30b_effort-xhigh": {
+      "name": "60m_muse-glimmer-30b_effort-xhigh_v1",
+      "profile": "60m_muse-glimmer-30b_effort-xhigh",
+      "chapter_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 163840,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "xhigh"
+        }
+      },
+      "composer_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 163840,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "xhigh"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 60m, effort-xhigh (effort=xhigh), schema=False"
+    },
+    "60m_muse-glimmer-30b_effort-max": {
+      "name": "60m_muse-glimmer-30b_effort-max_v1",
+      "profile": "60m_muse-glimmer-30b_effort-max",
+      "chapter_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 163840,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "max"
+        }
+      },
+      "composer_stage": {
+        "model": "meta/muse-glimmer-30b",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 163840,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "max"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: meta/muse-glimmer-30b chapter+composer, 60m, effort-max (effort=max), schema=False"
     }
-  }
+  },
+  "capabilities": {
+    "meta/muse-glimmer-30b": {
+      "schema": false,
+      "efforts": [
+        "none",
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "effort_style": "reasoning",
+      "thinking_param": null,
+      "support_note": null
+    }
+  },
+  "schema_version": 2
 }

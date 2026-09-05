@@ -29,8 +29,49 @@ function timeBudgetOf(key) {
   return String(key).split('_')[0] || '30m'
 }
 
-function thinkingOf(key) {
-  return String(key).endsWith('_thinking')
+const EFFORT_ORDER = ['thinking', 'none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max']
+
+// Reasoning takes ~fraction of the token budget; mirrors core/reasoning.py.
+const EFFORT_FRACTION = {
+  none: 0.0, minimal: 0.10, low: 0.20, medium: 0.50, high: 0.80, xhigh: 0.95, max: 0.95,
+}
+const BASE_MAX_TOKENS = 8192
+const MAX_TOKEN_CAP = 163840
+
+function effortOf(key) {
+  const k = String(key)
+  if (k.endsWith('_thinking')) return 'thinking'
+  if (k.endsWith('_notthinking')) return 'none'
+  const m = k.match(/_(effort-[a-z]+)$/)
+  return m ? m[1].replace(/^effort-/, '') : 'plain'
+}
+
+function keyFor(tb, slug, effort) {
+  if (effort === 'thinking') return `${tb}_${slug}_thinking`
+  if (effort === 'none') return `${tb}_${slug}_notthinking`
+  if (!effort || effort === 'plain') return `${tb}_${slug}_plain`
+  return `${tb}_${slug}_effort-${effort}`
+}
+
+function effortDefaultMaxTokens(effort) {
+  const f = EFFORT_FRACTION[effort] || 0
+  if (f <= 0) return BASE_MAX_TOKENS
+  return Math.min(Math.ceil(BASE_MAX_TOKENS / (1 - f)), MAX_TOKEN_CAP)
+}
+
+function specStyle(spec) {
+  const stage = spec && spec.chapter_stage
+  return (stage && stage.extra_body && stage.extra_body.thinking) ? 'legacy' : 'new'
+}
+
+function clearReasoningKeys(stage) {
+  if (!stage) return
+  if (stage.extra_body) {
+    delete stage.extra_body.thinking
+    if (Object.keys(stage.extra_body).length === 0) delete stage.extra_body
+  }
+  delete stage.reasoning
+  delete stage.reasoning_effort
 }
 
 function readBody(req) {
@@ -311,7 +352,9 @@ function buildModelsIndex(ctx) {
     m.profiles.push({
       slug: key,
       time_budget: timeBudgetOf(key),
-      thinking: thinkingOf(key),
+      thinking: effortOf(key) === 'thinking',
+      effort: effortOf(key),
+      style: specStyle(spec),
       status: 'pending',
       temperature: (spec.chapter_stage && typeof spec.chapter_stage.temperature === 'number') ? spec.chapter_stage.temperature : null,
       max_tokens: (spec.chapter_stage && typeof spec.chapter_stage.max_tokens === 'number') ? spec.chapter_stage.max_tokens : null,
@@ -333,17 +376,30 @@ function parseAddOutput(stdout) {
   let mm
   while ((mm = re.exec(stdout)) !== null) created.push(mm[1])
 
-  const probe = { schema: null, thinking: null, notthinking: null }
-  const probeLines = stdout.match(/Probing (.+?)\.\.\.( \[[^\]]*\])?/g) || []
-  for (const line of probeLines) {
-    const m = line.match(/^Probing (.+?)\.\.\./)
-    if (!m) continue
-    const label = m[1]
-    let slot = null
-    if (label.startsWith('JSON schema support')) slot = 'schema'
-    else if (label.startsWith('thinking mode')) slot = 'thinking'
-    else if (label.startsWith('non-thinking mode')) slot = 'notthinking'
-    if (slot) probe[slot] = !(/ \[[^\]]*\]/.test(line.split('...')[1] || ''))
+  const probe = { schema: null, thinking: null, notthinking: null, efforts: null, effort_style: null }
+  const lines = String(stdout).split('\n')
+  for (const line of lines) {
+    const t = line.trim()
+    if (t.startsWith('Probing JSON schema support')) {
+      probe.schema = !/ \[[^\]]*\]/.test(t.split('...')[1] || '')
+      continue
+    }
+    const styleM = t.match(/^Probing effort tiers \(([a-z_]+)\):$/)
+    if (styleM) {
+      probe.effort_style = styleM[1]
+      probe.efforts = probe.efforts || []
+      continue
+    }
+    const effortM = t.match(/^effort '([a-z][\w-]*)' \((\w+)\)\.\.\. (\w+)/)
+    if (effortM) {
+      probe.efforts = probe.efforts || []
+      if (effortM[3] === 'ok') probe.efforts.push(effortM[1])
+      continue
+    }
+    const ogProbe = t.match(/^Probing (thinking|non-thinking) mode\.\.\./)
+    if (ogProbe) {
+      probe[ogProbe[1] === 'thinking' ? 'thinking' : 'notthinking'] = !(/ \[[^\]]*\]/.test(t.split('...')[1] || ''))
+    }
   }
   return { created, probe }
 }
@@ -373,6 +429,35 @@ function buildDefaultSpec(model, thinking, schemaOk) {
   return {
     chapter_stage: stage,
     composer_stage: { ...stage, format_mode: 'markdown_sections', context_mode: 'chapter_plus_toc_and_meta' },
+  }
+}
+
+// Apply a requested effort tier to a spec. The effort name is the canonical
+// tier ('thinking', 'none', 'minimal'..'max'); the key suffix is derived by
+// keyFor. New-style templates get the recommended reasoning API; legacy
+// templates fall back to the extra_body thinking param (scaled budget) so the
+// model's config style stays internally consistent.
+function applyEffortConfig(nSpec, effort, templateStyle) {
+  const newStyle = templateStyle !== 'legacy'
+  for (const st of [nSpec.chapter_stage, nSpec.composer_stage]) {
+    clearReasoningKeys(st)
+    const maxT = effortDefaultMaxTokens(effort)
+    if (effort === 'thinking') {
+      if (newStyle) {
+        st.reasoning = { effort: 'high' }
+      } else {
+        st.extra_body = Object.assign(st.extra_body || {}, { thinking: { type: 'enabled' } })
+      }
+      st.max_tokens = maxT
+    } else if (effort === 'none') {
+      // plain request: no reasoning params at all
+    } else if (newStyle) {
+      st.reasoning = { effort }
+      st.max_tokens = maxT
+    } else {
+      st.extra_body = Object.assign(st.extra_body || {}, { thinking: { type: 'enabled' } })
+      st.max_tokens = maxT
+    }
   }
 }
 
@@ -408,8 +493,8 @@ function applyProfileEdit(data, body) {
       continue
     }
     const tb = (edit.time_budget && ['30m', '60m'].includes(edit.time_budget)) ? edit.time_budget : timeBudgetOf(oldKey)
-    const thinking = edit.thinking != null ? !!edit.thinking : thinkingOf(oldKey)
-    const finalKey = `${tb}_${slugOfModel(target)}_${thinking ? 'thinking' : 'notthinking'}`
+    const effort = edit.effort && EFFORT_ORDER.includes(edit.effort) ? edit.effort : effortOf(oldKey)
+    const finalKey = keyFor(tb, slugOfModel(target), effort)
 
     if (finalKey !== oldKey) {
       if (newProfiles[finalKey]) return { error: `would create duplicate profile key ${finalKey}` }
@@ -421,11 +506,7 @@ function applyProfileEdit(data, body) {
     const nSpec = JSON.parse(JSON.stringify(spec))
     nSpec.chapter_stage.model = target
     nSpec.composer_stage.model = target
-    const nThinking = thinking ? 'enabled' : 'disabled'
-    nSpec.chapter_stage.extra_body = nSpec.chapter_stage.extra_body || {}
-    nSpec.composer_stage.extra_body = nSpec.composer_stage.extra_body || {}
-    nSpec.chapter_stage.extra_body.thinking = { type: nThinking }
-    nSpec.composer_stage.extra_body.thinking = { type: nThinking }
+    if (effort !== effortOf(oldKey)) applyEffortConfig(nSpec, effort, specStyle(spec))
 
     if (typeof edit.temperature === 'number' && isFinite(edit.temperature)) {
       nSpec.chapter_stage.temperature = edit.temperature
@@ -462,24 +543,30 @@ function applyProfileEdit(data, body) {
   }
   for (const [k, v] of Object.entries(newProfiles)) outProfiles[k] = v
 
-  // New variants requested for this model (checkbox turned on for an absent combo)
+  // New variants requested for this model (checkbox turned on for an absent effort x budget cell)
   const createdVariants = []
   const createList = Array.isArray(body.create) ? body.create : []
   for (const c of createList) {
     if (!c || !['30m', '60m'].includes(c.time_budget)) return { error: 'create variant must specify a valid time_budget' }
-    const thinking = !!c.thinking
-    const finalKey = `${c.time_budget}_${slugOfModel(target)}_${thinking ? 'thinking' : 'notthinking'}`
+    const effort = c.effort && EFFORT_ORDER.includes(c.effort) ? c.effort : 'none'
+    const finalKey = keyFor(c.time_budget, slugOfModel(target), effort)
     if (newProfiles[finalKey] !== undefined || outProfiles[finalKey] !== undefined) {
       return { error: `variant already exists: ${finalKey}` }
     }
-    const template = modelKeys.find(k => outProfiles[k]) ? outProfiles[modelKeys.find(k => outProfiles[k])] : null
+    let template = modelKeys.map(k => outProfiles[k]).find(p => p && effortOf(p.profile) === effort)
+    if (!template) template = modelKeys.map(k => outProfiles[k]).find(p => p)
+    const templateStyle = template ? specStyle(template) : 'new'
+    const appliedEffort = effort
     const nSpec = template
       ? JSON.parse(JSON.stringify(template))
-      : buildDefaultSpec(target, thinking, data._defaultSchemaOk !== false)
+      : buildDefaultSpec(target, effort === 'thinking', data._defaultSchemaOk !== false)
     nSpec.chapter_stage.model = target
     nSpec.composer_stage.model = target
-    nSpec.chapter_stage.extra_body = { thinking: { type: thinking ? 'enabled' : 'disabled' } }
-    nSpec.composer_stage.extra_body = { thinking: { type: thinking ? 'enabled' : 'disabled' } }
+    applyEffortConfig(nSpec, appliedEffort, templateStyle)
+    if (!template && effort !== 'thinking' && effort !== 'none') {
+      nSpec.chapter_stage.max_tokens = effortDefaultMaxTokens(effort)
+      nSpec.composer_stage.max_tokens = effortDefaultMaxTokens(effort)
+    }
     if (typeof c.temperature === 'number' && isFinite(c.temperature)) {
       nSpec.chapter_stage.temperature = c.temperature
       nSpec.composer_stage.temperature = c.temperature

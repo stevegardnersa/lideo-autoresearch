@@ -87,10 +87,10 @@ const MODAL_TEMPLATE = `
       <div class="field cm-hidden" id="dlgVariantsField">
         <div class="field-label-row">
           <label>Variants</label>
-          <span class="field-hint">Check a variant to create it, uncheck to remove it. Edit temperature and max tokens per variant.</span>
+          <span class="field-hint">Effort tier per time budget. Check to keep a profile, uncheck to remove it. Checking an absent row creates it.</span>
         </div>
         <table class="variant-table">
-          <thead><tr><th></th><th>Time</th><th>Mode</th><th>temp</th><th>max tokens</th><th>status</th></tr></thead>
+          <thead><tr><th></th><th>Time</th><th>Effort</th><th>temp</th><th>max tokens</th><th>status</th></tr></thead>
           <tbody id="dlgVariantRows"></tbody>
         </table>
       </div>
@@ -104,31 +104,43 @@ const MODAL_TEMPLATE = `
   </div>
 </div>`
 
-function variantJobs() {
-  return [
-    { tb: '30m', thinking: true },
-    { tb: '30m', thinking: false },
-    { tb: '60m', thinking: true },
-    { tb: '60m', thinking: false },
-  ]
+const EFFORT_ORDER = ['thinking', 'none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max']
+const EFFORT_LABEL = { thinking: 'think', none: 'plain' }
+const BUDGETS = ['30m', '60m']
+const EFFORT_FRACTION = { none: 0, minimal: 0.1, low: 0.2, medium: 0.5, high: 0.8, xhigh: 0.95, max: 0.95 }
+
+function effortOf(key) {
+  const k = String(key)
+  if (k.endsWith('_thinking')) return 'thinking'
+  if (k.endsWith('_notthinking')) return 'none'
+  const m = k.match(/_(effort-[a-z]+)$/)
+  return m ? m[1].replace(/^effort-/, '') : 'plain'
 }
 
-function slugOf(model) {
-  const p = String(model).split('/')
-  return p[p.length - 1]
+function effortLabel(effort) {
+  return EFFORT_LABEL[effort] || effort
 }
 
-function keyOf(tb, model, thinking) {
-  return `${tb}_${slugOf(model)}_${thinking ? 'thinking' : 'notthinking'}`
+function effortDefaultMaxTokens(effort) {
+  const f = EFFORT_FRACTION[effort] || 0
+  if (f <= 0) return DEFAULTS.max_tokens
+  return Math.min(Math.ceil(DEFAULTS.max_tokens / (1 - f)), 163840)
 }
 
-function profileMeta(model) {
-  const set = new Map()
-  for (const p of model.profiles || []) {
-    const job = variantJobs().find(j => j.tb === p.time_budget && j.thinking === p.thinking)
-    if (job) set.set(`${p.time_budget}_${p.thinking}`, p)
+function modelCells(m) {
+  const byCell = new Map()
+  for (const p of m.profiles || []) {
+    const e = effortOf(p.slug)
+    if (EFFORT_ORDER.includes(e)) byCell.set(`${p.time_budget}_${e}`, p)
   }
-  return set
+  const cells = []
+  for (const tb of BUDGETS) {
+    for (const ef of EFFORT_ORDER) {
+      const p = byCell.get(`${tb}_${ef}`)
+      if (p) cells.push({ tb, effort: ef, profile: p })
+    }
+  }
+  return cells
 }
 
 function renderModelsPage(models) {
@@ -138,14 +150,11 @@ function renderModelsPage(models) {
     return
   }
   list.innerHTML = models.map(m => {
-    const jobs = profileMeta(m)
-    const chips = variantJobs().map(j => {
-      const p = jobs.get(`${j.tb}_${j.thinking}`)
-      if (!p) return ''
+    const chips = modelCells(m).map(({ tb, effort, profile: p }) => {
       const statusCls = p.status === 'tested' ? 'is-tested' : 'is-pending'
       const statusTxt = p.status === 'tested' ? 'tested' : 'pending'
       return `<span class="profile-chip ${statusCls}" title="${esc(p.slug)}">
-        <span class="pc-budget ${j.tb === '60m' ? 'is-60' : ''}">${j.tb}</span><span class="pc-mode">${j.thinking ? 'think' : 'plain'}</span>
+        <span class="pc-budget ${tb === '60m' ? 'is-60' : ''}">${tb}</span><span class="pc-mode">${effortLabel(effort)}</span>
         <span class="pc-status">${statusTxt}</span>
       </span>`
     }).join('')
@@ -200,12 +209,16 @@ function setError(msg) {
 function probeResultHtml(model, probe, created) {
   const box = (ok, label) => `<span class="probe-badge ${ok ? 'probe-ok' : 'probe-fail'}">${ok ? '\u2713' : '\u2717'} ${esc(label)}</span>`
   const schemaLine = probe.schema == null ? '' : box(!!probe.schema, 'JSON schema')
-  const thinkingLine = probe.thinking == null ? '' : box(!!probe.thinking, 'thinking')
-  const plainLine = probe.notthinking == null ? '' : box(!!probe.notthinking, 'non-thinking')
+  const effortChips = (probe.efforts && probe.efforts.length)
+    ? `<span class="probe-badge probe-ok">efforts: ${probe.efforts.map(e => esc(e === 'none' ? 'none (plain)' : e)).join(', ')}</span>`
+    : ''
+  const legacyLine = (probe.thinking != null || probe.notthinking != null)
+    ? `${box(probe.thinking === true, 'legacy thinking')}${box(probe.notthinking === true, 'legacy non-thinking')}`
+    : ''
   const profiles = created.length
     ? `<div class="probe-profiles">${created.map(c => `<span class="probe-profile">${esc(c)}</span>`).join('')}</div>`
     : '<div class="probe-none">No candidate profiles would be created.</div>'
-  return `<div class="probe-results">${[schemaLine, thinkingLine, plainLine].filter(Boolean).join('')}</div>
+  return `<div class="probe-results">${[schemaLine, effortChips, legacyLine].filter(Boolean).join('')}</div>
   <div class="probe-create-label">${created.length ? `Will create ${created.length} profile${created.length === 1 ? '' : 's'} for ${esc(model)}:` : ''}</div>${profiles}`
 }
 
@@ -239,14 +252,14 @@ function parseRoute(raw) {
   try { return JSON.parse(v) } catch { return undefined }
 }
 
-function variantRowHtml(job, existing) {
-  const temp = existing ? (existing.temperature != null ? existing.temperature : DEFAULTS.temperature) : DEFAULTS.temperature
-  const maxT = existing ? (existing.max_tokens != null ? existing.max_tokens : DEFAULTS.max_tokens) : DEFAULTS.max_tokens
+function variantRowHtml({ tb, effort, existing }) {
+  const temp = existing && existing.temperature != null ? existing.temperature : DEFAULTS.temperature
+  const maxT = existing && existing.max_tokens != null ? existing.max_tokens : effortDefaultMaxTokens(effort)
   const status = existing ? (existing.status === 'tested' ? 'tested' : 'pending') : 'not created'
-  return `<tr data-job="${job.tb}_${job.thinking}" data-existing="${existing ? '1' : '0'}">
+  return `<tr data-tb="${tb}" data-effort="${effort}" data-existing="${existing ? '1' : '0'}">
     <td><input type="checkbox" class="vc-check" ${existing ? 'checked' : ''} /></td>
-    <td class="vc-tb">${job.tb}</td>
-    <td class="vc-mode">${job.thinking ? 'thinking' : 'non-thinking'}</td>
+    <td class="vc-tb">${tb}</td>
+    <td class="vc-mode">${effortLabel(effort)}</td>
     <td><input type="number" step="0.1" min="0" max="2" class="vc-temp" value="${temp}" /></td>
     <td><input type="number" step="256" min="0" class="vc-max" value="${maxT}" /></td>
     <td class="vc-status ${existing ? 'vc-has' : 'vc-none'}">${status}</td>
@@ -267,8 +280,12 @@ function openEditDialog(model) {
   document.getElementById('dlgVariantsField').classList.remove('cm-hidden')
 
   const specs = new Map()
-  model.profiles.forEach(p => specs.set(`${p.time_budget}_${p.thinking}`, p))
-  const rows = variantJobs().map(j => variantRowHtml(j, specs.get(`${j.tb}_${j.thinking}`))).join('')
+  model.profiles.forEach(p => specs.set(`${p.time_budget}_${effortOf(p.slug)}`, p))
+  const rows = [].concat(...BUDGETS.map(tb => EFFORT_ORDER.map(ef => variantRowHtml({
+    tb,
+    effort: ef,
+    existing: specs.get(`${tb}_${ef}`),
+  })))).join('')
   document.getElementById('dlgVariantRows').innerHTML = rows
 
   setPreview('')
@@ -285,16 +302,15 @@ function collectEditPayload(model) {
   const rows = Array.from(document.querySelectorAll('#dlgVariantRows tr'))
   const edits = []
   const create = []
-  const existingByKey = new Map(model.profiles.map(p => [`${p.time_budget}_${p.thinking}`, p]))
+  const existingByKey = new Map(model.profiles.map(p => [`${p.time_budget}_${effortOf(p.slug)}`, p]))
   for (const tr of rows) {
-    const jobKey = tr.dataset.job
-    const [tb, thinkingStr] = jobKey.split('_')
-    const thinking = thinkingStr === 'true'
+    const tb = tr.dataset.tb
+    const effort = tr.dataset.effort
     const checked = tr.querySelector('.vc-check').checked
     const temp = parseFloat(tr.querySelector('.vc-temp').value)
     const maxT = parseInt(tr.querySelector('.vc-max').value, 10)
-    const existing = existingByKey.get(jobKey)
-    const entry = { time_budget: tb, thinking }
+    const existing = existingByKey.get(`${tb}_${effort}`)
+    const entry = { time_budget: tb, effort }
     if (isFinite(temp)) entry.temperature = temp
     if (isFinite(maxT)) entry.max_tokens = maxT
     if (existing) {

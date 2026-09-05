@@ -199,6 +199,7 @@ def main() -> None:
         "candidate_name",
         "chapter_model",
         "composer_model",
+        "reasoning_effort",
         "mean_utility",
         "mean_quality",
         "worst_genre_macro",
