@@ -765,4 +765,10 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     loadRuns()
   }
+
+  let refreshDebounce = null
+  window.addEventListener('dashboard:results-refreshed', () => {
+    if (refreshDebounce) clearTimeout(refreshDebounce)
+    refreshDebounce = setTimeout(() => loadRuns(), 300)
+  })
 })

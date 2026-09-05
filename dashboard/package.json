@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "node --test",
-    "test:api": "node --test tests/api.models.test.mjs",
+    "test:api": "node --test tests/api.models.test.mjs tests/api.jobs.test.mjs",
     "test:ui": "node --test tests/settings.ui.test.mjs"
   },
   "devDependencies": {

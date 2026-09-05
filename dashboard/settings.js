@@ -2,7 +2,14 @@ const api = (path, opts = {}) => fetch(path, {
   headers: { 'Content-Type': 'application/json' },
   ...opts,
 }).then(r => r.json()).then(j => {
-  if (!j || j.ok === false) throw new Error((j && j.error) || `request failed (${path})`)
+  if (!j || j.ok === false) {
+    let msg = (j && j.error) || `request failed (${path})`
+    if (j && j.fieldErrors) {
+      const first = Object.values(j.fieldErrors)[0]
+      if (first) msg = first
+    }
+    throw new Error(msg)
+  }
   return j
 })
 
@@ -35,7 +42,7 @@ const MODAL_TEMPLATE = `
     <div class="settings-body">
       <nav class="settings-nav">
         <button class="settings-nav-item active" data-section="models">Models</button>
-        <button class="settings-nav-item" data-section="upcoming" disabled title="Coming soon">Run data</button>
+        <button class="settings-nav-item" data-section="run">Run data</button>
         <button class="settings-nav-item" data-section="upcoming" disabled title="Coming soon">Prompts</button>
         <button class="settings-nav-item" data-section="upcoming" disabled title="Coming soon">Judges</button>
       </nav>
@@ -54,6 +61,32 @@ const MODAL_TEMPLATE = `
         </section>
         <section class="settings-section" id="settingsUpcomingSection">
           <div class="placeholder-text">This settings page is coming soon.</div>
+        </section>
+        <section class="settings-section" id="settingsRunSection">
+          <div class="runs-head">
+            <div>
+              <div class="settings-section-title">Run data</div>
+              <div class="settings-section-sub">Run every corpus, candidate, harness, and maintenance script — no CLI. Long jobs stream live output.</div>
+            </div>
+          </div>
+          <div class="run-banner cm-hidden" id="runBanner" role="alert"></div>
+          <div class="run-workbench">
+            <div class="tool-column">
+              <div id="toolList"><div class="placeholder-text">Loading tools...</div></div>
+            </div>
+            <div class="job-column">
+              <div class="job-head">
+                <div class="job-count" id="jobCount">No runs</div>
+                <div class="job-head-actions">
+                  <button class="mini-btn" id="jobRefresh">Refresh</button>
+                  <button class="mini-btn" id="jobClear">Clear finished</button>
+                </div>
+              </div>
+              <div class="job-list" id="jobsList"></div>
+              <div class="job-offline cm-hidden" id="jobOffline">Cannot reach dashboard server &mdash; is <code>npm run dev</code> running on :3001?</div>
+            </div>
+          </div>
+          <datalist id="benchList"></datalist>
         </section>
       </div>
     </div>
@@ -464,15 +497,20 @@ function wireGearButtons() {
   })
 }
 
+function hideOverlay(overlay) {
+  overlay.classList.add('cm-hidden')
+  stopRunPolling()
+}
+
 function bindModal() {
   const overlay = document.getElementById('settingsOverlay')
   const dialogOverlay = document.getElementById('modelDialogOverlay')
 
   document.getElementById('settingsClose').addEventListener('click', () => {
-    overlay.classList.add('cm-hidden')
+    hideOverlay(overlay)
   })
   overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) overlay.classList.add('cm-hidden')
+    if (e.target === overlay) hideOverlay(overlay)
   })
 
   document.getElementById('dlgClose').addEventListener('click', closeDialog)
@@ -490,10 +528,27 @@ function bindModal() {
       s.classList.toggle('active', s.id === `settings${section[0].toUpperCase()}${section.slice(1)}Section`)
     })
     if (section === 'models') loadModels()
+    else if (section === 'run') initRunData()
   })
 
   document.getElementById('modelAddBtn').addEventListener('click', openAddDialog)
   document.getElementById('modelsList').addEventListener('click', handleModelsListClick)
+
+  document.getElementById('jobRefresh').addEventListener('click', () => refreshJobs().catch(() => {}))
+  document.getElementById('jobClear').addEventListener('click', async () => {
+    try {
+      const { removed } = await api('/api/jobs', { method: 'DELETE' })
+      if (removed) setBanner(`Cleared ${removed} finished run${removed === 1 ? '' : 's'}.`)
+      await refreshJobs()
+    } catch (e) {
+      setBanner(`Clear failed: ${esc(e.message)}`)
+    }
+  })
+
+  window.addEventListener('dashboard:candidates-refreshed', () => {
+    const modelSec = document.getElementById('settingsModelsSection')
+    if (modelSec && modelSec.classList.contains('active')) loadModels()
+  })
   document.getElementById('dlgModel').addEventListener('input', (e) => {
     const btn = document.getElementById('dlgCreate')
     const mode = dialogOverlay.dataset.mode
@@ -536,8 +591,659 @@ function bindModal() {
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return
     if (!dialogOverlay.classList.contains('cm-hidden')) closeDialog()
-    else if (!overlay.classList.contains('cm-hidden')) overlay.classList.add('cm-hidden')
+    else if (!overlay.classList.contains('cm-hidden')) hideOverlay(overlay)
   })
+}
+
+// ── Run data section (python script runner) ───────────────────
+
+const RUN_STATE = {
+  tools: null,
+  benches: [],
+  missingKeys: [],
+  jobs: [],
+  pollTimer: null,
+  es: new Map(),
+  logs: new Map(),
+  expandedJobs: new Set(),
+  hintedJobs: new Set(),
+  activeStarted: false,
+}
+
+const RUN_TOOLS_BY_ID = new Map()
+const GROUP_ORDER = ['corpus', 'candidates', 'run', 'maintenance']
+
+const RUN_NEEDS_KEY = {
+  add_candidate: true,
+  run_candidate: true,
+  judge_existing: true,
+  agent: true,
+  snapshot_catalog: true,
+}
+
+const STATUS_BADGE = {
+  queued: ['\u22EF', 'Queued', 'st-queued'],
+  running: ['\u23F1', 'Running', 'st-running'],
+  succeeded: ['\u2713', 'Succeeded', 'st-succeeded'],
+  failed: ['\u2715', 'Failed', 'st-failed'],
+  canceled: ['\u25A0', 'Canceled', 'st-canceled'],
+  interrupted: ['\u25A0', 'Interrupted', 'st-canceled'],
+}
+
+function durationStr(startIso, endIso) {
+  if (!startIso) return ''
+  const end = endIso ? new Date(endIso) : new Date()
+  const ms = end.getTime() - new Date(startIso).getTime()
+  if (isNaN(ms) || ms < 0) return ''
+  const s = Math.floor(ms / 1000)
+  if (s < 60) return `${s}s`
+  const m = Math.floor(s / 60)
+  if (m < 60) return `${m}m ${String(s % 60).padStart(2, '0')}s`
+  return `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m`
+}
+
+function fmtTime(iso) {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return iso
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) +
+    ' ' + d.toLocaleDateString([], { month: 'short', day: 'numeric' })
+}
+
+function statusBadgeHtml(status) {
+  const [icon, label, cls] = STATUS_BADGE[status] || ['?', status, 'st-queued']
+  return `<span class="job-badge ${cls}"><span aria-hidden="true">${icon}</span> ${label}</span>`
+}
+
+function toolById(id) {
+  return RUN_TOOLS_BY_ID.get(id)
+}
+
+function groupLabel(id) {
+  const map = { corpus: 'Corpus validation', candidates: 'Candidates', run: 'Run harness', maintenance: 'Analysis & maintenance' }
+  return map[id] || id
+}
+
+function fieldHtml(a) {
+  const req = a.required ? ' <span class="req-star" aria-hidden="true">*</span>' : ''
+  const label = `<label for="run-fld-${a.name}" ${a.required ? 'aria-required="true"' : ''}>${esc(a.label)}${req}</label>`
+  const hint = a.hint ? `<div class="field-hint">${esc(a.hint)}</div>` : ''
+  const wrap = (inner) => `<div class="field run-field ${a.advanced ? 'run-advanced' : ''}" data-group="${a.group || 'main'}">${inner}</div>`
+  switch (a.type) {
+    case 'bool':
+      return wrap(`<label class="cb"><input type="checkbox" data-arg="${a.name}" id="run-fld-${a.name}" ${a.default ? 'checked' : ''} /> ${esc(a.label)}</label>`)
+    case 'enum':
+      if (a.multiple) {
+        const opts = (a.choices || []).map(c =>
+          `<label class="cb"><input type="checkbox" data-arg="${a.name}" value="${esc(c)}" ${(a.default || []).includes(c) ? 'checked' : ''} /> ${esc(c)}</label>`,
+        ).join('')
+        return wrap(`${label}<div class="cb-row">${opts}</div>${hint}`)
+      }
+      return wrap(`${label}<select id="run-fld-${a.name}" data-arg="${a.name}">${
+        (a.choices || []).map(c => `<option value="${esc(c)}" ${a.default === c ? 'selected' : ''}>${esc(c)}</option>`).join('')
+      }</select>${hint}`)
+    case 'int':
+      return wrap(`${label}<input id="run-fld-${a.name}" data-arg="${a.name}" type="number" step="1" ${a.min != null ? `min="${a.min}"` : ''} ${a.max != null ? `max="${a.max}"` : ''} value="${esc(a.default != null ? a.default : '')}" />${hint}`)
+    case 'json':
+      return wrap(`${label}<textarea id="run-fld-${a.name}" data-arg="${a.name}" rows="2" spellcheck="false" placeholder="${esc(a.placeholder || a.hint || '{}')}"></textarea>${hint}`)
+    default:
+      return wrap(`${label}<input id="run-fld-${a.name}" data-arg="${a.name}" type="text" list="${a.bench ? 'benchList' : ''}" spellcheck="false" placeholder="${esc(a.placeholder || '')}" value="${esc(a.default != null ? String(a.default) : '')}" />${hint}`)
+  }
+}
+
+function toolCardHtml(tool) {
+  const visible = tool.args.filter(a => (a.fixed && a.ui === false) ? false : !a.advanced)
+  const advanced = tool.args.filter(a => a.advanced)
+  const hasAdvanced = advanced.some(a => !(a.fixed && a.ui === false))
+  const destructive = tool.destructive
+  const warning = destructive
+    ? `<div class="tool-warning" role="alert"><strong>Deletes artifacts/runs, results.tsv, data/candidates.json, bench/book_gate.jsonl and snapshots. Irreversible.</strong></div>`
+    : ''
+  const confirmField = destructive
+    ? `<div class="field run-field"><label for="run-fld-confirm-${tool.id}">Type <code>RESET</code> to continue <span class="req-star">*</span></label>
+        <input id="run-fld-confirm-${tool.id}" data-confirm type="text" autocapitalize="off" spellcheck="false" placeholder="RESET" />
+        <div class="field-hint">Case-sensitive. The server re-checks this value before running.</div></div>`
+    : ''
+  const presets = (tool.presets || []).length
+    ? `<div class="tool-presets"><span class="tp-label">Quick presets</span>${tool.presets.map(p =>
+        `<button type="button" class="preset-chip" data-preset="${esc(p.id)}">${esc(p.label)}</button>`).join('')}</div>`
+    : ''
+  const advancedToggle = hasAdvanced
+    ? `<button type="button" class="mini-btn run-advanced-toggle" aria-expanded="false">Show advanced</button>`
+    : ''
+  return `<div class="tool-card" data-tool="${esc(tool.id)}">
+    <div class="tool-card-head">
+      <span class="tool-dot" aria-hidden="true"></span>
+      <div class="tool-card-main">
+        <div class="tool-card-title">${esc(tool.title)}</div>
+        <div class="tool-card-desc">${esc(tool.description)}</div>
+        <div class="tool-card-class">${esc(tool.runtimeClass)}</div>
+      </div>
+      <button type="button" class="mini-btn tool-run-btn">Run</button>
+    </div>
+    ${presets}
+    <div class="tool-form cm-hidden">
+      ${warning}
+      ${visible.map(fieldHtml).join('')}
+      ${hasAdvanced ? `<div class="run-advanced-block cm-hidden">${advanced.map(fieldHtml).join('')}</div>` : ''}
+      ${advancedToggle}
+      ${confirmField}
+      <div class="tool-form-actions">
+        <button type="button" class="dlg-btn dlg-btn-primary tool-run-submit" ${destructive ? 'disabled' : ''}>Run script</button>
+        <span class="tool-lock-hint cm-hidden">Run harness busy — queued runs start automatically</span>
+      </div>
+      <div class="tool-form-error cm-hidden" role="alert"></div>
+    </div>
+  </div>`
+}
+
+function fillFormFromArgs(card, tool, args) {
+  for (const a of tool.args) {
+    if (a.fixed && a.ui === false) continue
+    const value = args[a.name]
+    const el = card.querySelector(`[data-arg="${a.name}"]`)
+    if (!el) continue
+    if (a.type === 'bool') { el.checked = !!value; continue }
+    if (a.multiple) {
+      const vals = toArray(value)
+      card.querySelectorAll(`[data-arg="${a.name}"]`).forEach(cb => { cb.checked = vals.includes(cb.value) })
+      continue
+    }
+    if (el.tagName === 'TEXTAREA') { el.value = value != null ? JSON.stringify(value) : ''; continue }
+    if (el.tagName === 'SELECT') { el.value = value != null ? String(value) : ''; continue }
+    el.value = value != null ? String(value) : ''
+  }
+}
+
+function applyPreset(card, tool, preset) {
+  fillFormFromArgs(card, tool, preset.args || {})
+}
+
+function toArray(v) {
+  if (v == null) return []
+  return Array.isArray(v) ? v : [v]
+}
+
+function showCardError(card, msg) {
+  const el = card.querySelector('.tool-form-error')
+  el.innerHTML = `<strong>${esc(msg)}</strong>`
+  el.classList.remove('cm-hidden')
+}
+
+function clearCardError(card) {
+  const el = card.querySelector('.tool-form-error')
+  el.classList.add('cm-hidden')
+  el.innerHTML = ''
+}
+
+function collectArgValues(card, tool) {
+  const values = {}
+  const errors = []
+  for (const a of tool.args) {
+    if (a.fixed && a.ui === false) continue
+    const el = card.querySelector(`[data-arg="${a.name}"]`)
+    if (!el) continue
+    if (a.type === 'bool') { values[a.name] = el.checked; continue }
+    if (a.multiple) {
+      values[a.name] = [...card.querySelectorAll(`[data-arg="${a.name}"]`)].filter(c => c.checked).map(c => c.value)
+      continue
+    }
+    if (el.tagName === 'TEXTAREA') {
+      const raw = (el.value || '').trim()
+      if (!raw) { values[a.name] = a.default ?? ''; continue }
+      try {
+        values[a.name] = JSON.parse(raw)
+      } catch {
+        errors.push(`${a.label} is not valid JSON`)
+      }
+      continue
+    }
+    const raw = (el.value || '').trim()
+    if (a.type === 'int') {
+      if (raw === '') { values[a.name] = a.default ?? ''; continue }
+      const n = Number(raw)
+      if (!Number.isInteger(n)) { errors.push(`${a.label} must be an integer`); continue }
+      values[a.name] = n
+      continue
+    }
+    if (el.tagName === 'SELECT') { values[a.name] = el.value; continue }
+    const s = String(raw)
+    if (a.pattern && s && !new RegExp(a.pattern).test(s)) {
+      errors.push(`${a.label} has invalid characters`)
+      continue
+    }
+    values[a.name] = s
+  }
+  return { values, errors }
+}
+
+function toolNeedsKey(tool, values) {
+  if (!RUN_NEEDS_KEY[tool.id]) return false
+  if (tool.id === 'run_candidate' && values.mock) return false
+  return true
+}
+
+async function runToolSubmit(card, tool) {
+  clearCardError(card)
+  const { values, errors } = collectArgValues(card, tool)
+  if (errors.length) { showCardError(card, errors.join('; ')); return }
+  const missingReq = tool.args.find(a => a.required && a.type !== 'bool' && (values[a.name] == null || values[a.name] === ''))
+  if (missingReq) { showCardError(card, `${missingReq.label} is required`); return }
+  if (tool.destructive && card.querySelector('[data-confirm]').value !== tool.confirmPhrase) {
+    showCardError(card, `Type ${tool.confirmPhrase} to continue`)
+    return
+  }
+  if (toolNeedsKey(tool, values) && RUN_STATE.missingKeys.includes('OPENROUTER_API_KEY')) {
+    showCardError(card, 'Missing OPENROUTER_API_KEY — this run needs it. Set it in .env and restart the dev server.')
+    return
+  }
+  const body = { toolId: tool.id, args: values }
+  if (tool.destructive) body.confirm = card.querySelector('[data-confirm]').value
+  try {
+    const res = await api('/api/jobs', { method: 'POST', body: JSON.stringify(body) })
+    await refreshJobs()
+    if (res.job && (res.job.status === 'running' || res.job.status === 'queued')) {
+      expandJob(res.job.id)
+      attachStreamIfPossible(res.job.id)
+    }
+  } catch (e) {
+    showCardError(card, e.message)
+  }
+}
+
+function renderTools() {
+  const list = document.getElementById('toolList')
+  const tools = RUN_STATE.tools
+  if (!tools) { list.innerHTML = '<div class="placeholder-text">Loading tools...</div>'; return }
+  list.innerHTML = GROUP_ORDER.map(group => {
+    const items = tools.filter(t => t.group === group)
+    if (!items.length) return ''
+    return `<div class="tool-group">
+      <div class="tool-group-label">${esc(groupLabel(group))}</div>
+      ${items.map(toolCardHtml).join('')}
+    </div>`
+  }).join('')
+
+  list.querySelectorAll('.tool-card').forEach(card => {
+    const tool = RUN_TOOLS_BY_ID.get(card.dataset.tool)
+    card.querySelector('.tool-run-btn').addEventListener('click', () => {
+      const form = card.querySelector('.tool-form')
+      const wasHidden = form.classList.contains('cm-hidden')
+      form.classList.toggle('cm-hidden')
+      if (wasHidden) {
+        const first = card.querySelector('.run-field input, .run-field select, .run-field textarea')
+        if (card.querySelector('[data-confirm]')) card.querySelector('[data-confirm]').focus()
+        else if (first) first.focus()
+      }
+    })
+    card.querySelector('.tool-run-submit').addEventListener('click', () => runToolSubmit(card, tool))
+    const advToggle = card.querySelector('.run-advanced-toggle')
+    if (advToggle) {
+      advToggle.addEventListener('click', (e) => {
+        const block = card.querySelector('.run-advanced-block')
+        const open = block.classList.toggle('cm-hidden') === false
+        e.target.setAttribute('aria-expanded', open ? 'true' : 'false')
+      })
+    }
+    if (card.querySelector('[data-confirm]')) {
+      card.querySelector('[data-confirm]').addEventListener('input', (e) => {
+        const ok = e.target.value === tool.confirmPhrase
+        card.querySelector('.tool-run-submit').disabled = !ok
+      })
+    }
+    card.querySelectorAll('.preset-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const preset = (tool.presets || []).find(p => p.id === chip.dataset.preset)
+        if (preset) applyPreset(card, tool, preset)
+      })
+    })
+  })
+  updateToolGuards()
+}
+
+function updateToolGuards() {
+  const list = document.getElementById('toolList')
+  if (!list) return
+  const runningToolIds = new Set(RUN_STATE.jobs.filter(j => j.status === 'running' || j.status === 'queued').map(j => j.toolId))
+  const llmRunning = RUN_STATE.jobs.some(j => j.status === 'running' && toolById(j.toolId) && toolById(j.toolId).runtimeClass === 'llm')
+  list.querySelectorAll('.tool-card').forEach(card => {
+    const tool = RUN_TOOLS_BY_ID.get(card.dataset.tool)
+    const btn = card.querySelector('.tool-run-btn')
+    const submit = card.querySelector('.tool-run-submit')
+    const hintEl = card.querySelector('.tool-lock-hint')
+    const dot = card.querySelector('.tool-dot')
+    const myActive = runningToolIds.has(tool.id)
+    const locked = llmRunning && tool.runtimeClass !== 'instant'
+    const disabled = myActive || locked
+    btn.disabled = disabled
+    if (submit && !tool.destructive) submit.disabled = disabled
+    hintEl.classList.toggle('cm-hidden', !locked)
+    dot.classList.toggle('tool-dot-active', myActive)
+    btn.title = disabled ? (myActive ? 'This tool already has a queued or running job' : 'Run harness busy — queued runs start automatically') : ''
+  })
+}
+
+function consoleContentHtml(job) {
+  const logs = RUN_STATE.logs.get(job) || []
+  if (!logs.length) return ''
+  return logs.map(l =>
+    l.stream === 'stderr'
+      ? `<span class="con-err">${esc(l.text)}</span>`
+      : esc(l.text),
+  ).join('\n')
+}
+
+function appendConsole(job, ev) {
+  const logs = RUN_STATE.logs.get(job) || []
+  logs.push(ev)
+  if (logs.length > 2000) logs.splice(0, logs.length - 2000)
+  RUN_STATE.logs.set(job, logs)
+  const row = document.querySelector(`.job-row[data-job="${job}"]`)
+  if (!row) return
+  const pre = row.querySelector('.console-pre')
+  if (!pre) return
+  pre.innerHTML = consoleContentHtml(job)
+  const wrap = row.querySelector('.console-wrap')
+  const autoscroll = row.querySelector('.autoscroll-toggle')
+  if (wrap && autoscroll && autoscroll.checked && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    wrap.scrollTop = wrap.scrollHeight
+  }
+}
+
+function rollupJobRow(job) {
+  const tool = toolById(job.toolId)
+  const title = tool ? tool.title : job.toolId
+  const isExpanded = RUN_STATE.expandedJobs.has(job.id)
+  const badge = statusBadgeHtml(job.status)
+  const actions = []
+  if (job.status === 'queued' || job.status === 'running') {
+    actions.push(`<button type="button" class="mini-btn job-cancel" data-job="${job.id}" aria-pressed="false">Cancel</button>`)
+  }
+  if (['succeeded', 'failed', 'canceled', 'interrupted'].includes(job.status)) {
+    actions.push(`<button type="button" class="mini-btn job-rerun" data-job="${job.id}">Re-run</button>`)
+  }
+  if (job.status === 'succeeded' && job.resultHints && (job.resultHints.bench || job.resultHints.runId)) {
+    actions.push(`<button type="button" class="mini-btn job-explorer" data-job="${job.id}">Open in explorer</button>`)
+  }
+  actions.push(`<a class="mini-btn job-log-link" href="/api/jobs/${encodeURIComponent(job.id)}/log" target="_blank" rel="noopener">view log</a>`)
+  const hintLine = job.resultHints && (job.resultHints.specPyChanged || job.resultHints.snapshotsCreated)
+    ? `<div class="job-hints">${job.resultHints.specPyChanged ? 'candidate_spec.py changed' : ''}${job.resultHints.snapshotsCreated && job.resultHints.snapshotsCreated.length ? `snapshots: ${esc(job.resultHints.snapshotsCreated.length)} created` : ''}</div>`
+    : ''
+  const consoleArea = `<div class="job-console cm-hidden">
+      <div class="console-toolbar">
+        <label class="cb autoscroll-wrap"><input type="checkbox" class="autoscroll-toggle" checked /> Auto-scroll</label>
+        <button type="button" class="mini-btn console-clear">Clear view</button>
+        <span class="console-announce" aria-live="polite" aria-atomic="true"></span>
+      </div>
+      <div class="console-wrap"><pre class="console-pre" role="log"></pre></div>
+    </div>`
+  return `<div class="job-row" data-job="${job.id}">
+    <div class="job-row-head" role="button" tabindex="0">
+      <div class="job-main">${badge}<span class="job-title">${esc(title)}</span></div>
+      <div class="job-meta">${fmtTime(job.createdAt)}${job.finishedAt ? ' · ' + durationStr(job.createdAt, job.finishedAt) : ''}</div>
+    </div>
+    <div class="job-actions">${actions.join('')}</div>
+    ${hintLine}
+    ${consoleArea}
+  </div>`
+}
+
+function renderJobs() {
+  const list = document.getElementById('jobsList')
+  if (!list) return
+  const count = document.getElementById('jobCount')
+  const active = RUN_STATE.jobs.filter(j => j.status === 'running').length
+  const queued = RUN_STATE.jobs.filter(j => j.status === 'queued').length
+  const parts = []
+  if (active) parts.push(`${active} running`)
+  if (queued) parts.push(`${queued} queued`)
+  count.textContent = parts.length ? parts.join(' · ') : (RUN_STATE.jobs.length ? `${RUN_STATE.jobs.length} run${RUN_STATE.jobs.length === 1 ? '' : 's'}` : 'No runs')
+
+  if (!RUN_STATE.jobs.length) {
+    list.innerHTML = '<div class="placeholder-text">No runs yet. Pick a tool on the left to run your first script.</div>'
+    updateToolGuards()
+    return
+  }
+  list.innerHTML = RUN_STATE.jobs.map(rollupJobRow).join('')
+
+  list.querySelectorAll('.job-row-head').forEach(head => {
+    head.addEventListener('click', () => {
+      const row = head.closest('.job-row')
+      const id = row.dataset.job
+      const consoleEl = row.querySelector('.job-console')
+      const open = consoleEl.classList.toggle('cm-hidden') === false
+      if (open) {
+        RUN_STATE.expandedJobs.add(id)
+        const pre = row.querySelector('.console-pre')
+        pre.innerHTML = consoleContentHtml(id)
+        if (RUN_STATE.logs.get(id) && RUN_STATE.logs.get(id).length === 0) pre.textContent = 'Waiting for output…\n'
+        attachStreamIfPossible(id)
+      } else {
+        RUN_STATE.expandedJobs.delete(id)
+        detachStream(id)
+      }
+    })
+  })
+
+  list.querySelectorAll('.job-cancel').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (btn.dataset.armed) {
+        btn.dataset.armed = ''
+        btn.setAttribute('aria-pressed', 'false')
+        btn.textContent = 'Canceling…'
+        try {
+          await api(`/api/jobs/${btn.dataset.job}/cancel`, { method: 'POST' })
+          await refreshJobs()
+        } catch (e) {
+          btn.textContent = 'Cancel'
+          setBanner(`Cancel failed: ${esc(e.message)}`)
+        }
+      } else {
+        btn.dataset.armed = '1'
+        btn.setAttribute('aria-pressed', 'true')
+        btn.textContent = 'Confirm cancel?'
+      }
+    })
+  })
+
+  list.querySelectorAll('.job-rerun').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.job
+      try {
+        const { job } = await api(`/api/jobs/${id}`)
+        const tool = toolById(job.toolId)
+        const body = { toolId: job.toolId, args: job.args || {} }
+        if (tool && tool.destructive) return
+        await api('/api/jobs', { method: 'POST', body: JSON.stringify(body) })
+        await refreshJobs()
+      } catch (e) {
+        setBanner(`Re-run failed: ${esc(e.message)}`)
+      }
+    })
+  })
+
+  list.querySelectorAll('.job-explorer').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (window.open) window.open('/explorer.html')
+    })
+  })
+
+  list.querySelectorAll('.console-clear').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const row = btn.closest('.job-row')
+      const id = row.dataset.job
+      const logs = RUN_STATE.logs.get(id) || []
+      logs.length = 0
+      RUN_STATE.logs.set(id, logs)
+      row.querySelector('.console-pre').textContent = ''
+    })
+  })
+
+  updateToolGuards()
+}
+
+function setBanner(msg) {
+  const el = document.getElementById('runBanner')
+  if (!el) return
+  el.innerHTML = msg
+  el.classList.remove('cm-hidden')
+}
+
+function clearBanner() {
+  document.getElementById('runBanner').classList.add('cm-hidden')
+}
+
+async function refreshJobs() {
+  if (!document.getElementById('jobsList')) {
+    stopRunPolling()
+    return
+  }
+  try {
+    const res = await api('/api/jobs?limit=60')
+    RUN_STATE.jobs = res.jobs || []
+    clearOffline()
+    notifyAllHints()
+    renderJobs()
+  } catch (e) {
+    setOffline()
+    throw e
+  }
+}
+
+function setOffline() {
+  document.getElementById('jobOffline').classList.remove('cm-hidden')
+  document.getElementById('jobsList').classList.add('run-offline-hide')
+}
+
+function clearOffline() {
+  document.getElementById('jobOffline').classList.add('cm-hidden')
+  document.getElementById('jobsList').classList.remove('run-offline-hide')
+}
+
+function expandJob(id) {
+  const row = document.querySelector(`.job-row[data-job="${id}"]`)
+  if (row) {
+    RUN_STATE.expandedJobs.add(id)
+    const consoleEl = row.querySelector('.job-console')
+    if (consoleEl) {
+      consoleEl.classList.remove('cm-hidden')
+      const pre = row.querySelector('.console-pre')
+      pre.innerHTML = consoleContentHtml(id)
+      if (!RUN_STATE.logs.get(id) || RUN_STATE.logs.get(id).length === 0) pre.textContent = 'Waiting for output…\n'
+    }
+  }
+}
+
+function attachStreamIfPossible(job) {
+  if (typeof window.EventSource === 'undefined' || RUN_STATE.es.has(job)) return
+  const jobRec = RUN_STATE.jobs.find(j => j.id === job)
+  if (!jobRec || (jobRec.status !== 'running' && jobRec.status !== 'queued')) return
+  const es = new window.EventSource(`/api/jobs/${job}/stream`)
+  RUN_STATE.es.set(job, es)
+  es.addEventListener('log', (e) => {
+    try { appendConsole(job, JSON.parse(e.data)) } catch { /* ignore */ }
+  })
+  es.addEventListener('status', (e) => {
+    const status = JSON.parse(e.data || '{}')
+    announceConsole(job, status)
+    notifyStatusHints(job, status)
+    if (status.status && ['succeeded', 'failed', 'canceled', 'interrupted'].includes(status.status)) {
+      detachStream(job)
+      refreshJobs().catch(() => {})
+    }
+  })
+  es.addEventListener('cancel', () => {
+    announceConsole(job, { status: 'canceled' })
+  })
+  es.onerror = () => {
+    const rec = RUN_STATE.jobs.find(j => j.id === job)
+    if (rec && rec.status !== 'running' && rec.status !== 'queued') detachStream(job)
+  }
+}
+
+function detachStream(job) {
+  const es = RUN_STATE.es.get(job)
+  if (es) {
+    es.close()
+    RUN_STATE.es.delete(job)
+  }
+}
+
+function announceConsole(job, status) {
+  const row = document.querySelector(`.job-row[data-job="${job}"]`)
+  if (!row) return
+  const ann = row.querySelector('.console-announce')
+  if (!ann) return
+  const [icon, label] = STATUS_BADGE[status.status] || ['', status.status]
+  ann.textContent = `${icon} ${label}`
+  const badgeEl = row.querySelector('.job-badge')
+  if (badgeEl && status.status) badgeEl.outerHTML = statusBadgeHtml(status.status)
+}
+
+function notifyStatusHints(job, status) {
+  const hints = status.resultHints
+  if (!hints) return
+  dispatchHints(job, hints)
+}
+
+function notifyAllHints() {
+  for (const j of RUN_STATE.jobs) {
+    if (j.resultHints) dispatchHints(j.id, j.resultHints)
+  }
+}
+
+function dispatchHints(job, hints) {
+  if (RUN_STATE.hintedJobs.has(job)) return
+  if (hints.resultsTsvUpdated) {
+    RUN_STATE.hintedJobs.add(job)
+    window.dispatchEvent(new window.Event('dashboard:results-refreshed'))
+  }
+  if (hints.specPyChanged) {
+    RUN_STATE.hintedJobs.add(job)
+    window.dispatchEvent(new window.Event('dashboard:candidates-refreshed'))
+  }
+}
+
+async function initRunData() {
+  if (RUN_STATE.activeStarted) return
+  RUN_STATE.activeStarted = true
+  try {
+    const reg = await api('/api/registry')
+    RUN_STATE.tools = reg.tools
+    for (const t of reg.tools) RUN_TOOLS_BY_ID.set(t.id, t)
+    renderTools()
+  } catch (e) {
+    document.getElementById('toolList').innerHTML = `<div class="placeholder-text">Failed to load tools: ${esc(e.message)}</div>`
+  }
+  try {
+    const bl = await api('/bench-list')
+    const dl = document.getElementById('benchList')
+    dl.innerHTML = (bl.benches || []).map(b => `<option value="${esc(b)}"></option>`).join('')
+    RUN_STATE.benches = bl.benches || []
+  } catch { /* bench list is optional */ }
+  try {
+    const env = await api('/api/env-check')
+    RUN_STATE.missingKeys = env.missingKeys || []
+  } catch { RUN_STATE.missingKeys = [] }
+  await refreshJobs().catch(() => {})
+  if (RUN_STATE.pollTimer == null) {
+    const timer = setInterval(() => {
+      const sec = document.getElementById('settingsRunSection')
+      if (sec && sec.classList.contains('active')) {
+        refreshJobs().catch(() => {})
+      }
+    }, 2000)
+    if (timer && typeof timer.unref === 'function') timer.unref()
+    RUN_STATE.pollTimer = timer
+  }
+}
+
+function stopRunPolling() {
+  if (RUN_STATE.pollTimer) {
+    clearInterval(RUN_STATE.pollTimer)
+    RUN_STATE.pollTimer = null
+  }
+  for (const job of [...RUN_STATE.es.keys()]) detachStream(job)
 }
 
 function initSettings() {
