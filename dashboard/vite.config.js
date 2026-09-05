@@ -402,6 +402,14 @@ function parseAddOutput(stdout) {
     const ogProbe = t.match(/^Probing (thinking|non-thinking) mode\.\.\./)
     if (ogProbe) {
       probe[ogProbe[1] === 'thinking' ? 'thinking' : 'notthinking'] = !(/ \[[^\]]*\]/.test(t.split('...')[1] || ''))
+      continue
+    }
+    const pricingM = t.match(/^PRICING\s+(\{.*\})$/)
+    if (pricingM) {
+      try {
+        const p = JSON.parse(pricingM[1])
+        if (p && typeof p === 'object' && Array.isArray(p.tiers)) probe.pricing = p
+      } catch (e) { /* ignore malformed pricing */ }
     }
   }
   return { created, probe }

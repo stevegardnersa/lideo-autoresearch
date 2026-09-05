@@ -276,8 +276,30 @@ function probeResultHtml(model, probe, created) {
   const profiles = created.length
     ? `<div class="probe-profiles">${created.map(c => `<span class="probe-profile">${esc(c)}</span>`).join('')}</div>`
     : '<div class="probe-none">No candidate profiles would be created.</div>'
-  return `<div class="probe-results">${[schemaLine, effortChips, legacyLine].filter(Boolean).join('')}</div>
+  const pricing = renderPricing(probe && probe.pricing)
+  return `<div class="probe-results">${[schemaLine, effortChips, legacyLine].filter(Boolean).join('')}</div>${pricing}
   <div class="probe-create-label">${created.length ? `Will create ${created.length} profile${created.length === 1 ? '' : 's'} for ${esc(model)}:` : ''}</div>${profiles}`
+}
+
+function renderPricing(pricing) {
+  if (!pricing || !Array.isArray(pricing.tiers) || !pricing.tiers.length) return ''
+  const fmt = (v) => (v == null || v === 0) ? '&ndash;' : `$${v}`
+  const rows = [...pricing.tiers].sort((a, b) => a.min_context - b.min_context)
+    .map(t => `<tr>
+      <td>${t.min_context ? `${esc(t.min_context.toLocaleString())} tok` : '&ndash;'}</td>
+      <td>${fmt(esc(t.input_cost_per_million))}</td>
+      <td>${fmt(esc(t.output_cost_per_million))}</td>
+      <td>${fmt(esc(t.cached_input_cost_per_million))}</td>
+    </tr>`).join('')
+  const ctxLine = pricing.context_length ? `<div class="pricing-ctx">context: ${esc(pricing.context_length.toLocaleString())} tokens</div>` : ''
+  return `<div class="pricing-box">
+    <div class="pricing-label">Pricing <span class="field-hint">per 1M tokens</span></div>
+    ${ctxLine}
+    <table class="pricing-table">
+      <thead><tr><th>min context</th><th>input</th><th>output</th><th>cached input</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`
 }
 
 const DEFAULTS = { temperature: 0.2, max_tokens: 8192 }
