@@ -46,6 +46,8 @@ const RUN_REGISTRY = [
     args: [
       { name: 'bench', label: 'Benchmark', type: 'text', required: true, bench: true, default: 'chapter_fast' },
       { name: 'profile', label: 'Profile', type: 'text', default: 'all' },
+      { name: 'time', label: 'Time budget', type: 'enum', default: 'all', choices: ['all', '30m', '60m'] },
+      { name: 'judge-model', label: 'Judge model', type: 'text', toggle: true, default: 'openai/gpt-5.4-mini', placeholder: 'openai/gpt-5.4-mini', pattern: '^[A-Za-z0-9_.\\-]+/[A-Za-z0-9_.\\-]+$' },
       { name: 'mock', label: 'Mock (no API calls)', type: 'bool', default: false },
       { name: 'max-samples', label: 'Max samples (0 = all)', type: 'int', default: 0, advanced: true },
     ],
@@ -112,6 +114,10 @@ function makeHarness() {
     cancel: { ok: true, canceled: true },
     clear: { ok: true, removed: 0 },
     jobDetail: () => ({ ok: true, job: { id: 'j3', toolId: 'run_candidate', args: { bench: 'chapter_fast', profile: 'all', mock: true }, status: 'succeeded', createdAt: '2026-09-05T09:00:00Z', exitCode: 0, resultHints: {} } }),
+    ls: new Map(),
+    promptReturn: null,
+    promptCalls: 0,
+    registryFails: 0,
   }
 
   const dom = new JSDOM(`<!doctype html><html><head></head><body>
@@ -133,7 +139,13 @@ function makeHarness() {
     if (url === '/api/models' && method === 'POST') return json(state.add)
     if (url === '/api/models' && method === 'PUT') return json(state.put)
     if (url === '/api/models' && method === 'DELETE') return json(state.del)
-    if (url === '/api/registry') return json(state.registry)
+    if (url === '/api/registry') {
+      if (state.registryFails > 0) {
+        state.registryFails--
+        return json({ ok: false, error: 'not found' }, 404)
+      }
+      return json(state.registry)
+    }
     if (url === '/api/env-check') return json(state.env)
     if (url === '/bench-list') return json(state.bench)
     if (url.split('?')[0] === '/api/jobs' && method === 'GET') return json(state.jobs)
@@ -154,6 +166,18 @@ function makeHarness() {
     close() {}
   }
   window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} })
+  window.prompt = (msg, def) => {
+    state.promptCalls++
+    return state.promptReturn
+  }
+  Object.defineProperty(window, 'localStorage', {
+    configurable: true,
+    value: {
+      getItem: (k) => state.ls.get(k) ?? null,
+      setItem: (k, v) => state.ls.set(k, String(v)),
+      removeItem: (k) => state.ls.delete(k),
+    },
+  })
 
   const doc = window.document
   const postRender = () => {
@@ -207,7 +231,7 @@ beforeEach(async () => {
   // fresh module instance per test (query string busts the ESM cache) so initSettings
   // re-runs against this test's own DOM; do it AFTER globals are wired
   const specifier = `../settings.js?test=${Math.random().toString(36).slice(2)}`
-  await import(specifier)
+  h.mod = await import(specifier)
   // modal must exist synchronously after import
   if (!h.doc.getElementById('settingsOverlay')) {
     throw new Error('initSettings did not create the settings modal on import')
@@ -509,7 +533,7 @@ test('preset fills the form then submit POSTs collected args', async () => {
   const post = state.calls.find(c => c.url === '/api/jobs' && c.method === 'POST')
   assert.deepEqual(post.body, {
     toolId: 'run_candidate',
-    args: { bench: 'chapter_fast', profile: 'all', mock: true, 'max-samples': 4 },
+    args: { bench: 'chapter_fast', profile: 'all', time: 'all', mock: true, 'max-samples': 4 },
   })
   assert.ok(!('confirm' in post.body), 'no confirm field for non-destructive tool')
 })
@@ -601,4 +625,346 @@ test('results-refreshed hint dispatches window event', async () => {
   await openRun(h)
   await waitUntil(() => fired === 1)
   assert.equal(fired, 1)
+})
+
+// ── per-profile quick actions (edit dialog ⋯ menus) ──────────
+
+const openEdit = async () => {
+  h.click(h.doc.querySelector('[data-settings-toggle]'))
+  await new Promise(r => setImmediate(r))
+  h.click(h.doc.querySelector('#modelsList .model-card [data-action="edit"]'))
+  await new Promise(r => setImmediate(r))
+  return h.postRender()
+}
+
+test('edit dialog shows ⋯ menu on existing profile rows only', async () => {
+  const { doc, click } = h
+  await openEdit(h)
+  const rows = h.postRender().rows()
+  const withMenu = rows.filter(r => r.querySelector('.vc-opt-btn'))
+  assert.equal(withMenu.length, 2, 'menus only on the two existing profiles')
+  assert.deepEqual(withMenu.map(r => r.querySelector('.vc-opt-btn').dataset.slug).sort(),
+    ['30m_deepseek-v4-flash_thinking', '60m_deepseek-v4-flash_notthinking'])
+  const emptyMenu = rows.filter(r => r.querySelector('.vc-opt-btn') && r.querySelector('.vc-opt-btn').dataset.slug === null)
+  assert.equal(emptyMenu.length, 0)
+  assert.ok(rows.every(r => {
+    const m = r.querySelector('.vc-opt-menu')
+    return !m || m.classList.contains('cm-hidden')
+  }), 'menus closed initially')
+  const btn = withMenu[0].querySelector('.vc-opt-btn')
+  click(btn)
+  const menu = btn.closest('.vc-opt').querySelector('.vc-opt-menu')
+  assert.ok(!menu.classList.contains('cm-hidden'), 'menu opens on ⋯ click')
+  assert.equal(btn.getAttribute('aria-expanded'), 'true')
+  assert.deepEqual([...menu.querySelectorAll('.vc-opt-item')].map(i => i.dataset.action),
+    ['run', 'prefill', 'judge', 'agent'])
+})
+
+test('clicking outside the menu closes it', async () => {
+  const { doc, click } = h
+  await openEdit(h)
+  const rows = h.postRender().rows()
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn')).querySelector('.vc-opt-btn')
+  click(btn)
+  assert.ok(!btn.closest('.vc-opt').querySelector('.vc-opt-menu').classList.contains('cm-hidden'))
+  click(doc.getElementById('dlgModel'))
+  await new Promise(r => setImmediate(r))
+  assert.ok(btn.closest('.vc-opt').querySelector('.vc-opt-menu').classList.contains('cm-hidden'), 'outside click closes menu')
+})
+
+test('Run candidate now posts run_candidate with profile args and shows notice', async () => {
+  const { doc, click, postRender } = h
+  await openEdit(h)
+  const rows = postRender().rows()
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  click(btn)
+  click(btn.closest('.vc-opt').querySelector('[data-action="run"]'))
+  await waitUntil(() => h.state.calls.some(c => c.method === 'POST' && c.url === '/api/jobs'))
+  const post = h.state.calls.find(c => c.method === 'POST' && c.url === '/api/jobs')
+  assert.deepEqual(post.body, {
+    toolId: 'run_candidate',
+    args: { bench: 'chapter_fast', profile: '30m_deepseek-v4-flash_thinking', time: '30m', 'write-results': true },
+  })
+  const notice = doc.getElementById('dlgNotice')
+  await waitUntil(() => !notice.classList.contains('cm-hidden'))
+  assert.match(notice.textContent, /Launched run_candidate/)
+  assert.ok(!doc.getElementById('modelDialogOverlay').classList.contains('cm-hidden'), 'dialog stays open after launch')
+})
+
+test('re-judge asks for judge model once then remembers it', async () => {
+  const { doc, click, postRender, state } = h
+  await openEdit(h)
+  const rows = postRender().rows()
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  click(btn)
+  state.promptReturn = 'openai/gpt-4o-mini'
+  click(btn.closest('.vc-opt').querySelector('[data-action="judge"]'))
+  await waitUntil(() => h.state.calls.some(c => c.method === 'POST' && c.url === '/api/jobs'))
+  const post = h.state.calls.find(c => c.method === 'POST' && c.url === '/api/jobs')
+  assert.equal(state.promptCalls, 1)
+  assert.deepEqual(post.body, {
+    toolId: 'judge_existing',
+    args: { bench: 'chapter_fast', profile: '30m_deepseek-v4-flash_thinking', 'judge-model': 'openai/gpt-4o-mini' },
+  })
+  assert.equal(state.ls.get('mm.judgeModel'), 'openai/gpt-4o-mini')
+
+  state.calls.length = 0
+  h.click(doc.getElementById('dlgClose'))
+  await openEdit(h)
+  const rows2 = postRender().rows()
+  const btn2 = rows2.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '60m').querySelector('.vc-opt-btn')
+  click(btn2)
+  state.promptCalls = 0
+  click(btn2.closest('.vc-opt').querySelector('[data-action="judge"]'))
+  await waitUntil(() => h.state.calls.some(c => c.method === 'POST' && c.url === '/api/jobs'))
+  assert.equal(state.promptCalls, 0, 'remembered judge model avoids second prompt')
+  const post2 = h.state.calls.find(c => c.method === 'POST' && c.url === '/api/jobs')
+  assert.equal(post2.body.args['judge-model'], 'openai/gpt-4o-mini')
+})
+
+test('Run with options mounts inline run_candidate widget, keeps dialog open, judge off', async () => {
+  const { doc, click, postRender, state } = h
+  await openEdit(h)
+  const rows = postRender().rows()
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  click(btn)
+  const item = btn.closest('.vc-opt').querySelector('[data-action="prefill"]')
+  assert.match(item.textContent, /Run with options/)
+  click(item)
+
+  const dialog = doc.getElementById('modelDialogOverlay')
+  await waitUntil(() => doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]'))
+  assert.ok(!dialog.classList.contains('cm-hidden'), 'dialog stays open')
+  assert.ok(dialog.classList.contains('has-run-form'), 'dialog widened to two columns')
+  assert.equal(dialog.dataset.runSlug, '30m_deepseek-v4-flash_thinking')
+  assert.ok(!doc.getElementById('dlgRunForm').classList.contains('cm-hidden'), 'run column visible')
+
+  const card = doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]')
+  assert.equal(card.querySelector('[data-arg="bench"]').value, 'chapter_fast')
+  assert.equal(card.querySelector('[data-arg="profile"]').value, '30m_deepseek-v4-flash_thinking')
+  assert.equal(card.querySelector('[data-arg="time"]').value, '30m')
+  const cb = card.querySelector('[data-toggle="judge-model"]')
+  const input = card.querySelector('[data-arg="judge-model"]')
+  assert.equal(cb.checked, false, 'judge starts off for a deterministic quick run')
+  assert.ok(input.classList.contains('cm-hidden'), 'judge input hidden when unchecked')
+  assert.ok(!card.querySelector('.tool-form').classList.contains('cm-hidden'), 'form opened for editing')
+  const runTabCard = doc.querySelector('#toolList .mm-tool-widget[data-tool="run_candidate"]')
+  assert.ok(runTabCard, 'run tab widget also present, same source renderer')
+
+  const notice = doc.getElementById('dlgNotice')
+  assert.ok(!notice.classList.contains('cm-hidden'), 'success notice shown after opening inline form')
+  assert.match(notice.textContent, /Run script/)
+})
+
+test('CSS contract: has-run-form is keyed off the overlay, not the dialog root', async () => {
+  const css = await import('node:fs').then(fs => fs.readFileSync(new URL('../settings.css', import.meta.url), 'utf-8'))
+  assert.match(css, /#modelDialogOverlay\.has-run-form \.settings-dialog/,
+    'width rule scoped to the overlay carrying the class')
+  assert.match(css, /#modelDialogOverlay\.has-run-form \.dialog-body/,
+    'flex layout scoped to the overlay carrying the class')
+  assert.doesNotMatch(css, /\.settings-dialog\.has-run-form/,
+    'no rule keys off the dialog root — the class lives on #modelDialogOverlay')
+  assert.match(css, /#modelDialogOverlay\.has-run-form \.dlg-run/,
+    'mobile media-query rule also overlay-scoped')
+})
+
+test('missing #dlgRunWidget (stale bundle) surfaces an error notice, never a silent throw', async () => {
+  const { doc, click, postRender, state } = h
+  await openEdit(h)
+  const postsBefore = state.calls.filter(c => c.method === 'POST' && c.url === '/api/jobs').length
+  const rows = postRender().rows()
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  click(btn)
+  doc.getElementById('dlgRunWidget').outerHTML = ''
+  click(btn.closest('.vc-opt').querySelector('[data-action="prefill"]'))
+
+  const notice = doc.getElementById('dlgNotice')
+  await waitUntil(() => notice.classList.contains('dlg-notice-err'))
+  assert.match(notice.textContent, /Run form is missing/)
+  assert.ok(!doc.getElementById('modelDialogOverlay').classList.contains('has-run-form'),
+    'no half-mounted state when the widget is absent')
+  const postsAfter = state.calls.filter(c => c.method === 'POST' && c.url === '/api/jobs').length
+  assert.equal(postsAfter, postsBefore, 'stale-bundle guard does not POST anything')
+})
+
+test('run tab and dialog render the same widget (single source)', async () => {
+  const { doc, click, postRender, state } = h
+  state.jobs.jobs = []
+  await openRun(h)
+  const runTab = doc.querySelector('#toolList .mm-tool-widget[data-tool="run_candidate"]')
+  const rcTool = RUN_REGISTRY.find(t => t.id === 'run_candidate')
+
+  const canon = (html) => html.replace(/>\s+</g, '><').trim()
+  const pristine = h.mod.toolCardHtml(rcTool)
+  const tabNormal = doc.createElement('div')
+  tabNormal.innerHTML = pristine
+  assert.equal(canon(runTab.outerHTML), canon(tabNormal.innerHTML),
+    'run tab renders toolCardHtml unmodified')
+
+  await openEdit(h)
+  const rows = postRender().rows()
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  click(btn)
+  click(btn.closest('.vc-opt').querySelector('[data-action="prefill"]'))
+  await waitUntil(() => doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]'))
+  const dlg = doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]')
+
+  const prefixed = h.mod.toolCardHtml(rcTool, { idPrefix: 'dlg-run-fld' })
+  const dlgNormal = doc.createElement('div')
+  dlgNormal.innerHTML = prefixed
+  assert.equal(
+    canon(dlgNormal.innerHTML).replaceAll('dlg-run-fld-', 'run-fld-'),
+    canon(tabNormal.innerHTML).replaceAll('dlg-run-fld-', 'run-fld-'),
+    'prefix is the only source difference between mounts',
+  )
+
+  const dlgArgs = [...dlg.querySelectorAll('[data-arg]')].map(e => e.getAttribute('data-arg')).join(',')
+  const tabArgs = [...runTab.querySelectorAll('[data-arg]')].map(e => e.getAttribute('data-arg')).join(',')
+  assert.equal(dlgArgs, tabArgs, 'identical field order')
+  assert.ok(!dlg.innerHTML.includes('id="run-fld-'), 'dialog widget uses isolated ids')
+  assert.ok(!runTab.innerHTML.includes('id="dlg-run-fld-'), 'run tab widget keeps default ids')
+})
+
+test('inline run form is cleared on dialog close and reopens clean', async () => {
+  const { doc, click, postRender } = h
+  await openEdit(h)
+  const rows = postRender().rows()
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  click(btn)
+  click(btn.closest('.vc-opt').querySelector('[data-action="prefill"]'))
+  await waitUntil(() => doc.querySelector('#dlgRunWidget .mm-tool-widget'))
+  assert.equal(doc.getElementById('modelDialogOverlay').dataset.runSlug, '30m_deepseek-v4-flash_thinking')
+
+  click(doc.getElementById('dlgClose'))
+  assert.ok(doc.getElementById('modelDialogOverlay').classList.contains('cm-hidden'))
+  assert.ok(!doc.getElementById('modelDialogOverlay').classList.contains('has-run-form'), 'run column collapsed on close')
+  assert.ok(doc.getElementById('dlgRunForm').classList.contains('cm-hidden'), 'run column hidden')
+
+  await openEdit(h)
+  assert.equal(doc.getElementById('dlgRunWidget').innerHTML, '', 'stale widget cleared')
+  assert.ok(doc.getElementById('modelDialogOverlay').classList.contains('has-run-form') === false)
+})
+
+test('inline run form submits its own job from the dialog widget', async () => {
+  const { doc, click, postRender, state } = h
+  state.jobs.jobs = []
+  await openEdit(h)
+  const rows = postRender().rows()
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  click(btn)
+  click(btn.closest('.vc-opt').querySelector('[data-action="prefill"]'))
+  await waitUntil(() => doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]'))
+  const card = doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]')
+  click(card.querySelector('.tool-run-submit'))
+  await waitUntil(() => state.calls.some(c => c.method === 'POST' && c.url === '/api/jobs' && c.body && c.body.toolId === 'run_candidate'))
+  const post = state.calls.find(c => c.method === 'POST' && c.url === '/api/jobs' && c.body && c.body.toolId === 'run_candidate')
+  assert.deepEqual(post.body, {
+    toolId: 'run_candidate',
+    args: { bench: 'chapter_fast', profile: '30m_deepseek-v4-flash_thinking', time: '30m', mock: false, 'max-samples': 0 },
+  })
+  assert.ok(!('judge-model' in post.body.args), 'judge omitted when toggle off')
+  const notice = doc.getElementById('dlgNotice')
+  await waitUntil(() => /Launched run_candidate/.test(notice.textContent))
+  assert.match(notice.textContent, /Launched run_candidate/)
+  assert.ok(!doc.getElementById('modelDialogOverlay').classList.contains('cm-hidden'), 'dialog stays open after submit')
+})
+
+// ── judge-model toggle ───────────────────────────────────────
+
+test('judge-model is a checkbox: default openai/gpt-5.4-mini, hidden input when unchecked', async () => {
+  const { doc, setValue, state } = h
+  state.jobs.jobs = []
+  await openRun(h)
+  const card = doc.querySelector('.tool-card[data-tool="run_candidate"]')
+  const cb = card.querySelector('[data-toggle="judge-model"]')
+  const input = card.querySelector('[data-arg="judge-model"]')
+  assert.ok(cb.checked, 'checkbox enabled by default')
+  assert.equal(input.value, 'openai/gpt-5.4-mini', 'input defaults to gpt-5.4-mini')
+  assert.ok(!input.classList.contains('cm-hidden'), 'input visible when checked')
+
+  cb.checked = false
+  cb.dispatchEvent(new h.window.Event('change', { bubbles: true }))
+  assert.ok(input.classList.contains('cm-hidden'), 'input hidden when unchecked')
+  assert.equal(input.value, '', 'input cleared when unchecked')
+
+  const payload = { toolId: 'run_candidate', args: { bench: 'chapter_fast', profile: 'all', time: 'all', mock: false } }
+  h.click(card.querySelector('.tool-run-btn'))
+  h.click(card.querySelector('.tool-run-submit'))
+  await waitUntil(() => state.calls.some(c => c.method === 'POST' && c.url === '/api/jobs' && c.body && c.body.toolId === 'run_candidate'), 4000)
+  const post = state.calls.find(c => c.method === 'POST' && c.url === '/api/jobs' && c.body && c.body.toolId === 'run_candidate')
+  assert.ok(!('judge-model' in post.body.args), 'unchecked judge does not send judge-model')
+})
+
+test('judge-model enabled with empty value blocks submit with a clear error', async () => {
+  const { doc, setValue, click, state } = h
+  state.jobs.jobs = []
+  await openRun(h)
+  const card = doc.querySelector('.tool-card[data-tool="run_candidate"]')
+  const cb = card.querySelector('[data-toggle="judge-model"]')
+  const input = card.querySelector('[data-arg="judge-model"]')
+  cb.checked = true
+  setValue(input, '')
+  click(card.querySelector('.tool-run-btn'))
+  click(card.querySelector('.tool-run-submit'))
+  const err = card.querySelector('.tool-form-error')
+  assert.ok(!err.classList.contains('cm-hidden'), 'error surfaced')
+  assert.match(err.textContent, /required/)
+  assert.ok(!state.calls.some(c => c.method === 'POST' && c.url === '/api/jobs'), 'no POST when judge enabled but empty')
+})
+
+test('judge-model validated against model pattern when enabled', async () => {
+  const { doc, setValue, click, state } = h
+  state.jobs.jobs = []
+  await openRun(h)
+  const card = doc.querySelector('.tool-card[data-tool="run_candidate"]')
+  const input = card.querySelector('[data-arg="judge-model"]')
+  setValue(input, 'spaces not allowed here')
+  click(card.querySelector('.tool-run-btn'))
+  click(card.querySelector('.tool-run-submit'))
+  const err = card.querySelector('.tool-form-error')
+  assert.ok(!err.classList.contains('cm-hidden'))
+  assert.match(err.textContent, /invalid characters/)
+  assert.ok(!state.calls.some(c => c.method === 'POST' && c.url === '/api/jobs'))
+
+  setValue(input, 'openai/gpt-5.4-mini')
+  click(card.querySelector('.tool-run-submit'))
+  await waitUntil(() => state.calls.some(c => c.method === 'POST' && c.url === '/api/jobs'))
+  const post = state.calls.find(c => c.method === 'POST' && c.url === '/api/jobs')
+  assert.equal(post.body.args['judge-model'], 'openai/gpt-5.4-mini')
+})
+
+// ── stale-state recovery (no permanent latch on failed init) ─
+
+test('run tab recovers after a transient /api/registry failure', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = []
+  state.registryFails = 1
+  click(doc.querySelector('[data-settings-toggle]'))
+  await new Promise(r => setImmediate(r))
+  const runNav = () => doc.querySelector('.settings-nav-item[data-section="run"]')
+  click(runNav())
+  await waitUntil(() => doc.getElementById('toolList').innerHTML.includes('Failed to load tools'))
+  assert.ok(doc.querySelectorAll('#toolList .tool-card').length === 0, 'no cards after failed registry')
+
+  click(doc.querySelector('.settings-nav-item[data-section="models"]'))
+  click(runNav())
+  await waitUntil(() => doc.querySelectorAll('#toolList .tool-card').length === RUN_REGISTRY.length)
+  assert.ok(doc.querySelectorAll('#toolList .tool-card').length === RUN_REGISTRY.length, 'registry retried and rendered')
+})
+
+test('Run with options menu still works after a failed run-tab init', async () => {
+  const { doc, click, postRender, state } = h
+  state.jobs.jobs = []
+  state.registryFails = 1
+  await openEdit(h)
+  const rows = postRender().rows()
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  click(btn)
+  click(btn.closest('.vc-opt').querySelector('[data-action="prefill"]'))
+  await waitUntil(() => doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]'))
+  const dialog = doc.getElementById('modelDialogOverlay')
+  assert.ok(dialog.classList.contains('has-run-form'), 'menu recovered from failed registry via defensive refetch')
+  assert.equal(dialog.dataset.runSlug, '30m_deepseek-v4-flash_thinking')
+  const card = doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]')
+  assert.equal(card.querySelector('[data-arg="profile"]').value, '30m_deepseek-v4-flash_thinking')
 })

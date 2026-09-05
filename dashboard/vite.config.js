@@ -881,7 +881,7 @@ const SCRIPT_REGISTRY = [
       arg('bench', 'Benchmark', { type: 'text', required: true, bench: true, hint: 'Name from bench/ (e.g. chapter_fast) or a bench/*.jsonl path.' }),
       arg('profile', 'Profile', { type: 'text', required: true, pattern: '^[A-Za-z0-9_.\\-]+$', default: 'all', hint: "Profile key, or 'all' with a --time filter." }),
       arg('time', 'Time budget', { type: 'enum', default: 'all', choices: ['all', '30m', '60m'] }),
-      arg('judge-model', 'Judge model', { type: 'text', pattern: MODEL_PATTERN, advanced: true, placeholder: 'openai/gpt-4o' }),
+      arg('judge-model', 'Judge model', { type: 'text', pattern: MODEL_PATTERN, toggle: true, default: 'openai/gpt-5.4-mini', placeholder: 'openai/gpt-5.4-mini', hint: 'When enabled the LLM judge scores the run. Uncheck to score deterministically without calling a judge model.' }),
       arg('mock', 'Mock (no API calls)', { type: 'bool', default: false }),
       arg('write-results', 'Write results.tsv', { type: 'bool', default: false }),
       arg('max-samples', 'Max samples (0 = all)', { type: 'int', default: 0, min: 0, advanced: true }),
@@ -906,7 +906,7 @@ const SCRIPT_REGISTRY = [
     outputs: ['runs/<bench>/*__llmj_*'],
     args: [
       arg('bench', 'Benchmark', { type: 'text', required: true, bench: true }),
-      arg('judge-model', 'Judge model', { type: 'text', required: true, pattern: MODEL_PATTERN, placeholder: 'openai/gpt-4o' }),
+      arg('judge-model', 'Judge model', { type: 'text', required: true, pattern: MODEL_PATTERN, default: 'openai/gpt-5.4-mini', placeholder: 'openai/gpt-5.4-mini' }),
       arg('profile', 'Profile filter', { type: 'text', pattern: '^[A-Za-z0-9_.\\-]*$' }),
       arg('run-id', 'Run id', { type: 'text', pattern: '^[A-Za-z0-9_.\\-]*$', advanced: true }),
       arg('max-samples', 'Max samples (0 = all)', { type: 'int', default: 0, min: 0, advanced: true }),
@@ -1053,6 +1053,10 @@ function validateJobArgs(tool, rawArgs) {
     if (!present || v === '' || (Array.isArray(v) && v.length === 0)) {
       if (a.required && !(a.type === 'bool')) {
         if (!errors[a.name]) errors[a.name] = `${a.label} is required`
+        continue
+      }
+      if (a.toggle) {
+        out[a.name] = ''
         continue
       }
       out[a.name] = a.multiple ? (a.default ? [...a.default] : []) : (a.default ?? '')

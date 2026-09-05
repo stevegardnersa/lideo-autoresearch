@@ -450,6 +450,56 @@ test('script-not-found fails fast with a failed job', async () => {
   }
 })
 
+// ── judge-model toggle ───────────────────────────────────────
+
+test('registry run_candidate judge-model is an optional toggle defaulting to gpt-5.4-mini', async () => {
+  const { server, base } = await startServer()
+  try {
+    const { body } = await call(base, '/api/registry')
+    const run = body.tools.find(t => t.id === 'run_candidate')
+    const judge = run.args.find(a => a.name === 'judge-model')
+    assert.ok(judge, 'judge-model arg present')
+    assert.equal(judge.toggle, true, 'rendered as checkbox toggle')
+    assert.equal(judge.default, 'openai/gpt-5.4-mini', 'default judge model')
+    assert.equal(judge.required, false, 'judge is optional on run_candidate')
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('run_candidate without judge-model spawns without --judge-model', async () => {
+  const { server, base, procs } = await startServer()
+  try {
+    const r = await call(base, '/api/jobs', { method: 'POST', body: { toolId: 'run_candidate', args: runArgs() } })
+    assert.equal(r.status, 201)
+    assert.ok(!procs[0].argv.includes('--judge-model'), 'argv omits judge flag for deterministic run')
+    assert.ok(!procs[0].argv.includes('openai'), 'no stray judge arg')
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('run_candidate with judge-model passes it and validates the pattern', async () => {
+  const { server, base, procs } = await startServer()
+  try {
+    const ok = await call(base, '/api/jobs', {
+      method: 'POST', body: { toolId: 'run_candidate', args: { ...runArgs(), 'judge-model': 'openai/gpt-5.4-mini' } },
+    })
+    assert.equal(ok.status, 201)
+    const i = procs[0].argv.indexOf('--judge-model')
+    assert.ok(i >= 0, 'judge flag present')
+    assert.equal(procs[0].argv[i + 1], 'openai/gpt-5.4-mini')
+
+    const bad = await call(base, '/api/jobs', {
+      method: 'POST', body: { toolId: 'run_candidate', args: { ...runArgs(), 'judge-model': 'has spaces' } },
+    })
+    assert.equal(bad.status, 400)
+    assert.ok(bad.body.fieldErrors['judge-model'])
+  } finally {
+    await closeServer(server)
+  }
+})
+
 test('add_candidate runs a follow-up gen_profile_literal regen on success', async () => {
   let regenCalled = false
   const { server, base, procs } = await startServer({

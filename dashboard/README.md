@@ -32,6 +32,15 @@ The **Run data** tab lists every script from the registry grouped by purpose:
   serialize FIFO: the second job queues until the first finishes. `instant`
   jobs (report-style, read-only) bypass the lock and run immediately.
   The queue is capped at 10.
+- **Per-profile quick actions.** In the *Models → Edit* dialog each existing
+  profile row has a `⋯` menu: **Run candidate now** (launches immediately with
+  the profile slug and last-known bench), **Run with options…** (opens the same
+  run widget inline in the dialog — right-hand column, LLM judge off by
+  default — so you can tweak bench, judge, and flags before submitting),
+  **Re-judge (LLM)** (asks for a judge model once, remembers it), and
+  **Autoresearch agent** (bounded by the profile's 30m/60m budget). Run and
+  agent launch straight into the job queue; the inline form keeps the model
+  dialog open so you can review what you submitted.
 - **SSE** — click a running or queued job to expand it and stream live output.
   Reconnect uses `Last-Event-ID`, so refreshes don't lose output.
 - **Hard limits** — logs are capped (20 MB, truncation marker), SSE buffers are
