@@ -41,6 +41,7 @@ from core.openrouter_client import (
     OpenRouterInsufficientCreditsError,
     UsageRecord,
 )
+from core.reasoning import effort_enables_thinking, manifest_effort_label, stage_reasoning_effort
 from core.versioning import (
     build_prompt_hashes,
     build_run_id,
@@ -112,12 +113,19 @@ def _json_safe(payload: Any) -> Any:
 
 
 def _is_thinking_enabled(spec) -> bool:
+    effort = stage_reasoning_effort(spec.chapter_stage)
+    if effort is not None:
+        return effort_enables_thinking(effort)
     chapter_extra = spec.chapter_stage.extra_body or {}
     thinking_cfg = chapter_extra.get("thinking")
     if thinking_cfg and isinstance(thinking_cfg, dict):
         if thinking_cfg.get("type") == "disabled":
             return False
     return True
+
+
+def _reasoning_effort_label(spec) -> str:
+    return manifest_effort_label(spec.chapter_stage)
 
 
 def error_to_dict(exc: BaseException) -> Dict[str, Any]:
@@ -1638,7 +1646,7 @@ def append_results_tsv(
     header = (
         "timestamp\trun_id\tbenchmark_version\tcorpus_version\trubric_version\tscoring_version\tjudge_version\t"
         "profile\tbench\tcandidate_name\tcandidate_sha256\thypothesis\tchapter_model\tcomposer_model\tjudge_model\t"
-        "use_json_schema\tthinking\tmean_quality\tmean_utility\tmean_faithfulness\tmean_concept_coverage\tmean_final_length_error_pct\t"
+        "use_json_schema\treasoning_effort\tthinking\tmean_quality\tmean_utility\tmean_faithfulness\tmean_concept_coverage\tmean_final_length_error_pct\t"
         "mean_first_pass_length_error_pct\tmean_passes_used\tmean_uncached_generation_cost\tmean_generation_cost\t"
         "hard_fail_rate\tworst_genre_macro\tworst_genre_macro_utility\tworst_genre_macro_quality\t"
         "genre_macro_spread_utility\tn_genre_macros\trun_artifact\tcatalog_snapshot\tprice_snapshot\tnotes\n"
@@ -1663,6 +1671,7 @@ def append_results_tsv(
         str(run_manifest.get("composer_model", "")),
         str(run_manifest.get("judge_model", "")),
         str(run_manifest.get("use_json_schema", "")),
+        str(run_manifest.get("reasoning_effort", "")),
         str(run_manifest.get("thinking_enabled", "")),
         f"{dataset_score.mean_quality:.6f}",
         f"{dataset_score.mean_utility:.6f}",
@@ -1926,6 +1935,7 @@ def _run_single(
             "judge_model": args.judge_model,
             "use_json_schema": spec.use_json_schema,
             "thinking_enabled": _is_thinking_enabled(spec),
+            "reasoning_effort": _reasoning_effort_label(spec),
             "chapter_provider": spec.chapter_stage.provider,
             "composer_provider": spec.composer_stage.provider,
             "prompt_hashes": prompt_hashes,

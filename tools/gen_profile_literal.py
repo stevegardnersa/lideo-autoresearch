@@ -52,19 +52,24 @@ def build_candidates_dict(profiles: dict) -> str:
                 provider_repr = "None"
             else:
                 provider_repr = json.dumps(provider_val)
-            return (
-                f'StageConfig('
-                f'model="{s.get("model", "")}", '
-                f'temperature={s.get("temperature", 0.2)}, '
-                f'seed={s.get("seed", 42)}, '
-                f'max_tokens={s.get("max_tokens", 8192)}, '
-                f'format_mode="{s.get("format_mode", "markdown_sections")}", '
-                f'context_mode="{s.get("context_mode", "chapter_plus_toc_and_meta")}", '
-                f'prompt_components={json.dumps(s.get("prompt_components", {}))}, '
-                f'provider={provider_repr}, '
-                f'extra_body={json.dumps(s.get("extra_body"))}'
-                f')'
-            )
+            parts = [
+                f'model="{s.get("model", "")}"',
+                f'temperature={s.get("temperature", 0.2)}',
+                f'seed={s.get("seed", 42)}',
+                f'max_tokens={s.get("max_tokens", 8192)}',
+                f'format_mode="{s.get("format_mode", "markdown_sections")}"',
+                f'context_mode="{s.get("context_mode", "chapter_plus_toc_and_meta")}"',
+                f'prompt_components={json.dumps(s.get("prompt_components", {}))}',
+                f'provider={provider_repr}',
+            ]
+            if s.get("reasoning") is not None:
+                parts.append(f'reasoning={json.dumps(s.get("reasoning"))}')
+            if s.get("reasoning_effort") is not None:
+                parts.append(f'reasoning_effort={json.dumps(s.get("reasoning_effort"))}')
+            extra_body_val = s.get("extra_body")
+            extra_body_repr = "None" if extra_body_val is None else json.dumps(extra_body_val)
+            parts.append(f'extra_body={extra_body_repr}')
+            return f"StageConfig({', '.join(parts)})"
 
         last = key == sorted_keys[-1]
         comma = "" if last else ","

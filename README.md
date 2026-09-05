@@ -253,7 +253,33 @@ python3 tools/add_candidate.py --model-full "openai/gpt-5-mini" --provider-route
 python3 tools/add_candidate.py --model-full "deepseek/deepseek-v4-flash" --provider-route '{"order": ["deepseek", "anyscale", "together"], "avoid": ["openai"]}'
 ```
 
-The script probes the model for (a) JSON schema support, (b) thinking mode, (c) non-thinking mode — and creates one profile per supported mode. If the model supports both thinking and non-thinking, two profiles are created (e.g. `30m_deepseek-v4-flash_thinking` and `30m_deepseek-v4-flash_notthinking`).
+The script probes the model for (a) JSON schema support and (b) reasoning-effort tiers via the recommended OpenRouter API (`reasoning: {"effort": X}`, falling back to the top-level `reasoning_effort: X` scalar if the structured param is rejected). It creates one profile per supported effort among `none`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`:
+
+- `effort=none` → plain request, profile suffix `_notthinking` (backward compatible)
+- anything higher → `reasoning`/`reasoning_effort` param, profile suffix `_effort-<name>` (never collides with legacy `_thinking`)
+
+Every new run also records the model's probed capability block under `data/candidates.json → capabilities[<model>]` and bumps `schema_version` to `2`.
+
+Examples:
+
+```bash
+# Probe and create one profile per supported effort (all budgets)
+python3 tools/add_candidate.py --model-full "openai/gpt-5.6-luna"
+
+# Restrict created profiles to specific efforts
+python3 tools/add_candidate.py --model-full "openai/gpt-5.6-luna" --efforts none max
+
+# Also probe the legacy "thinking" param (records it as thinking_param)
+python3 tools/add_candidate.py --model-full "openai/gpt-5.6-luna" --probe-legacy
+```
+
+Migrate an existing model's legacy `_thinking`/`_notthinking` profiles to new-style reasoning configs in place (same profile names, new request params):
+
+```bash
+python3 tools/add_candidate.py --model-full "openai/gpt-5.6-luna" --migrate-legacy-thinking
+```
+
+Migrated `_thinking` profiles use `effort=high` (configurable via the resolved-capability fallback if `high` is unsupported); `_notthinking` maps to `effort=none`, which requires no reasoning param at all.
 
 Key `--time-budget` values:
 - `30m` — only 30-minute whole-book summary profiles
@@ -261,6 +287,18 @@ Key `--time-budget` values:
 - `30m 60m` — both (default)
 
 Profiles are written to `data/candidates.json`.
+
+**Reasoning configuration on stage configs:**
+
+Each `StageConfig` carries the reasoning setup in `candidate_spec.py`:
+
+- `reasoning: {"effort": "..."}` — recommended structured param (OpenRouter Option A)
+- `reasoning_effort: "..."` — top-level scalar (Option B)
+- `extra_body: {"thinking": ...}` — legacy; byte-identical to previous behavior and only emitted by migration-then-facing tools
+
+`core/reasoning.py` is the single source of truth for effort tiers and the token-budget math. Because a high effort consumes most of the visible token budget, `tools/add_candidate.py` scales each stage's `max_tokens` up by `1 / (1 - fraction)` (e.g. effort `high` ≈ 0.80 of the budget → ~5× the base budget), capped at 163,840.
+
+The dashboard's model edit dialog mirrors this directly: it lays out an *effort grid* — every effort tier (`thinking`, `none`, `minimal` … `max`) × time budget. Checked cells keep existing profiles, unchecked cells remove them, and checking an absent cell creates a new profile for that effort with correctly scaled `max_tokens`. Editing a profile's temperature/max tokens (or renaming the model, or applying a provider route) preserves its reasoning configuration — nothing is overwritten unless the user changes it.
 
 **Step 2 — Compile profiles into the active harness:**
 
@@ -355,6 +393,7 @@ python3 tools/leaderboard.py --bench chapter_fast --profile 30m --slice-field qu
 ```
 
 The overall results table now includes:
+- `reasoning_effort` (the effective effort label used for the run)
 - `worst_genre_macro`
 - `worst_genre_macro_utility`
 - `genre_macro_spread_utility`
