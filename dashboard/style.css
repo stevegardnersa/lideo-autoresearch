@@ -178,6 +178,13 @@ h1 {
 .btn-icon:hover { border-color: #b8c2d2; }
 .btn-icon svg { display: block; }
 
+#downloadBtn {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  flex: none;
+}
+
 .fullscreen-btn {
   position: absolute;
   top: 10px;

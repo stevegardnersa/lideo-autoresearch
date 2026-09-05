@@ -931,7 +931,7 @@ function fieldHtml(a, idPrefix = 'run-fld') {
       if (a.toggle) {
         const enabled = a.default != null && a.default !== ''
         return wrap(`${label}
-          <label class="cb judge-toggle"><input type="checkbox" data-toggle="${a.name}" ${enabled ? 'checked' : ''} /> Enable LLM judge</label>
+          <div class="cb judge-tgl"><input type="checkbox" id="${idPrefix}-${a.name}-toggle" data-toggle="${a.name}" ${enabled ? 'checked' : ''} /><label for="${idPrefix}-${a.name}-toggle">Enable LLM judge</label></div>
           <input id="${idPrefix}-${a.name}" data-arg="${a.name}" type="text" list="${a.bench ? 'benchList' : ''}" spellcheck="false" placeholder="${esc(a.placeholder || '')}" value="${esc(a.default != null ? String(a.default) : '')}" class="judge-model-fld" />
           ${hint}`)
       }
