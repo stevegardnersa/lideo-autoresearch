@@ -320,6 +320,7 @@ function collectRunStats(models, runsDir) {
         if (!model || !models[model]) continue
         const m = models[model]
         m.runs_count = (m.runs_count || 0) + 1
+        if (rm.profile) m._testedProfiles.add(rm.profile)
         const created = rm.created_at_utc
         if (created && (!m.last_tested || created > m.last_tested)) m.last_tested = created
         const score = run.dataset_score && typeof run.dataset_score.mean_quality === 'number'
@@ -350,6 +351,7 @@ function buildModelsIndex(ctx) {
         last_tested: null,
         best_quality_det: null,
         best_quality_llm: null,
+        _testedProfiles: new Set(),
       }
     }
     m.profiles.push({
@@ -367,8 +369,9 @@ function buildModelsIndex(ctx) {
   collectRunStats(models, ctx.runsDir)
   for (const m of Object.values(models)) {
     for (const p of m.profiles) {
-      if (m.runs_count > 0) p.status = 'tested'
+      if (m._testedProfiles.has(p.slug)) p.status = 'tested'
     }
+    delete m._testedProfiles
   }
   return Object.values(models).sort((a, b) => a.model.localeCompare(b.model))
 }
