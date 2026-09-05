@@ -94,41 +94,51 @@ const MODAL_TEMPLATE = `
 </div>
 
 <div class="settings-overlay cm-hidden" id="modelDialogOverlay">
-  <div class="settings-dialog" role="dialog" aria-modal="true">
+  <div class="settings-dialog" role="dialog" aria-modal="true" data-run-slug="">
     <header class="settings-modal-header">
       <div class="settings-modal-title" id="dlgTitle">Add model</div>
       <button class="settings-close" id="dlgClose" aria-label="Close dialog">&times;</button>
     </header>
     <div class="dialog-body">
-      <div class="field">
-        <label for="dlgModel">Model ID</label>
-        <input id="dlgModel" type="text" placeholder="provider/model   e.g. qwen3.8-v2-max" spellcheck="false" autocomplete="off" />
-        <div class="field-hint">Provider slug and model slug separated by a slash, matching your router config.</div>
-      </div>
-      <div class="field">
-        <label for="dlgProviderRoute">Provider route <span class="field-optional">optional</span></label>
-        <textarea id="dlgProviderRoute" rows="2" spellcheck="false" placeholder='{"order":["qwen"]}'></textarea>
-        <div class="field-hint">JSON routing config applied to chapter and composer stages.</div>
-      </div>
-      <div class="field" id="dlgBudgetsField">
-        <label>Time budgets</label>
-        <div class="cb-row">
-          <label class="cb"><input type="checkbox" id="tb30" checked /> 30m</label>
-          <label class="cb"><input type="checkbox" id="tb60" checked /> 60m</label>
+      <div class="dlg-left">
+        <div class="field">
+          <label for="dlgModel">Model ID</label>
+          <input id="dlgModel" type="text" placeholder="provider/model   e.g. qwen3.8-v2-max" spellcheck="false" autocomplete="off" />
+          <div class="field-hint">Provider slug and model slug separated by a slash, matching your router config.</div>
         </div>
-      </div>
-      <div class="field cm-hidden" id="dlgVariantsField">
-        <div class="field-label-row">
-          <label>Variants</label>
-          <span class="field-hint">Effort tier per time budget. Check to keep a profile, uncheck to remove it. Checking an absent row creates it.</span>
+        <div class="field">
+          <label for="dlgProviderRoute">Provider route <span class="field-optional">optional</span></label>
+          <textarea id="dlgProviderRoute" rows="2" spellcheck="false" placeholder='{"order":["qwen"]}'></textarea>
+          <div class="field-hint">JSON routing config applied to chapter and composer stages.</div>
         </div>
-        <table class="variant-table">
-          <thead><tr><th></th><th>Time</th><th>Effort</th><th>temp</th><th>max tokens</th><th>status</th></tr></thead>
-          <tbody id="dlgVariantRows"></tbody>
-        </table>
+        <div class="field" id="dlgBudgetsField">
+          <label>Time budgets</label>
+          <div class="cb-row">
+            <label class="cb"><input type="checkbox" id="tb30" checked /> 30m</label>
+            <label class="cb"><input type="checkbox" id="tb60" checked /> 60m</label>
+          </div>
+        </div>
+        <div class="field cm-hidden" id="dlgVariantsField">
+          <div class="field-label-row">
+            <label>Variants</label>
+            <span class="field-hint">Effort tier per time budget. Check to keep a profile, uncheck to remove it. Checking an absent row creates it.</span>
+          </div>
+          <table class="variant-table">
+            <thead><tr><th></th><th>Time</th><th>Effort</th><th>temp</th><th>max tokens</th><th>status</th><th></th></tr></thead>
+            <tbody id="dlgVariantRows"></tbody>
+          </table>
+        </div>
+        <div class="dlg-preview cm-hidden" id="dlgPreview"></div>
+        <div class="dlg-notice cm-hidden" id="dlgNotice"></div>
+        <div class="dlg-error cm-hidden" id="dlgError"></div>
       </div>
-      <div class="dlg-preview cm-hidden" id="dlgPreview"></div>
-      <div class="dlg-error cm-hidden" id="dlgError"></div>
+      <aside class="dlg-run cm-hidden" id="dlgRunForm" aria-label="Run this profile with options">
+        <div class="dlg-run-head">
+          <span class="dlg-run-title" id="dlgRunTitle">Run with options</span>
+          <button type="button" class="dlg-run-close" id="dlgRunClose" aria-label="Remove run form">&times;</button>
+        </div>
+        <div class="dlg-run-widget" id="dlgRunWidget"></div>
+      </aside>
     </div>
     <footer class="dialog-footer">
       <button class="dlg-btn dlg-btn-ghost" id="dlgCancel">Cancel</button>
@@ -234,9 +244,24 @@ function setPreview(html) {
 
 function setError(msg) {
   const el = document.getElementById('dlgError')
+  const notice = document.getElementById('dlgNotice')
+  if (notice) { notice.classList.add('cm-hidden'); notice.innerHTML = '' }
   if (!msg) { el.classList.add('cm-hidden'); el.innerHTML = ''; return }
   el.innerHTML = `<strong>${esc(msg)}</strong>`
   el.classList.remove('cm-hidden')
+}
+
+function setDialogNotice(msg, tone) {
+  const el = document.getElementById('dlgNotice')
+  const err = document.getElementById('dlgError')
+  if (!msg) {
+    if (el) { el.classList.add('cm-hidden'); el.innerHTML = '' }
+    return
+  }
+  if (err) { err.classList.add('cm-hidden'); err.innerHTML = '' }
+  el.classList.remove('cm-hidden')
+  el.classList.toggle('dlg-notice-err', tone === 'error')
+  el.innerHTML = msg
 }
 
 function probeResultHtml(model, probe, created) {
@@ -261,6 +286,7 @@ function openAddDialog() {
   const overlay = document.getElementById('modelDialogOverlay')
   const title = document.getElementById('dlgTitle')
   const createBtn = document.getElementById('dlgCreate')
+  clearInlineRunWidget()
   title.textContent = 'Add model'
   document.getElementById('dlgModel').value = ''
   document.getElementById('dlgModel').readOnly = false
@@ -271,6 +297,7 @@ function openAddDialog() {
   document.getElementById('dlgVariantsField').classList.add('cm-hidden')
   setPreview('')
   setError('')
+  setDialogNotice('')
   createBtn.textContent = 'Probe & preview'
   createBtn.classList.remove('dlg-btn-confirm')
   createBtn.disabled = true
@@ -289,6 +316,15 @@ function variantRowHtml({ tb, effort, existing }) {
   const temp = existing && existing.temperature != null ? existing.temperature : DEFAULTS.temperature
   const maxT = existing && existing.max_tokens != null ? existing.max_tokens : effortDefaultMaxTokens(effort)
   const status = existing ? (existing.status === 'tested' ? 'tested' : 'pending') : 'not created'
+  const opt = existing
+    ? `<button type="button" class="vc-opt-btn" data-slug="${esc(existing.slug)}" aria-haspopup="menu" aria-expanded="false" aria-label="Options for ${esc(existing.slug)}" title="Profile options">\u22EF</button>
+      <div class="vc-opt-menu cm-hidden" role="menu">
+        <button type="button" class="vc-opt-item" data-action="run" role="menuitem">Run candidate now</button>
+        <button type="button" class="vc-opt-item" data-action="prefill" role="menuitem">Run with options\u2026</button>
+        <button type="button" class="vc-opt-item" data-action="judge" role="menuitem">Re-judge (LLM)\u2026</button>
+        <button type="button" class="vc-opt-item" data-action="agent" role="menuitem">Autoresearch agent\u2026</button>
+      </div>`
+    : ''
   return `<tr data-tb="${tb}" data-effort="${effort}" data-existing="${existing ? '1' : '0'}">
     <td><input type="checkbox" class="vc-check" ${existing ? 'checked' : ''} /></td>
     <td class="vc-tb">${tb}</td>
@@ -296,6 +332,7 @@ function variantRowHtml({ tb, effort, existing }) {
     <td><input type="number" step="0.1" min="0" max="2" class="vc-temp" value="${temp}" /></td>
     <td><input type="number" step="256" min="0" class="vc-max" value="${maxT}" /></td>
     <td class="vc-status ${existing ? 'vc-has' : 'vc-none'}">${status}</td>
+    <td class="vc-opt">${opt}</td>
   </tr>`
 }
 
@@ -303,6 +340,7 @@ function openEditDialog(model) {
   const overlay = document.getElementById('modelDialogOverlay')
   const title = document.getElementById('dlgTitle')
   const createBtn = document.getElementById('dlgCreate')
+  clearInlineRunWidget()
   overlay.dataset.editingModel = JSON.stringify(model)
   title.textContent = `Edit ${model.model}`
   document.getElementById('dlgModel').value = model.model
@@ -323,11 +361,13 @@ function openEditDialog(model) {
 
   setPreview('')
   setError('')
+  setDialogNotice('')
   createBtn.textContent = 'Save changes'
   createBtn.classList.add('dlg-btn-confirm')
   createBtn.disabled = false
   overlay.dataset.mode = 'edit'
   overlay.classList.remove('cm-hidden')
+  refreshProfileMeta()
   document.getElementById('dlgModel').focus()
 }
 
@@ -355,6 +395,171 @@ function collectEditPayload(model) {
     }
   }
   return { edits, create }
+}
+
+// ── per-profile quick actions (edit dialog ⋯ menus) ──────────
+
+const PROFILE_META = new Map()
+let prefJudgeModel = ''
+let rememberedJudgeModel = ''
+
+function storageGet(key) {
+  try {
+    const v = window.localStorage.getItem(key)
+    return v == null ? '' : v
+  } catch {
+    return rememberedJudgeModel
+  }
+}
+
+function storageSet(key, value) {
+  rememberedJudgeModel = value
+  try { window.localStorage.setItem(key, value) } catch { /* opaque origin */ }
+}
+
+async function refreshProfileMeta() {
+  try {
+    const { jobs } = await api('/api/jobs?limit=60')
+    const runJobs = jobs.filter(j => ['run_candidate', 'judge_existing', 'agent'].includes(j.toolId)).slice(0, 12)
+    const details = await Promise.all(runJobs.map(j =>
+      api(`/api/jobs/${j.id}`).then(d => d.job).catch(() => null),
+    ))
+    for (const job of details) {
+      if (!job || !job.args) continue
+      const a = job.args
+      if (a['judge-model'] && !prefJudgeModel) prefJudgeModel = a['judge-model']
+      if (a.profile && a.profile !== 'all') {
+        const meta = PROFILE_META.get(a.profile) || {}
+        if (a.bench) meta.lastBench = a.bench
+        if (a['judge-model']) meta.lastJudgeModel = a['judge-model']
+        PROFILE_META.set(a.profile, meta)
+      }
+    }
+  } catch { /* meta is best-effort */ }
+}
+
+function benchFor(slug) {
+  const meta = PROFILE_META.get(slug)
+  return (meta && meta.lastBench) || RUN_STATE.benches[0] || 'chapter_fast'
+}
+
+function buildProfileArgs(slug, tb, extra = {}) {
+  return { bench: benchFor(slug), profile: slug, time: tb || 'all', ...extra }
+}
+
+function closeProfileMenus() {
+  document.querySelectorAll('#dlgVariantRows .vc-opt-btn').forEach(b => b.setAttribute('aria-expanded', 'false'))
+  document.querySelectorAll('#dlgVariantRows .vc-opt-menu').forEach(m => m.classList.add('cm-hidden'))
+}
+
+function profileMenuAction(slug, action, row) {
+  const tb = row && row.dataset.tb ? row.dataset.tb : 'all'
+  closeProfileMenus()
+  if (action === 'run') {
+    launchProfileJob('run_candidate', buildProfileArgs(slug, tb, { 'write-results': true }), `run_candidate on <code>${esc(benchFor(slug))}</code> for <code>${esc(slug)}</code>`)
+    return
+  }
+  if (action === 'prefill') {
+    openRunProfilePrefill(slug, tb)
+    return
+  }
+  if (action === 'judge') {
+    let judgeModel = storageGet('mm.judgeModel') || prefJudgeModel
+    if (!judgeModel) {
+      let entered = null
+      try { entered = window.prompt('Judge model (e.g. openai/gpt-4o):', '') } catch { entered = null }
+      if (!entered || !entered.trim()) return
+      judgeModel = entered.trim()
+      storageSet('mm.judgeModel', judgeModel)
+    }
+    launchProfileJob('judge_existing', {
+      bench: benchFor(slug),
+      'judge-model': judgeModel,
+      profile: slug,
+    }, `re-judge of <code>${esc(slug)}</code> on <code>${esc(benchFor(slug))}</code> with <code>${esc(judgeModel)}</code>`)
+    return
+  }
+  if (action === 'agent') {
+    launchProfileJob('agent', {
+      budget: tb === '60m' ? '60m' : '30m',
+      candidate: slug,
+      mode: 'auto',
+      stage: 'chapter',
+    }, `autoresearch agent for <code>${esc(slug)}</code> (${tb === '60m' ? '60m' : '30m'} budget)`)
+  }
+}
+
+function launchProfileJob(toolId, args, label) {
+  if (RUN_STATE.missingKeys.includes('OPENROUTER_API_KEY')) {
+    setDialogNotice('Missing <code>OPENROUTER_API_KEY</code> — set it in <code>dashboard/.env</code> and restart the dev server, then run again.', 'error')
+    return
+  }
+  api('/api/jobs', { method: 'POST', body: JSON.stringify({ toolId, args }) })
+    .then(res => {
+      const shortId = res.job && res.job.id ? esc(res.job.id.slice(0, 8)) : ''
+      setDialogNotice(`Launched <strong>${esc(toolId)}</strong>: ${label}. Job id <code>${shortId}…</code> — watch it stream in <strong>Run data</strong>.`)
+      refreshJobs().catch(() => {})
+    })
+    .catch(e => setDialogNotice(esc(e.message), 'error'))
+}
+
+function clearInlineRunWidget() {
+  const dialog = document.getElementById('modelDialogOverlay')
+  if (!dialog) return
+  dialog.classList.remove('has-run-form')
+  dialog.dataset.runSlug = ''
+  const holder = document.getElementById('dlgRunForm')
+  const widget = document.getElementById('dlgRunWidget')
+  if (widget) widget.innerHTML = ''
+  if (holder) {
+    holder.classList.add('cm-hidden')
+    if (document.getElementById('dlgRunTitle')) document.getElementById('dlgRunTitle').innerHTML = 'Run with options'
+  }
+}
+
+async function ensureRunData() {
+  if (RUN_STATE.activeStarted && RUN_TOOLS_BY_ID.has('run_candidate')) return
+  await initRunData()
+  if (RUN_TOOLS_BY_ID.has('run_candidate')) return
+  // defensive refetch: tolerates a latched-stale page session (pre-fix bundle)
+  try {
+    const reg = await api('/api/registry')
+    RUN_STATE.tools = reg.tools || []
+    RUN_TOOLS_BY_ID.clear()
+    for (const t of RUN_STATE.tools) RUN_TOOLS_BY_ID.set(t.id, t)
+    renderTools()
+    RUN_STATE.activeStarted = RUN_TOOLS_BY_ID.size > 0
+  } catch { /* still unavailable */ }
+}
+
+async function openRunProfilePrefill(slug, tb) {
+  const dialog = document.getElementById('modelDialogOverlay')
+  await ensureRunData()
+  clearInlineRunWidget()
+  if (!RUN_TOOLS_BY_ID.has('run_candidate')) {
+    setDialogNotice('Run data failed to load — check the dev server and try again.', 'error')
+    return
+  }
+  const tool = RUN_TOOLS_BY_ID.get('run_candidate')
+  const widget = document.getElementById('dlgRunWidget')
+  const holder = document.getElementById('dlgRunForm')
+  if (!widget || !holder) {
+    setDialogNotice('Run form is missing — hard refresh (&#8984;&#8679;R) to load the latest dashboard, then try again.', 'error')
+    return
+  }
+  widget.innerHTML = toolCardHtml(tool, { idPrefix: 'dlg-run-fld' })
+  const card = widget.querySelector('.mm-tool-widget')
+  wireToolCard(card, tool)
+  fillFormFromArgs(card, tool, buildProfileArgs(slug, tb))
+  const form = card.querySelector('.tool-form')
+  form.classList.remove('cm-hidden')
+  if (form.scrollIntoView) form.scrollIntoView({ block: 'nearest' })
+  document.getElementById('dlgRunTitle').innerHTML = `Run <code>${esc(slug)}</code> with options`
+  dialog.dataset.runSlug = slug
+  dialog.classList.add('has-run-form')
+  holder.classList.remove('cm-hidden')
+  setDialogNotice('Tune any option below, then hit <strong>Run script</strong>. The job queues behind other harness runs and streams live in <strong>Run data</strong>.')
+  updateToolGuards()
 }
 
 async function handleProbeForAdd(model, route) {
@@ -440,6 +645,7 @@ async function confirmEdit(model) {
 }
 
 function closeDialog() {
+  clearInlineRunWidget()
   document.getElementById('modelDialogOverlay').classList.add('cm-hidden')
 }
 
@@ -502,6 +708,43 @@ function hideOverlay(overlay) {
   stopRunPolling()
 }
 
+function activateSection(section) {
+  document.querySelectorAll('.settings-nav-item').forEach(n => n.classList.toggle('active', n.dataset.section === section))
+  const cap = section[0].toUpperCase() + section.slice(1)
+  document.querySelectorAll('.settings-section').forEach(s => {
+    s.classList.toggle('active', s.id === `settings${cap}Section`)
+  })
+  if (section === 'models') loadModels()
+  else if (section === 'run') initRunData()
+}
+
+function handleVariantMenuClick(e) {
+  const btn = e.target.closest('.vc-opt-btn')
+  if (btn) {
+    e.stopPropagation()
+    const menuEl = btn.closest('.vc-opt').querySelector('.vc-opt-menu')
+    const open = !menuEl.classList.contains('cm-hidden')
+    closeProfileMenus()
+    if (!open) {
+      menuEl.classList.remove('cm-hidden')
+      btn.setAttribute('aria-expanded', 'true')
+    }
+    return
+  }
+  const item = e.target.closest('.vc-opt-item')
+  if (item) {
+    e.stopPropagation()
+    const row = item.closest('tr')
+    const slug = item.closest('.vc-opt').querySelector('.vc-opt-btn').dataset.slug
+    profileMenuAction(slug, item.dataset.action, row)
+  }
+}
+
+function closeProfileMenusIfOutside(e) {
+  if (e.target.closest && e.target.closest('.vc-opt')) return
+  closeProfileMenus()
+}
+
 function bindModal() {
   const overlay = document.getElementById('settingsOverlay')
   const dialogOverlay = document.getElementById('modelDialogOverlay')
@@ -515,6 +758,7 @@ function bindModal() {
 
   document.getElementById('dlgClose').addEventListener('click', closeDialog)
   document.getElementById('dlgCancel').addEventListener('click', closeDialog)
+  document.getElementById('dlgRunClose').addEventListener('click', clearInlineRunWidget)
   dialogOverlay.addEventListener('click', (e) => {
     if (e.target === dialogOverlay) closeDialog()
   })
@@ -522,14 +766,11 @@ function bindModal() {
   document.querySelector('.settings-nav').addEventListener('click', (e) => {
     const item = e.target.closest('.settings-nav-item')
     if (!item || item.disabled) return
-    const section = item.dataset.section
-    document.querySelectorAll('.settings-nav-item').forEach(n => n.classList.toggle('active', n === item))
-    document.querySelectorAll('.settings-section').forEach(s => {
-      s.classList.toggle('active', s.id === `settings${section[0].toUpperCase()}${section.slice(1)}Section`)
-    })
-    if (section === 'models') loadModels()
-    else if (section === 'run') initRunData()
+    activateSection(item.dataset.section)
   })
+
+  document.getElementById('dlgVariantRows').addEventListener('click', handleVariantMenuClick)
+  document.addEventListener('click', closeProfileMenusIfOutside)
 
   document.getElementById('modelAddBtn').addEventListener('click', openAddDialog)
   document.getElementById('modelsList').addEventListener('click', handleModelsListClick)
@@ -664,14 +905,14 @@ function groupLabel(id) {
   return map[id] || id
 }
 
-function fieldHtml(a) {
+function fieldHtml(a, idPrefix = 'run-fld') {
   const req = a.required ? ' <span class="req-star" aria-hidden="true">*</span>' : ''
-  const label = `<label for="run-fld-${a.name}" ${a.required ? 'aria-required="true"' : ''}>${esc(a.label)}${req}</label>`
+  const label = `<label for="${idPrefix}-${a.name}" ${a.required ? 'aria-required="true"' : ''}>${esc(a.label)}${req}</label>`
   const hint = a.hint ? `<div class="field-hint">${esc(a.hint)}</div>` : ''
   const wrap = (inner) => `<div class="field run-field ${a.advanced ? 'run-advanced' : ''}" data-group="${a.group || 'main'}">${inner}</div>`
   switch (a.type) {
     case 'bool':
-      return wrap(`<label class="cb"><input type="checkbox" data-arg="${a.name}" id="run-fld-${a.name}" ${a.default ? 'checked' : ''} /> ${esc(a.label)}</label>`)
+      return wrap(`<label class="cb"><input type="checkbox" data-arg="${a.name}" id="${idPrefix}-${a.name}" ${a.default ? 'checked' : ''} /> ${esc(a.label)}</label>`)
     case 'enum':
       if (a.multiple) {
         const opts = (a.choices || []).map(c =>
@@ -679,19 +920,27 @@ function fieldHtml(a) {
         ).join('')
         return wrap(`${label}<div class="cb-row">${opts}</div>${hint}`)
       }
-      return wrap(`${label}<select id="run-fld-${a.name}" data-arg="${a.name}">${
+      return wrap(`${label}<select id="${idPrefix}-${a.name}" data-arg="${a.name}">${
         (a.choices || []).map(c => `<option value="${esc(c)}" ${a.default === c ? 'selected' : ''}>${esc(c)}</option>`).join('')
       }</select>${hint}`)
     case 'int':
-      return wrap(`${label}<input id="run-fld-${a.name}" data-arg="${a.name}" type="number" step="1" ${a.min != null ? `min="${a.min}"` : ''} ${a.max != null ? `max="${a.max}"` : ''} value="${esc(a.default != null ? a.default : '')}" />${hint}`)
+      return wrap(`${label}<input id="${idPrefix}-${a.name}" data-arg="${a.name}" type="number" step="1" ${a.min != null ? `min="${a.min}"` : ''} ${a.max != null ? `max="${a.max}"` : ''} value="${esc(a.default != null ? a.default : '')}" />${hint}`)
     case 'json':
-      return wrap(`${label}<textarea id="run-fld-${a.name}" data-arg="${a.name}" rows="2" spellcheck="false" placeholder="${esc(a.placeholder || a.hint || '{}')}"></textarea>${hint}`)
+      return wrap(`${label}<textarea id="${idPrefix}-${a.name}" data-arg="${a.name}" rows="2" spellcheck="false" placeholder="${esc(a.placeholder || a.hint || '{}')}"></textarea>${hint}`)
     default:
-      return wrap(`${label}<input id="run-fld-${a.name}" data-arg="${a.name}" type="text" list="${a.bench ? 'benchList' : ''}" spellcheck="false" placeholder="${esc(a.placeholder || '')}" value="${esc(a.default != null ? String(a.default) : '')}" />${hint}`)
+      if (a.toggle) {
+        const enabled = a.default != null && a.default !== ''
+        return wrap(`${label}
+          <label class="cb judge-toggle"><input type="checkbox" data-toggle="${a.name}" ${enabled ? 'checked' : ''} /> Enable LLM judge</label>
+          <input id="${idPrefix}-${a.name}" data-arg="${a.name}" type="text" list="${a.bench ? 'benchList' : ''}" spellcheck="false" placeholder="${esc(a.placeholder || '')}" value="${esc(a.default != null ? String(a.default) : '')}" class="judge-model-fld" />
+          ${hint}`)
+      }
+      return wrap(`${label}<input id="${idPrefix}-${a.name}" data-arg="${a.name}" type="text" list="${a.bench ? 'benchList' : ''}" spellcheck="false" placeholder="${esc(a.placeholder || '')}" value="${esc(a.default != null ? String(a.default) : '')}" />${hint}`)
   }
 }
 
-function toolCardHtml(tool) {
+function toolCardHtml(tool, opts = {}) {
+  const idPrefix = opts.idPrefix || 'run-fld'
   const visible = tool.args.filter(a => (a.fixed && a.ui === false) ? false : !a.advanced)
   const advanced = tool.args.filter(a => a.advanced)
   const hasAdvanced = advanced.some(a => !(a.fixed && a.ui === false))
@@ -700,8 +949,8 @@ function toolCardHtml(tool) {
     ? `<div class="tool-warning" role="alert"><strong>Deletes artifacts/runs, results.tsv, data/candidates.json, bench/book_gate.jsonl and snapshots. Irreversible.</strong></div>`
     : ''
   const confirmField = destructive
-    ? `<div class="field run-field"><label for="run-fld-confirm-${tool.id}">Type <code>RESET</code> to continue <span class="req-star">*</span></label>
-        <input id="run-fld-confirm-${tool.id}" data-confirm type="text" autocapitalize="off" spellcheck="false" placeholder="RESET" />
+    ? `<div class="field run-field"><label for="${idPrefix}-confirm-${tool.id}">Type <code>RESET</code> to continue <span class="req-star">*</span></label>
+        <input id="${idPrefix}-confirm-${tool.id}" data-confirm type="text" autocapitalize="off" spellcheck="false" placeholder="RESET" />
         <div class="field-hint">Case-sensitive. The server re-checks this value before running.</div></div>`
     : ''
   const presets = (tool.presets || []).length
@@ -711,7 +960,7 @@ function toolCardHtml(tool) {
   const advancedToggle = hasAdvanced
     ? `<button type="button" class="mini-btn run-advanced-toggle" aria-expanded="false">Show advanced</button>`
     : ''
-  return `<div class="tool-card" data-tool="${esc(tool.id)}">
+  return `<div class="tool-card mm-tool-widget" data-tool="${esc(tool.id)}">
     <div class="tool-card-head">
       <span class="tool-dot" aria-hidden="true"></span>
       <div class="tool-card-main">
@@ -724,8 +973,8 @@ function toolCardHtml(tool) {
     ${presets}
     <div class="tool-form cm-hidden">
       ${warning}
-      ${visible.map(fieldHtml).join('')}
-      ${hasAdvanced ? `<div class="run-advanced-block cm-hidden">${advanced.map(fieldHtml).join('')}</div>` : ''}
+      ${visible.map(a => fieldHtml(a, idPrefix)).join('')}
+      ${hasAdvanced ? `<div class="run-advanced-block cm-hidden">${advanced.map(a => fieldHtml(a, idPrefix)).join('')}</div>` : ''}
       ${advancedToggle}
       ${confirmField}
       <div class="tool-form-actions">
@@ -750,7 +999,18 @@ function fillFormFromArgs(card, tool, args) {
       continue
     }
     if (el.tagName === 'TEXTAREA') { el.value = value != null ? JSON.stringify(value) : ''; continue }
-    if (el.tagName === 'SELECT') { el.value = value != null ? String(value) : ''; continue }
+    if (el.tagName === 'SELECT') {
+      if (value != null && value !== '') el.value = String(value)
+      continue
+    }
+    const enabled = value != null && value !== ''
+    if (a.toggle) {
+      const cb = card.querySelector(`[data-toggle="${a.name}"]`)
+      if (cb) cb.checked = enabled
+      el.classList.toggle('cm-hidden', !enabled)
+      el.value = enabled ? String(value) : ''
+      continue
+    }
     el.value = value != null ? String(value) : ''
   }
 }
@@ -807,6 +1067,17 @@ function collectArgValues(card, tool) {
       continue
     }
     if (el.tagName === 'SELECT') { values[a.name] = el.value; continue }
+    if (a.toggle) {
+      const cb = card.querySelector(`[data-toggle="${a.name}"]`)
+      if (cb && !cb.checked) {
+        delete values[a.name]
+        continue
+      }
+      if (!raw) {
+        errors.push(`${a.label} is required when the judge is enabled`)
+        continue
+      }
+    }
     const s = String(raw)
     if (a.pattern && s && !new RegExp(a.pattern).test(s)) {
       errors.push(`${a.label} has invalid characters`)
@@ -839,6 +1110,7 @@ async function runToolSubmit(card, tool) {
   }
   const body = { toolId: tool.id, args: values }
   if (tool.destructive) body.confirm = card.querySelector('[data-confirm]').value
+  const inDialog = !!card.closest('#dlgRunForm')
   try {
     const res = await api('/api/jobs', { method: 'POST', body: JSON.stringify(body) })
     await refreshJobs()
@@ -846,9 +1118,60 @@ async function runToolSubmit(card, tool) {
       expandJob(res.job.id)
       attachStreamIfPossible(res.job.id)
     }
+    if (inDialog) {
+      const shortId = res.job && res.job.id ? res.job.id.slice(0, 8) : ''
+      setDialogNotice(`Launched <strong>${esc(tool.id)}</strong>. Job id <code>${esc(shortId)}…</code> — watch it stream in <strong>Run data</strong>.`)
+    }
   } catch (e) {
     showCardError(card, e.message)
   }
+}
+
+function wireToolCard(card, tool) {
+  card.querySelector('.tool-run-btn').addEventListener('click', () => {
+    const form = card.querySelector('.tool-form')
+    const wasHidden = form.classList.contains('cm-hidden')
+    form.classList.toggle('cm-hidden')
+    if (wasHidden) {
+      const first = card.querySelector('.run-field input, .run-field select, .run-field textarea')
+      if (card.querySelector('[data-confirm]')) card.querySelector('[data-confirm]').focus()
+      else if (first) first.focus()
+    }
+  })
+  card.querySelector('.tool-run-submit').addEventListener('click', () => runToolSubmit(card, tool))
+  const advToggle = card.querySelector('.run-advanced-toggle')
+  if (advToggle) {
+    advToggle.addEventListener('click', (e) => {
+      const block = card.querySelector('.run-advanced-block')
+      const open = block.classList.toggle('cm-hidden') === false
+      e.target.setAttribute('aria-expanded', open ? 'true' : 'false')
+    })
+  }
+  if (card.querySelector('[data-confirm]')) {
+    card.querySelector('[data-confirm]').addEventListener('input', (e) => {
+      const ok = e.target.value === tool.confirmPhrase
+      card.querySelector('.tool-run-submit').disabled = !ok
+    })
+  }
+  card.querySelectorAll('.preset-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const preset = (tool.presets || []).find(p => p.id === chip.dataset.preset)
+      if (preset) applyPreset(card, tool, preset)
+    })
+  })
+
+  card.querySelectorAll('[data-toggle]').forEach(cb => {
+    const input = card.querySelector(`[data-arg="${cb.dataset.toggle}"]`)
+    if (!input) return
+    const sync = () => {
+      const on = cb.checked
+      input.classList.toggle('cm-hidden', !on)
+      if (!on) input.value = ''
+    }
+    cb.addEventListener('change', sync)
+    sync()
+  })
+  return card
 }
 
 function renderTools() {
@@ -865,49 +1188,17 @@ function renderTools() {
   }).join('')
 
   list.querySelectorAll('.tool-card').forEach(card => {
-    const tool = RUN_TOOLS_BY_ID.get(card.dataset.tool)
-    card.querySelector('.tool-run-btn').addEventListener('click', () => {
-      const form = card.querySelector('.tool-form')
-      const wasHidden = form.classList.contains('cm-hidden')
-      form.classList.toggle('cm-hidden')
-      if (wasHidden) {
-        const first = card.querySelector('.run-field input, .run-field select, .run-field textarea')
-        if (card.querySelector('[data-confirm]')) card.querySelector('[data-confirm]').focus()
-        else if (first) first.focus()
-      }
-    })
-    card.querySelector('.tool-run-submit').addEventListener('click', () => runToolSubmit(card, tool))
-    const advToggle = card.querySelector('.run-advanced-toggle')
-    if (advToggle) {
-      advToggle.addEventListener('click', (e) => {
-        const block = card.querySelector('.run-advanced-block')
-        const open = block.classList.toggle('cm-hidden') === false
-        e.target.setAttribute('aria-expanded', open ? 'true' : 'false')
-      })
-    }
-    if (card.querySelector('[data-confirm]')) {
-      card.querySelector('[data-confirm]').addEventListener('input', (e) => {
-        const ok = e.target.value === tool.confirmPhrase
-        card.querySelector('.tool-run-submit').disabled = !ok
-      })
-    }
-    card.querySelectorAll('.preset-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        const preset = (tool.presets || []).find(p => p.id === chip.dataset.preset)
-        if (preset) applyPreset(card, tool, preset)
-      })
-    })
+    wireToolCard(card, RUN_TOOLS_BY_ID.get(card.dataset.tool))
   })
   updateToolGuards()
 }
 
 function updateToolGuards() {
-  const list = document.getElementById('toolList')
-  if (!list) return
   const runningToolIds = new Set(RUN_STATE.jobs.filter(j => j.status === 'running' || j.status === 'queued').map(j => j.toolId))
   const llmRunning = RUN_STATE.jobs.some(j => j.status === 'running' && toolById(j.toolId) && toolById(j.toolId).runtimeClass === 'llm')
-  list.querySelectorAll('.tool-card').forEach(card => {
+  document.querySelectorAll('.mm-tool-widget').forEach(card => {
     const tool = RUN_TOOLS_BY_ID.get(card.dataset.tool)
+    if (!tool) return
     const btn = card.querySelector('.tool-run-btn')
     const submit = card.querySelector('.tool-run-submit')
     const hintEl = card.querySelector('.tool-lock-hint')
@@ -915,11 +1206,14 @@ function updateToolGuards() {
     const myActive = runningToolIds.has(tool.id)
     const locked = llmRunning && tool.runtimeClass !== 'instant'
     const disabled = myActive || locked
-    btn.disabled = disabled
+    if (btn) {
+      btn.disabled = disabled
+      if (disabled) btn.title = myActive ? 'This tool already has a queued or running job' : 'Run harness busy — queued runs start automatically'
+      else btn.removeAttribute('title')
+    }
     if (submit && !tool.destructive) submit.disabled = disabled
-    hintEl.classList.toggle('cm-hidden', !locked)
-    dot.classList.toggle('tool-dot-active', myActive)
-    btn.title = disabled ? (myActive ? 'This tool already has a queued or running job' : 'Run harness busy — queued runs start automatically') : ''
+    if (hintEl) hintEl.classList.toggle('cm-hidden', !locked)
+    if (dot) dot.classList.toggle('tool-dot-active', myActive)
   })
 }
 
@@ -1204,17 +1498,24 @@ function dispatchHints(job, hints) {
   }
 }
 
+// Loads the script registry + bench/env/jobs and wires the run tab.
+// `activeStarted` is only latched once registry loads: a failed initRunData
+// (e.g. the dev server predating /api/registry) retries on the next trigger
+// instead of leaving the run-data feature dead until a full reload.
 async function initRunData() {
   if (RUN_STATE.activeStarted) return
-  RUN_STATE.activeStarted = true
+  let toolsLoaded = false
   try {
     const reg = await api('/api/registry')
-    RUN_STATE.tools = reg.tools
-    for (const t of reg.tools) RUN_TOOLS_BY_ID.set(t.id, t)
+    RUN_STATE.tools = reg.tools || []
+    for (const t of RUN_STATE.tools) RUN_TOOLS_BY_ID.set(t.id, t)
     renderTools()
+    toolsLoaded = RUN_TOOLS_BY_ID.has('run_candidate') || RUN_TOOLS_BY_ID.size > 0
   } catch (e) {
     document.getElementById('toolList').innerHTML = `<div class="placeholder-text">Failed to load tools: ${esc(e.message)}</div>`
   }
+  if (!toolsLoaded) return
+  RUN_STATE.activeStarted = true
   try {
     const bl = await api('/bench-list')
     const dl = document.getElementById('benchList')
@@ -1263,4 +1564,4 @@ if (typeof document !== 'undefined') {
   }
 }
 
-export { initSettings, GEAR_SVG, MODAL_TEMPLATE }
+export { initSettings, GEAR_SVG, MODAL_TEMPLATE, toolCardHtml }

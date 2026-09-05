@@ -267,6 +267,44 @@
 
 .dialog-body { padding: 16px 18px 8px; overflow-y: auto; }
 
+/* inline "Run with options" widget — dialog widens to two columns.
+   has-run-form lives on #modelDialogOverlay (the .settings-overlay parent);
+   the CSS below keys off that so the class placement and the selectors can
+   never drift apart again. */
+#modelDialogOverlay.has-run-form .settings-dialog { width: min(920px, calc(100vw - 48px)); }
+#modelDialogOverlay.has-run-form .dialog-body { display: flex; gap: 20px; align-items: stretch; }
+#modelDialogOverlay.has-run-form .dlg-left { flex: 1 1 46%; min-width: 0; }
+.dlg-run {
+  flex: 1 1 54%;
+  min-width: 0;
+  border-left: 1px solid var(--line, #d8dee8);
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+}
+.dlg-run-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.dlg-run-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted, #6b7280); }
+.dlg-run-title code { text-transform: none; }
+.dlg-run-close {
+  border: none;
+  background: transparent;
+  color: var(--muted, #6b7280);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+.dlg-run-close:hover { background: var(--panel-2, #f6f7f9); color: var(--text, #1d2433); }
+.dlg-run-widget { min-width: 0; }
+.dlg-run .tool-card { margin-bottom: 0; background: var(--panel-2, #f6f7f9); }
+
+@media (max-width: 720px) {
+  #modelDialogOverlay.has-run-form .settings-dialog { width: min(600px, calc(100vw - 48px)); }
+  #modelDialogOverlay.has-run-form .dialog-body { flex-direction: column; }
+  #modelDialogOverlay.has-run-form .dlg-run { border-left: none; border-top: 1px solid var(--line, #d8dee8); padding-left: 0; padding-top: 14px; }
+}
+
 .dialog-body .field { margin-bottom: 14px; }
 .dialog-body label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text, #1d2433); margin-bottom: 5px; }
 
@@ -311,6 +349,67 @@
 .vc-status { font-size: 11px; }
 .vc-has { color: #047857; }
 .vc-none { color: var(--muted, #6b7280); }
+
+/* profile quick-action menu */
+.vc-opt { position: relative; text-align: right; white-space: nowrap; }
+.vc-opt-btn {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted, #6b7280);
+  border-radius: 6px;
+  width: 26px;
+  height: 24px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+.vc-opt-btn:hover, .vc-opt-btn[aria-expanded="true"] {
+  background: var(--panel-2, #f6f7f9);
+  border-color: var(--line, #d8dee8);
+  color: var(--text, #1d2433);
+}
+.vc-opt-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 30;
+  min-width: 200px;
+  background: var(--panel, #fff);
+  border: 1px solid var(--line, #d8dee8);
+  border-radius: 9px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+}
+.vc-opt-item {
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--text, #1d2433);
+  font-size: 12.5px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.vc-opt-item:hover { background: var(--accent-soft, #eff6ff); }
+
+.dlg-notice {
+  margin-top: 12px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.dlg-notice-err {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
 
 .dlg-preview {
   margin-top: 12px;
