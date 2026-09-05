@@ -45,6 +45,25 @@ function getProvider(model) {
   return model.split('/')[0]
 }
 
+const REASON_ORDER = ['thinking', 'notthinking', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max']
+const REASON_COLOR = {
+  thinking: '#10b981',
+  notthinking: '#6b7280',
+  minimal: '#34d399',
+  low: '#a3e635',
+  medium: '#f59e0b',
+  high: '#f97316',
+  xhigh: '#ef4444',
+  max: '#7c3aed'
+}
+
+function reasonOf(reasoningEffort, thinkingEnabled) {
+  if (reasoningEffort && reasoningEffort.startsWith('effort-')) return reasoningEffort.slice('effort-'.length)
+  if (reasoningEffort === 'notthinking') return 'notthinking'
+  if (reasoningEffort && REASON_ORDER.includes(reasoningEffort)) return reasoningEffort
+  return thinkingEnabled ? 'thinking' : 'notthinking'
+}
+
 const STORAGE_KEY = 'scatter_explorer_state'
 
 let runs = []
@@ -57,6 +76,7 @@ let selectedRunId = null
 let selectedJudgeType = ''
 let runFilter = '__bucket:30m'
 let judgeVisibility = { deterministic: true, LLM: true }
+let reasoningVisibility = {}
 let explicitFieldChanges = { xField: false, yField: false, sizeField: false, colorField: false, labelField: false }
 
 function loadPersistedState() {
@@ -79,7 +99,7 @@ function savePersistedState(state) {
 function persistState() {
   const currentSaved = loadPersistedState()
   savePersistedState({
-    version: 3,
+    version: 4,
     currentMode,
     selectedRunId,
     selectedJudgeType,
@@ -94,6 +114,7 @@ function persistState() {
     highlightQuadrant,
     fixedYRange,
     judgeVisibility,
+    reasoningVisibility,
     activeFilters
   })
 }
@@ -173,6 +194,7 @@ async function loadRuns(doRender = true) {
           judge_version_resolved: judgeVersion,
           is_llm_judged: isLlmJudged,
           judge_type: isLlmJudged ? `LLM:${judgeModelSlug}` : 'deterministic',
+          reasoning: reasonOf(manifest.reasoning_effort, manifest.thinking_enabled),
           n_samples: score.n_samples || 0,
           hard_fail_rate: score.hard_fail_rate ?? 0,
           mean_quality: score.mean_quality ?? 0,
@@ -205,6 +227,7 @@ async function loadRuns(doRender = true) {
     })
     populateRunSelect()
     populateSelects()
+    renderReasonToggles()
     if (doRender) renderChart()
   } catch (e) {
     console.error('Failed to load runs:', e)
@@ -300,6 +323,36 @@ function populateSelects() {
     })
 }
 
+function renderReasonToggles() {
+  const container = document.getElementById('reasonToggles')
+  if (!container) return
+  container.innerHTML = ''
+  const present = REASON_ORDER.filter(v => runs.some(r => r.reasoning === v))
+  if (present.length === 0) return
+  present.forEach(reason => {
+    const btn = document.createElement('button')
+    btn.className = 'judge-toggle active'
+    btn.dataset.reason = reason
+    const dot = document.createElement('span')
+    dot.className = 'jt-dot'
+    dot.style.background = REASON_COLOR[reason] || '#94a3b8'
+    btn.appendChild(dot)
+    btn.appendChild(document.createTextNode(` ${reason}`))
+    const isActive = reasoningVisibility[reason] ?? true
+    btn.classList.toggle('jt-off', !isActive)
+    btn.classList.toggle('active', isActive)
+    btn.addEventListener('click', () => {
+      const isCurrentlyEnabled = !btn.classList.contains('jt-off')
+      btn.classList.toggle('jt-off', isCurrentlyEnabled)
+      btn.classList.toggle('active', !isCurrentlyEnabled)
+      reasoningVisibility[reason] = !isCurrentlyEnabled
+      renderChart()
+      persistState()
+    })
+    container.appendChild(btn)
+  })
+}
+
 function getFilteredRuns() {
   let filtered = [...runs]
 
@@ -335,6 +388,11 @@ function getFilteredRuns() {
   }
   if (!judgeVisibility.deterministic) {
     filtered = filtered.filter(r => r.judge_type !== 'deterministic')
+  }
+
+  const hiddenReasons = Object.keys(reasoningVisibility).filter(k => reasoningVisibility[k] === false)
+  if (hiddenReasons.length) {
+    filtered = filtered.filter(r => !hiddenReasons.includes(r.reasoning))
   }
 
   return filtered
@@ -686,6 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
     highlightQuadrant = savedState.highlightQuadrant ?? true
     fixedYRange = savedState.fixedYRange ?? false
     judgeVisibility = savedState.judgeVisibility ?? { deterministic: true, LLM: true }
+    reasoningVisibility = savedState.reasoningVisibility ?? {}
     activeFilters = savedState.activeFilters || {}
     explicitFieldChanges = { xField: false, yField: false, sizeField: false, colorField: false, labelField: false }
 

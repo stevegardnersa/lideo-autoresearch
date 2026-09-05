@@ -470,6 +470,10 @@ select { cursor: pointer; }
   margin-top: 4px;
 }
 
+.reason-toggles {
+  flex-wrap: wrap;
+}
+
 .judge-toggle {
   display: flex;
   align-items: center;
