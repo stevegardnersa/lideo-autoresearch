@@ -57,11 +57,12 @@ function baseCandidates() {
 
 const CONFIRM_JSON = 'output_format tanl; typography minimal; distilled dense; all internal reasoning about source; no editorializing.'
 
-function runFixture(model, quality, judgeVersion, createdAt) {
+function runFixture(model, quality, judgeVersion, createdAt, profile) {
   return {
     dataset_score: { mean_quality: quality },
     run_manifest: {
       chapter_model: model,
+      profile: profile || '',
       judge_model: 'litellm:schemaparams',
       judge_version_resolved: judgeVersion,
       created_at_utc: createdAt,
@@ -72,10 +73,10 @@ function runFixture(model, quality, judgeVersion, createdAt) {
 
 function writeRunsFixture(runsDir) {
   mkdirSync(join(runsDir, 'alpha'), { recursive: true })
-  writeFileSync(join(runsDir, 'alpha', 'r1_det.json'), JSON.stringify(runFixture('deepseek/deepseek-v4-flash', 0.712, 'judge-deterministic-llmj-rubric-v1', '2026-05-01T10:00:00Z')))
-  writeFileSync(join(runsDir, 'alpha', 'r2_det.json'), JSON.stringify(runFixture('deepseek/deepseek-v4-flash', 0.745, 'judge-deterministic-llmj-rubric-v1', '2026-05-02T10:00:00Z')))
-  writeFileSync(join(runsDir, 'alpha', 'r3_llm.json'), JSON.stringify(runFixture('deepseek/deepseek-v4-flash', 0.902, 'litellm://judge-absolute-v1/default', '2026-05-03T10:00:00Z')))
-  writeFileSync(join(runsDir, 'alpha', 'other.model.json'), JSON.stringify(runFixture('qwen/qwen3.6-plus', 0.555, 'judge-deterministic-llmj-rubric-v1', '2026-04-20T10:00:00Z')))
+  writeFileSync(join(runsDir, 'alpha', 'r1_det.json'), JSON.stringify(runFixture('deepseek/deepseek-v4-flash', 0.712, 'judge-deterministic-llmj-rubric-v1', '2026-05-01T10:00:00Z', '30m_deepseek-v4-flash_thinking')))
+  writeFileSync(join(runsDir, 'alpha', 'r2_det.json'), JSON.stringify(runFixture('deepseek/deepseek-v4-flash', 0.745, 'judge-deterministic-llmj-rubric-v1', '2026-05-02T10:00:00Z', '60m_deepseek-v4-flash_thinking')))
+  writeFileSync(join(runsDir, 'alpha', 'r3_llm.json'), JSON.stringify(runFixture('deepseek/deepseek-v4-flash', 0.902, 'litellm://judge-absolute-v1/default', '2026-05-03T10:00:00Z', '30m_deepseek-v4-flash_notthinking')))
+  writeFileSync(join(runsDir, 'alpha', 'other.model.json'), JSON.stringify(runFixture('qwen/qwen3.6-plus', 0.555, 'judge-deterministic-llmj-rubric-v1', '2026-04-20T10:00:00Z', '60m_qwen3.6-plus_thinking')))
 }
 
 // ── harness ───────────────────────────────────────────────────
@@ -213,6 +214,52 @@ test('GET /api/models indexes models with run aggregation', async () => {
     assert.equal(qwen.best_quality_det, 0.555)
     assert.equal(qwen.best_quality_llm, null)
     assert.ok(qwen.profiles.every(pf => pf.status === 'tested'))
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('GET /api/models flags untested 60m profiles as pending', async () => {
+  writeCandidatesFile({
+    version: 2,
+    profiles: {
+      '30m_deepseek-v4-flash_thinking': p('30m_deepseek-v4-flash_thinking', 'deepseek/deepseek-v4-flash', 0.2, 8192),
+      '60m_deepseek-v4-flash_thinking': p('60m_deepseek-v4-flash_thinking', 'deepseek/deepseek-v4-flash', 0.2, 8192),
+      '60m_qwen3.6-plus_thinking': p('60m_qwen3.6-plus_thinking', 'qwen/qwen3.6-plus', 0.4, 4096),
+    },
+  })
+  const { server, base } = await startServer()
+  try {
+    const { body } = await call(base, '/api/models')
+    const deepseek = body.models.find(m => m.model === 'deepseek/deepseek-v4-flash')
+    const cs = deepseek.profiles.find(pf => pf.slug === '30m_deepseek-v4-flash_thinking')
+    assert.equal(cs.status, 'tested')
+    const cs60 = deepseek.profiles.find(pf => pf.slug === '60m_deepseek-v4-flash_thinking')
+    assert.equal(cs60.time_budget, '60m')
+    assert.equal(cs60.status, 'tested')
+    const qwen = body.models.find(m => m.model === 'qwen/qwen3.6-plus')
+    assert.equal(qwen.profiles[0].status, 'tested')
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('GET /api/models marks defined-but-unrun profiles pending', async () => {
+  writeCandidatesFile({
+    version: 2,
+    profiles: {
+      '30m_deepseek-v4-flash_thinking': p('30m_deepseek-v4-flash_thinking', 'deepseek/deepseek-v4-flash', 0.2, 8192),
+      '60m_deepseek-v4-flash_thinking': p('60m_deepseek-v4-flash_thinking', 'deepseek/deepseek-v4-flash', 0.2, 8192),
+      '60m_model-x_thinking': p('60m_model-x_thinking', 'deepseek/deepseek-v4-flash', 0.5, 8192),
+      '60m_qwen3.6-plus_thinking': p('60m_qwen3.6-plus_thinking', 'qwen/qwen3.6-plus', 0.4, 4096),
+    },
+  })
+  const { server, base } = await startServer()
+  try {
+    const { body } = await call(base, '/api/models')
+    const deepseek = body.models.find(m => m.model === 'deepseek/deepseek-v4-flash')
+    assert.equal(deepseek.profiles.find(pf => pf.slug === '60m_model-x_thinking').status, 'pending')
+    assert.equal(deepseek.profiles.find(pf => pf.slug === '30m_deepseek-v4-flash_thinking').status, 'tested')
   } finally {
     await closeServer(server)
   }
