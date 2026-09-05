@@ -55,6 +55,7 @@ let highlightQuadrant = true
 let fixedYRange = false
 let selectedRunId = null
 let selectedJudgeType = ''
+let runFilter = '__bucket:30m'
 let judgeVisibility = { deterministic: true, LLM: true }
 let explicitFieldChanges = { xField: false, yField: false, sizeField: false, colorField: false, labelField: false }
 
@@ -78,10 +79,11 @@ function savePersistedState(state) {
 function persistState() {
   const currentSaved = loadPersistedState()
   savePersistedState({
-    version: 2,
+    version: 3,
     currentMode,
     selectedRunId,
     selectedJudgeType,
+    runFilter,
     searchText: document.getElementById('searchInput')?.value || '',
     xField: document.getElementById('xSelect')?.value || '',
     yField: document.getElementById('ySelect')?.value || '',
@@ -211,20 +213,61 @@ async function loadRuns(doRender = true) {
 
 function populateRunSelect() {
   const select = document.getElementById('runSelect')
+  const prevValue = select.value
   select.innerHTML = ''
 
+  const buckets = []
+  const bucketFor = r => {
+    const cn = r.candidate_name || ''
+    if (cn.startsWith('30m_')) return '30m'
+    if (cn.startsWith('60m_')) return '60m'
+    if (cn) return 'adv'
+    return 'all'
+  }
+  const bucketCounts = { all: 0, adv: 0, '30m': 0, '60m': 0 }
+  runs.forEach(r => { bucketCounts[bucketFor(r)]++ })
+
   const allOption = document.createElement('option')
-  allOption.value = ''
+  allOption.value = '__bucket:all'
   allOption.textContent = `All runs (${runs.length})`
   select.appendChild(allOption)
 
+  const advCount = bucketCounts.adv + bucketCounts.all
+  const advOption = document.createElement('option')
+  advOption.value = '__bucket:adv'
+  advOption.textContent = `Advanced runs (${advCount})`
+  select.appendChild(advOption)
+
+  const opt30 = document.createElement('option')
+  opt30.value = '__bucket:30m'
+  opt30.textContent = `30m runs (${bucketCounts['30m']})`
+  select.appendChild(opt30)
+
+  const opt60 = document.createElement('option')
+  opt60.value = '__bucket:60m'
+  opt60.textContent = `60m runs (${bucketCounts['60m']})`
+  select.appendChild(opt60)
+
+  const optGroup = document.createElement('optgroup')
+  optGroup.label = 'Individual runs'
   runs.forEach(run => {
     const option = document.createElement('option')
     option.value = `${run.run_id}__${run.judge_type}`
     const judgeLabel = run.is_llm_judged ? ' [LLM]' : ' [det]'
     option.textContent = `${run.candidate_name || run.run_id}${judgeLabel} (${run.bench || run.benchmark_version || 'unknown'})`
-    select.appendChild(option)
+    optGroup.appendChild(option)
   })
+  select.appendChild(optGroup)
+
+  if (runFilter && [...select.options].some(o => o.value === runFilter)) {
+    select.value = runFilter
+  } else if (prevValue && [...select.options].some(o => o.value === prevValue)) {
+    select.value = prevValue
+    runFilter = prevValue
+  } else {
+    select.value = '__bucket:30m'
+    runFilter = '__bucket:30m'
+  }
 }
 
 function getRunKey(run) {
@@ -270,10 +313,21 @@ function getFilteredRuns() {
     )
   }
 
-  const selectedRun = document.getElementById('runSelect').value
-  if (selectedRun) {
-    const [rid, jtype] = selectedRun.split('__')
-    filtered = filtered.filter(r => r.run_id === rid && r.judge_type === jtype)
+  const runFilterVal = document.getElementById('runSelect').value
+  if (runFilterVal) {
+    if (runFilterVal.startsWith('__bucket:')) {
+      const bucket = runFilterVal.replace('__bucket:', '')
+      if (bucket === 'all') {
+        // no filter
+      } else if (bucket === 'adv') {
+        filtered = filtered.filter(r => r.candidate_name && !(r.candidate_name.startsWith('30m_') || r.candidate_name.startsWith('60m_')))
+      } else {
+        filtered = filtered.filter(r => (r.candidate_name || '').startsWith(bucket))
+      }
+    } else {
+      const [rid, jtype] = runFilterVal.split('__')
+      filtered = filtered.filter(r => r.run_id === rid && r.judge_type === jtype)
+    }
   }
 
   if (!judgeVisibility.LLM) {
@@ -627,6 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentMode = savedState.currentMode || 'price_quality'
     selectedRunId = savedState.selectedRunId || null
     selectedJudgeType = savedState.selectedJudgeType || ''
+    runFilter = savedState.runFilter || (selectedRunId && selectedJudgeType ? `${selectedRunId}__${selectedJudgeType}` : '__bucket:30m')
     showLabels = savedState.showLabels ?? false
     highlightQuadrant = savedState.highlightQuadrant ?? true
     fixedYRange = savedState.fixedYRange ?? false
@@ -635,9 +690,7 @@ document.addEventListener('DOMContentLoaded', () => {
     explicitFieldChanges = { xField: false, yField: false, sizeField: false, colorField: false, labelField: false }
 
     document.getElementById('searchInput').value = savedState.searchText || ''
-    if (savedState.selectedRunId && savedState.selectedJudgeType) {
-      document.getElementById('runSelect').value = `${savedState.selectedRunId}__${savedState.selectedJudgeType}`
-    }
+    document.getElementById('runSelect').value = runFilter
     document.getElementById('labelToggle').checked = showLabels
     document.getElementById('quadToggle').checked = highlightQuadrant
     document.getElementById('fixedYRange').checked = fixedYRange
@@ -714,6 +767,15 @@ document.addEventListener('DOMContentLoaded', () => {
   })
   document.getElementById('runSelect')?.addEventListener('change', () => {
     const val = document.getElementById('runSelect').value
+    runFilter = val
+    if (val.startsWith('__bucket:')) {
+      selectedRunId = null
+      selectedJudgeType = ''
+      selectRun(null, '')
+      renderChart()
+      persistState()
+      return
+    }
     const [rid, jtype] = val ? val.split('__') : ['', '']
     selectedRunId = rid || null
     selectedJudgeType = jtype || ''
