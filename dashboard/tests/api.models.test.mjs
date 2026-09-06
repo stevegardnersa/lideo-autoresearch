@@ -116,6 +116,23 @@ function fakeRunner() {
   const defaultImpl = async (args) => {
     const joined = args.join(' ')
     if (args[0] === 'tools/gen_profile_literal.py') return { ok: true, stdout: 'regenerated\n', stderr: '' }
+    if (joined.includes('--remove-profile')) {
+      const dry = joined.includes('--dry-run')
+      const key = args[args.indexOf('--remove-profile') + 1]
+      const lines = [
+        'Removing 1 profile(s):',
+        `  - ${key}`,
+        'Found 3 run file(s)',
+        'Found 1 job log(s)',
+        'Found 2 results.tsv row(s)',
+      ]
+      if (!dry) {
+        lines.push('Removed 3 run file(s)', 'Removed 1 job log(s)', 'Removed 2 results.tsv row(s)')
+      } else {
+        lines.push('(dry-run — no changes written)')
+      }
+      return { ok: true, stdout: lines.join('\n') + '\n', stderr: '' }
+    }
     if (joined.includes('--dry-run')) {
       return {
         ok: true,
@@ -156,6 +173,8 @@ async function startServer(overrides = {}) {
     candidatesPath,
     runsDir,
     dataDir,
+    repoRoot: tmp,
+    jobsDir: join(tmp, 'jobs'),
     pythonRunner: runner.fn,
     autoTag: async (text) => ({ tags: reduce(text), sentiment: 0, source: 'stub' }),
     ...overrides,
@@ -519,8 +538,8 @@ test('PUT creates a missing variant from create list', async () => {
   }
 })
 
-test('PUT removes variants marked keep=false', async () => {
-  const { server, base } = await startServer()
+test('PUT removes variants marked keep=false when confirmed', async () => {
+  const { server, base, runner } = await startServer()
   try {
     const edits = [
       { key: '30m_deepseek-v4-flash_thinking', keep: true, temperature: 0.2, max_tokens: 8192 },
@@ -529,13 +548,83 @@ test('PUT removes variants marked keep=false', async () => {
     ]
     const { body } = await call(base, '/api/models', {
       method: 'PUT',
-      body: { old_model: 'deepseek/deepseek-v4-flash', new_model: 'deepseek/deepseek-v4-flash', edits, create: [] },
+      body: { old_model: 'deepseek/deepseek-v4-flash', new_model: 'deepseek/deepseek-v4-flash', edits, create: [], confirm: true },
     })
     assert.equal(body.ok, true)
     assert.deepEqual(body.plan.removed, ['60m_deepseek-v4-flash_thinking'])
+    assert.equal(body.plan.removedRuns, 3)
+    assert.equal(body.plan.removedLogs, 1)
+    assert.equal(body.plan.removedResultRows, 2)
     const onDisk = freshCandidates()
     assert.equal(onDisk.profiles['60m_deepseek-v4-flash_thinking'], undefined)
     assert.ok(onDisk.profiles['30m_deepseek-v4-flash_thinking'])
+    const cascade = runner.calls.find(c => c.args.includes('--remove-profile'))
+    assert.ok(cascade, 'confirmed PUT runs the profile cascade')
+    assert.equal(cascade.args[cascade.args.indexOf('--remove-profile') + 1], '60m_deepseek-v4-flash_thinking')
+    assert.ok(!cascade.args.includes('--dry-run'), 'confirmed cascade is not a dry run')
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('PUT gates keep=false edits behind confirmation without mutating', async () => {
+  const { server, base, runner } = await startServer()
+  try {
+    const edits = [
+      { key: '30m_deepseek-v4-flash_thinking', keep: true, temperature: 0.2, max_tokens: 8192 },
+      { key: '60m_deepseek-v4-flash_thinking', keep: false },
+      { key: '30m_deepseek-v4-flash_notthinking', keep: true, temperature: 0.0, max_tokens: 8192 },
+    ]
+    const { status, body } = await call(base, '/api/models', {
+      method: 'PUT',
+      body: { old_model: 'deepseek/deepseek-v4-flash', new_model: 'deepseek/deepseek-v4-flash', edits, create: [] },
+    })
+    assert.equal(status, 409)
+    assert.equal(body.code, 'confirmation_required')
+    assert.deepEqual(body.impact.map(i => i.key), ['60m_deepseek-v4-flash_thinking'])
+    assert.equal(body.impact[0].runFiles, 3)
+    assert.equal(body.impact[0].logs, 1)
+    assert.equal(body.impact[0].resultRows, 2)
+    assert.equal(body.impact[0].activeJobs, 0)
+
+    const onDisk = freshCandidates()
+    assert.ok(onDisk.profiles['60m_deepseek-v4-flash_thinking'], 'profile untouched before confirm')
+    assert.ok(!runner.calls.some(c => c.args.includes('--remove-profile') && !c.args.includes('--dry-run')), 'no real cascade before confirm')
+    const preflight = runner.calls.find(c => c.args.includes('--remove-profile') && c.args.includes('--dry-run'))
+    assert.ok(preflight, 'preflight ran as dry-run')
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('PUT skips a variant with an active job and reports skippedActive', async () => {
+  const activeJob = {
+    jobId: 'live',
+    toolId: 'run_candidate',
+    status: 'running',
+    args: { profile: '60m_deepseek-v4-flash_thinking', bench: 'chapter_fast' },
+  }
+  const { server, base } = await startServer({
+    jobManager: { jobs: new Map([[activeJob.jobId, activeJob]]), history: new Map() },
+  })
+  try {
+    const edits = [
+      { key: '30m_deepseek-v4-flash_thinking', keep: true, temperature: 0.2, max_tokens: 8192 },
+      { key: '60m_deepseek-v4-flash_thinking', keep: false },
+      { key: '30m_deepseek-v4-flash_notthinking', keep: true, temperature: 0.0, max_tokens: 8192 },
+    ]
+    const bodyBase = { old_model: 'deepseek/deepseek-v4-flash', new_model: 'deepseek/deepseek-v4-flash', edits, create: [] }
+    const { status, body } = await call(base, '/api/models', { method: 'PUT', body: bodyBase })
+    assert.equal(status, 409)
+    assert.equal(body.code, 'active_jobs')
+    assert.equal(body.impact.find(i => i.key === '60m_deepseek-v4-flash_thinking').activeJobs, 1)
+
+    const confirmed = await call(base, '/api/models', { method: 'PUT', body: { ...bodyBase, confirm: true } })
+    assert.equal(confirmed.status, 200)
+    assert.deepEqual(confirmed.body.plan.removed, [], 'active variant is kept')
+    assert.deepEqual(confirmed.body.plan.skippedActive, ['60m_deepseek-v4-flash_thinking'])
+    const onDisk = freshCandidates()
+    assert.ok(onDisk.profiles['60m_deepseek-v4-flash_thinking'], 'active variant profile survives')
   } finally {
     await closeServer(server)
   }
@@ -577,6 +666,16 @@ test('PUT rejects overwriting a foreign profile on rename', async () => {
 
 test('DELETE builds escaped pattern and parses removal output', async () => {
   const { server, base, runner } = await startServer()
+  runner.setImpl(async (args) => {
+    if (args.includes('--remove')) {
+      return {
+        ok: true,
+        stdout: 'Removing profiles matching deepseek-v4-flash\n  - 30m_deepseek-v4-flash_thinking\n  - 60m_deepseek-v4-flash_thinking\n  - 30m_deepseek-v4-flash_notthinking\nRemoved 3 run file(s)\nRemoved 2 job log(s)\nRemoved 1 results.tsv row(s)\n',
+        stderr: '',
+      }
+    }
+    return { ok: true, stdout: '', stderr: '' }
+  })
   try {
     const { status, body } = await call(base, '/api/models', { method: 'DELETE', body: { model: 'deepseek/deepseek-v4-flash' } })
     assert.equal(status, 200)
@@ -584,6 +683,8 @@ test('DELETE builds escaped pattern and parses removal output', async () => {
     assert.equal(body.pattern, 'deepseek-v4-flash')
     assert.deepEqual(body.removedProfiles, ['30m_deepseek-v4-flash_thinking', '60m_deepseek-v4-flash_thinking', '30m_deepseek-v4-flash_notthinking'])
     assert.equal(body.removedRuns, 3)
+    assert.equal(body.removedLogs, 2)
+    assert.equal(body.removedResultRows, 1)
 
     const removeCall = runner.calls.find(c => c.args.includes('--remove'))
     assert.ok(removeCall)

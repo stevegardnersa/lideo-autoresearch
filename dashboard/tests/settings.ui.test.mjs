@@ -103,6 +103,7 @@ function makeHarness() {
     },
     add: { ok: true, added: ['30m_q_thinking_v1', '30m_q_notthinking_v1'], skipped: [], model: 'p/q' },
     put: { ok: true, plan: { removed: [], renamed: [], updated: [], created: [], model: null } },
+    putFn: null,
     del: { ok: true, removedProfiles: [], removedRuns: 0 },
     registry: {
       ok: true,
@@ -147,7 +148,13 @@ function makeHarness() {
     if (url === '/api/models' && method === 'GET') return json(state.modelsGet)
     if (url === '/api/models/probe') return json(state.probe)
     if (url === '/api/models' && method === 'POST') return json(state.add)
-    if (url === '/api/models' && method === 'PUT') return json(state.put)
+    if (url === '/api/models' && method === 'PUT') {
+      if (typeof state.putFn === 'function') {
+        const r = state.putFn(opts, state)
+        if (r) return r
+      }
+      return json(state.put)
+    }
     if (url === '/api/models' && method === 'DELETE') return json(state.del)
     if (url === '/api/registry') {
       if (state.registryFails > 0) {
@@ -417,6 +424,113 @@ function postRenderInfo() {
     create: h.doc.getElementById('dlgCreate'),
   }
 }
+
+function variantRemovalImpact(key, overrides = {}) {
+  return { key, runFiles: 6, logs: 2, resultRows: 4, activeJobs: 0, ...overrides }
+}
+
+function uncheckRow(els, tb, effort) {
+  const row = els.rows().find(r => r.dataset.tb === tb && r.dataset.effort === effort)
+  const removeItem = row.querySelector('.vc-opt-item[data-action="remove"]')
+  if (removeItem) h.click(removeItem)
+  else {
+    row.querySelector('.vc-check').checked = false
+  }
+  return row
+}
+
+test('variant removal gates on a confirmation dialog before re-sending with confirm', async () => {
+  const { doc, click, state } = h
+  const els = await openEdit()
+  const key = '30m_deepseek-v4-flash_thinking'
+  const removedRow = uncheckRow(els, '30m', 'thinking')
+  assert.ok(removedRow.classList.contains('vc-to-remove'))
+
+  state.putFn = (opts) => {
+    const b = JSON.parse(opts.body)
+    if (b.confirm === true) {
+      return json({ ok: true, plan: { removed: [key], renamed: [], updated: [], created: [], model: null, removedRuns: 6, removedLogs: 2, removedResultRows: 4 } })
+    }
+    return json({ ok: false, code: 'confirmation_required', impact: [variantRemovalImpact(key)] }, 409)
+  }
+
+  click(els.create)
+  await new Promise(r => setImmediate(r))
+
+  const firstPut = state.calls.find(c => c.method === 'PUT' && c.url === '/api/models')
+  assert.ok(firstPut, 'preflight PUT issued')
+  assert.equal(firstPut.body.confirm, undefined, 'preflight carries no confirm flag')
+  assert.equal(firstPut.body.edits.find(e => e.key === key).keep, false)
+
+  const confirmOverlay = doc.getElementById('confirmDeleteOverlay')
+  assert.ok(!confirmOverlay.classList.contains('cm-hidden'), 'confirmation dialog opens')
+  const impactHtml = doc.getElementById('confirmImpact').textContent
+  assert.ok(impactHtml.includes(key), 'impact table lists the variant')
+  assert.ok(/6 run files/.test(impactHtml), 'run file count shown')
+  assert.ok(/2 logs/.test(impactHtml), 'log count shown')
+  assert.ok(/4 results rows/.test(impactHtml), 'results row count shown')
+  const btn = doc.getElementById('confirmDeleteButton')
+  assert.ok(btn.textContent.includes('Delete permanently'), 'danger button rendered')
+  assert.ok(!btn.disabled)
+
+  const putCountBefore = state.calls.filter(c => c.method === 'PUT' && c.url === '/api/models').length
+  click(btn)
+  await new Promise(r => setImmediate(r))
+  await new Promise(r => setImmediate(r))
+
+  const putsAfter = state.calls.filter(c => c.method === 'PUT' && c.url === '/api/models')
+  assert.equal(putsAfter.length, putCountBefore + 1, 'confirmed PUT re-sent')
+  assert.equal(putsAfter[putsAfter.length - 1].body.confirm, true, 'confirmed PUT carries confirm flag')
+  assert.ok(confirmOverlay.classList.contains('cm-hidden'), 'confirmation dialog closes after confirm')
+  assert.ok(els.dialog.classList.contains('cm-hidden'), 'edit dialog closes after confirm')
+  const banner = doc.getElementById('runBanner')
+  assert.ok(banner.textContent.includes('6 files') && banner.textContent.includes('2 logs') && banner.textContent.includes('4 results rows'), 'banner shows cascade totals')
+})
+
+test('canceling variant confirmation restores rows and never deletes', async () => {
+  const { doc, click, state } = h
+  const els = await openEdit()
+  const key = '30m_deepseek-v4-flash_thinking'
+  const removedRow = uncheckRow(els, '30m', 'thinking')
+
+  state.putFn = () => json({ ok: false, code: 'confirmation_required', impact: [variantRemovalImpact(key)] }, 409)
+  click(els.create)
+  await new Promise(r => setImmediate(r))
+
+  const confirmOverlay = doc.getElementById('confirmDeleteOverlay')
+  assert.ok(!confirmOverlay.classList.contains('cm-hidden'))
+  click(doc.getElementById('confirmDeleteCancel'))
+  await new Promise(r => setImmediate(r))
+
+  assert.ok(confirmOverlay.classList.contains('cm-hidden'), 'confirmation dialog closes on cancel')
+  assert.ok(!els.dialog.classList.contains('cm-hidden'), 'edit dialog stays open on cancel')
+  const restored = els.rows().find(r => r.dataset.tb === '30m' && r.dataset.effort === 'thinking')
+  assert.equal(restored.querySelector('.vc-check').checked, true, 'checkbox re-checked')
+  assert.ok(!restored.classList.contains('vc-to-remove'), 'removal styling cleared')
+  const puts = state.calls.filter(c => c.method === 'PUT' && c.url === '/api/models')
+  assert.equal(puts.length, 1, 'no confirmed PUT after cancel')
+  assert.equal(puts[0].body.confirm, undefined)
+  assert.ok(state.calls.every(c => !(c.method === 'PUT' && c.body && c.body.confirm === true)), 'never sent a confirmed delete')
+})
+
+test('variant with an active job is blocked and not deletable', async () => {
+  const { doc, click, state } = h
+  const els = await openEdit()
+  const key = '30m_deepseek-v4-flash_thinking'
+  uncheckRow(els, '30m', 'thinking')
+
+  state.putFn = () => json({ ok: false, code: 'active_jobs', impact: [variantRemovalImpact(key, { activeJobs: 1 })] }, 409)
+  click(els.create)
+  await new Promise(r => setImmediate(r))
+
+  const confirmOverlay = doc.getElementById('confirmDeleteOverlay')
+  assert.ok(!confirmOverlay.classList.contains('cm-hidden'))
+  const btn = doc.getElementById('confirmDeleteButton')
+  assert.ok(btn.disabled, 'no deletable variants disables the delete button')
+  assert.match(btn.textContent, /active jobs/i)
+  assert.ok(/cannot delete — job still running/.test(doc.getElementById('confirmImpact').textContent))
+  assert.ok(state.calls.every(c => !(c.method === 'PUT' && c.body && c.body.confirm === true)), 'never sends a delete for an active variant')
+})
 
 test('edit save builds PUT payload with locked-row removal and tier creation', async () => {
   const { doc, click, postRender, state } = h
