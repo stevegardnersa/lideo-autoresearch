@@ -1163,26 +1163,26 @@ test('queued job panel shows queue position header', async () => {
   await waitUntil(() => /position 2/.test(doc.getElementById('panelStatus').textContent))
 })
 
-test('dialog pane flags a running job with no output for 60s as stale', async () => {
+test('dialog pane flags a running job with no output for 150s as stale', async () => {
   const { doc, click, state } = h
   state.jobs.jobs = [RUN_JOB_RUNNING]
   state.jobsPost = { ok: true, job: RUN_JOB_RUNNING }
   const card = await openPrefill()
   click(card.querySelector('.tool-run-submit'))
   await waitUntil(() => /Running/.test(doc.getElementById('dlgProgStatus').textContent))
-  h.mod.RUN_STATE.dlgLastOutputAt = new Date(Date.now() - 61_000).toISOString()
+  h.mod.RUN_STATE.dlgLastOutputAt = new Date(Date.now() - 151_000).toISOString()
   const reconnectEl = doc.querySelector('#dlgRunProgress .dlg-reconnect')
   await waitUntil(() => /stale/.test(reconnectEl.textContent))
   assert.match(reconnectEl.textContent, /stale — no output/)
 })
 
-test('log panel flags a running job with no output for 60s as stale', async () => {
+test('log panel flags a running job with no output for 150s as stale', async () => {
   const { doc, click, state } = h
   state.jobs.jobs = [RUN_JOB_RUNNING]
   await openRun(h)
   click(doc.querySelector('.job-row[data-job="j9"] .job-log-link'))
   await waitUntil(() => /Running/.test(doc.getElementById('panelStatus').textContent))
-  h.mod.RUN_STATE.panelLastOutputAt = new Date(Date.now() - 61_000).toISOString()
+  h.mod.RUN_STATE.panelLastOutputAt = new Date(Date.now() - 151_000).toISOString()
   const reconnectEl = doc.querySelector('.log-panel-reconnect')
   await waitUntil(() => /stale/.test(reconnectEl.textContent))
   assert.match(reconnectEl.textContent, /stale — no output/)

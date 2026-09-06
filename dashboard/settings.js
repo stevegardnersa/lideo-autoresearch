@@ -652,6 +652,7 @@ async function openRunProfilePrefill(slug, tb) {
 // ── in-dialog run progress (sidebar under the prefill widget) ──
 
 const DLG_TERMINAL = ['succeeded', 'failed', 'canceled', 'interrupted']
+const STALE_MS = 150_000
 
 function dlgProg() {
   return document.getElementById('dlgRunProgress')
@@ -731,7 +732,7 @@ function dlgDurationText() {
 function toolStaleLine(lastOutputAt) {
   if (!lastOutputAt) return ''
   const gap = Date.now() - new Date(lastOutputAt).getTime()
-  if (gap < 60_000) return ''
+  if (gap < STALE_MS) return ''
   const mins = Math.floor(gap / 60_000)
   return ` · stale — no output for ${mins} m`
 }
@@ -763,7 +764,7 @@ function renderDlgStatusLine() {
   if (reconnect) {
     const isStale = s === 'running' && RUN_STATE.dlgLastOutputAt != null
     if (RUN_STATE.dlgReconnecting) reconnect.textContent = ' · reconnecting'
-    else if (isStale && Date.now() - new Date(RUN_STATE.dlgLastOutputAt).getTime() >= 60_000) {
+    else if (isStale && Date.now() - new Date(RUN_STATE.dlgLastOutputAt).getTime() >= STALE_MS) {
       reconnect.textContent = toolStaleLine(RUN_STATE.dlgLastOutputAt)
     } else reconnect.textContent = ''
   }
@@ -1067,7 +1068,7 @@ function renderPanelHeader() {
   if (reconnect) {
     const isStale = s === 'running' && RUN_STATE.panelLastOutputAt != null
     if (RUN_STATE.panelReconnecting) reconnect.textContent = ' · reconnecting'
-    else if (isStale && Date.now() - new Date(RUN_STATE.panelLastOutputAt).getTime() >= 60_000) {
+    else if (isStale && Date.now() - new Date(RUN_STATE.panelLastOutputAt).getTime() >= STALE_MS) {
       reconnect.textContent = toolStaleLine(RUN_STATE.panelLastOutputAt)
     } else reconnect.textContent = ''
   }
