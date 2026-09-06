@@ -763,12 +763,39 @@ def run_length_controlled_stage(
     summary_md = str(restored.get("summary_md") or "").strip()
     first_pass_summary_md = str(restored.get("first_pass_summary_md") or "").strip()
 
+    # Best-pass selection: among all passes executed (including passes restored
+    # from a checkpoint), track the one whose visible word count is closest to
+    # target_words. Returned summary_md is this pass, not the last one.
+    best_summary_md = str(restored.get("best_summary_md") or "").strip()
+    if not best_summary_md and summary_md:
+        # Old-format checkpoint (no best pass recorded): seed from latest pass.
+        best_summary_md = summary_md
+    if best_summary_md:
+        best_distance = abs(visible_word_count(best_summary_md) - target_words)
+    else:
+        best_distance = None
+
+    def update_best(candidate_md: str) -> None:
+        nonlocal best_summary_md, best_distance
+        if not best_summary_md:
+            best_summary_md = candidate_md
+            best_distance = abs(visible_word_count(candidate_md) - target_words)
+            return
+        distance = abs(visible_word_count(candidate_md) - target_words)
+        # Strict < keeps the earliest pass on ties.
+        assert best_distance is not None
+        if distance < best_distance:
+            best_summary_md = candidate_md
+            best_distance = distance
+
     def emit_checkpoint() -> None:
         if checkpoint_callback is None:
             return
         checkpoint_callback(
             {
                 "summary_md": summary_md,
+                "best_summary_md": best_summary_md,
+                "best_distance": best_distance,
                 "first_pass_summary_md": first_pass_summary_md or summary_md,
                 "passes_used": passes_used,
                 "generation_cost": total_cost,
@@ -793,6 +820,7 @@ def run_length_controlled_stage(
         total_uncached_cost += result.usage.uncached_generation_cost or result.usage.generation_cost
         summary_md = result.summary_md.strip()
         first_pass_summary_md = summary_md
+        update_best(summary_md)
         emit_checkpoint()
 
     while passes_used < spec.length_control.max_passes:
@@ -850,10 +878,11 @@ def run_length_controlled_stage(
         summary_md = result.summary_md.strip()
         if not first_pass_summary_md:
             first_pass_summary_md = summary_md
+        update_best(summary_md)
         emit_checkpoint()
 
     return StageRun(
-        summary_md=summary_md,
+        summary_md=best_summary_md,
         first_pass_summary_md=first_pass_summary_md or summary_md,
         passes_used=passes_used,
         generation_cost=total_cost,
