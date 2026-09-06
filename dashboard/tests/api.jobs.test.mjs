@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import http from 'node:http'
 import { EventEmitter } from 'node:events'
-import { scanRequestHandler, makeCtx, createJobManager, JOB_LIMITS } from '../vite.config.js'
+import { scanRequestHandler, makeCtx, createJobManager, JOB_LIMITS, killAllChildren, liveChildren } from '../vite.config.js'
 
 // ── fixtures ──────────────────────────────────────────────────
 
@@ -95,6 +95,29 @@ async function streamText(res) {
 const runArgs = () => ({ bench: 'chapter_fast', profile: 'all', time: 'all', mock: true, 'write-results': true, 'max-samples': 4 })
 
 // ── registry validation ──────────────────────────────────────
+
+test('GET /api/jobs honors query params (regression: ?limit=60)', async () => {
+  const { server, base } = await startServer()
+  try {
+    const a = await call(base, '/api/jobs', { method: 'POST', body: { toolId: 'add_candidate', args: { 'model-full': 'openai/gpt-4o' } } })
+    assert.ok(a.body.job, 'add_candidate job created')
+    const b = await call(base, '/api/jobs', { method: 'POST', body: { toolId: 'run_candidate', args: runArgs() } })
+    assert.ok(b.body.job, 'run_candidate job created')
+    const limited = await call(base, '/api/jobs?limit=1')
+    assert.equal(limited.status, 200)
+    assert.equal(limited.body.ok, true)
+    assert.ok(Array.isArray(limited.body.jobs), 'list response is JSON (not html fallback)')
+    assert.equal(limited.body.jobs.length, 1, 'limit honored')
+    const q = await call(base, '/api/jobs?limit=60')
+    assert.equal(q.body.ok, true)
+    assert.equal(q.body.jobs.length, 2, 'unbounded-by-default list (limit=60) returns both jobs')
+    const statusFiltered = await call(base, '/api/jobs?status=queued&limit=60')
+    assert.equal(statusFiltered.body.ok, true)
+    assert.ok(statusFiltered.body.jobs.length >= 1 && statusFiltered.body.jobs.every(j => j.status === 'queued'), 'status filter applied')
+  } finally {
+    await closeServer(server)
+  }
+})
 
 test('POST /api/jobs rejects unknown tool with 404', async () => {
   const { server, base } = await startServer()
@@ -474,6 +497,8 @@ test('run_candidate without judge-model spawns without --judge-model', async () 
     assert.equal(r.status, 201)
     assert.ok(!procs[0].argv.includes('--judge-model'), 'argv omits judge flag for deterministic run')
     assert.ok(!procs[0].argv.includes('openai'), 'no stray judge arg')
+    assert.equal(procs[0].opts.env.PYTHONUNBUFFERED, '1', 'job stdout unbuffered so the live log streams promptly')
+    assert.ok(procs[0].opts.env.OPENROUTER_API_KEY, 'inherits process env')
   } finally {
     await closeServer(server)
   }
@@ -496,6 +521,21 @@ test('run_candidate with judge-model passes it and validates the pattern', async
     assert.equal(bad.status, 400)
     assert.ok(bad.body.fieldErrors['judge-model'])
   } finally {
+    await closeServer(server)
+  }
+})
+
+test('run_candidate spawn processes are torn down on server shutdown (no orphan runs)', async () => {
+  const { server, base, procs } = await startServer()
+  try {
+    await call(base, '/api/jobs', { method: 'POST', body: { toolId: 'run_candidate', args: runArgs() } })
+    assert.equal(procs.length, 1)
+    const child = procs[0]
+    assert.equal(child.killSignal, null)
+    killAllChildren()
+    assert.equal(child.killSignal, 'SIGTERM', 'owned child gets SIGTERM on shutdown')
+  } finally {
+    liveChildren.clear()
     await closeServer(server)
   }
 })

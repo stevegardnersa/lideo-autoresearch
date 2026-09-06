@@ -54,6 +54,31 @@ from core.versioning import (
 from scoring import JudgeScores, Rubric, SummarySample, readability_metrics, score_dataset, visible_word_count, DEFAULT_SCORING_CONFIG, apply_gates_override
 
 
+PROGRESS_PRINT_INTERVAL_S = 15.0
+_last_progress_print: Dict[str, Any] = {"ts": 0.0, "phase": "", "item_key": ""}
+
+
+def maybe_print_progress(run_id: str, payload: Mapping[str, Any]) -> None:
+    global _last_progress_print
+    now = time.time()
+    phase = str(payload.get("phase") or "")
+    item_key = str(payload.get("item_key") or "")
+    changed = phase != _last_progress_print["phase"] or item_key != _last_progress_print["item_key"]
+    if not changed and (now - float(_last_progress_print["ts"])) < PROGRESS_PRINT_INTERVAL_S:
+        return
+    _last_progress_print = {"ts": now, "phase": phase, "item_key": item_key}
+    pieces = [f"[{run_id}]", item_key, phase]
+    target = payload.get("target_words")
+    if target is not None:
+        pieces.append(f"target={target}w")
+    stage_state = payload.get("stage_state")
+    if isinstance(stage_state, Mapping):
+        pieces.append(f"pass={int(stage_state.get('passes_used') or 0)}")
+        pieces.append(f"words={visible_word_count(str(stage_state.get('summary_md') or ''))}")
+        pieces.append(f"cost=${float(stage_state.get('generation_cost') or 0.0):.4f}")
+    print(" ".join(pieces), flush=True)
+
+
 @dataclass(frozen=True)
 class ChapterContext:
     chapter_id: str
@@ -1995,6 +2020,7 @@ def _run_single(
                 save_run_state(state_path, state)
 
             def progress_callback(progress_payload: Mapping[str, Any]) -> None:
+                maybe_print_progress(run_id, progress_payload)
                 state["current_item"] = _json_safe(progress_payload)
                 state["status"] = "running"
                 save_run_state(state_path, state)
