@@ -30,8 +30,13 @@ const MODELS_PAYLOAD = {
   ],
 }
 
-function json(payload) {
-  return Promise.resolve({ ok: true, status: 200, json: async () => JSON.parse(JSON.stringify(payload)) })
+function json(payload, status = 200) {
+  return Promise.resolve({
+    ok: status >= 200 && status < 300,
+    status,
+    headers: { get: () => 'application/json' },
+    json: async () => JSON.parse(JSON.stringify(payload)),
+  })
 }
 
 const RUN_REGISTRY = [
@@ -116,6 +121,7 @@ function makeHarness() {
     clear: { ok: true, removed: 0 },
     jobDetail: () => ({ ok: true, job: { id: 'j3', toolId: 'run_candidate', args: { bench: 'chapter_fast', profile: 'all', mock: true }, status: 'succeeded', createdAt: '2026-09-05T09:00:00Z', exitCode: 0, resultHints: {} } }),
     postGate: null,
+    htmlFallback: null,
     ls: new Map(),
     promptReturn: null,
     promptCalls: 0,
@@ -149,6 +155,14 @@ function makeHarness() {
       return json(state.registry)
     }
     if (url === '/api/env-check') return json(state.env)
+    if (state.htmlFallback && url === state.htmlFallback) {
+      return Promise.resolve({
+        ok: false,
+        status: 200,
+        headers: { get: () => 'text/html' },
+        json: async () => { throw new Error('not JSON') },
+      })
+    }
     if (url === '/bench-list') return json(state.bench)
     if (url.split('?')[0] === '/api/jobs' && method === 'GET') return json(state.jobs)
     if (url === '/api/jobs' && method === 'POST') {
@@ -964,8 +978,13 @@ test('failed run shows error and log link in the dialog pane', async () => {
   assert.ok(dlgEs.closed, 'dialog stream closed on failure')
   assert.match(doc.getElementById('dlgProgStatus').textContent, /boom/)
   assert.match(doc.getElementById('dlgProgBadge').textContent, /Failed/)
-  const link = doc.querySelector('#dlgProgActions .mini-btn[href]')
-  assert.equal(link.getAttribute('href'), '/api/jobs/j9/log')
+  const logBtn = doc.querySelector('#dlgProgActions .dlg-prog-log')
+  assert.ok(logBtn, 'view log button in failed action row')
+  assert.equal(logBtn.dataset.job, 'j9')
+  h.click(logBtn)
+  await waitUntil(() => !doc.getElementById('logPanel').classList.contains('cm-hidden'))
+  assert.equal(doc.getElementById('panelTitle').textContent, 'Run candidate')
+  assert.match(state.es[state.es.length - 1], /\/api\/jobs\/j9\/stream/, 'panel stream opened from dialog view log')
 })
 
 test('failedFast POST renders terminal pane without opening a stream', async () => {
@@ -1046,6 +1065,127 @@ test('run submit is disabled while the POST is in flight in the dialog', async (
   assert.equal(submit.disabled, true, 'submit disabled while POST pending')
   resolveGate()
   await waitUntil(() => !h.doc.getElementById('dlgRunProgress').classList.contains('cm-hidden'))
+})
+
+test('api() surfaces a UI-banner fallback instead of a raw JSON parse failure', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = []
+  state.htmlFallback = '/api/jobs'
+  const card = await openPrefill()
+  click(card.querySelector('.tool-run-submit'))
+  await waitUntil(() => card.classList.contains('has-error') || /banner fallback/.test(card.textContent))
+  assert.match(card.textContent, /banner fallback/, 'descriptive banner error on the card, not a SyntaxError')
+  assert.equal(state.es.length, 0, 'no stream for non-job response')
+  assert.ok(doc.getElementById('dlgRunProgress').classList.contains('cm-hidden'), 'no progress pane for non-job response')
+})
+
+// ── log side panel (live log viewer) ─────────────────────────
+
+const panelStream = (h) => h.state.esInstances[h.state.esInstances.length - 1]
+
+test('run-data view log opens the live log side panel', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = [RUN_JOB_RUNNING]
+  await openRun(h)
+  const row = doc.querySelector('.job-row[data-job="j9"]')
+  assert.ok(row.querySelector('.job-log-link'), 'view log button rendered on row')
+  click(row.querySelector('.job-log-link'))
+  await waitUntil(() => !doc.getElementById('logPanel').classList.contains('cm-hidden'))
+  assert.ok(!doc.getElementById('logPanelScrim').classList.contains('cm-hidden'), 'scrim visible')
+  assert.equal(doc.getElementById('panelTitle').textContent, 'Run candidate')
+  await waitUntil(() => state.es.some(u => /\/api\/jobs\/j9\/stream/.test(u)))
+  assert.match(doc.getElementById('panelStatus').textContent, /Running/)
+  const raw = doc.querySelector('.log-panel-raw')
+  assert.equal(raw.getAttribute('href'), '/api/jobs/j9/log')
+})
+
+test('log panel appends streamed events with stderr highlight', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = [RUN_JOB_RUNNING]
+  await openRun(h)
+  const row = doc.querySelector('.job-row[data-job="j9"]')
+  click(row.querySelector('.job-log-link'))
+  await waitUntil(() => state.esInstances.length === 1)
+  const es = panelStream(h)
+  es.emit('log', { stream: 'stdout', text: 'profile 1/3' })
+  const pre = doc.querySelector('.log-panel-pre')
+  assert.match(pre.textContent, /profile 1\/3/)
+  es.emit('log', { stream: 'stderr', text: 'retry warned' })
+  assert.ok(pre.querySelector('.con-err') && /retry warned/.test(pre.querySelector('.con-err').textContent), 'stderr wrapped in .con-err')
+  es.emit('start', { jobId: 'j9', pid: 42 })
+  assert.match(doc.getElementById('panelStatus').textContent, /Running/)
+})
+
+test('terminal status event closes the panel stream but keeps panel open', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = [RUN_JOB_RUNNING]
+  await openRun(h)
+  click(doc.querySelector('.job-row[data-job="j9"] .job-log-link'))
+  await waitUntil(() => state.esInstances.length === 1)
+  const es = panelStream(h)
+  es.emit('status', { status: 'succeeded', exitCode: 0, resultHints: { runId: 'r9' } })
+  assert.ok(es.closed, 'panel stream closed at terminal')
+  assert.match(doc.getElementById('panelStatus').textContent, /Succeeded/)
+  assert.ok(!doc.getElementById('logPanel').classList.contains('cm-hidden'), 'panel stays open after terminal')
+})
+
+test('panel close button hides panel and detaches the stream', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = [RUN_JOB_RUNNING]
+  await openRun(h)
+  click(doc.querySelector('.job-row[data-job="j9"] .job-log-link'))
+  await waitUntil(() => state.esInstances.length === 1)
+  const es = panelStream(h)
+  click(doc.getElementById('panelClose'))
+  assert.ok(es.closed, 'panel stream detached on close')
+  assert.ok(doc.getElementById('logPanel').classList.contains('cm-hidden'), 'panel hidden')
+  assert.ok(doc.getElementById('logPanelScrim').classList.contains('cm-hidden'), 'scrim hidden')
+  assert.ok(doc.getElementById('panelTitle').textContent === '', 'panel state reset')
+})
+
+test('Escape closes the log panel', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = [RUN_JOB_RUNNING]
+  await openRun(h)
+  click(doc.querySelector('.job-row[data-job="j9"] .job-log-link'))
+  await waitUntil(() => !doc.getElementById('logPanel').classList.contains('cm-hidden'))
+  doc.body.dispatchEvent(new h.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+  assert.ok(doc.getElementById('logPanel').classList.contains('cm-hidden'), 'panel closed via Esc')
+})
+
+test('queued job panel shows queue position header', async () => {
+  const { doc, click, state } = h
+  const q1 = { id: 'qa', toolId: 'run_candidate', status: 'queued', createdAt: '2026-09-05T09:00:00Z', exitCode: null, resultHints: {} }
+  const q2 = { id: 'j9', toolId: 'run_candidate', status: 'queued', createdAt: '2026-09-05T09:00:01Z', exitCode: null, resultHints: {} }
+  state.jobs.jobs = [q1, q2]
+  await openRun(h)
+  click(doc.querySelector('.job-row[data-job="j9"] .job-log-link'))
+  await waitUntil(() => /position 2/.test(doc.getElementById('panelStatus').textContent))
+})
+
+test('dialog pane flags a running job with no output for 60s as stale', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = [RUN_JOB_RUNNING]
+  state.jobsPost = { ok: true, job: RUN_JOB_RUNNING }
+  const card = await openPrefill()
+  click(card.querySelector('.tool-run-submit'))
+  await waitUntil(() => /Running/.test(doc.getElementById('dlgProgStatus').textContent))
+  h.mod.RUN_STATE.dlgLastOutputAt = new Date(Date.now() - 61_000).toISOString()
+  const reconnectEl = doc.querySelector('#dlgRunProgress .dlg-reconnect')
+  await waitUntil(() => /stale/.test(reconnectEl.textContent))
+  assert.match(reconnectEl.textContent, /stale — no output/)
+})
+
+test('log panel flags a running job with no output for 60s as stale', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = [RUN_JOB_RUNNING]
+  await openRun(h)
+  click(doc.querySelector('.job-row[data-job="j9"] .job-log-link'))
+  await waitUntil(() => /Running/.test(doc.getElementById('panelStatus').textContent))
+  h.mod.RUN_STATE.panelLastOutputAt = new Date(Date.now() - 61_000).toISOString()
+  const reconnectEl = doc.querySelector('.log-panel-reconnect')
+  await waitUntil(() => /stale/.test(reconnectEl.textContent))
+  assert.match(reconnectEl.textContent, /stale — no output/)
 })
 
 // ── judge-model toggle ───────────────────────────────────────

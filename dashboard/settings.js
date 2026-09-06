@@ -1,9 +1,28 @@
-const api = (path, opts = {}) => fetch(path, {
-  headers: { 'Content-Type': 'application/json' },
-  ...opts,
-}).then(r => r.json()).then(j => {
-  if (!j || j.ok === false) {
+const api = async (path, opts = {}) => {
+  const res = await fetch(path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+  })
+  const ct = res.headers && res.headers.get ? (res.headers.get('content-type') || '') : ''
+  let j = null
+  if (ct.includes('application/json')) {
+    try {
+      j = await res.json()
+    } catch {
+      j = null
+    }
+  }
+  const httpBad = !res.ok
+  const jsonBad = j === null
+  const okFalse = j !== null && j.ok !== undefined && j.ok === false
+  if (httpBad || jsonBad || okFalse) {
     let msg = (j && j.error) || `request failed (${path})`
+    if (httpBad) msg = `HTTP ${res.status} — ${msg}`
+    if (jsonBad && ct.includes('text/html')) {
+      msg = `UI banner fallback for ${path} — expected JSON API (server route/query mismatch)`
+    } else if (jsonBad) {
+      msg = `No JSON response from ${path} (${ct || 'no content-type'})`
+    }
     if (j && j.fieldErrors) {
       const first = Object.values(j.fieldErrors)[0]
       if (first) msg = first
@@ -11,7 +30,7 @@ const api = (path, opts = {}) => fetch(path, {
     throw new Error(msg)
   }
   return j
-})
+}
 
 function esc(s) {
   return String(s == null ? '' : s)
@@ -92,6 +111,32 @@ const MODAL_TEMPLATE = `
     </div>
   </div>
 </div>
+
+<div class="log-panel-scrim cm-hidden" id="logPanelScrim"></div>
+<aside class="log-panel cm-hidden" id="logPanel" role="dialog" aria-label="Run log" aria-hidden="true">
+  <header class="log-panel-head">
+    <div class="log-panel-title-row">
+      <span class="job-badge" id="panelBadge">…</span>
+      <span class="log-panel-title" id="panelTitle"></span>
+    </div>
+    <div class="log-panel-status-row">
+      <span class="log-panel-status" id="panelStatus" role="status"><span class="panel-state-text"></span></span>
+      <span class="log-panel-elapsed" aria-hidden="true"></span>
+      <span class="log-panel-reconnect" aria-hidden="true"></span>
+    </div>
+  </header>
+  <div class="log-panel-toolbar">
+    <label class="cb autoscroll-wrap"><input type="checkbox" class="log-panel-autoscroll" checked /> Auto-scroll</label>
+    <button type="button" class="mini-btn log-panel-clear">Clear view</button>
+    <span class="log-panel-spacer"></span>
+    <a class="mini-btn log-panel-raw" target="_blank" rel="noopener">raw log</a>
+    <button type="button" class="mini-btn log-panel-close" id="panelClose" aria-label="Close log panel">&times;</button>
+  </div>
+  <div class="log-panel-body">
+    <div class="log-panel-waiting cm-hidden" id="panelWaiting">Waiting for output&hellip;</div>
+    <div class="console-wrap log-panel-console"><pre class="log-panel-pre" role="log"></pre></div>
+  </div>
+</aside>
 
 <div class="settings-overlay cm-hidden" id="modelDialogOverlay">
   <div class="settings-dialog" role="dialog" aria-modal="true" data-run-slug="">
@@ -652,6 +697,7 @@ function resetDlgPane() {
   RUN_STATE.dlgFinishedAt = null
   RUN_STATE.dlgError = ''
   RUN_STATE.dlgLastJob = null
+  RUN_STATE.dlgLastOutputAt = null
   const p = dlgProg()
   if (!p) return
   p.classList.add('cm-hidden')
@@ -682,6 +728,14 @@ function dlgDurationText() {
   return durationStr(RUN_STATE.dlgStartedAt, RUN_STATE.dlgFinishedAt || null)
 }
 
+function toolStaleLine(lastOutputAt) {
+  if (!lastOutputAt) return ''
+  const gap = Date.now() - new Date(lastOutputAt).getTime()
+  if (gap < 60_000) return ''
+  const mins = Math.floor(gap / 60_000)
+  return ` · stale — no output for ${mins} m`
+}
+
 function renderDlgStatusLine() {
   const statusEl = dlgStatusEl()
   if (!statusEl) return
@@ -706,7 +760,13 @@ function renderDlgStatusLine() {
   const elapsed = head.querySelector('.dlg-elapsed')
   const reconnect = head.querySelector('.dlg-reconnect')
   if (elapsed) elapsed.textContent = dlgDurationText() ? ` — ${dlgDurationText()}` : ''
-  if (reconnect) reconnect.textContent = RUN_STATE.dlgReconnecting ? ' · reconnecting' : ''
+  if (reconnect) {
+    const isStale = s === 'running' && RUN_STATE.dlgLastOutputAt != null
+    if (RUN_STATE.dlgReconnecting) reconnect.textContent = ' · reconnecting'
+    else if (isStale && Date.now() - new Date(RUN_STATE.dlgLastOutputAt).getTime() >= 60_000) {
+      reconnect.textContent = toolStaleLine(RUN_STATE.dlgLastOutputAt)
+    } else reconnect.textContent = ''
+  }
 }
 
 function startDlgTimer() {
@@ -740,6 +800,7 @@ function dlgConsoleHtml() {
 
 function appendDlgLog(ev) {
   RUN_STATE.dlgReconnecting = false
+  RUN_STATE.dlgLastOutputAt = new Date().toISOString()
   RUN_STATE.dlgLogs.push(ev)
   if (RUN_STATE.dlgLogs.length > 400) RUN_STATE.dlgLogs.splice(0, RUN_STATE.dlgLogs.length - 400)
   const pre = document.querySelector('#dlgRunProgress .dlg-console-pre')
@@ -766,6 +827,7 @@ function handleDlgStatus(job, status) {
   RUN_STATE.dlgReconnecting = false
   RUN_STATE.dlgStatus = s
   if (status.error) RUN_STATE.dlgError = status.error
+  if (!DLG_TERMINAL.includes(s)) RUN_STATE.dlgLastOutputAt = new Date().toISOString()
   if (DLG_TERMINAL.includes(s)) {
     stopDlgTimer()
     detachDlgStream(job)
@@ -816,13 +878,15 @@ function renderDlgActions(jobId, resultHints = {}) {
   }
   if (terminal) actions.push(`<button type="button" class="mini-btn dlg-prog-rerun">Re-run</button>`)
   if (id) {
-    actions.push(`<a class="mini-btn" href="/api/jobs/${encodeURIComponent(id)}/log" target="_blank" rel="noopener">view log</a>`)
+    actions.push(`<button type="button" class="mini-btn dlg-prog-log" data-job="${encodeURIComponent(id)}">view log</button>`)
   }
   actions.push(`<button type="button" class="mini-btn dlg-prog-runs">Open in Run data</button>`)
   actions.push(`<button type="button" class="mini-btn dlg-prog-close">Close</button>`)
   box.innerHTML = actions.join('')
   const rerun = box.querySelector('.dlg-prog-rerun')
   if (rerun) rerun.addEventListener('click', rerunDlgJob)
+  const logBtn = box.querySelector('.dlg-prog-log')
+  if (logBtn) logBtn.addEventListener('click', () => openLogPanel(decodeURIComponent(logBtn.dataset.job)))
   const explorer = box.querySelector('.dlg-prog-explorer')
   if (explorer) explorer.addEventListener('click', () => { if (window.open) window.open('/explorer.html') })
   const runs = box.querySelector('.dlg-prog-runs')
@@ -870,6 +934,7 @@ function attachDlgStream(job) {
     if (RUN_STATE.dlgJobId !== job) return
     RUN_STATE.dlgStatus = 'running'
     RUN_STATE.dlgStartedAt = RUN_STATE.dlgStartedAt || new Date().toISOString()
+    RUN_STATE.dlgLastOutputAt = new Date().toISOString()
     if (RUN_STATE.dlgStartedAt) startDlgTimer()
     const badge = dlgBadgeEl()
     if (badge) badge.innerHTML = statusBadgeHtml('running')
@@ -906,6 +971,7 @@ function openDialogProgress(job, toolId, args, opts = {}) {
   RUN_STATE.dlgStartedAt = job.startedAt || null
   RUN_STATE.dlgFinishedAt = job.finishedAt || null
   RUN_STATE.dlgError = job.error || ''
+  RUN_STATE.dlgLastOutputAt = null
   RUN_STATE.dlgLastJob = { id: job.id, toolId, args: args || (job.args || {}) }
   const pre = document.querySelector('#dlgRunProgress .dlg-console-pre')
   if (pre) pre.textContent = ''
@@ -951,6 +1017,240 @@ async function rerunDlgJob() {
   } catch (e) {
     setDialogNotice(`Re-run failed: ${esc(e.message)}`, 'error')
   }
+}
+
+// ── log side panel (live log viewer, row + dialog "view log") ──
+
+function panelEl() {
+  return document.getElementById('logPanel')
+}
+
+function stopPanelTimer() {
+  if (RUN_STATE.panelTimer) {
+    clearInterval(RUN_STATE.panelTimer)
+    RUN_STATE.panelTimer = null
+  }
+}
+
+function detachPanelStream(job) {
+  if (job == null) return
+  const es = RUN_STATE.panelEs.get(job)
+  if (es) {
+    es.close()
+    RUN_STATE.panelEs.delete(job)
+  }
+}
+
+function panelDurationText() {
+  if (!RUN_STATE.panelStartedAt) return ''
+  return durationStr(RUN_STATE.panelStartedAt, RUN_STATE.panelFinishedAt || null)
+}
+
+function renderPanelHeader() {
+  const p = panelEl()
+  if (!p) return
+  const s = RUN_STATE.panelStatus || ''
+  let state = (STATUS_BADGE[s] && STATUS_BADGE[s][1]) || s || 'Opened'
+  if (s === 'queued' && !RUN_STATE.panelFinishedAt) {
+    state = RUN_STATE.panelQueuePos > 0
+      ? `Queued — position ${RUN_STATE.panelQueuePos} of ${RUN_STATE.jobs.filter(j => j.status === 'queued').length}`
+      : 'Queued — waiting for a free slot'
+  } else if (s === 'failed') {
+    const row = RUN_STATE.jobs.find(j => j.id === RUN_STATE.panelJobId)
+    state += row && row.error ? ` · ${row.error}` : ''
+  }
+  const stateText = p.querySelector('.panel-state-text')
+  if (stateText) stateText.textContent = state
+  const elapsed = p.querySelector('.log-panel-elapsed')
+  if (elapsed) elapsed.textContent = panelDurationText() ? ` — ${panelDurationText()}` : ''
+  const reconnect = p.querySelector('.log-panel-reconnect')
+  if (reconnect) {
+    const isStale = s === 'running' && RUN_STATE.panelLastOutputAt != null
+    if (RUN_STATE.panelReconnecting) reconnect.textContent = ' · reconnecting'
+    else if (isStale && Date.now() - new Date(RUN_STATE.panelLastOutputAt).getTime() >= 60_000) {
+      reconnect.textContent = toolStaleLine(RUN_STATE.panelLastOutputAt)
+    } else reconnect.textContent = ''
+  }
+  const badge = document.getElementById('panelBadge')
+  if (badge) badge.innerHTML = statusBadgeHtml(s)
+  const raw = p.querySelector('.log-panel-raw')
+  if (raw && RUN_STATE.panelJobId) raw.setAttribute('href', `/api/jobs/${encodeURIComponent(RUN_STATE.panelJobId)}/log`)
+}
+
+function startPanelTimer() {
+  stopPanelTimer()
+  RUN_STATE.panelTimer = setInterval(() => {
+    if (!RUN_STATE.panelStatus || DLG_TERMINAL.includes(RUN_STATE.panelStatus)) {
+      stopPanelTimer()
+      return
+    }
+    renderPanelHeader()
+  }, 1000)
+  if (RUN_STATE.panelTimer && typeof RUN_STATE.panelTimer.unref === 'function') RUN_STATE.panelTimer.unref()
+}
+
+function panelConsoleHtml() {
+  return RUN_STATE.panelLogs.map(l =>
+    l.stream === 'stderr' ? `<span class="con-err">${esc(l.text)}</span>` : esc(l.text),
+  ).join('\n')
+}
+
+function renderPanelConsole() {
+  const p = panelEl()
+  const pre = p && p.querySelector('.log-panel-pre')
+  const wrap = p && p.querySelector('.log-panel-console')
+  const waiting = document.getElementById('panelWaiting')
+  const auto = p && p.querySelector('.log-panel-autoscroll')
+  if (!pre) return
+  const has = RUN_STATE.panelLogs.length > 0
+  pre.innerHTML = panelConsoleHtml()
+  if (!has && waiting) waiting.classList.remove('cm-hidden')
+  if (has && waiting) waiting.classList.add('cm-hidden')
+  if (wrap && auto && auto.checked && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    wrap.scrollTop = wrap.scrollHeight
+  }
+}
+
+function appendPanelLog(ev) {
+  RUN_STATE.panelReconnecting = false
+  RUN_STATE.panelLastOutputAt = new Date().toISOString()
+  RUN_STATE.panelLogs.push(ev)
+  if (RUN_STATE.panelLogs.length > 1000) RUN_STATE.panelLogs.splice(0, RUN_STATE.panelLogs.length - 1000)
+  renderPanelConsole()
+}
+
+function handlePanelStatus(job, status) {
+  if (!status || !status.status || RUN_STATE.panelJobId !== job) return
+  RUN_STATE.panelReconnecting = false
+  RUN_STATE.panelStatus = status.status
+  if (status.status === 'running' && !RUN_STATE.panelStartedAt) {
+    RUN_STATE.panelStartedAt = new Date().toISOString()
+    startPanelTimer()
+  }
+  if (!DLG_TERMINAL.includes(status.status)) RUN_STATE.panelLastOutputAt = new Date().toISOString()
+  if (DLG_TERMINAL.includes(status.status)) {
+    stopPanelTimer()
+    detachPanelStream(job)
+    RUN_STATE.panelFinishedAt = new Date().toISOString()
+    renderPanelHeader()
+    refreshJobs().catch(() => {})
+    return
+  }
+  renderPanelHeader()
+}
+
+function attachPanelStream(job) {
+  if (typeof window.EventSource === 'undefined' || RUN_STATE.panelEs.has(job)) return
+  const p = panelEl()
+  if (!p) return
+  const es = new window.EventSource(`/api/jobs/${job}/stream`)
+  RUN_STATE.panelEs.set(job, es)
+  es.addEventListener('log', (e) => {
+    try {
+      const ev = JSON.parse(e.data || '{}')
+      if (ev && ev.text) appendPanelLog({ stream: ev.stream, text: ev.text })
+    } catch { /* ignore */ }
+  })
+  es.addEventListener('start', (e) => {
+    if (RUN_STATE.panelJobId !== job) return
+    RUN_STATE.panelStatus = 'running'
+    RUN_STATE.panelStartedAt = RUN_STATE.panelStartedAt || new Date().toISOString()
+    RUN_STATE.panelLastOutputAt = new Date().toISOString()
+    startPanelTimer()
+    renderPanelHeader()
+  })
+  es.addEventListener('status', (e) => {
+    let status = {}
+    try { status = JSON.parse(e.data || '{}') } catch { return }
+    handlePanelStatus(job, status)
+  })
+  es.addEventListener('cancel', () => handlePanelStatus(job, { status: 'canceled' }))
+  es.onerror = () => {
+    if (!RUN_STATE.panelStatus || DLG_TERMINAL.includes(RUN_STATE.panelStatus)) {
+      detachPanelStream(job)
+      return
+    }
+    RUN_STATE.panelReconnecting = true
+    renderPanelHeader()
+  }
+}
+
+function closeLogPanel() {
+  stopPanelTimer()
+  if (RUN_STATE.panelJobId != null) detachPanelStream(RUN_STATE.panelJobId)
+  RUN_STATE.panelJobId = null
+  RUN_STATE.panelStatus = ''
+  RUN_STATE.panelTitle = ''
+  RUN_STATE.panelStartedAt = null
+  RUN_STATE.panelFinishedAt = null
+  RUN_STATE.panelReconnecting = false
+  RUN_STATE.panelQueuePos = 0
+  RUN_STATE.panelLogs = []
+  RUN_STATE.panelLastOutputAt = null
+  const p = panelEl()
+  const scrim = document.getElementById('logPanelScrim')
+  const pre = p && p.querySelector('.log-panel-pre')
+  const titleEl = document.getElementById('panelTitle')
+  if (p) {
+    p.classList.add('cm-hidden')
+    p.setAttribute('aria-hidden', 'true')
+  }
+  if (scrim) scrim.classList.add('cm-hidden')
+  if (pre) pre.textContent = ''
+  if (titleEl) titleEl.textContent = ''
+}
+
+async function openLogPanel(jobId) {
+  if (!jobId) return
+  let rec = RUN_STATE.jobs.find(j => j.id === jobId)
+  if (!rec) {
+    try {
+      const { job } = await api(`/api/jobs/${jobId}`)
+      rec = job
+    } catch { rec = null }
+  }
+  if (!rec) {
+    setBanner(`Log unavailable: unknown job ${jobId}`)
+    return
+  }
+  const p = panelEl()
+  const scrim = document.getElementById('logPanelScrim')
+  if (!p) return
+  stopPanelTimer()
+  if (RUN_STATE.panelJobId != null && RUN_STATE.panelJobId !== jobId) detachPanelStream(RUN_STATE.panelJobId)
+  RUN_STATE.panelJobId = jobId
+  RUN_STATE.panelStatus = rec.status || 'queued'
+  RUN_STATE.panelStartedAt = rec.startedAt || null
+  RUN_STATE.panelFinishedAt = rec.finishedAt || null
+  RUN_STATE.panelReconnecting = false
+  RUN_STATE.panelQueuePos = 0
+  RUN_STATE.panelLogs = []
+  RUN_STATE.panelLastOutputAt = null
+  const tool = toolById(rec.toolId)
+  RUN_STATE.panelTitle = tool ? tool.title : (rec.toolId || jobId.slice(0, 8))
+  const titleEl = document.getElementById('panelTitle')
+  if (titleEl) titleEl.textContent = RUN_STATE.panelTitle
+  p.classList.remove('cm-hidden')
+  p.setAttribute('aria-hidden', 'false')
+  if (scrim) scrim.classList.remove('cm-hidden')
+  if (RUN_STATE.panelStatus === 'queued') {
+    const queued = RUN_STATE.jobs.filter(j => j.status === 'queued')
+    const idx = queued.findIndex(j => j.id === jobId)
+    if (idx !== -1) RUN_STATE.panelQueuePos = idx + 1
+  }
+  renderPanelHeader()
+  renderPanelConsole()
+  attachPanelStream(jobId)
+  if (RUN_STATE.panelStatus === 'running') startPanelTimer()
+  const closeBtn = document.getElementById('panelClose')
+  if (closeBtn && closeBtn.focus) closeBtn.focus()
+  const esc = (e) => {
+    if (e.key === 'Escape') {
+      closeLogPanel()
+      document.removeEventListener('keydown', esc)
+    }
+  }
+  document.addEventListener('keydown', esc)
 }
 
 async function handleProbeForAdd(model, route) {
@@ -1152,6 +1452,15 @@ function bindModal() {
   document.getElementById('dlgRunClose').addEventListener('click', clearInlineRunWidget)
   const dlgConClear = document.getElementById('dlgConClear')
   if (dlgConClear) dlgConClear.addEventListener('click', clearDlgConsole)
+  const panelClose = document.getElementById('panelClose')
+  if (panelClose) panelClose.addEventListener('click', closeLogPanel)
+  const panelClear = document.querySelector('.log-panel-clear')
+  if (panelClear) panelClear.addEventListener('click', () => {
+    RUN_STATE.panelLogs = []
+    renderPanelConsole()
+  })
+  const panelScrim = document.getElementById('logPanelScrim')
+  if (panelScrim) panelScrim.addEventListener('click', closeLogPanel)
   dialogOverlay.addEventListener('click', (e) => {
     if (e.target === dialogOverlay) closeDialog()
   })
@@ -1253,6 +1562,18 @@ const RUN_STATE = {
   dlgFinishedAt: null,
   dlgError: '',
   dlgLastJob: null,
+  dlgLastOutputAt: null,
+  panelEs: new Map(),
+  panelTimer: null,
+  panelLogs: [],
+  panelJobId: null,
+  panelStatus: '',
+  panelTitle: '',
+  panelStartedAt: null,
+  panelFinishedAt: null,
+  panelReconnecting: false,
+  panelQueuePos: 0,
+  panelLastOutputAt: null,
 }
 
 const RUN_TOOLS_BY_ID = new Map()
@@ -1677,7 +1998,7 @@ function rollupJobRow(job) {
   if (job.status === 'succeeded' && job.resultHints && (job.resultHints.bench || job.resultHints.runId)) {
     actions.push(`<button type="button" class="mini-btn job-explorer" data-job="${job.id}">Open in explorer</button>`)
   }
-  actions.push(`<a class="mini-btn job-log-link" href="/api/jobs/${encodeURIComponent(job.id)}/log" target="_blank" rel="noopener">view log</a>`)
+  actions.push(`<button type="button" class="mini-btn job-log-link" data-job="${job.id}">view log</button>`)
   const hintLine = job.resultHints && (job.resultHints.specPyChanged || job.resultHints.snapshotsCreated)
     ? `<div class="job-hints">${job.resultHints.specPyChanged ? 'candidate_spec.py changed' : ''}${job.resultHints.snapshotsCreated && job.resultHints.snapshotsCreated.length ? `snapshots: ${esc(job.resultHints.snapshotsCreated.length)} created` : ''}</div>`
     : ''
@@ -1778,6 +2099,10 @@ function renderJobs() {
     btn.addEventListener('click', () => {
       if (window.open) window.open('/explorer.html')
     })
+  })
+
+  list.querySelectorAll('.job-log-link').forEach(btn => {
+    btn.addEventListener('click', () => openLogPanel(btn.dataset.job))
   })
 
   list.querySelectorAll('.console-clear').forEach(btn => {
@@ -1963,8 +2288,10 @@ function stopRunPolling() {
     RUN_STATE.pollTimer = null
   }
   stopDlgTimer()
+  stopPanelTimer()
   for (const job of [...RUN_STATE.es.keys()]) detachStream(job)
   for (const job of [...RUN_STATE.dlgEs.keys()]) detachDlgStream(job)
+  for (const job of [...RUN_STATE.panelEs.keys()]) detachPanelStream(job)
 }
 
 function initSettings() {
@@ -1984,4 +2311,4 @@ if (typeof document !== 'undefined') {
   }
 }
 
-export { initSettings, GEAR_SVG, MODAL_TEMPLATE, toolCardHtml }
+export { initSettings, GEAR_SVG, MODAL_TEMPLATE, toolCardHtml, RUN_STATE }

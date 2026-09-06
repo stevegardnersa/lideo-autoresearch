@@ -1210,6 +1210,27 @@ function summarize(j) {
   return out
 }
 
+const liveChildren = new Set()
+
+function killAllChildren() {
+  for (const child of [...liveChildren]) {
+    try {
+      if (child && child.kill) child.kill('SIGTERM')
+    } catch { /* ignore */ }
+  }
+  const hard = setTimeout(() => {
+    for (const child of [...liveChildren]) {
+      try {
+        if (child && child.kill) child.kill('SIGKILL')
+      } catch { /* ignore */ }
+    }
+  }, JOB_LIMITS.cancelGraceMs)
+  if (hard.unref) hard.unref()
+}
+
+process.once('SIGINT', killAllChildren)
+process.once('SIGTERM', killAllChildren)
+
 function createJobManager(opts = {}) {
   const repoRoot = opts.repoRoot || REPO_ROOT
   const jobsDir = opts.jobsDir || join(REPO_ROOT, 'artifacts', 'jobs')
@@ -1458,6 +1479,7 @@ function createJobManager(opts = {}) {
       clearTimeout(job._batchTimer)
       job._batchTimer = null
     }
+    if (job._child) liveChildren.delete(job._child)
     flushPartial(job)
     job.exitCode = code == null ? null : code
     const killed = job._killed !== null || job._killFlag || (code == null && signal != null && job.cancelRequested)
@@ -1502,7 +1524,7 @@ function createJobManager(opts = {}) {
     const argv = buildArgv(tool, job.args)
     let child
     try {
-      child = spawnFn(argv, { cwd: repoRoot, env: process.env })
+      child = spawnFn(argv, { cwd: repoRoot, env: { ...process.env, PYTHONUNBUFFERED: '1' } })
     } catch (e) {
       failJob(job, (e && e.message) || String(e))
       return
@@ -1511,6 +1533,7 @@ function createJobManager(opts = {}) {
     job.pid = (child && child.pid) || null
     job.status = 'running'
     job.startedAt = new Date().toISOString()
+    liveChildren.add(child)
     emit(job, 'start', { jobId: job.id, pid: job.pid })
     appendJobMeta(job, { kind: 'meta', jobId: job.id, toolId: tool.id, createdAt: job.createdAt, startedAt: job.startedAt })
     if (child.stdout) child.stdout.on('data', (c) => onData(job, 'stdout', c))
@@ -1885,9 +1908,10 @@ function scanRequestHandler(ctx) {
       return
     }
 
-    if (req.url === '/api/jobs' || req.url.startsWith('/api/jobs/')) {
+    const jobsPathOnly = stripQuery(req.url)
+    if (jobsPathOnly === '/api/jobs' || jobsPathOnly.startsWith('/api/jobs/')) {
       const jm = getJobs()
-      const pathOnly = stripQuery(req.url)
+      const pathOnly = jobsPathOnly
       const parsed = pathOnly.match(/^\/api\/jobs(?:\/([^/]+))?(\/(?:stream|log|cancel))?$/)
       const id = parsed && parsed[1]
       const sub = parsed && parsed[2]
@@ -2078,7 +2102,7 @@ function scanRunsPlugin() {
   return createScanPlugin()
 }
 
-export { makeCtx, scanRequestHandler, createScanPlugin, scanRunsPlugin, getScriptRegistry, createJobManager, JOB_LIMITS, SCRIPT_REGISTRY }
+export { makeCtx, scanRequestHandler, createScanPlugin, scanRunsPlugin, getScriptRegistry, createJobManager, JOB_LIMITS, SCRIPT_REGISTRY, killAllChildren, liveChildren }
 export default defineConfig({
   root: '.',
   plugins: [scanRunsPlugin()],
