@@ -213,8 +213,8 @@ class OpenRouterClient:
         base_url: str = "https://openrouter.ai/api/v1",
         http_referer: str = "",
         x_title: str = "",
-        timeout: int = 180,
-        max_retries: int = 6,
+        timeout: int = 90,
+        max_retries: int = 5,
         pricing_snapshot: Optional[Mapping[str, Mapping[str, Any]]] = None,
     ) -> None:
         if not api_key:
@@ -241,8 +241,8 @@ class OpenRouterClient:
         referer: str = "",
         title: str = "",
         base_url: str = "https://openrouter.ai/api/v1",
-        timeout: int = 180,
-        max_retries: int = 6,
+        timeout: int = 90,
+        max_retries: int = 5,
     ) -> "OpenRouterClient":
         api_key = os.getenv(api_key_env, "")
         if not api_key:
@@ -341,14 +341,19 @@ class OpenRouterClient:
                             wait = min(2 ** attempt, 60)
                     else:
                         wait = min(2 ** attempt * 2, 120)
+                    print(f"[llm] {path} HTTP {exc.code} attempt {attempt + 1}/{self.max_retries + 1} — retrying in {wait:.0f}s", flush=True)
                     time.sleep(wait)
                     continue
-                time.sleep(min(2 ** attempt, 8))
+                wait = min(2 ** attempt, 8)
+                print(f"[llm] {path} HTTP {exc.code} attempt {attempt + 1}/{self.max_retries + 1} — retrying in {wait:.0f}s", flush=True)
+                time.sleep(wait)
             except urllib.error.URLError as exc:
                 last_error = OpenRouterAPIError(f"Network error for {path}: {exc}")
                 if attempt >= self.max_retries:
                     raise last_error
-                time.sleep(min(2 ** attempt, 8))
+                wait = min(2 ** attempt, 8)
+                print(f"[llm] {path} timed out/network error after {self.timeout}s — attempt {attempt + 1}/{self.max_retries + 1}, retrying in {wait:.0f}s", flush=True)
+                time.sleep(wait)
         assert last_error is not None
         raise last_error
 
