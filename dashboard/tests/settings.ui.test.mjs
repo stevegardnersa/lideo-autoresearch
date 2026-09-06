@@ -15,6 +15,8 @@ const MODELS_PAYLOAD = {
       profiles: [
         { slug: '30m_deepseek-v4-flash_thinking', time_budget: '30m', thinking: true, status: 'tested', temperature: 0.2, max_tokens: 8192, provider_route: '' },
         { slug: '60m_deepseek-v4-flash_notthinking', time_budget: '60m', thinking: false, status: 'pending', temperature: 0.0, max_tokens: 8192, provider_route: '{"order":["deepseek"]}' },
+        { slug: '30m_deepseek-v4-flash_effort-high', time_budget: '30m', thinking: null, status: 'pending', temperature: 0.7, max_tokens: 40960, provider_route: '' },
+        { slug: '60m_deepseek-v4-flash_effort-low', time_budget: '60m', thinking: null, status: 'pending', temperature: 0.3, max_tokens: 10240, provider_route: '' },
       ],
     },
     {
@@ -399,12 +401,14 @@ test('edit dialog reflects existing profiles as checked rows', async () => {
 
   assert.match(postRenderInfo().title, /Edit deepseek\/deepseek-v4-flash/)
   const rows = els.rows()
-  assert.equal(rows.length, 16, 'one row per time/mode combo across all effort tiers')
+  assert.equal(rows.length, 14, 'canonic cells with no existing profile are hidden (16 - 2)')
   const checkedCells = rows
     .filter(r => r.querySelector('.vc-check').checked)
     .map(r => `${r.dataset.tb}_${r.dataset.effort}`)
     .sort()
-  assert.deepEqual(checkedCells, ['30m_thinking', '60m_none'], 'only existing profiles checked')
+  assert.deepEqual(checkedCells,
+    ['30m_high', '30m_thinking', '60m_low', '60m_none'],
+    'only existing profiles checked')
 })
 
 function postRenderInfo() {
@@ -414,7 +418,7 @@ function postRenderInfo() {
   }
 }
 
-test('edit save builds PUT payload with removals and temp changes', async () => {
+test('edit save builds PUT payload with locked-row removal and tier creation', async () => {
   const { doc, click, postRender, state } = h
   click(doc.querySelector('[data-settings-toggle]'))
   await new Promise(r => setImmediate(r))
@@ -423,10 +427,14 @@ test('edit save builds PUT payload with removals and temp changes', async () => 
   await new Promise(r => setImmediate(r))
 
   const rows = els.rows()
-  const removeRow = rows.find(r => r.dataset.tb === '30m' && r.dataset.effort === 'thinking')
-  const tempRow = rows.find(r => r.dataset.tb === '60m' && r.dataset.effort === 'none')
-  removeRow.querySelector('.vc-check').checked = false
-  tempRow.querySelector('.vc-temp').value = '0.66'
+  const lockedRow = rows.find(r => r.dataset.tb === '30m' && r.dataset.effort === 'thinking')
+  assert.equal(lockedRow.dataset.locked, '1', 'canonic profile row is locked')
+  click(lockedRow.querySelector('.vc-opt-item[data-action="remove"]'))
+  assert.equal(lockedRow.querySelector('.vc-check').checked, false, 'Remove variant unchecks locked row')
+
+  const tierRow = rows.find(r => r.dataset.tb === '60m' && r.dataset.effort === 'medium')
+  tierRow.querySelector('.vc-check').checked = true
+  tierRow.querySelector('.vc-temp').value = '0.66'
   click(els.create)
   await new Promise(r => setImmediate(r))
 
@@ -434,13 +442,75 @@ test('edit save builds PUT payload with removals and temp changes', async () => 
   assert.ok(putCall, 'PUT issued')
   assert.equal(putCall.body.old_model, 'deepseek/deepseek-v4-flash')
   assert.equal(putCall.body.new_model, 'deepseek/deepseek-v4-flash')
-  assert.ok(Array.isArray(putCall.body.edits) && putCall.body.edits.length === 2)
   const removed = putCall.body.edits.find(e => e.key === '30m_deepseek-v4-flash_thinking')
   assert.equal(removed.keep, false)
-  const temped = putCall.body.edits.find(e => e.key === '60m_deepseek-v4-flash_notthinking')
-  assert.equal(temped.temperature, 0.66)
-  assert.deepEqual(putCall.body.create, [])
+  assert.ok(!putCall.body.edits.find(e => e.key === '60m_deepseek-v4-flash_notthinking'), 'kept locked baseline emits no edit')
+  const created = putCall.body.create.find(e => e.time_budget === '60m' && e.effort === 'medium')
+  assert.ok(created && created.temperature === 0.66, 'create carries temp')
   assert.ok(els.dialog.classList.contains('cm-hidden'), 'dialog closed after save')
+})
+
+test('locked canonic rows and hidden cells render correctly', async () => {
+  const { doc, click, postRender } = h
+  click(doc.querySelector('[data-settings-toggle]'))
+  await new Promise(r => setImmediate(r))
+  const els = postRender()
+  click(els.list.querySelector('.model-card [data-action="edit"]'))
+  await new Promise(r => setImmediate(r))
+
+  const rows = els.rows()
+  assert.ok(!rows.some(r => r.dataset.tb === '60m' && r.dataset.effort === 'thinking'), 'absent 60m thinking hidden')
+  assert.ok(!rows.some(r => r.dataset.tb === '30m' && r.dataset.effort === 'none'), 'absent 30m none hidden')
+
+  const locked = rows.filter(r => r.dataset.locked === '1')
+  assert.deepEqual(
+    locked.map(r => `${r.dataset.tb}_${r.dataset.effort}`).sort(),
+    ['30m_thinking', '60m_none'],
+    'present canonic profiles are the locked rows',
+  )
+  for (const r of locked) {
+    const check = r.querySelector('.vc-check')
+    assert.equal(check.disabled, true, 'locked checkbox disabled')
+    assert.equal(check.checked, true, 'locked checkbox stays checked')
+    assert.ok(r.querySelector('.vc-temp').readOnly, 'locked temp read-only')
+    assert.ok(r.querySelector('.vc-max').readOnly, 'locked max read-only')
+    assert.match(r.querySelector('.vc-mode').dataset.tooltip || '', /cannot be modified/, 'locked mode cell carries explainer tooltip')
+    const items = Array.from(r.querySelectorAll('.vc-opt-item'))
+    const enabled = items.filter(i => !i.disabled)
+    assert.deepEqual(enabled.map(i => i.dataset.action), ['remove'], 'only Remove variant enabled on locked row')
+    assert.deepEqual(
+      items.filter(i => i.disabled).map(i => i.dataset.action).sort(),
+      ['agent', 'judge', 'prefill', 'run'],
+      'run/prefill/judge/agent disabled',
+    )
+  }
+  const editable = rows.filter(r => r.dataset.locked !== '1')
+  assert.ok(editable.length > 0, 'non-canonic tiers stay editable')
+  assert.ok(editable.every(r => !r.querySelector('.vc-check').disabled), 'editable rows have enabled checkboxes')
+  assert.ok(editable.every(r => !r.querySelector('.vc-mode').dataset.tooltip), 'no tooltip on editable rows')
+})
+
+test('Remove variant on locked row toggles and can be restored', async () => {
+  const { doc, click, postRender } = h
+  click(doc.querySelector('[data-settings-toggle]'))
+  await new Promise(r => setImmediate(r))
+  const els = postRender()
+  click(els.list.querySelector('.model-card [data-action="edit"]'))
+  await new Promise(r => setImmediate(r))
+
+  const rows = els.rows()
+  const row = rows.find(r => r.dataset.tb === '60m' && r.dataset.effort === 'none')
+  const check = row.querySelector('.vc-check')
+  const removeBtn = row.querySelector('.vc-opt-item[data-action="remove"]')
+  assert.equal(check.checked, true)
+  click(removeBtn)
+  assert.equal(check.checked, false)
+  assert.ok(row.classList.contains('vc-to-remove'))
+  assert.equal(row.querySelector('.vc-status').textContent.trim(), 'will remove')
+  click(removeBtn)
+  assert.equal(check.checked, true)
+  assert.ok(!row.classList.contains('vc-to-remove'))
+  assert.equal(row.querySelector('.vc-status').textContent.trim(), 'pending')
 })
 
 test('edit rename sends new_model in payload', async () => {
@@ -670,22 +740,34 @@ test('edit dialog shows ⋯ menu on existing profile rows only', async () => {
   await openEdit(h)
   const rows = h.postRender().rows()
   const withMenu = rows.filter(r => r.querySelector('.vc-opt-btn'))
-  assert.equal(withMenu.length, 2, 'menus only on the two existing profiles')
+  assert.equal(withMenu.length, 4, 'menus only on existing profiles')
   assert.deepEqual(withMenu.map(r => r.querySelector('.vc-opt-btn').dataset.slug).sort(),
-    ['30m_deepseek-v4-flash_thinking', '60m_deepseek-v4-flash_notthinking'])
-  const emptyMenu = rows.filter(r => r.querySelector('.vc-opt-btn') && r.querySelector('.vc-opt-btn').dataset.slug === null)
-  assert.equal(emptyMenu.length, 0)
+    ['30m_deepseek-v4-flash_effort-high', '30m_deepseek-v4-flash_thinking',
+      '60m_deepseek-v4-flash_effort-low', '60m_deepseek-v4-flash_notthinking'])
   assert.ok(rows.every(r => {
     const m = r.querySelector('.vc-opt-menu')
     return !m || m.classList.contains('cm-hidden')
   }), 'menus closed initially')
-  const btn = withMenu[0].querySelector('.vc-opt-btn')
-  click(btn)
-  const menu = btn.closest('.vc-opt').querySelector('.vc-opt-menu')
-  assert.ok(!menu.classList.contains('cm-hidden'), 'menu opens on ⋯ click')
-  assert.equal(btn.getAttribute('aria-expanded'), 'true')
-  assert.deepEqual([...menu.querySelectorAll('.vc-opt-item')].map(i => i.dataset.action),
+
+  const locked = withMenu.find(r => r.dataset.locked === '1')
+  const lockedBtn = locked.querySelector('.vc-opt-btn')
+  click(lockedBtn)
+  const lockedMenu = lockedBtn.closest('.vc-opt').querySelector('.vc-opt-menu')
+  assert.ok(!lockedMenu.classList.contains('cm-hidden'), 'menu opens on ⋯ click')
+  assert.deepEqual([...lockedMenu.querySelectorAll('.vc-opt-item')].map(i => i.dataset.action),
+    ['run', 'prefill', 'judge', 'agent', 'remove'])
+  assert.ok([...lockedMenu.querySelectorAll('.vc-opt-item')]
+    .filter(i => i.dataset.action !== 'remove').every(i => i.disabled),
+  'locked profile keeps run/prefill/judge/agent disabled')
+
+  const plain = withMenu.find(r => r.dataset.locked !== '1')
+  const plainBtn = plain.querySelector('.vc-opt-btn')
+  click(plainBtn)
+  const plainMenu = plainBtn.closest('.vc-opt').querySelector('.vc-opt-menu')
+  assert.deepEqual([...plainMenu.querySelectorAll('.vc-opt-item')].map(i => i.dataset.action),
     ['run', 'prefill', 'judge', 'agent'])
+  assert.ok([...plainMenu.querySelectorAll('.vc-opt-item')].every(i => !i.disabled),
+    'editable profile keeps all actions enabled')
 })
 
 test('clicking outside the menu closes it', async () => {
@@ -704,14 +786,14 @@ test('Run candidate now posts run_candidate with profile args and shows notice',
   const { doc, click, postRender } = h
   await openEdit(h)
   const rows = postRender().rows()
-  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.effort === 'high').querySelector('.vc-opt-btn')
   click(btn)
   click(btn.closest('.vc-opt').querySelector('[data-action="run"]'))
   await waitUntil(() => h.state.calls.some(c => c.method === 'POST' && c.url === '/api/jobs'))
   const post = h.state.calls.find(c => c.method === 'POST' && c.url === '/api/jobs')
   assert.deepEqual(post.body, {
     toolId: 'run_candidate',
-    args: { bench: 'chapter_fast', profile: '30m_deepseek-v4-flash_thinking', time: '30m', 'write-results': true },
+    args: { bench: 'chapter_fast', profile: '30m_deepseek-v4-flash_effort-high', time: '30m', 'write-results': true },
   })
   const notice = doc.getElementById('dlgNotice')
   await waitUntil(() => !notice.classList.contains('cm-hidden'))
@@ -723,7 +805,7 @@ test('re-judge asks for judge model once then remembers it', async () => {
   const { doc, click, postRender, state } = h
   await openEdit(h)
   const rows = postRender().rows()
-  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.effort === 'high').querySelector('.vc-opt-btn')
   click(btn)
   state.promptReturn = 'openai/gpt-4o-mini'
   click(btn.closest('.vc-opt').querySelector('[data-action="judge"]'))
@@ -732,7 +814,7 @@ test('re-judge asks for judge model once then remembers it', async () => {
   assert.equal(state.promptCalls, 1)
   assert.deepEqual(post.body, {
     toolId: 'judge_existing',
-    args: { bench: 'chapter_fast', profile: '30m_deepseek-v4-flash_thinking', 'judge-model': 'openai/gpt-4o-mini' },
+    args: { bench: 'chapter_fast', profile: '30m_deepseek-v4-flash_effort-high', 'judge-model': 'openai/gpt-4o-mini' },
   })
   assert.equal(state.ls.get('mm.judgeModel'), 'openai/gpt-4o-mini')
 
@@ -740,7 +822,7 @@ test('re-judge asks for judge model once then remembers it', async () => {
   h.click(doc.getElementById('dlgClose'))
   await openEdit(h)
   const rows2 = postRender().rows()
-  const btn2 = rows2.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '60m').querySelector('.vc-opt-btn')
+  const btn2 = rows2.find(r => r.querySelector('.vc-opt-btn') && r.dataset.effort === 'low').querySelector('.vc-opt-btn')
   click(btn2)
   state.promptCalls = 0
   click(btn2.closest('.vc-opt').querySelector('[data-action="judge"]'))
@@ -754,7 +836,7 @@ test('Run with options mounts inline run_candidate widget, keeps dialog open, ju
   const { doc, click, postRender, state } = h
   await openEdit(h)
   const rows = postRender().rows()
-  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.effort === 'high').querySelector('.vc-opt-btn')
   click(btn)
   const item = btn.closest('.vc-opt').querySelector('[data-action="prefill"]')
   assert.match(item.textContent, /Run with options/)
@@ -764,12 +846,12 @@ test('Run with options mounts inline run_candidate widget, keeps dialog open, ju
   await waitUntil(() => doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]'))
   assert.ok(!dialog.classList.contains('cm-hidden'), 'dialog stays open')
   assert.ok(dialog.classList.contains('has-run-form'), 'dialog widened to two columns')
-  assert.equal(dialog.dataset.runSlug, '30m_deepseek-v4-flash_thinking')
+  assert.equal(dialog.dataset.runSlug, '30m_deepseek-v4-flash_effort-high')
   assert.ok(!doc.getElementById('dlgRunForm').classList.contains('cm-hidden'), 'run column visible')
 
   const card = doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]')
   assert.equal(card.querySelector('[data-arg="bench"]').value, 'chapter_fast')
-  assert.equal(card.querySelector('[data-arg="profile"]').value, '30m_deepseek-v4-flash_thinking')
+  assert.equal(card.querySelector('[data-arg="profile"]').value, '30m_deepseek-v4-flash_effort-high')
   assert.equal(card.querySelector('[data-arg="time"]').value, '30m')
   const cb = card.querySelector('[data-toggle="judge-model"]')
   const input = card.querySelector('[data-arg="judge-model"]')
@@ -801,7 +883,7 @@ test('missing #dlgRunWidget (stale bundle) surfaces an error notice, never a sil
   await openEdit(h)
   const postsBefore = state.calls.filter(c => c.method === 'POST' && c.url === '/api/jobs').length
   const rows = postRender().rows()
-  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.effort === 'high').querySelector('.vc-opt-btn')
   click(btn)
   doc.getElementById('dlgRunWidget').outerHTML = ''
   click(btn.closest('.vc-opt').querySelector('[data-action="prefill"]'))
@@ -831,7 +913,7 @@ test('run tab and dialog render the same widget (single source)', async () => {
 
   await openEdit(h)
   const rows = postRender().rows()
-  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.effort === 'high').querySelector('.vc-opt-btn')
   click(btn)
   click(btn.closest('.vc-opt').querySelector('[data-action="prefill"]'))
   await waitUntil(() => doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]'))
@@ -857,11 +939,11 @@ test('inline run form is cleared on dialog close and reopens clean', async () =>
   const { doc, click, postRender } = h
   await openEdit(h)
   const rows = postRender().rows()
-  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.effort === 'high').querySelector('.vc-opt-btn')
   click(btn)
   click(btn.closest('.vc-opt').querySelector('[data-action="prefill"]'))
   await waitUntil(() => doc.querySelector('#dlgRunWidget .mm-tool-widget'))
-  assert.equal(doc.getElementById('modelDialogOverlay').dataset.runSlug, '30m_deepseek-v4-flash_thinking')
+  assert.equal(doc.getElementById('modelDialogOverlay').dataset.runSlug, '30m_deepseek-v4-flash_effort-high')
 
   click(doc.getElementById('dlgClose'))
   assert.ok(doc.getElementById('modelDialogOverlay').classList.contains('cm-hidden'))
@@ -878,7 +960,7 @@ test('inline run form submits its own job from the dialog widget', async () => {
   state.jobs.jobs = []
   await openEdit(h)
   const rows = postRender().rows()
-  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.effort === 'high').querySelector('.vc-opt-btn')
   click(btn)
   click(btn.closest('.vc-opt').querySelector('[data-action="prefill"]'))
   await waitUntil(() => doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]'))
@@ -888,7 +970,7 @@ test('inline run form submits its own job from the dialog widget', async () => {
   const post = state.calls.find(c => c.method === 'POST' && c.url === '/api/jobs' && c.body && c.body.toolId === 'run_candidate')
   assert.deepEqual(post.body, {
     toolId: 'run_candidate',
-    args: { bench: 'chapter_fast', profile: '30m_deepseek-v4-flash_thinking', time: '30m', mock: false, 'max-samples': 0 },
+    args: { bench: 'chapter_fast', profile: '30m_deepseek-v4-flash_effort-high', time: '30m', mock: false, 'max-samples': 0 },
   })
   assert.ok(!('judge-model' in post.body.args), 'judge omitted when toggle off')
   const notice = doc.getElementById('dlgNotice')
@@ -909,7 +991,7 @@ const RUN_JOB_RUNNING = { id: 'j9', toolId: 'run_candidate', status: 'running', 
 const openPrefill = async () => {
   await openEdit(h)
   const rows = h.postRender().rows()
-  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.effort === 'high').querySelector('.vc-opt-btn')
   h.click(btn)
   h.click(btn.closest('.vc-opt').querySelector('[data-action="prefill"]'))
   await waitUntil(() => h.doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]'))
@@ -1277,13 +1359,13 @@ test('Run with options menu still works after a failed run-tab init', async () =
   state.registryFails = 1
   await openEdit(h)
   const rows = postRender().rows()
-  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.effort === 'high').querySelector('.vc-opt-btn')
   click(btn)
   click(btn.closest('.vc-opt').querySelector('[data-action="prefill"]'))
   await waitUntil(() => doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]'))
   const dialog = doc.getElementById('modelDialogOverlay')
   assert.ok(dialog.classList.contains('has-run-form'), 'menu recovered from failed registry via defensive refetch')
-  assert.equal(dialog.dataset.runSlug, '30m_deepseek-v4-flash_thinking')
+  assert.equal(dialog.dataset.runSlug, '30m_deepseek-v4-flash_effort-high')
   const card = doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]')
-  assert.equal(card.querySelector('[data-arg="profile"]').value, '30m_deepseek-v4-flash_thinking')
+  assert.equal(card.querySelector('[data-arg="profile"]').value, '30m_deepseek-v4-flash_effort-high')
 })

@@ -213,6 +213,7 @@ const MODAL_TEMPLATE = `
 
 const EFFORT_ORDER = ['thinking', 'none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max']
 const EFFORT_LABEL = { thinking: 'think', none: 'plain' }
+const CANONIC_EFFORTS = new Set(['thinking', 'none'])
 const BUDGETS = ['30m', '60m']
 const EFFORT_FRACTION = { none: 0, minimal: 0.1, low: 0.2, medium: 0.5, high: 0.8, xhigh: 0.95, max: 0.95 }
 
@@ -398,25 +399,26 @@ function parseRoute(raw) {
   try { return JSON.parse(v) } catch { return undefined }
 }
 
-function variantRowHtml({ tb, effort, existing }) {
+const LOCKED_MENU_ACTIONS = ['run', 'prefill', 'judge', 'agent']
+
+function variantRowHtml({ tb, effort, existing, locked }) {
   const temp = existing && existing.temperature != null ? existing.temperature : DEFAULTS.temperature
   const maxT = existing && existing.max_tokens != null ? existing.max_tokens : effortDefaultMaxTokens(effort)
   const status = existing ? (existing.status === 'tested' ? 'tested' : 'pending') : 'not created'
+  const numAttrs = locked ? ' readonly' : ''
   const opt = existing
     ? `<button type="button" class="vc-opt-btn" data-slug="${esc(existing.slug)}" aria-haspopup="menu" aria-expanded="false" aria-label="Options for ${esc(existing.slug)}" title="Profile options">\u22EF</button>
       <div class="vc-opt-menu cm-hidden" role="menu">
-        <button type="button" class="vc-opt-item" data-action="run" role="menuitem">Run candidate now</button>
-        <button type="button" class="vc-opt-item" data-action="prefill" role="menuitem">Run with options\u2026</button>
-        <button type="button" class="vc-opt-item" data-action="judge" role="menuitem">Re-judge (LLM)\u2026</button>
-        <button type="button" class="vc-opt-item" data-action="agent" role="menuitem">Autoresearch agent\u2026</button>
+        ${LOCKED_MENU_ACTIONS.map(a => `<button type="button" class="vc-opt-item" data-action="${a}" role="menuitem"${locked ? ' disabled' : ''}>${{ run: 'Run candidate now', prefill: 'Run with options\u2026', judge: 'Re-judge (LLM)\u2026', agent: 'Autoresearch agent\u2026' }[a]}</button>`).join('')}
+        ${locked ? '<button type="button" class="vc-opt-item vc-opt-remove" data-action="remove" role="menuitem">Remove variant</button>' : ''}
       </div>`
     : ''
-  return `<tr data-tb="${tb}" data-effort="${effort}" data-existing="${existing ? '1' : '0'}">
-    <td><input type="checkbox" class="vc-check" ${existing ? 'checked' : ''} /></td>
+  return `<tr data-tb="${tb}" data-effort="${effort}" data-existing="${existing ? '1' : '0'}"${locked ? ' data-locked="1"' : ''} data-orig-status="${status}" class="${locked ? 'vc-locked' : ''}">
+    <td><input type="checkbox" class="vc-check" ${existing ? 'checked' : ''}${locked ? ' disabled' : ''} /></td>
     <td class="vc-tb">${tb}</td>
-    <td class="vc-mode">${effortLabel(effort)}</td>
-    <td><input type="number" step="0.1" min="0" max="2" class="vc-temp" value="${temp}" /></td>
-    <td><input type="number" step="256" min="0" class="vc-max" value="${maxT}" /></td>
+    <td class="vc-mode"${locked ? ` data-tooltip="Canonical effort profiles cannot be modified. Remove variant to hide this baseline."` : ''}>${effortLabel(effort)}</td>
+    <td><input type="number" step="0.1" min="0" max="2" class="vc-temp" value="${temp}"${numAttrs} /></td>
+    <td><input type="number" step="256" min="0" class="vc-max" value="${maxT}"${numAttrs} /></td>
     <td class="vc-status ${existing ? 'vc-has' : 'vc-none'}">${status}</td>
     <td class="vc-opt">${opt}</td>
   </tr>`
@@ -438,11 +440,14 @@ function openEditDialog(model) {
 
   const specs = new Map()
   model.profiles.forEach(p => specs.set(`${p.time_budget}_${effortOf(p.slug)}`, p))
-  const rows = [].concat(...BUDGETS.map(tb => EFFORT_ORDER.map(ef => variantRowHtml({
-    tb,
-    effort: ef,
-    existing: specs.get(`${tb}_${ef}`),
-  })))).join('')
+  const rows = [].concat(...BUDGETS.map(tb => EFFORT_ORDER.map(ef => {
+    const existing = specs.get(`${tb}_${ef}`)
+    if (CANONIC_EFFORTS.has(ef)) {
+      if (!existing) return '' // absent cell: hidden entirely
+      return variantRowHtml({ tb, effort: ef, existing, locked: true })
+    }
+    return variantRowHtml({ tb, effort: ef, existing })
+  }))).filter(Boolean).join('')
   document.getElementById('dlgVariantRows').innerHTML = rows
 
   setPreview('')
@@ -473,6 +478,7 @@ function collectEditPayload(model) {
     if (isFinite(temp)) entry.temperature = temp
     if (isFinite(maxT)) entry.max_tokens = maxT
     if (existing) {
+      if (tr.dataset.locked === '1' && checked) continue // locked baseline kept as-is
       entry.key = existing.slug
       entry.keep = checked
       edits.push(entry)
@@ -538,9 +544,24 @@ function closeProfileMenus() {
   document.querySelectorAll('#dlgVariantRows .vc-opt-menu').forEach(m => m.classList.add('cm-hidden'))
 }
 
+function toggleRowRemoval(row) {
+  const check = row.querySelector('.vc-check')
+  const statusEl = row.querySelector('.vc-status')
+  if (!check) return
+  const removing = check.checked
+  check.checked = !removing
+  row.classList.toggle('vc-to-remove', removing)
+  if (statusEl) statusEl.textContent = removing ? 'will remove' : (row.dataset.origStatus || '')
+}
+
 function profileMenuAction(slug, action, row) {
   const tb = row && row.dataset.tb ? row.dataset.tb : 'all'
   closeProfileMenus()
+  if (action === 'remove') {
+    if (row && row.dataset.locked === '1') toggleRowRemoval(row)
+    return
+  }
+  if (LOCKED_MENU_ACTIONS.includes(action) && row && row.dataset.locked === '1') return
   if (action === 'run') {
     launchProfileJob('run_candidate', buildProfileArgs(slug, tb, { 'write-results': true }), `run_candidate on <code>${esc(benchFor(slug))}</code> for <code>${esc(slug)}</code>`)
     return

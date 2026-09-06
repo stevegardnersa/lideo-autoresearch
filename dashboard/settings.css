@@ -349,6 +349,46 @@
 .vc-status { font-size: 11px; }
 .vc-has { color: #047857; }
 .vc-none { color: var(--muted, #6b7280); }
+.vc-locked { opacity: 0.92; }
+.vc-locked .vc-mode { position: relative; cursor: help; }
+.vc-locked .vc-mode:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 0;
+  max-width: 280px;
+  background: #1f2937;
+  color: #f9fafb;
+  font-size: 11.5px;
+  line-height: 1.45;
+  font-weight: 450;
+  padding: 6px 9px;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .28);
+  z-index: 40;
+  pointer-events: none;
+  white-space: normal;
+}
+.vc-locked .vc-mode:hover::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 1px);
+  left: 10px;
+  border: 5px solid transparent;
+  border-top-color: #1f2937;
+  border-bottom: none;
+  z-index: 41;
+}
+.vc-locked .vc-mode::after {
+  content: ' \2713';
+  font-size: 10px;
+  color: #7c3aed;
+  vertical-align: super;
+}
+.vc-locked input.vc-temp, .vc-locked input.vc-max { background: var(--panel-2, #f6f7f9); color: var(--muted, #6b7280); }
+.vc-to-remove { opacity: 0.55; }
+.vc-to-remove .vc-mode { text-decoration: line-through; }
+.vc-to-remove .vc-status { color: #b91c1c; font-weight: 650; }
 
 /* profile quick-action menu */
 .vc-opt { position: relative; text-align: right; white-space: nowrap; }
@@ -394,6 +434,9 @@
   cursor: pointer;
 }
 .vc-opt-item:hover { background: var(--accent-soft, #eff6ff); }
+.vc-opt-item:disabled { color: var(--muted, #6b7280); opacity: 0.55; cursor: not-allowed; }
+.vc-opt-item:disabled:hover { background: transparent; }
+.vc-opt-item.vc-opt-remove { color: #b91c1c; border-top: 1px solid var(--line, #d8dee8); border-radius: 0 0 6px 6px; }
 
 .dlg-notice {
   margin-top: 12px;

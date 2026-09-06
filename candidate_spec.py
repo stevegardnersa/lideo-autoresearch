@@ -35,8 +35,8 @@ Profile = Literal[
     "30m_grok-4.3_notthinking", "30m_grok-4.3_thinking", "30m_mimo-v2-flash_notthinking", "30m_mimo-v2-flash_thinking",
     "30m_minimax-m2.5_notthinking", "30m_minimax-m2.5_thinking", "30m_minimax-m2.7_notthinking", "30m_minimax-m2.7_thinking",
     "30m_muse-glimmer-30b_effort-medium", "30m_muse-glimmer-30b_notthinking", "30m_nemotron-3-super-120b-a12b_notthinking",
-    "30m_nemotron-3-super-120b-a12b_thinking", "30m_nemotron-3.5-lightning_notthinking",
-    "30m_nemotron-3.5-lightning_thinking", "30m_qwen3.6-35b-a3b_notthinking", "30m_qwen3.6-35b-a3b_thinking",
+    "30m_nemotron-3-super-120b-a12b_thinking", "30m_nemotron-3.5-lightning_effort-medium",
+    "30m_nemotron-3.5-lightning_effort-minimal", "30m_qwen3.6-35b-a3b_notthinking", "30m_qwen3.6-35b-a3b_thinking",
     "30m_qwen3.6-plus_notthinking", "30m_qwen3.6-plus_thinking", "30m_qwen3.7-max_notthinking", "30m_qwen3.7-max_thinking",
     "30m_step-3.5-flash_notthinking", "30m_step-3.5-flash_thinking", "30m_step-3.7-flash_effort-medium",
     "30m_step-3.7-flash_notthinking", "60m_deepseek-v4-flash_notthinking", "60m_deepseek-v4-flash_thinking",
@@ -49,8 +49,7 @@ Profile = Literal[
     "60m_grok-4.3_notthinking", "60m_grok-4.3_thinking", "60m_mimo-v2-flash_notthinking", "60m_mimo-v2-flash_thinking",
     "60m_minimax-m2.5_notthinking", "60m_minimax-m2.5_thinking", "60m_minimax-m2.7_notthinking", "60m_minimax-m2.7_thinking",
     "60m_muse-glimmer-30b_effort-medium", "60m_muse-glimmer-30b_notthinking", "60m_nemotron-3-super-120b-a12b_notthinking",
-    "60m_nemotron-3-super-120b-a12b_thinking", "60m_nemotron-3.5-lightning_notthinking",
-    "60m_nemotron-3.5-lightning_thinking", "60m_qwen3.6-35b-a3b_notthinking", "60m_qwen3.6-35b-a3b_thinking",
+    "60m_nemotron-3-super-120b-a12b_thinking", "60m_qwen3.6-35b-a3b_notthinking", "60m_qwen3.6-35b-a3b_thinking",
     "60m_qwen3.6-plus_notthinking", "60m_qwen3.6-plus_thinking", "60m_step-3.5-flash_notthinking",
     "60m_step-3.5-flash_thinking", "60m_step-3.7-flash_effort-medium", "60m_step-3.7-flash_notthinking"
 ]
@@ -1227,11 +1226,11 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         notes="Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 30m, thinking, schema=True",
         disable_composer=False
     ),
-    "30m_nemotron-3.5-lightning_notthinking": CandidateSpec(
-        name="30m_nemotron-3.5-lightning_notthinking_v1",
-        profile="30m_nemotron-3.5-lightning_notthinking",
-        chapter_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+    "30m_nemotron-3.5-lightning_effort-medium": CandidateSpec(
+        name="30m_nemotron-3.5-lightning_effort-medium_v1",
+        profile="30m_nemotron-3.5-lightning_effort-medium",
+        chapter_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        composer_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1240,14 +1239,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: nvidia/nemotron-3.5-lightning chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: nvidia/nemotron-3.5-lightning chapter+composer, 60m, thinking, schema=True",
         disable_composer=False
     ),
-    "30m_nemotron-3.5-lightning_thinking": CandidateSpec(
-        name="30m_nemotron-3.5-lightning_thinking_v1",
-        profile="30m_nemotron-3.5-lightning_thinking",
-        chapter_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+    "30m_nemotron-3.5-lightning_effort-minimal": CandidateSpec(
+        name="30m_nemotron-3.5-lightning_effort-minimal_v1",
+        profile="30m_nemotron-3.5-lightning_effort-minimal",
+        chapter_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        composer_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1256,7 +1255,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: nvidia/nemotron-3.5-lightning chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: nvidia/nemotron-3.5-lightning chapter+composer, 60m, thinking, schema=True",
         disable_composer=False
     ),
     "30m_qwen3.6-35b-a3b_notthinking": CandidateSpec(
@@ -1406,8 +1405,8 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
     "30m_step-3.7-flash_notthinking": CandidateSpec(
         name="30m_step-3.7-flash_notthinking_v1",
         profile="30m_step-3.7-flash_notthinking",
-        chapter_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}),
-        composer_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}),
+        chapter_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        composer_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1931,38 +1930,6 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         notes="Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 60m, thinking, schema=True",
         disable_composer=False
     ),
-    "60m_nemotron-3.5-lightning_notthinking": CandidateSpec(
-        name="60m_nemotron-3.5-lightning_notthinking_v1",
-        profile="60m_nemotron-3.5-lightning_notthinking",
-        chapter_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
-        ),
-        budget_allocator=BudgetAllocatorConfig(
-            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
-        ),
-        use_json_schema=True,
-        json_schema_name="summary_response",
-        notes="Auto-generated: nvidia/nemotron-3.5-lightning chapter+composer, 60m, notthinking, schema=True",
-        disable_composer=False
-    ),
-    "60m_nemotron-3.5-lightning_thinking": CandidateSpec(
-        name="60m_nemotron-3.5-lightning_thinking_v1",
-        profile="60m_nemotron-3.5-lightning_thinking",
-        chapter_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
-        ),
-        budget_allocator=BudgetAllocatorConfig(
-            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
-        ),
-        use_json_schema=True,
-        json_schema_name="summary_response",
-        notes="Auto-generated: nvidia/nemotron-3.5-lightning chapter+composer, 60m, thinking, schema=True",
-        disable_composer=False
-    ),
     "60m_qwen3.6-35b-a3b_notthinking": CandidateSpec(
         name="60m_qwen3.6-35b-a3b_notthinking_v1",
         profile="60m_qwen3.6-35b-a3b_notthinking",
@@ -2078,8 +2045,8 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
     "60m_step-3.7-flash_notthinking": CandidateSpec(
         name="60m_step-3.7-flash_notthinking_v1",
         profile="60m_step-3.7-flash_notthinking",
-        chapter_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}),
-        composer_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}),
+        chapter_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        composer_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
