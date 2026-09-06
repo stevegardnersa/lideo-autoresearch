@@ -138,6 +138,25 @@ const MODAL_TEMPLATE = `
           <button type="button" class="dlg-run-close" id="dlgRunClose" aria-label="Remove run form">&times;</button>
         </div>
         <div class="dlg-run-widget" id="dlgRunWidget"></div>
+        <div class="dlg-run-progress cm-hidden" id="dlgRunProgress">
+          <div class="dlg-progress-head">
+            <span class="dlg-progress-badge" id="dlgProgBadge"></span>
+            <span class="dlg-progress-status" id="dlgProgStatus" role="status"><span class="dlg-state-text"></span></span>
+            <span class="dlg-elapsed" aria-hidden="true"></span>
+            <span class="dlg-reconnect" aria-hidden="true"></span>
+          </div>
+          <div class="dlg-progress-hints cm-hidden" id="dlgProgHints"></div>
+          <div class="dlg-progress-actions" id="dlgProgActions"></div>
+          <div class="dlg-progress-console cm-hidden" id="dlgProgConsole">
+            <div class="console-toolbar">
+              <label class="cb autoscroll-wrap"><input type="checkbox" class="dlg-autoscroll" checked /> Auto-scroll</label>
+              <button type="button" class="mini-btn dlg-console-clear" id="dlgConClear">Clear view</button>
+            </div>
+            <div class="console-wrap"><pre class="dlg-console-pre" role="log"></pre></div>
+          </div>
+          <div class="dlg-progress-waiting cm-hidden" id="dlgProgWaiting">Waiting for output&hellip;</div>
+          <div class="dlg-progress-spinner cm-hidden" id="dlgProgSpinner" aria-hidden="true"></div>
+        </div>
       </aside>
     </div>
     <footer class="dialog-footer">
@@ -528,6 +547,7 @@ function launchProfileJob(toolId, args, label) {
 function clearInlineRunWidget() {
   const dialog = document.getElementById('modelDialogOverlay')
   if (!dialog) return
+  resetDlgPane()
   dialog.classList.remove('has-run-form')
   dialog.dataset.runSlug = ''
   const holder = document.getElementById('dlgRunForm')
@@ -582,6 +602,355 @@ async function openRunProfilePrefill(slug, tb) {
   holder.classList.remove('cm-hidden')
   setDialogNotice('Tune any option below, then hit <strong>Run script</strong>. The job queues behind other harness runs and streams live in <strong>Run data</strong>.')
   updateToolGuards()
+}
+
+// ── in-dialog run progress (sidebar under the prefill widget) ──
+
+const DLG_TERMINAL = ['succeeded', 'failed', 'canceled', 'interrupted']
+
+function dlgProg() {
+  return document.getElementById('dlgRunProgress')
+}
+
+function dlgStatusEl() {
+  return document.getElementById('dlgProgStatus')
+}
+
+function dlgActionsEl() {
+  return document.getElementById('dlgProgActions')
+}
+
+function dlgBadgeEl() {
+  return document.getElementById('dlgProgBadge')
+}
+
+function stopDlgTimer() {
+  if (RUN_STATE.dlgTimer) {
+    clearInterval(RUN_STATE.dlgTimer)
+    RUN_STATE.dlgTimer = null
+  }
+}
+
+function detachDlgStream(job) {
+  if (job == null) return
+  const es = RUN_STATE.dlgEs.get(job)
+  if (es) {
+    es.close()
+    RUN_STATE.dlgEs.delete(job)
+  }
+}
+
+function resetDlgPane() {
+  stopDlgTimer()
+  for (const job of [...RUN_STATE.dlgEs.keys()]) detachDlgStream(job)
+  RUN_STATE.dlgLogs = []
+  RUN_STATE.dlgJobId = null
+  RUN_STATE.dlgStatus = ''
+  RUN_STATE.dlgDuplicate = false
+  RUN_STATE.dlgReconnecting = false
+  RUN_STATE.dlgStartedAt = null
+  RUN_STATE.dlgFinishedAt = null
+  RUN_STATE.dlgError = ''
+  RUN_STATE.dlgLastJob = null
+  const p = dlgProg()
+  if (!p) return
+  p.classList.add('cm-hidden')
+  for (const id of ['dlgProgBadge', 'dlgProgActions', 'dlgProgHints']) {
+    const el = document.getElementById(id)
+    if (el) el.innerHTML = ''
+  }
+  const statusEl = document.getElementById('dlgProgStatus')
+  const stateText = statusEl && statusEl.querySelector('.dlg-state-text')
+  if (stateText) stateText.textContent = ''
+  for (const id of ['dlgProgConsole', 'dlgProgWaiting', 'dlgProgSpinner']) {
+    const el = document.getElementById(id)
+    if (el) el.classList.add('cm-hidden')
+  }
+  const pre = document.querySelector('#dlgRunProgress .dlg-console-pre')
+  if (pre) pre.textContent = ''
+}
+
+function dlgQueuePosition() {
+  if (!RUN_STATE.dlgJobId) return 0
+  const queued = RUN_STATE.jobs.filter(j => j.status === 'queued')
+  const idx = queued.findIndex(j => j.id === RUN_STATE.dlgJobId)
+  return idx === -1 ? 0 : idx + 1
+}
+
+function dlgDurationText() {
+  if (!RUN_STATE.dlgStartedAt) return ''
+  return durationStr(RUN_STATE.dlgStartedAt, RUN_STATE.dlgFinishedAt || null)
+}
+
+function renderDlgStatusLine() {
+  const statusEl = dlgStatusEl()
+  if (!statusEl) return
+  const s = RUN_STATE.dlgStatus || ''
+  let state = (STATUS_BADGE[s] && STATUS_BADGE[s][1]) || s
+  if (s === 'queued') {
+    if (RUN_STATE.dlgDuplicate) {
+      const id = (RUN_STATE.dlgLastJob && RUN_STATE.dlgLastJob.id) || ''
+      state = `Already queued — identical job ${id.slice(0, 8)}…`
+    } else {
+      const pos = dlgQueuePosition()
+      const total = RUN_STATE.jobs.filter(j => j.status === 'queued').length
+      state = pos > 0 ? `Queued — position ${pos} of ${total} (run harness busy)` : 'Queued — waiting for a free slot'
+    }
+  } else if (s === 'failed' && RUN_STATE.dlgError) {
+    state += ` · ${RUN_STATE.dlgError}`
+  }
+  const stateText = statusEl.querySelector('.dlg-state-text')
+  if (stateText) stateText.textContent = state
+  const head = statusEl.parentElement
+  if (!head) return
+  const elapsed = head.querySelector('.dlg-elapsed')
+  const reconnect = head.querySelector('.dlg-reconnect')
+  if (elapsed) elapsed.textContent = dlgDurationText() ? ` — ${dlgDurationText()}` : ''
+  if (reconnect) reconnect.textContent = RUN_STATE.dlgReconnecting ? ' · reconnecting' : ''
+}
+
+function startDlgTimer() {
+  stopDlgTimer()
+  RUN_STATE.dlgTimer = setInterval(() => {
+    if (!RUN_STATE.dlgStatus || DLG_TERMINAL.includes(RUN_STATE.dlgStatus)) {
+      stopDlgTimer()
+      return
+    }
+    if (RUN_STATE.dlgStatus !== 'queued') renderDlgStatusLine()
+  }, 1000)
+  if (RUN_STATE.dlgTimer && typeof RUN_STATE.dlgTimer.unref === 'function') RUN_STATE.dlgTimer.unref()
+}
+
+function syncDlgConsoleView() {
+  const consoleBox = document.getElementById('dlgProgConsole')
+  const waiting = document.getElementById('dlgProgWaiting')
+  const spinner = document.getElementById('dlgProgSpinner')
+  const has = RUN_STATE.dlgLogs.length > 0
+  const active = !!RUN_STATE.dlgStatus && !DLG_TERMINAL.includes(RUN_STATE.dlgStatus)
+  if (consoleBox) consoleBox.classList.toggle('cm-hidden', !has)
+  if (waiting) waiting.classList.toggle('cm-hidden', has)
+  if (spinner) spinner.classList.toggle('cm-hidden', has || !active)
+}
+
+function dlgConsoleHtml() {
+  return RUN_STATE.dlgLogs.map(l =>
+    l.stream === 'stderr' ? `<span class="con-err">${esc(l.text)}</span>` : esc(l.text),
+  ).join('\n')
+}
+
+function appendDlgLog(ev) {
+  RUN_STATE.dlgReconnecting = false
+  RUN_STATE.dlgLogs.push(ev)
+  if (RUN_STATE.dlgLogs.length > 400) RUN_STATE.dlgLogs.splice(0, RUN_STATE.dlgLogs.length - 400)
+  const pre = document.querySelector('#dlgRunProgress .dlg-console-pre')
+  const wrap = document.querySelector('#dlgRunProgress .console-wrap')
+  const auto = document.querySelector('#dlgRunProgress .dlg-autoscroll')
+  if (pre) pre.innerHTML = dlgConsoleHtml()
+  if (wrap && auto && auto.checked && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    wrap.scrollTop = wrap.scrollHeight
+  }
+  syncDlgConsoleView()
+}
+
+function clearDlgConsole() {
+  RUN_STATE.dlgLogs = []
+  const pre = document.querySelector('#dlgRunProgress .dlg-console-pre')
+  if (pre) pre.textContent = ''
+  syncDlgConsoleView()
+}
+
+function handleDlgStatus(job, status) {
+  if (!status || !status.status) return
+  if (!RUN_STATE.dlgJobId || RUN_STATE.dlgJobId !== job) return
+  const s = status.status
+  RUN_STATE.dlgReconnecting = false
+  RUN_STATE.dlgStatus = s
+  if (status.error) RUN_STATE.dlgError = status.error
+  if (DLG_TERMINAL.includes(s)) {
+    stopDlgTimer()
+    detachDlgStream(job)
+    renderDlgTerminal({
+      id: job,
+      status: s,
+      exitCode: status.exitCode,
+      error: status.error || RUN_STATE.dlgError,
+      resultHints: status.resultHints || {},
+    })
+    refreshJobs().catch(() => {})
+    return
+  }
+  if (s === 'running' && !RUN_STATE.dlgStartedAt) {
+    RUN_STATE.dlgStartedAt = new Date().toISOString()
+    startDlgTimer()
+  }
+  const badge = dlgBadgeEl()
+  if (badge) badge.innerHTML = statusBadgeHtml(s)
+  renderDlgStatusLine()
+  syncDlgConsoleView()
+}
+
+function renderDlgHints(resultHints) {
+  const el = document.getElementById('dlgProgHints')
+  if (!el) return
+  const html = dlgHintsHtml(resultHints)
+  el.innerHTML = html
+  el.classList.toggle('cm-hidden', !html)
+}
+
+function dlgHintsHtml(resultHints) {
+  if (!resultHints) return ''
+  const parts = []
+  if (resultHints.runId) parts.push(`Run ID: <code>${esc(resultHints.runId)}</code>`)
+  if (resultHints.resultsTsvUpdated) parts.push('results table updated')
+  return parts.length ? parts.join(' · ') : ''
+}
+
+function renderDlgActions(jobId, resultHints = {}) {
+  const box = dlgActionsEl()
+  if (!box) return
+  const id = jobId || RUN_STATE.dlgJobId || ''
+  const actions = []
+  const terminal = DLG_TERMINAL.includes(RUN_STATE.dlgStatus)
+  if (terminal && resultHints && (resultHints.bench || resultHints.runId)) {
+    actions.push(`<button type="button" class="mini-btn dlg-prog-explorer">Open in explorer</button>`)
+  }
+  if (terminal) actions.push(`<button type="button" class="mini-btn dlg-prog-rerun">Re-run</button>`)
+  if (id) {
+    actions.push(`<a class="mini-btn" href="/api/jobs/${encodeURIComponent(id)}/log" target="_blank" rel="noopener">view log</a>`)
+  }
+  actions.push(`<button type="button" class="mini-btn dlg-prog-runs">Open in Run data</button>`)
+  actions.push(`<button type="button" class="mini-btn dlg-prog-close">Close</button>`)
+  box.innerHTML = actions.join('')
+  const rerun = box.querySelector('.dlg-prog-rerun')
+  if (rerun) rerun.addEventListener('click', rerunDlgJob)
+  const explorer = box.querySelector('.dlg-prog-explorer')
+  if (explorer) explorer.addEventListener('click', () => { if (window.open) window.open('/explorer.html') })
+  const runs = box.querySelector('.dlg-prog-runs')
+  if (runs) runs.addEventListener('click', openDlgInRunData)
+  const close = box.querySelector('.dlg-prog-close')
+  if (close) close.addEventListener('click', () => {
+    resetDlgPane()
+    setDialogNotice('')
+  })
+}
+
+function renderDlgTerminal(job) {
+  if (!job) return
+  stopDlgTimer()
+  RUN_STATE.dlgReconnecting = false
+  RUN_STATE.dlgStatus = job.status || RUN_STATE.dlgStatus || 'failed'
+  if (job.finishedAt) RUN_STATE.dlgFinishedAt = job.finishedAt
+  else if (DLG_TERMINAL.includes(RUN_STATE.dlgStatus)) RUN_STATE.dlgFinishedAt = RUN_STATE.dlgFinishedAt || new Date().toISOString()
+  if (job.error) RUN_STATE.dlgError = job.error
+  if (RUN_STATE.dlgStatus === 'failed' && !RUN_STATE.dlgError && job.exitCode != null) {
+    RUN_STATE.dlgError = `Exited with code ${job.exitCode}`
+  }
+  const badge = dlgBadgeEl()
+  if (badge) badge.innerHTML = statusBadgeHtml(RUN_STATE.dlgStatus)
+  renderDlgStatusLine()
+  renderDlgHints(job.resultHints)
+  renderDlgActions(job.id, job.resultHints)
+  syncDlgConsoleView()
+  const actions = dlgActionsEl()
+  const first = actions && actions.querySelector('.mini-btn')
+  if (first && first.focus) first.focus()
+}
+
+function attachDlgStream(job) {
+  if (typeof window.EventSource === 'undefined' || RUN_STATE.dlgEs.has(job)) return
+  const es = new window.EventSource(`/api/jobs/${job}/stream`)
+  RUN_STATE.dlgEs.set(job, es)
+  es.addEventListener('log', (e) => {
+    try {
+      const ev = JSON.parse(e.data || '{}')
+      if (ev && ev.text) appendDlgLog({ stream: ev.stream, text: ev.text })
+    } catch { /* ignore */ }
+  })
+  es.addEventListener('start', (e) => {
+    if (RUN_STATE.dlgJobId !== job) return
+    RUN_STATE.dlgStatus = 'running'
+    RUN_STATE.dlgStartedAt = RUN_STATE.dlgStartedAt || new Date().toISOString()
+    if (RUN_STATE.dlgStartedAt) startDlgTimer()
+    const badge = dlgBadgeEl()
+    if (badge) badge.innerHTML = statusBadgeHtml('running')
+    renderDlgStatusLine()
+    syncDlgConsoleView()
+  })
+  es.addEventListener('status', (e) => {
+    let status = {}
+    try { status = JSON.parse(e.data || '{}') } catch { return }
+    handleDlgStatus(job, status)
+  })
+  es.addEventListener('cancel', () => handleDlgStatus(job, { status: 'canceled' }))
+  es.onerror = () => {
+    if (!RUN_STATE.dlgStatus || DLG_TERMINAL.includes(RUN_STATE.dlgStatus)) {
+      detachDlgStream(job)
+      return
+    }
+    RUN_STATE.dlgReconnecting = true
+    renderDlgStatusLine()
+  }
+}
+
+function openDialogProgress(job, toolId, args, opts = {}) {
+  const p = dlgProg()
+  if (!p) return
+  p.classList.remove('cm-hidden')
+  stopDlgTimer()
+  for (const j of [...RUN_STATE.dlgEs.keys()]) detachDlgStream(j)
+  RUN_STATE.dlgLogs = []
+  RUN_STATE.dlgJobId = job.id
+  RUN_STATE.dlgStatus = job.status || 'queued'
+  RUN_STATE.dlgDuplicate = !!opts.duplicate
+  RUN_STATE.dlgReconnecting = false
+  RUN_STATE.dlgStartedAt = job.startedAt || null
+  RUN_STATE.dlgFinishedAt = job.finishedAt || null
+  RUN_STATE.dlgError = job.error || ''
+  RUN_STATE.dlgLastJob = { id: job.id, toolId, args: args || (job.args || {}) }
+  const pre = document.querySelector('#dlgRunProgress .dlg-console-pre')
+  if (pre) pre.textContent = ''
+  const badge = dlgBadgeEl()
+  if (badge) badge.innerHTML = statusBadgeHtml(RUN_STATE.dlgStatus)
+  renderDlgStatusLine()
+  syncDlgConsoleView()
+  if (DLG_TERMINAL.includes(RUN_STATE.dlgStatus)) {
+    renderDlgTerminal(job)
+    return
+  }
+  renderDlgActions(job.id)
+  if (RUN_STATE.dlgStatus === 'running') startDlgTimer()
+  attachDlgStream(job.id)
+}
+
+function handleDialogJobResult(res, toolId, args) {
+  if (!res.job) return
+  openDialogProgress(res.job, toolId, args, { duplicate: !!res.duplicate })
+}
+
+function openDlgInRunData() {
+  activateSection('run')
+  closeDialog()
+}
+
+async function rerunDlgJob() {
+  const prev = RUN_STATE.dlgLastJob
+  if (!prev || !prev.toolId) return
+  const btn = document.querySelector('.dlg-prog-rerun')
+  if (btn) btn.disabled = true
+  resetDlgPane()
+  try {
+    const res = await api('/api/jobs', { method: 'POST', body: JSON.stringify({ toolId: prev.toolId, args: prev.args }) })
+    await refreshJobs()
+    if (res.job && !DLG_TERMINAL.includes(res.job.status)) {
+      handleDialogJobResult(res, prev.toolId, prev.args)
+      setDialogNotice(`Re-running <strong>${esc(prev.toolId)}</strong> — progress below.`)
+    } else if (res.job) {
+      handleDialogJobResult(res, prev.toolId, prev.args)
+      setDialogNotice(`Re-run <strong>${esc(prev.toolId)}</strong> did not start — see pane below.`, 'error')
+    }
+  } catch (e) {
+    setDialogNotice(`Re-run failed: ${esc(e.message)}`, 'error')
+  }
 }
 
 async function handleProbeForAdd(model, route) {
@@ -781,6 +1150,8 @@ function bindModal() {
   document.getElementById('dlgClose').addEventListener('click', closeDialog)
   document.getElementById('dlgCancel').addEventListener('click', closeDialog)
   document.getElementById('dlgRunClose').addEventListener('click', clearInlineRunWidget)
+  const dlgConClear = document.getElementById('dlgConClear')
+  if (dlgConClear) dlgConClear.addEventListener('click', clearDlgConsole)
   dialogOverlay.addEventListener('click', (e) => {
     if (e.target === dialogOverlay) closeDialog()
   })
@@ -871,6 +1242,17 @@ const RUN_STATE = {
   expandedJobs: new Set(),
   hintedJobs: new Set(),
   activeStarted: false,
+  dlgEs: new Map(),
+  dlgTimer: null,
+  dlgLogs: [],
+  dlgJobId: null,
+  dlgStatus: '',
+  dlgDuplicate: false,
+  dlgReconnecting: false,
+  dlgStartedAt: null,
+  dlgFinishedAt: null,
+  dlgError: '',
+  dlgLastJob: null,
 }
 
 const RUN_TOOLS_BY_ID = new Map()
@@ -1133,19 +1515,33 @@ async function runToolSubmit(card, tool) {
   const body = { toolId: tool.id, args: values }
   if (tool.destructive) body.confirm = card.querySelector('[data-confirm]').value
   const inDialog = !!card.closest('#dlgRunForm')
+  const submitBtn = card.querySelector('.tool-run-submit')
+  if (submitBtn) submitBtn.disabled = true
   try {
     const res = await api('/api/jobs', { method: 'POST', body: JSON.stringify(body) })
     await refreshJobs()
-    if (res.job && (res.job.status === 'running' || res.job.status === 'queued')) {
-      expandJob(res.job.id)
-      attachStreamIfPossible(res.job.id)
+    const resJob = res.job
+    if (resJob && (resJob.status === 'running' || resJob.status === 'queued')) {
+      expandJob(resJob.id)
+      attachStreamIfPossible(resJob.id)
     }
-    if (inDialog) {
-      const shortId = res.job && res.job.id ? res.job.id.slice(0, 8) : ''
-      setDialogNotice(`Launched <strong>${esc(tool.id)}</strong>. Job id <code>${esc(shortId)}…</code> — watch it stream in <strong>Run data</strong>.`)
+    if (inDialog && resJob) {
+      handleDialogJobResult(res, tool.id, values)
+      if (DLG_TERMINAL.includes(resJob.status)) {
+        setDialogNotice(`<strong>${esc(tool.title || tool.id)}</strong> failed to start: ${esc(resJob.error || 'unknown error')}`, 'error')
+      } else if (res.duplicate) {
+        setDialogNotice(`<strong>${esc(tool.id)}</strong> is already queued with these exact options — progress below.`)
+      } else {
+        setDialogNotice(`Launched <strong>${esc(tool.id)}</strong> — progress below. <strong>Run data</strong> keeps the full history.`)
+      }
     }
   } catch (e) {
     showCardError(card, e.message)
+    if (inDialog && /already running/.test(e.message)) {
+      setDialogNotice(`<strong>${esc(tool.title || tool.id)}</strong> is already running with identical options — the job is streaming in <strong>Run data</strong>.`, 'error')
+    }
+  } finally {
+    updateToolGuards()
   }
 }
 
@@ -1566,7 +1962,9 @@ function stopRunPolling() {
     clearInterval(RUN_STATE.pollTimer)
     RUN_STATE.pollTimer = null
   }
+  stopDlgTimer()
   for (const job of [...RUN_STATE.es.keys()]) detachStream(job)
+  for (const job of [...RUN_STATE.dlgEs.keys()]) detachDlgStream(job)
 }
 
 function initSettings() {

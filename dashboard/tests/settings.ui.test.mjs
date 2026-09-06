@@ -85,6 +85,7 @@ function makeHarness() {
   const state = {
     calls: [],
     es: [],
+    esInstances: [],
     modelsGet: MODELS_PAYLOAD,
     probe: {
       ok: true,
@@ -114,6 +115,7 @@ function makeHarness() {
     cancel: { ok: true, canceled: true },
     clear: { ok: true, removed: 0 },
     jobDetail: () => ({ ok: true, job: { id: 'j3', toolId: 'run_candidate', args: { bench: 'chapter_fast', profile: 'all', mock: true }, status: 'succeeded', createdAt: '2026-09-05T09:00:00Z', exitCode: 0, resultHints: {} } }),
+    postGate: null,
     ls: new Map(),
     promptReturn: null,
     promptCalls: 0,
@@ -149,7 +151,9 @@ function makeHarness() {
     if (url === '/api/env-check') return json(state.env)
     if (url === '/bench-list') return json(state.bench)
     if (url.split('?')[0] === '/api/jobs' && method === 'GET') return json(state.jobs)
-    if (url === '/api/jobs' && method === 'POST') return json(state.jobsPost)
+    if (url === '/api/jobs' && method === 'POST') {
+      return state.postGate ? state.postGate.then(() => json(state.jobsPost)) : json(state.jobsPost)
+    }
     if (url === '/api/jobs' && method === 'DELETE') return json(state.clear)
     if (method === 'POST' && /^\/api\/jobs\/[^/]+\/cancel$/.test(url)) return json(state.cancel)
     const detailMatch = url.match(/^\/api\/jobs\/([^/]+)$/)
@@ -160,10 +164,20 @@ function makeHarness() {
   window.EventSource = class {
     constructor(url) {
       this.url = url
+      this.listeners = {}
+      this.closed = false
       state.es.push(url)
+      state.esInstances.push(this)
     }
-    addEventListener() {}
-    close() {}
+    addEventListener(type, fn) {
+      (this.listeners[type] ||= []).push(fn)
+    }
+    emit(type, data) {
+      for (const fn of this.listeners[type] || []) fn({ data: JSON.stringify(data) })
+    }
+    close() {
+      this.closed = true
+    }
   }
   window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} })
   window.prompt = (msg, def) => {
@@ -867,6 +881,171 @@ test('inline run form submits its own job from the dialog widget', async () => {
   await waitUntil(() => /Launched run_candidate/.test(notice.textContent))
   assert.match(notice.textContent, /Launched run_candidate/)
   assert.ok(!doc.getElementById('modelDialogOverlay').classList.contains('cm-hidden'), 'dialog stays open after submit')
+  await waitUntil(() => !doc.getElementById('dlgRunProgress').classList.contains('cm-hidden'))
+  const badge = doc.getElementById('dlgProgBadge')
+  assert.match(badge.textContent, /Queued/)
+  const status = doc.getElementById('dlgProgStatus')
+  assert.match(status.textContent, /Queued/)
+})
+
+// ── in-dialog run progress ──────────────────────────────────
+
+const RUN_JOB_RUNNING = { id: 'j9', toolId: 'run_candidate', status: 'running', createdAt: '2026-09-05T09:00:00Z', startedAt: '2026-09-05T09:00:01Z', exitCode: null, resultHints: {} }
+
+const openPrefill = async () => {
+  await openEdit(h)
+  const rows = h.postRender().rows()
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.tb === '30m').querySelector('.vc-opt-btn')
+  h.click(btn)
+  h.click(btn.closest('.vc-opt').querySelector('[data-action="prefill"]'))
+  await waitUntil(() => h.doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]'))
+  return h.doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="run_candidate"]')
+}
+
+test('dialog submit renders progress pane for a running job', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = []
+  state.jobsPost = { ok: true, job: RUN_JOB_RUNNING }
+  const card = await openPrefill()
+  click(card.querySelector('.tool-run-submit'))
+  await waitUntil(() => !doc.getElementById('dlgRunProgress').classList.contains('cm-hidden'))
+  assert.match(doc.getElementById('dlgProgBadge').textContent, /Running/)
+  assert.match(doc.getElementById('dlgProgStatus').textContent, /Running/)
+  const timerEl = doc.querySelector('#dlgRunProgress .dlg-elapsed')
+  assert.ok(timerEl, 'elapsed timer node present')
+})
+
+test('dialog log events append into the in-dialog console', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = []
+  state.jobsPost = { ok: true, job: RUN_JOB_RUNNING }
+  const card = await openPrefill()
+  click(card.querySelector('.tool-run-submit'))
+  await waitUntil(() => state.esInstances.length >= 1)
+  const dlgEs = state.esInstances[state.esInstances.length - 1]
+  dlgEs.emit('log', { stream: 'stdout', text: 'Running profile: x' })
+  const pre = doc.querySelector('#dlgRunProgress .dlg-console-pre')
+  assert.match(pre.textContent, /Running profile: x/)
+  dlgEs.emit('log', { stream: 'stderr', text: 'boom' })
+  const err = doc.querySelector('#dlgRunProgress .con-err')
+  assert.ok(err && /boom/.test(err.textContent), 'stderr wrapped in .con-err')
+  assert.ok(!doc.getElementById('dlgProgConsole').classList.contains('cm-hidden'), 'console visible after log line')
+  assert.ok(doc.getElementById('dlgProgSpinner').classList.contains('cm-hidden'), 'spinner hidden once output arrives')
+})
+
+test('terminal status detaches dialog stream and renders summary', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = []
+  state.jobsPost = { ok: true, job: RUN_JOB_RUNNING }
+  const card = await openPrefill()
+  click(card.querySelector('.tool-run-submit'))
+  await waitUntil(() => state.esInstances.length >= 1)
+  const dlgEs = state.esInstances[state.esInstances.length - 1]
+  dlgEs.emit('status', { status: 'succeeded', exitCode: 0, resultHints: { runId: 'r1', resultsTsvUpdated: true } })
+  assert.ok(dlgEs.closed, 'dialog stream closed on terminal')
+  assert.match(doc.getElementById('dlgProgBadge').textContent, /Succeeded/)
+  assert.match(doc.getElementById('dlgProgStatus').textContent, /Succeeded/)
+  assert.match(doc.getElementById('dlgProgHints').textContent, /Run ID: r1/)
+  assert.ok(doc.getElementById('dlgProgSpinner').classList.contains('cm-hidden'), 'spinner hidden at terminal')
+  const actions = doc.getElementById('dlgProgActions')
+  assert.ok(actions.querySelector('.dlg-prog-rerun'), 'Re-run action shown')
+  assert.match(actions.querySelector('.dlg-prog-explorer').textContent, /explorer/)
+})
+
+test('failed run shows error and log link in the dialog pane', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = []
+  state.jobsPost = { ok: true, job: RUN_JOB_RUNNING }
+  const card = await openPrefill()
+  click(card.querySelector('.tool-run-submit'))
+  await waitUntil(() => state.esInstances.length >= 1)
+  const dlgEs = state.esInstances[state.esInstances.length - 1]
+  dlgEs.emit('status', { status: 'failed', exitCode: 1, error: 'boom' })
+  assert.ok(dlgEs.closed, 'dialog stream closed on failure')
+  assert.match(doc.getElementById('dlgProgStatus').textContent, /boom/)
+  assert.match(doc.getElementById('dlgProgBadge').textContent, /Failed/)
+  const link = doc.querySelector('#dlgProgActions .mini-btn[href]')
+  assert.equal(link.getAttribute('href'), '/api/jobs/j9/log')
+})
+
+test('failedFast POST renders terminal pane without opening a stream', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = []
+  state.jobsPost = {
+    ok: true,
+    failedFast: true,
+    job: { id: 'jf', toolId: 'run_candidate', status: 'failed', failedFast: true, error: 'script not found: core/run_candidate.py', createdAt: '2026-09-05T09:00:00Z', finishedAt: '2026-09-05T09:00:00Z', exitCode: null, resultHints: {} },
+  }
+  const card = await openPrefill()
+  click(card.querySelector('.tool-run-submit'))
+  await waitUntil(() => !doc.getElementById('dlgRunProgress').classList.contains('cm-hidden'))
+  assert.equal(state.es.length, 0, 'no EventSource for fast-failed job')
+  assert.match(doc.getElementById('dlgProgBadge').textContent, /Failed/)
+  assert.match(doc.getElementById('dlgProgStatus').textContent, /script not found/)
+})
+
+test('duplicate POST shows already-queued pane and streams the existing job', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = []
+  state.jobsPost = {
+    ok: true,
+    duplicate: true,
+    job: { id: 'j1', toolId: 'run_candidate', status: 'queued', createdAt: '2026-09-05T09:00:00Z', exitCode: null, resultHints: {} },
+  }
+  const card = await openPrefill()
+  click(card.querySelector('.tool-run-submit'))
+  await waitUntil(() => state.es.length === 1)
+  assert.match(state.es[0], /\/api\/jobs\/j1\/stream/)
+  assert.match(doc.getElementById('dlgProgStatus').textContent, /Already queued/)
+})
+
+test('dialog stream and run-data row stream coexist for the same job', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = [RUN_JOB_RUNNING]
+  state.jobsPost = { ok: true, job: RUN_JOB_RUNNING }
+  const card = await openPrefill()
+  click(card.querySelector('.tool-run-submit'))
+  await waitUntil(() => state.es.length === 2)
+  assert.ok(state.es.every(u => /\/api\/jobs\/j9\/stream/.test(u)), 'two distinct stream subscriptions for j9')
+})
+
+test('dlgRunClose detaches the dialog stream and hides the pane', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = [RUN_JOB_RUNNING]
+  state.jobsPost = { ok: true, job: RUN_JOB_RUNNING }
+  const card = await openPrefill()
+  click(card.querySelector('.tool-run-submit'))
+  await waitUntil(() => state.esInstances.length >= 2)
+  const dlgEs = state.esInstances[state.esInstances.length - 1]
+  assert.ok(!dlgEs.closed, 'dialog stream live before close')
+  click(doc.getElementById('dlgRunClose'))
+  assert.ok(dlgEs.closed, 'dialog stream closed on run-form close')
+  assert.ok(doc.getElementById('dlgRunProgress').classList.contains('cm-hidden'), 'pane hidden')
+  assert.ok(!doc.getElementById('modelDialogOverlay').classList.contains('cm-hidden'), 'dialog stays open')
+})
+
+test('queued pane shows queue position from the job list', async () => {
+  const { doc, click, state } = h
+  const q1 = { id: 'qa', toolId: 'run_candidate', status: 'queued', createdAt: '2026-09-05T09:00:00Z', exitCode: null, resultHints: {} }
+  const q2 = { id: 'qb', toolId: 'run_candidate', status: 'queued', createdAt: '2026-09-05T09:00:01Z', exitCode: null, resultHints: {} }
+  state.jobs.jobs = [q1, q2]
+  state.jobsPost = { ok: true, job: q2 }
+  const card = await openPrefill()
+  click(card.querySelector('.tool-run-submit'))
+  await waitUntil(() => /position 2/.test(doc.getElementById('dlgProgStatus').textContent))
+})
+
+test('run submit is disabled while the POST is in flight in the dialog', async () => {
+  let resolveGate
+  h.state.postGate = new Promise(r => { resolveGate = r })
+  h.state.jobs.jobs = []
+  h.state.jobsPost = { ok: true, job: { ...RUN_JOB_RUNNING } }
+  const card = await openPrefill()
+  const submit = card.querySelector('.tool-run-submit')
+  h.click(submit)
+  assert.equal(submit.disabled, true, 'submit disabled while POST pending')
+  resolveGate()
+  await waitUntil(() => !h.doc.getElementById('dlgRunProgress').classList.contains('cm-hidden'))
 })
 
 // ── judge-model toggle ───────────────────────────────────────
