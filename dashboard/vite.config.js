@@ -475,6 +475,47 @@ function applyEffortConfig(nSpec, effort, templateStyle) {
   }
 }
 
+// ── Reasoning-variant deletion cascade (run files + logs + results.tsv) ──
+
+const CASCADE_TOOLS = new Set(['run_candidate', 'judge_existing', 'agent'])
+
+// Runs from the repo root cwd the python scripts share; CLI defaults resolve
+// runs/ artifacts/jobs/ and results.tsv relative to that same cwd.
+function cascadeCliArgs(key, dryRun) {
+  const args = ['tools/add_candidate.py', '--remove-profile', key, '--out', 'data/candidates.json']
+  if (dryRun) args.push('--dry-run')
+  return args
+}
+
+function parseCascadeOutput(stdout) {
+  const grab = (re) => { const m = stdout.match(re); return m ? parseInt(m[1], 10) : 0 }
+  const runRemoved = grab(/Removed (\d+) run file\(s\)/)
+  const logsRemoved = grab(/Removed (\d+) job log\(s\)/)
+  const rowsRemoved = grab(/Removed (\d+) results\.tsv row\(s\)/)
+  return {
+    runFiles: runRemoved || grab(/Found (\d+) run file\(s\)/),
+    logs: logsRemoved || grab(/Found (\d+) job log\(s\)/),
+    activeLogs: grab(/Skipped (\d+) active job log\(s\)/),
+    resultRows: rowsRemoved || grab(/Found (\d+) results\.tsv row\(s\)/),
+  }
+}
+
+function activeJobsForKey(ctx, getJobs, key) {
+  const jm = (typeof getJobs === 'function' && getJobs()) || ctx.jobManager
+  if (!jm || !jm.jobs) return 0
+  let n = 0
+  for (const j of [...jm.jobs.values(), ...(jm.history ? jm.history.values() : [])]) {
+    if (j.status !== 'running' && j.status !== 'queued') continue
+    const a = j.args || {}
+    if (j.toolId === 'agent') {
+      if (a.candidate === key) n++
+    } else if (CASCADE_TOOLS.has(j.toolId) && a.profile === key) {
+      n++
+    }
+  }
+  return n
+}
+
 function applyProfileEdit(data, body) {
   const { old_model, new_model } = body
   if (!old_model) return { error: 'old_model is required' }
@@ -605,7 +646,7 @@ function applyProfileEdit(data, body) {
   }
 }
 
-async function handleModelsApi(req, res, ctx) {
+async function handleModelsApi(req, res, ctx, getJobs = () => null) {
   const url = stripQuery(req.url)
 
   if (req.method === 'GET' && url === '/api/models') {
@@ -715,9 +756,71 @@ async function handleModelsApi(req, res, ctx) {
         sendJson(res, 400, { ok: false, error: result.error })
         return true
       }
-      writeCandidates(ctx.candidatesPath, result.data)
+      const removedKeys = result.plan.removed || []
+
+      // Confirmation gate: a keep:false edit without confirm mutates nothing.
+      if (removedKeys.length > 0 && body.confirm !== true) {
+        const impact = []
+        let anyActive = false
+        for (const key of removedKeys) {
+          const r = await ctx.pythonRunner(cascadeCliArgs(key, true))
+          if (!r.ok) {
+            sendJson(res, 500, { ok: false, error: (r.stderr || r.message || 'preflight failed').trim() })
+            return true
+          }
+          const c = parseCascadeOutput(r.stdout)
+          const activeJobs = activeJobsForKey(ctx, getJobs, key)
+          if (activeJobs > 0) anyActive = true
+          impact.push({ key, runFiles: c.runFiles, logs: c.logs, resultRows: c.resultRows, activeJobs })
+        }
+        sendJson(res, 409, {
+          ok: false,
+          code: anyActive ? 'active_jobs' : 'confirmation_required',
+          impact,
+        })
+        return true
+      }
+
+      // Confirmed deletion: variant keys with an active job are kept, not removed.
+      let skippedActive = []
+      if (removedKeys.length > 0 && body.confirm === true) {
+        skippedActive = removedKeys.filter(k => activeJobsForKey(ctx, getJobs, k) > 0)
+        if (skippedActive.length > 0) {
+          body.edits = (body.edits || []).filter(e => !skippedActive.includes(e.key))
+        }
+      }
+
+      const confirmed = applyProfileEdit(data, body)
+      if (confirmed.error) {
+        sendJson(res, 400, { ok: false, error: confirmed.error })
+        return true
+      }
+      writeCandidates(ctx.candidatesPath, confirmed.data)
       await regenerateSpecPy(ctx.pythonRunner)
-      sendJson(res, 200, { ok: true, plan: result.plan })
+
+      let removedRuns = 0
+      let removedLogs = 0
+      let removedResultRows = 0
+      for (const key of confirmed.plan.removed || []) {
+        const r = await ctx.pythonRunner(cascadeCliArgs(key))
+        if (!r.ok) {
+          sendJson(res, 500, { ok: false, error: (r.stderr || r.message || 'cascade failed').trim() })
+          return true
+        }
+        const c = parseCascadeOutput(r.stdout)
+        removedRuns += c.runFiles
+        removedLogs += c.logs
+        removedResultRows += c.resultRows
+      }
+
+      const plan = {
+        ...confirmed.plan,
+        removedRuns,
+        removedLogs,
+        removedResultRows,
+      }
+      if (skippedActive.length > 0) plan.skippedActive = skippedActive
+      sendJson(res, 200, { ok: true, plan })
     } catch (e) {
       sendJson(res, 500, { ok: false, error: e.message })
     }
@@ -746,14 +849,22 @@ async function handleModelsApi(req, res, ctx) {
         return true
       }
       const removedProfiles = []
-      const removedRuns = []
       for (const line of r.stdout.split('\n')) {
         const pm = line.match(/^  - (\S+)/)
         if (pm) removedProfiles.push(pm[1])
       }
       const rm = r.stdout.match(/Removed (\d+) run file\(s\)/)
-      if (rm) removedRuns.push(parseInt(rm[1], 10))
-      sendJson(res, 200, { ok: true, model, pattern, removedProfiles, removedRuns: removedRuns[0] || 0 })
+      const lm = r.stdout.match(/Removed (\d+) job log\(s\)/)
+      const tm = r.stdout.match(/Removed (\d+) results\.tsv row\(s\)/)
+      sendJson(res, 200, {
+        ok: true,
+        model,
+        pattern,
+        removedProfiles,
+        removedRuns: rm ? parseInt(rm[1], 10) : 0,
+        removedLogs: lm ? parseInt(lm[1], 10) : 0,
+        removedResultRows: tm ? parseInt(tm[1], 10) : 0,
+      })
     } catch (e) {
       sendJson(res, 500, { ok: false, error: e.message })
     }
@@ -1878,7 +1989,7 @@ function scanRequestHandler(ctx) {
   }
   return (req, res, next) => {
     if (req.url.startsWith('/api/models') || req.url.startsWith('/api/models/probe')) {
-      handleModelsApi(req, res, ctx).then(done => { if (!done) next() })
+      handleModelsApi(req, res, ctx, getJobs).then(done => { if (!done) next() })
       return
     }
 

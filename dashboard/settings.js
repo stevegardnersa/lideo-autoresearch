@@ -27,7 +27,9 @@ const api = async (path, opts = {}) => {
       const first = Object.values(j.fieldErrors)[0]
       if (first) msg = first
     }
-    throw new Error(msg)
+    const err = new Error(msg)
+    err.detail = j
+    throw err
   }
   return j
 }
@@ -207,6 +209,25 @@ const MODAL_TEMPLATE = `
     <footer class="dialog-footer">
       <button class="dlg-btn dlg-btn-ghost" id="dlgCancel">Cancel</button>
       <button class="dlg-btn dlg-btn-primary" id="dlgCreate" disabled>Create</button>
+    </footer>
+  </div>
+</div>
+
+<div class="settings-overlay cm-hidden" id="confirmDeleteOverlay">
+  <div class="settings-dialog confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirmDeleteTitle">
+    <header class="settings-modal-header">
+      <div class="settings-modal-title" id="confirmDeleteTitle">Delete reasoning variants permanently?</div>
+      <button class="settings-close" id="confirmDeleteClose" aria-label="Close confirmation">&times;</button>
+    </header>
+    <div class="dialog-body">
+      <div class="confirm-impact" id="confirmImpact"></div>
+      <div class="dlg-notice cm-hidden" id="confirmNotice"></div>
+      <div class="dlg-error cm-hidden" id="confirmError"></div>
+      <p class="confirm-warn"><strong>Irreversible.</strong> The selected variants' run files, job logs, and results.tsv rows will be permanently deleted.</p>
+    </div>
+    <footer class="dialog-footer">
+      <button class="dlg-btn dlg-btn-ghost" id="confirmDeleteCancel">Cancel</button>
+      <button class="dlg-btn dlg-btn-danger" id="confirmDeleteButton" disabled>Delete permanently</button>
     </footer>
   </div>
 </div>`
@@ -1337,23 +1358,134 @@ async function confirmEdit(model) {
   const route = parseRoute(document.getElementById('dlgProviderRoute').value)
   if (document.getElementById('dlgProviderRoute').value.trim() && !route) { setError('Provider route is not valid JSON.'); return }
   const { edits, create } = collectEditPayload(model)
+  const body = {
+    old_model: model.model,
+    new_model: rawModel,
+    edits,
+    create,
+  }
+  if (route !== undefined) body.provider_route = route
+  const pending = await requestEditApply(model, body)
+  if (pending.needConfirm) {
+    openConfirmDelete(model, body, ((pending.error && pending.error.detail) || {}).impact || [])
+  }
+}
+
+async function requestEditApply(model, body) {
+  const createBtn = document.getElementById('dlgCreate')
   createBtn.disabled = true
   createBtn.textContent = 'Saving...'
   try {
-    const body = {
-      old_model: model.model,
-      new_model: rawModel,
-      edits,
-      create,
-    }
-    if (route !== undefined) body.provider_route = route
     await api('/api/models', { method: 'PUT', body: JSON.stringify(body) })
     closeDialog()
     await loadModels()
+    return { needConfirm: false }
   } catch (e) {
+    if (e.detail && (e.detail.code === 'confirmation_required' || e.detail.code === 'active_jobs')) {
+      return { needConfirm: true, error: e }
+    }
     setError(e.message)
     createBtn.disabled = false
     createBtn.textContent = 'Save changes'
+    return { needConfirm: false, error: e }
+  }
+}
+
+function plural(n, word) {
+  return `${n} ${word}${n === 1 ? '' : 's'}`
+}
+
+function restoreRemovalRows() {
+  document.querySelectorAll('#dlgVariantRows tr.vc-to-remove').forEach(r => toggleRowRemoval(r))
+}
+
+function openConfirmDelete(model, body, impact) {
+  const overlay = document.getElementById('confirmDeleteOverlay')
+  const list = document.getElementById('confirmImpact')
+  const btn = document.getElementById('confirmDeleteButton')
+  const notice = document.getElementById('confirmNotice')
+  const err = document.getElementById('confirmError')
+  if (notice) { notice.classList.add('cm-hidden'); notice.innerHTML = '' }
+  if (err) { err.classList.add('cm-hidden'); err.innerHTML = '' }
+
+  const rowsHtml = impact.map(i => {
+    const impactStr = (i.runFiles || i.logs || i.resultRows)
+      ? `${plural(i.runFiles, 'run file')} · ${plural(i.logs, 'log')} · ${plural(i.resultRows, 'results row')}`
+      : 'no run data — profile only'
+    const blocked = i.activeJobs > 0
+    return `<tr class="${blocked ? 'confirm-row-blocked' : ''}">
+      <td><code>${esc(i.key)}</code></td>
+      <td>${impactStr}${blocked ? ' <span class="confirm-blocked">⛔ cannot delete — job still running</span>' : ''}</td>
+    </tr>`
+  }).join('')
+  list.innerHTML = `<table class="confirm-table"><tbody>${rowsHtml}</tbody></table>`
+
+  const confirmable = impact.filter(i => i.activeJobs === 0)
+  const totalRuns = confirmable.reduce((s, i) => s + (i.runFiles || 0), 0)
+  const totalLogs = confirmable.reduce((s, i) => s + (i.logs || 0), 0)
+  const totalRows = confirmable.reduce((s, i) => s + (i.resultRows || 0), 0)
+  btn.dataset.impact = JSON.stringify(impact)
+  btn.dataset.body = JSON.stringify(body)
+  if (confirmable.length === 0) {
+    btn.textContent = 'Nothing to delete (active jobs)'
+    btn.disabled = true
+  } else {
+    const parts = [plural(confirmable.length, 'variant')]
+    if (totalRuns) parts.push(plural(totalRuns, 'file'))
+    if (totalLogs) parts.push(plural(totalLogs, 'log'))
+    if (totalRows) parts.push(`${totalRows === 1 ? '1 results row' : `${totalRows} results rows`}`)
+    btn.textContent = `Delete permanently (${parts.join(', ')})`
+    btn.disabled = false
+  }
+  overlay.classList.remove('cm-hidden')
+  document.getElementById('confirmDeleteCancel').focus()
+}
+
+function closeConfirmDelete() {
+  document.getElementById('confirmDeleteOverlay').classList.add('cm-hidden')
+  const createBtn = document.getElementById('dlgCreate')
+  createBtn.disabled = false
+  createBtn.textContent = 'Save changes'
+  if (document.getElementById('confirmDeleteCancel').contains(document.activeElement) ||
+      document.getElementById('confirmDeleteButton').contains(document.activeElement) ||
+      document.getElementById('confirmDeleteClose').contains(document.activeElement)) {
+    createBtn.focus()
+  }
+}
+
+function cancelConfirmDelete() {
+  restoreRemovalRows()
+  closeConfirmDelete()
+}
+
+async function performConfirmedDelete(model, body) {
+  const overlay = document.getElementById('confirmDeleteOverlay')
+  const btn = document.getElementById('confirmDeleteButton')
+  btn.disabled = true
+  btn.textContent = 'Deleting...'
+  const confirmedBody = { ...body, confirm: true }
+  try {
+    const res = await api('/api/models', { method: 'PUT', body: JSON.stringify(confirmedBody) })
+    overlay.classList.add('cm-hidden')
+    closeDialog()
+    await loadModels()
+    const plan = res.plan || {}
+    const parts = []
+    if (plan.removed && plan.removed.length) parts.push(plural(plan.removed.length, 'variant'))
+    if (plan.removedRuns) parts.push(plural(plan.removedRuns, 'file'))
+    if (plan.removedLogs) parts.push(plural(plan.removedLogs, 'log'))
+    if (plan.removedResultRows) parts.push(plan.removedResultRows === 1 ? '1 results row' : `${plan.removedResultRows} results rows`)
+    if (plan.skippedActive && plan.skippedActive.length) {
+      setBanner(`Deleted ${parts.join(', ') || 'selected variants'}. Kept ${plan.skippedActive.length} variant${plan.skippedActive.length === 1 ? '' : 's'} with an active job.`)
+    } else {
+      setBanner(`Deleted ${parts.join(', ') || 'selected variants'}.`)
+    }
+  } catch (e) {
+    overlay.classList.add('cm-hidden')
+    restoreRemovalRows()
+    document.getElementById('dlgCreate').disabled = false
+    document.getElementById('dlgCreate').textContent = 'Save changes'
+    setError(e.message)
   }
 }
 
@@ -1555,8 +1687,21 @@ function bindModal() {
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return
+    const confirmO = document.getElementById('confirmDeleteOverlay')
+    if (confirmO && !confirmO.classList.contains('cm-hidden')) { cancelConfirmDelete(); return }
     if (!dialogOverlay.classList.contains('cm-hidden')) closeDialog()
     else if (!overlay.classList.contains('cm-hidden')) hideOverlay(overlay)
+  })
+
+  const confirmOverlay = document.getElementById('confirmDeleteOverlay')
+  document.getElementById('confirmDeleteCancel').addEventListener('click', cancelConfirmDelete)
+  document.getElementById('confirmDeleteClose').addEventListener('click', cancelConfirmDelete)
+  document.getElementById('confirmDeleteButton').addEventListener('click', async () => {
+    let editingModel = null
+    try { editingModel = JSON.parse(dialogOverlay.dataset.editingModel || 'null') } catch { /* none */ }
+    const stored = document.getElementById('confirmDeleteButton').dataset.body
+    if (!stored) return
+    await performConfirmedDelete(editingModel, JSON.parse(stored))
   })
 }
 

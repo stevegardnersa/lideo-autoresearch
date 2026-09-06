@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -578,6 +579,184 @@ def _find_runs_by_pattern(pattern: str, runs_dir: Path) -> List[Path]:
     return run_files
 
 
+_RUN_ID_TOKEN_RE = re.compile(r"^[A-Za-z0-9_.\-]+$")
+
+
+def _run_id_of_run_file(name: str) -> Optional[str]:
+    """Base run-id family key for a run artifact filename.
+
+    A run family is keyed by the manifest run id (e.g. ``<ts>__<bench>__<tv>__<profile>__<candidate>_v1``).
+    Judge duplicates append ``__llmj_<judge>`` to that stem; this strips the judge suffix and the
+    extension so a matched run id can be searched for in job logs and results.tsv.
+    """
+    base = name
+    for ext in (".samples.jsonl", ".state.json", ".json"):
+        if base.endswith(ext):
+            base = base[: -len(ext)]
+            break
+    if "__llmj_" in base:
+        base = base.split("__llmj_", 1)[0]
+    if not _RUN_ID_TOKEN_RE.match(base):
+        return None
+    return base
+
+
+def _find_run_files_for_key(profile_key: str, runs_dir: Path) -> List[Path]:
+    """Run artifacts whose run id embeds ``__<profile_key>_v`` (fixed-string match)."""
+    marker = f"__{profile_key}_v"
+    run_files: List[Path] = []
+    benchmarks = [d for d in runs_dir.iterdir() if d.is_dir()] if runs_dir.exists() else []
+    for benchmark_dir in benchmarks:
+        for run_file in benchmark_dir.iterdir():
+            if not run_file.is_file():
+                continue
+            if marker in run_file.name:
+                run_files.append(run_file)
+    return run_files
+
+
+def _collect_run_ids(run_files: List[Path]) -> set:
+    run_ids: set = set()
+    for rf in run_files:
+        rid = _run_id_of_run_file(rf.name)
+        if rid:
+            run_ids.add(rid)
+    return run_ids
+
+
+def _scan_logs_for_run_ids(run_ids: set, jobs_dir: Path) -> tuple[list, list]:
+    """Split matching job logs into (deletable, active).
+
+    A log is deletable when it references one of the run ids AND carries a
+    ``[job] finished`` marker. Logs without that marker may belong to a still
+    running job and are never deleted (``[job] meta`` lines store no args).
+    """
+    if not run_ids or not jobs_dir.exists():
+        return [], []
+    token_re = re.compile(r"\bRun ID:\s*([A-Za-z0-9_.\-]+)")
+    deletable: List[Path] = []
+    active: List[Path] = []
+    for log in sorted(jobs_dir.glob("*.log")):
+        try:
+            content = log.read_text(errors="replace")
+        except Exception:
+            continue
+        if not any(m.group(1) in run_ids for m in token_re.finditer(content)):
+            continue
+        if "[job] finished" in content:
+            deletable.append(log)
+        else:
+            active.append(log)
+    return deletable, active
+
+
+def _drop_results_rows(results_path: Path, run_ids: set, dry_run: bool) -> int:
+    """Remove results.tsv rows whose run_id belongs to a deleted run family.
+
+    Rewrite is atomic (write temp + os.replace). Returns the dropped count.
+    """
+    if not run_ids or not results_path.exists():
+        return 0
+    try:
+        lines = results_path.read_text(encoding="utf-8").splitlines()
+    except Exception:
+        return 0
+    if not lines:
+        return 0
+    keep = [lines[0]]
+    dropped = 0
+    for line in lines[1:]:
+        cols = line.split("\t")
+        if len(cols) > 1 and cols[1] in run_ids:
+            dropped += 1
+        else:
+            keep.append(line)
+    if dropped and not dry_run:
+        tmp = results_path.with_name(results_path.name + ".tmp")
+        content = "\n".join(keep) + ("\n" if keep else "")
+        tmp.write_text(content, encoding="utf-8")
+        tmp.replace(results_path)
+    return dropped
+
+
+def remove_profile_cascade(
+    profile_key: str,
+    *,
+    candidates_path: Path,
+    runs_dir: Path = Path("runs"),
+    jobs_dir: Path = Path("artifacts/jobs"),
+    results_tsv: Path = Path("results.tsv"),
+    dry_run: bool = False,
+    remove_profile: bool = True,
+) -> Dict[str, Any]:
+    """Delete one profile (exact key) plus all of its run artifacts, job logs,
+    and results.tsv rows. ``--dry-run`` prints the same summary without writing."""
+    data = _load_candidates(candidates_path)
+    profiles = data.get("profiles", {})
+    in_profiles = profile_key in profiles
+
+    run_files = _find_run_files_for_key(profile_key, runs_dir)
+    run_ids = _collect_run_ids(run_files) if run_files else set()
+    deletable_logs, active_logs = _scan_logs_for_run_ids(run_ids, jobs_dir)
+    rows = _drop_results_rows(results_tsv, run_ids, dry_run)
+
+    summary = {
+        "profile_key": profile_key,
+        "run_files": [str(p) for p in run_files],
+        "logs": [str(p) for p in deletable_logs],
+        "active_logs": [str(p) for p in active_logs],
+        "result_rows": rows,
+        "removed_profile": in_profiles,
+    }
+
+    if not in_profiles and not run_files:
+        print(f"No profiles or runs match profile key: {profile_key}")
+        return summary
+
+    if in_profiles:
+        print(f"Removing 1 profile(s):")
+        print(f"  - {profile_key}")
+
+    if run_files:
+        print(f"Found {len(run_files)} run file(s) matching '{profile_key}':")
+        for rf in run_files:
+            print(f"  - {rf}")
+
+    if deletable_logs:
+        print(f"Found {len(deletable_logs)} job log(s)")
+    if active_logs:
+        print(f"Skipped {len(active_logs)} active job log(s):")
+        for lg in active_logs:
+            print(f"  - {lg}")
+    if rows:
+        print(f"Found {rows} results.tsv row(s)")
+
+    if dry_run:
+        print("(dry-run — no changes written)")
+        return summary
+
+    if in_profiles and remove_profile:
+        del profiles[profile_key]
+        data["profiles"] = profiles
+        _save_candidates(candidates_path, data)
+        from tools.gen_profile_literal import update_candidate_spec_py
+        update_candidate_spec_py(profiles)
+        print("Regenerated candidate_spec.py")
+
+    if run_files:
+        for rf in run_files:
+            rf.unlink()
+        print(f"Removed {len(run_files)} run file(s)")
+    if deletable_logs:
+        for lg in deletable_logs:
+            lg.unlink()
+        print(f"Removed {len(deletable_logs)} job log(s)")
+    if rows:
+        print(f"Removed {rows} results.tsv row(s)")
+
+    return summary
+
+
 def _find_runs_for_profiles(profile_names: List[str], runs_dir: Path) -> List[Path]:
     run_files: List[Path] = []
     benchmarks = [d for d in runs_dir.iterdir() if d.is_dir()] if runs_dir.exists() else []
@@ -598,6 +777,8 @@ def remove_candidates(
     *,
     candidates_path: Path,
     runs_dir: Path = Path("runs"),
+    jobs_dir: Path = Path("artifacts/jobs"),
+    results_tsv: Path = Path("results.tsv"),
     dry_run: bool = False,
 ) -> List[str]:
     import re
@@ -607,6 +788,9 @@ def remove_candidates(
     matched = [k for k in profiles if compiled.search(k)]
 
     run_files = _find_runs_by_pattern(pattern, runs_dir)
+    run_ids = _collect_run_ids(run_files) if run_files else set()
+    deletable_logs, active_logs = _scan_logs_for_run_ids(run_ids, jobs_dir)
+    rows = _drop_results_rows(results_tsv, run_ids, dry_run)
 
     if not matched and not run_files:
         print(f"No profiles or runs match pattern: {pattern}")
@@ -622,6 +806,15 @@ def remove_candidates(
         for rf in run_files:
             print(f"  - {rf}")
 
+    if deletable_logs:
+        print(f"Found {len(deletable_logs)} job log(s)")
+    if active_logs:
+        print(f"Skipped {len(active_logs)} active job log(s):")
+        for lg in active_logs:
+            print(f"  - {lg}")
+    if rows:
+        print(f"Found {rows} results.tsv row(s)")
+
     if dry_run:
         print("(dry-run — no changes written)")
         return matched
@@ -635,6 +828,12 @@ def remove_candidates(
         for rf in run_files:
             rf.unlink()
         print(f"Removed {len(run_files)} run file(s)")
+    if deletable_logs:
+        for lg in deletable_logs:
+            lg.unlink()
+        print(f"Removed {len(deletable_logs)} job log(s)")
+    if rows:
+        print(f"Removed {rows} results.tsv row(s)")
 
     if matched:
         from tools.gen_profile_literal import update_candidate_spec_py
@@ -662,6 +861,15 @@ def main() -> None:
     parser.add_argument("--list", action="store_true",
                         help="List all profiles in candidates JSON")
     parser.add_argument("--remove", metavar="PATTERN", help="Remove profiles matching regex pattern")
+    parser.add_argument("--remove-profile", metavar="KEY",
+                        help="Remove a single profile by exact key plus all of its run artifacts, "
+                             "referencing job logs, and results.tsv rows")
+    parser.add_argument("--runs-dir", type=Path, default=Path("runs"),
+                        help="Runs root directory (default: runs)")
+    parser.add_argument("--jobs-dir", type=Path, default=Path("artifacts/jobs"),
+                        help="Dashboard job log directory (default: artifacts/jobs)")
+    parser.add_argument("--results-tsv", type=Path, default=Path("results.tsv"),
+                        help="Results table path (default: results.tsv)")
     parser.add_argument("--timeout", type=int, default=60,
                         help="Timeout per probe call in seconds")
     parser.add_argument("--efforts", nargs="+", default=None,
@@ -678,10 +886,24 @@ def main() -> None:
         list_profiles(args.out)
         return
 
+    if args.remove_profile is not None:
+        remove_profile_cascade(
+            args.remove_profile,
+            candidates_path=args.out,
+            runs_dir=args.runs_dir,
+            jobs_dir=args.jobs_dir,
+            results_tsv=args.results_tsv,
+            dry_run=args.dry_run,
+        )
+        return
+
     if args.remove is not None:
         remove_candidates(
             args.remove,
             candidates_path=args.out,
+            runs_dir=args.runs_dir,
+            jobs_dir=args.jobs_dir,
+            results_tsv=args.results_tsv,
             dry_run=args.dry_run,
         )
         return
