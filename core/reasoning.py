@@ -64,8 +64,12 @@ def stage_reasoning_effort(stage: Any) -> Optional[str]:
     if stage is None:
         return None
     reasoning = getattr(stage, "reasoning", None)
-    if isinstance(reasoning, dict) and reasoning.get("effort"):
-        return str(reasoning["effort"])
+    if isinstance(reasoning, dict) and reasoning:
+        if reasoning.get("enabled") is False:
+            return "none"
+        effort = reasoning.get("effort")
+        if effort:
+            return str(effort)
     effort = getattr(stage, "reasoning_effort", None)
     if effort:
         return str(effort)
@@ -80,8 +84,9 @@ def reasoning_request_params(stage: Any) -> Tuple[Dict[str, Any], bool]:
 
     New-style configs yield the params to merge at the top level of the request
     body. Legacy/plain configs yield empty params and keep the ``extra_body``
-    wrapper untouched. ``reasoning_effort="none"`` maps to a plain request (no
-    reasoning param) for maximal compatibility with non-reasoning models.
+    wrapper untouched. ``reasoning_effort="none"`` maps to an explicit
+    ``reasoning: {"enabled": false}`` so trimming a reasoning model's effort is
+    always requested rather than left to provider defaults.
     """
     if stage is None:
         return {}, True
@@ -89,7 +94,9 @@ def reasoning_request_params(stage: Any) -> Tuple[Dict[str, Any], bool]:
     if isinstance(reasoning, dict) and reasoning:
         return {"reasoning": reasoning}, False
     effort = getattr(stage, "reasoning_effort", None)
-    if effort and str(effort).strip().lower() != "none":
+    if effort:
+        if str(effort).strip().lower() == "none":
+            return {"reasoning": {"enabled": False}}, False
         return {"reasoning_effort": str(effort)}, False
     return {}, True
 
