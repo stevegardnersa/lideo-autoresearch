@@ -295,6 +295,50 @@ test('gear button opens settings and renders model cards', async () => {
   assert.ok(getCalls.length >= 1, 'models fetched on open')
 })
 
+test('variant-less models still render a card with an empty-state chip', async () => {
+  const { doc, click, postRender } = h
+  h.state.modelsGet = {
+    ok: true,
+    count: 2,
+    models: [
+      { model: 'stepfun/step-3.7-flash', runs_count: 0, last_tested: null, best_quality_det: null, best_quality_llm: null, profiles: [], provider_route: null, registered: true },
+      MODELS_PAYLOAD.models[1],
+    ],
+  }
+  click(doc.querySelector('[data-settings-toggle]'))
+  const els = postRender()
+  await new Promise(r => setImmediate(r))
+  const cards = els.list.querySelectorAll('.model-card')
+  assert.equal(cards.length, 2, 'both models render')
+  const empty = Array.from(cards).find(c => c.dataset.model === 'stepfun/step-3.7-flash')
+  assert.ok(empty)
+  assert.ok(empty.querySelector('.profile-chip.is-empty'), 'empty-state chip shown')
+  assert.match(empty.textContent, /no variants selected/)
+  assert.match(empty.textContent, /0 profiles/)
+})
+
+test('edit dialog opens for a variant-less model with unchecked rows', async () => {
+  const { doc, click, postRender, state } = h
+  h.state.modelsGet = {
+    ok: true,
+    count: 1,
+    models: [
+      { model: 'new/x-y', runs_count: 0, last_tested: null, best_quality_det: null, best_quality_llm: null, profiles: [], provider_route: '{"order":["new"]}', registered: true },
+    ],
+  }
+  click(doc.querySelector('[data-settings-toggle]'))
+  const els = postRender()
+  await new Promise(r => setImmediate(r))
+  const editBtn = els.list.querySelector('.model-card [data-action="edit"]')
+  click(editBtn)
+  await new Promise(r => setImmediate(r))
+  assert.ok(!els.dialog.classList.contains('cm-hidden'), 'dialog visible')
+  assert.equal(els.routeInput.value, '{"order":["new"]}', 'route prefilled from registry')
+  const rows = els.rows()
+  assert.ok(rows.length > 0, 'variant rows rendered for empty model')
+  assert.ok(rows.every(tr => !tr.querySelector('.vc-check').checked), 'all rows unchecked')
+})
+
 // ── add-model dialog ─────────────────────────────────────────
 
 test('add dialog opens, create disabled until model id typed', async () => {
