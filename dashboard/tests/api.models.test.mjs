@@ -662,6 +662,97 @@ test('PUT rejects overwriting a foreign profile on rename', async () => {
   }
 })
 
+// ── variant-less models ───────────────────────────────────────
+
+test('GET /api/models lists a registered model with no profiles', async () => {
+  writeCandidatesFile({
+    version: 2,
+    profiles: {},
+    models: { 'stepfun/step-3.7-flash': { added_at: '2026-09-05T00:00:00Z', provider_route: null } },
+  })
+  const { server, base } = await startServer()
+  try {
+    const { status, body } = await call(base, '/api/models')
+    assert.equal(status, 200)
+    assert.equal(body.count, 1)
+    const m = body.models.find(x => x.model === 'stepfun/step-3.7-flash')
+    assert.ok(m, 'registered model without profiles appears in the list')
+    assert.deepEqual(m.profiles, [])
+    assert.equal(m.runs_count, 0)
+    assert.equal(m.registered, true)
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('PUT removing every variant keeps the model registered in the list', async () => {
+  const { server, base } = await startServer()
+  try {
+    const edits = [
+      { key: '30m_deepseek-v4-flash_thinking', keep: false },
+      { key: '60m_deepseek-v4-flash_thinking', keep: false },
+      { key: '30m_deepseek-v4-flash_notthinking', keep: false },
+    ]
+    const { status, body } = await call(base, '/api/models', {
+      method: 'PUT',
+      body: { old_model: 'deepseek/deepseek-v4-flash', new_model: 'deepseek/deepseek-v4-flash', edits, create: [], confirm: true },
+    })
+    assert.equal(status, 200)
+    assert.equal(body.plan.removed.length, 3)
+    const onDisk = freshCandidates()
+    assert.equal(onDisk.profiles['30m_deepseek-v4-flash_thinking'], undefined)
+    assert.equal(onDisk.profiles['60m_deepseek-v4-flash_thinking'], undefined)
+    assert.ok(onDisk.models['deepseek/deepseek-v4-flash'], 'model stays registered after its last variant is removed')
+
+    const { body: listed } = await call(base, '/api/models')
+    const m = listed.models.find(x => x.model === 'deepseek/deepseek-v4-flash')
+    assert.ok(m, 'variant-less model still appears in the list')
+    assert.deepEqual(m.profiles, [])
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('PUT re-creates variants for a registered model with no profiles', async () => {
+  writeCandidatesFile({
+    version: 2,
+    profiles: {},
+    models: { 'new/x-y': { added_at: '2026-09-05T00:00:00Z', provider_route: null } },
+  })
+  const { server, base } = await startServer()
+  try {
+    const { status, body } = await call(base, '/api/models', {
+      method: 'PUT',
+      body: { old_model: 'new/x-y', new_model: 'new/x-y', edits: [], create: [{ time_budget: '30m', effort: 'medium' }] },
+    })
+    assert.equal(status, 200)
+    assert.equal(body.ok, true)
+    assert.deepEqual(body.plan.created, ['30m_x-y_effort-medium'])
+    const onDisk = freshCandidates()
+    const key = Object.keys(onDisk.profiles).find(k => k.includes('x-y'))
+    assert.ok(key, 'a variant is created for the empty registered model')
+    assert.equal(onDisk.profiles[key].chapter_stage.model, 'new/x-y')
+    assert.ok(onDisk.models['new/x-y'], 'registration survives the edit')
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('PUT rejects editing a model that is neither registered nor profiled', async () => {
+  writeCandidatesFile({ version: 2, profiles: {} })
+  const { server, base } = await startServer()
+  try {
+    const { status, body } = await call(base, '/api/models', {
+      method: 'PUT',
+      body: { old_model: 'ghost/model', new_model: 'ghost/model', edits: [], create: [] },
+    })
+    assert.equal(status, 400)
+    assert.match(body.error, /no profiles found/)
+  } finally {
+    await closeServer(server)
+  }
+})
+
 // ── DELETE /api/models ────────────────────────────────────────
 
 test('DELETE builds escaped pattern and parses removal output', async () => {
@@ -701,6 +792,26 @@ test('DELETE rejects missing model', async () => {
     const { status, body } = await call(base, '/api/models', { method: 'DELETE', body: {} })
     assert.equal(status, 400)
     assert.match(body.error, /model is required/)
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('DELETE removes the model from the registry so it stops listing', async () => {
+  writeCandidatesFile({
+    version: 2,
+    profiles: {},
+    models: { 'stepfun/step-3.7-flash': { added_at: '2026-09-05T00:00:00Z', provider_route: null } },
+  })
+  const { server, base } = await startServer()
+  try {
+    const { status, body } = await call(base, '/api/models', { method: 'DELETE', body: { model: 'stepfun/step-3.7-flash' } })
+    assert.equal(status, 200)
+    assert.equal(body.ok, true)
+    const onDisk = freshCandidates()
+    assert.equal(onDisk.models['stepfun/step-3.7-flash'], undefined, 'registration dropped on full delete')
+    const { body: listed } = await call(base, '/api/models')
+    assert.equal(listed.count, 0, 'deleted model no longer lists')
   } finally {
     await closeServer(server)
   }

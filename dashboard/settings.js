@@ -279,7 +279,7 @@ function renderModelsPage(models) {
     return
   }
   list.innerHTML = models.map(m => {
-    const chips = modelCells(m).map(({ tb, effort, profile: p }) => {
+    const chipsHtml = modelCells(m).map(({ tb, effort, profile: p }) => {
       const statusCls = p.status === 'tested' ? 'is-tested' : 'is-pending'
       const statusTxt = p.status === 'tested' ? 'tested' : 'pending'
       return `<span class="profile-chip ${statusCls}" title="${esc(p.slug)}">
@@ -288,6 +288,7 @@ function renderModelsPage(models) {
       </span>`
     }).join('')
     const tested = m.profiles.some(p => p.status === 'tested')
+    const chips = chipsHtml || '<span class="profile-chip is-empty" title="No reasoning variants selected">no variants selected &mdash; edit to add</span>'
     const det = fmtQuality(m.best_quality_det)
     const llm = fmtQuality(m.best_quality_llm)
     return `<div class="model-card" data-model="${esc(m.model)}">
@@ -454,7 +455,7 @@ function openEditDialog(model) {
   title.textContent = `Edit ${model.model}`
   document.getElementById('dlgModel').value = model.model
   document.getElementById('dlgModel').readOnly = false
-  const route = (model.profiles[0] && model.profiles[0].provider_route) || ''
+  const route = (model.profiles[0] && model.profiles[0].provider_route) || model.provider_route || ''
   document.getElementById('dlgProviderRoute').value = route
   document.getElementById('dlgBudgetsField').classList.add('cm-hidden')
   document.getElementById('dlgVariantsField').classList.remove('cm-hidden')

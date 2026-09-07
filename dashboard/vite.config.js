@@ -339,6 +339,24 @@ function buildModelsIndex(ctx) {
   const data = readCandidates(ctx.candidatesPath)
   const models = {}
   const profiles = data.profiles || {}
+  // Registered models (data.models) stay in the list even when they have zero
+  // profiles — e.g. after every variant was removed in the editor.
+  const registered = data.models || {}
+  for (const model of Object.keys(registered)) {
+    if (!model) continue
+    const reg = registered[model] || {}
+    models[model] = models[model] || {
+      model,
+      profiles: [],
+      runs_count: 0,
+      last_tested: null,
+      best_quality_det: null,
+      best_quality_llm: null,
+      provider_route: reg.provider_route || null,
+      registered: true,
+      _testedProfiles: new Set(),
+    }
+  }
   for (const [key, spec] of Object.entries(profiles)) {
     const model = spec && spec.chapter_stage && spec.chapter_stage.model
     if (!model) continue
@@ -351,6 +369,8 @@ function buildModelsIndex(ctx) {
         last_tested: null,
         best_quality_det: null,
         best_quality_llm: null,
+        provider_route: null,
+        registered: false,
         _testedProfiles: new Set(),
       }
     }
@@ -520,8 +540,12 @@ function applyProfileEdit(data, body) {
   const { old_model, new_model } = body
   if (!old_model) return { error: 'old_model is required' }
   const profiles = data.profiles || {}
+  const registered = data.models || {}
+  // A registered-but-variant-less model can still be edited: its dialog lets the
+  // user tick cells and re-create variants via the create list below.
+  const knownModel = registered[old_model] !== undefined
   const modelKeys = Object.keys(profiles).filter(k => profiles[k] && profiles[k].chapter_stage && profiles[k].chapter_stage.model === old_model)
-  if (modelKeys.length === 0) return { error: `no profiles found for model ${old_model}` }
+  if (modelKeys.length === 0 && !knownModel) return { error: `no profiles found for model ${old_model}` }
 
   const target = new_model && new_model !== old_model ? new_model : old_model
   const hasRoute = 'provider_route' in body
@@ -640,8 +664,23 @@ function applyProfileEdit(data, body) {
     createdVariants.push(finalKey)
   }
 
+  // Keep the model in the registry whenever it exists (was added or still has
+  // profiles) so a model whose last variant is removed does not vanish from the
+  // list. Follow a rename to the target name.
+  const outModels = { ...(data.models || {}) }
+  if (modelKeys.length > 0 || knownModel) {
+    delete outModels[old_model]
+    const priorRoute = knownModel ? (registered[old_model] && registered[old_model].provider_route) || null : null
+    outModels[target] = {
+      ...(outModels[target] || {}),
+      provider_route: priorRoute || (outModels[target] && outModels[target].provider_route) || null,
+      updated_at: new Date().toISOString(),
+    }
+    if (!outModels[target].added_at) outModels[target].added_at = outModels[target].updated_at
+  }
+
   return {
-    data: { ...data, profiles: outProfiles },
+    data: { ...data, profiles: outProfiles, models: outModels },
     plan: { removed, renamed, updated, created: createdVariants, model: old_model !== target ? `${old_model} -> ${target}` : null },
   }
 }
@@ -733,6 +772,19 @@ async function handleModelsApi(req, res, ctx, getJobs = () => null) {
       }
       if (added.length > 0) {
         await regenerateSpecPy(ctx.pythonRunner)
+      }
+      // Register the model on disk so it keeps appearing in the list even after
+      // all of its variants are later removed.
+      const regData = readCandidates(ctx.candidatesPath)
+      if (regData && typeof regData === 'object') {
+        const regModels = regData.models || (regData.models = {})
+        if (!regModels[model]) {
+          regModels[model] = {
+            added_at: new Date().toISOString(),
+            provider_route: null,
+          }
+          writeCandidates(ctx.candidatesPath, regData)
+        }
       }
       sendJson(res, 200, { ok: true, added, skipped, model })
     } catch (e) {
@@ -856,6 +908,12 @@ async function handleModelsApi(req, res, ctx, getJobs = () => null) {
       const rm = r.stdout.match(/Removed (\d+) run file\(s\)/)
       const lm = r.stdout.match(/Removed (\d+) job log\(s\)/)
       const tm = r.stdout.match(/Removed (\d+) results\.tsv row\(s\)/)
+      // Full delete also unregisters the model so it no longer lists as empty.
+      const regData = readCandidates(ctx.candidatesPath)
+      if (regData && typeof regData === 'object' && regData.models && regData.models[model]) {
+        delete regData.models[model]
+        writeCandidates(ctx.candidatesPath, regData)
+      }
       sendJson(res, 200, {
         ok: true,
         model,
