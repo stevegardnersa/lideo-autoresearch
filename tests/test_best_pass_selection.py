@@ -6,12 +6,14 @@ No pytest required. Uses a scripted fake client (no LLM calls).
 
 import dataclasses
 import sys
+from typing import Optional
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import candidate_spec
-from core.openrouter_client import GenerationResult, UsageRecord
+from core.openrouter_client import GenerationResult, UsageRecord, OpenRouterClient
+from core.openrouter_client import _recover_json_payload, _salvage_truncated_json
 from core.run_candidate import run_length_controlled_stage, visible_word_count
 
 
@@ -19,11 +21,14 @@ def summary_with_words(n: int) -> str:
     return "word " * n
 
 
-def make_spec(max_passes: int, tolerance_pct: float = 0.05):
+def make_spec(max_passes: int, tolerance_pct: float = 0.05, max_truncation_retries: Optional[int] = None):
     base = candidate_spec.PROFILE_CANDIDATES["30m_deepseek-v4-flash_notthinking"]
+    kwargs = dict(max_passes=max_passes, tolerance_pct=tolerance_pct)
+    if max_truncation_retries is not None:
+        kwargs["max_truncation_retries"] = max_truncation_retries
     return dataclasses.replace(
         base,
-        length_control=dataclasses.replace(base.length_control, max_passes=max_passes, tolerance_pct=tolerance_pct),
+        length_control=dataclasses.replace(base.length_control, **kwargs),
     )
 
 
@@ -217,6 +222,183 @@ def test_distance_tie_keeps_earliest():
     print("test_distance_tie_keeps_earliest: OK")
 
 
+# ---- JSON recovery ladder (client) --------------------------------------
+
+
+def truncated_result(n_words):
+    return GenerationResult(
+        summary_md=summary_with_words(n_words),
+        estimated_visible_words=n_words,
+        raw_content="",
+        usage=UsageRecord(generation_cost=0.5, uncached_generation_cost=0.5),
+        raw_response={"index": n_words, "finish_reason": "length"},
+        finish_reason="length",
+        json_recovery="salvaged",
+    )
+
+
+def test_recover_json_ladder_exact_and_fenced():
+    payload, mode = _recover_json_payload('{"summary_md":"Exact summary","estimated_visible_words":2}')
+    assert mode == "exact" and payload["summary_md"] == "Exact summary"
+
+    payload, mode = _recover_json_payload('```json\n{"summary_md":"Fenced"}\n```')
+    assert mode == "exact" and payload["summary_md"] == "Fenced"
+    print("test_recover_json_ladder_exact_and_fenced: OK")
+
+
+def test_recover_json_ladder_escaped_control_chars():
+    payload, mode = _recover_json_payload('{"summary_md":"line one\nline two","estimated_visible_words":5}')
+    assert mode == "escaped"
+    assert payload["summary_md"] == "line one\nline two"
+    print("test_recover_json_ladder_escaped_control_chars: OK")
+
+
+def test_recover_json_ladder_truncate_obj():
+    payload, mode = _recover_json_payload('{"summary_md":"Good"} trailing prose after the object')
+    assert mode == "truncate_obj"
+    assert payload["summary_md"] == "Good"
+    print("test_recover_json_ladder_truncate_obj: OK")
+
+
+def test_recover_json_ladder_salvage_closed_value():
+    payload, mode = _recover_json_payload('{"summary_md":"Real content here.","estimated_visible_words":')
+    assert mode == "salvaged"
+    assert payload["summary_md"] == "Real content here."
+    print("test_recover_json_ladder_salvage_closed_value: OK")
+
+
+def test_recover_json_ladder_salvage_mid_token():
+    payload, mode = _recover_json_payload('{"summary_md":"The cat sat on the mat and the')
+    assert mode == "salvaged"
+    assert payload["summary_md"] == "The cat sat on the mat and"
+    print("test_recover_json_ladder_salvage_mid_token: OK")
+
+
+def test_recover_json_ladder_unrecoverable():
+    payload, mode = _recover_json_payload("this is not json at all")
+    assert payload is None and mode == "None"
+    print("test_recover_json_ladder_unrecoverable: OK")
+
+
+def test_salvage_truncated_json_drops_incomplete_tail():
+    assert _salvage_truncated_json('{"summary_md":"A B C D') == {"summary_md": "A B C"}
+    assert _salvage_truncated_json('{"summary_md":"A B C D"') == {"summary_md": "A B C D"}
+    assert _salvage_truncated_json('{"summary_md":"The cat sat on the mat and the "') == {"summary_md": "The cat sat on the mat and the"}
+    assert _salvage_truncated_json('{"summary_md":"The cat sat on the mat and the') == {"summary_md": "The cat sat on the mat and"}
+    print("test_salvage_truncated_json_drops_incomplete_tail: OK")
+
+
+# ---- chat_completion truncation reporting (integration, no network) -----
+
+
+def _canned_client(content, finish_reason="length"):
+    client = OpenRouterClient(
+        api_key="test-key",
+        pricing_snapshot={
+            "test-model": {
+                "input_cost_per_million": 1_000_000,
+                "output_cost_per_million": 1_000_000,
+                "cached_input_cost_per_million": 0,
+                "request_cost": 0,
+                "min_context": 0,
+            }
+        },
+    )
+    canned = {
+        "model": "test-model",
+        "choices": [{"message": {"content": content}, "finish_reason": finish_reason}],
+        "usage": {},
+    }
+    client._request_json = lambda method, path, *, payload=None, query=None, api_key_override="": canned
+    return client
+
+
+def test_chat_completion_reports_truncation_and_salvage():
+    client = _canned_client('{"summary_md":"The cat sat on the mat and the')
+    result = client.chat_completion({"model": "test-model"})
+    assert result.finish_reason == "length"
+    assert result.truncated is True
+    assert result.json_recovery == "salvaged"
+    assert result.summary_md == "The cat sat on the mat and"
+    print("test_chat_completion_reports_truncation_and_salvage: OK")
+
+
+def test_chat_completion_exact_json_not_truncated():
+    client = _canned_client('{"summary_md":"Fine summary","estimated_visible_words":2}', finish_reason="stop")
+    result = client.chat_completion({"model": "test-model"})
+    assert result.finish_reason == "stop"
+    assert result.truncated is False
+    assert result.json_recovery == "exact"
+    assert result.summary_md == "Fine summary"
+    print("test_chat_completion_exact_json_not_truncated: OK")
+
+
+# ---- truncation retry in run_length_controlled_stage ---------------------
+
+
+def test_truncation_retry_reissues_shorter_without_consuming_pass():
+    """Pass 1 truncated -> automatic retry with a shorter target, retry lands
+    in range -> stage done with passes_used == 1, no extra repair pass."""
+    spec = make_spec(max_passes=3, max_truncation_retries=1)
+    client = ScriptedClient(truncated_result(500), result(1040, 0.6))
+    stage = run_stage(client=client, spec=spec, target_words=1000)
+
+    assert stage.passes_used == 1, "truncation retry must not consume a pass"
+    assert visible_word_count(stage.summary_md) == 1040
+    assert len(client.calls) == 2
+    retry_prompt = client.calls[1]["messages"][-1]["content"]
+    assert "cut off" in retry_prompt and "at most 700" in retry_prompt
+    assert len([r for r in stage.raw_responses if r.get("kind") == "truncation_retry"]) == 1
+    assert stage.generation_cost == 0.5 + 0.6
+    print("test_truncation_retry_reissues_shorter_without_consuming_pass: OK")
+
+
+def test_truncation_retry_zero_disables_retry():
+    """max_truncation_retries == 0: truncated pass counts as-is (best effort),
+    no retry call fires."""
+    spec = make_spec(max_passes=1, max_truncation_retries=0)
+    client = ScriptedClient(truncated_result(500))
+    stage = run_stage(client=client, spec=spec, target_words=1000)
+    assert stage.passes_used == 1
+    assert len(client.calls) == 1
+    assert visible_word_count(stage.summary_md) == 500
+    print("test_truncation_retry_zero_disables_retry: OK")
+
+
+def test_truncation_retry_respects_budget():
+    """max_truncation_retries == 2: two retries fire (3 calls total), marker
+    count == 2, retries do not consume passes."""
+    spec = make_spec(max_passes=3, max_truncation_retries=2)
+    client = ScriptedClient(truncated_result(400), truncated_result(400), result(1030, 0.9))
+    stage = run_stage(client=client, spec=spec, target_words=1000)
+    assert stage.passes_used == 1
+    assert len(client.calls) == 3
+    assert len([r for r in stage.raw_responses if r.get("kind") == "truncation_retry"]) == 2
+    assert visible_word_count(stage.summary_md) == 1030
+    print("test_truncation_retry_respects_budget: OK")
+
+
+def test_truncation_retries_exhausted_then_counts_as_pass():
+    """Retry budget exhausted but still truncated: final truncated pass counts
+    as a normal pass and the (salvaged) summary participates in length control."""
+    spec = make_spec(max_passes=2, max_truncation_retries=1)
+    client = ScriptedClient(truncated_result(300), truncated_result(300), result(980, 0.2))
+    stage = run_stage(client=client, spec=spec, target_words=1000)
+    assert stage.passes_used == 2
+    assert len(client.calls) == 3
+    assert visible_word_count(stage.summary_md) == 980
+    print("test_truncation_retries_exhausted_then_counts_as_pass: OK")
+
+
+def test_truncation_retry_checkpoint_carries_counter():
+    spec = make_spec(max_passes=3, max_truncation_retries=1)
+    capture, cb = make_checkpoint_capture()
+    client = ScriptedClient(truncated_result(400), result(1040, 0.6))
+    run_stage(client=client, spec=spec, target_words=1000, checkpoint_callback=cb)
+    assert capture["last"]["truncation_retries"] == 1
+    print("test_truncation_retry_checkpoint_carries_counter: OK")
+
+
 def main():
     tests = [
         test_max_passes_earlier_closer_pass_wins,
@@ -228,6 +410,20 @@ def main():
         test_resume_checkpoint_keeps_updating_best,
         test_single_pass_in_range_unchanged,
         test_distance_tie_keeps_earliest,
+        test_recover_json_ladder_exact_and_fenced,
+        test_recover_json_ladder_escaped_control_chars,
+        test_recover_json_ladder_truncate_obj,
+        test_recover_json_ladder_salvage_closed_value,
+        test_recover_json_ladder_salvage_mid_token,
+        test_recover_json_ladder_unrecoverable,
+        test_salvage_truncated_json_drops_incomplete_tail,
+        test_chat_completion_reports_truncation_and_salvage,
+        test_chat_completion_exact_json_not_truncated,
+        test_truncation_retry_reissues_shorter_without_consuming_pass,
+        test_truncation_retry_zero_disables_retry,
+        test_truncation_retry_respects_budget,
+        test_truncation_retries_exhausted_then_counts_as_pass,
+        test_truncation_retry_checkpoint_carries_counter,
     ]
     for t in tests:
         t()

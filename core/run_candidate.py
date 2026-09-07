@@ -762,6 +762,7 @@ def run_length_controlled_stage(
     passes_used = int(restored.get("passes_used") or 0)
     summary_md = str(restored.get("summary_md") or "").strip()
     first_pass_summary_md = str(restored.get("first_pass_summary_md") or "").strip()
+    total_truncation_retries = int(restored.get("truncation_retries") or 0)
 
     # Best-pass selection: among all passes executed (including passes restored
     # from a checkpoint), track the one whose visible word count is closest to
@@ -800,24 +801,61 @@ def run_length_controlled_stage(
                 "passes_used": passes_used,
                 "generation_cost": total_cost,
                 "uncached_generation_cost": total_uncached_cost,
+                "truncation_retries": total_truncation_retries,
                 "raw_responses": _json_safe(list(responses)),
             }
         )
 
-    if passes_used <= 0 or not summary_md:
+    max_truncation_retries = int(getattr(spec.length_control, "max_truncation_retries", 1) or 0)
+
+    def generate_pass(user_prompt: str, *, current_for_mock: str, pass_target: int) -> GenerationResult:
+        nonlocal total_cost, total_uncached_cost, total_truncation_retries
         use_json_schema = stage_config.use_json_schema if stage_config.use_json_schema is not None else spec.use_json_schema
-        request = build_openrouter_request(
-            stage=stage_config,
-            system_prompt=system_prompt,
-            user_prompt=initial_user_prompt,
-            schema_name=spec.json_schema_name,
-            use_json_schema=use_json_schema,
-        )
-        result = invoke_generation(client, request, mock_source_md=mock_source_md, target_words=target_words)
+        attempt_target = max(1, pass_target)
+        retry_count = 0
+        retry_prompt = user_prompt
+        while True:
+            request = build_openrouter_request(
+                stage=stage_config,
+                system_prompt=system_prompt,
+                user_prompt=retry_prompt,
+                schema_name=spec.json_schema_name,
+                use_json_schema=use_json_schema,
+            )
+            result = invoke_generation(
+                client,
+                request,
+                mock_source_md=mock_source_md,
+                target_words=attempt_target,
+                current_summary_md=current_for_mock,
+            )
+            responses.append(_json_safe(dict(result.raw_response)))
+            total_cost += result.usage.generation_cost
+            total_uncached_cost += result.usage.uncached_generation_cost or result.usage.generation_cost
+            if not result.truncated or retry_count >= max_truncation_retries:
+                return result
+            retry_count += 1
+            total_truncation_retries += 1
+            attempt_target = max(1, int(round(pass_target * (0.7 ** retry_count))))
+            responses.append(
+                {
+                    "kind": "truncation_retry",
+                    "retry_index": retry_count,
+                    "pass_target_words": attempt_target,
+                    "finish_reason": result.finish_reason,
+                    "json_recovery": result.json_recovery,
+                }
+            )
+            retry_prompt = (
+                user_prompt
+                + f"\n\nIMPORTANT: The previous attempt was cut off because it exceeded the output length limit "
+                f"(finish_reason={result.finish_reason}). Rewrite a COMPLETE summary of at most {attempt_target} "
+                "visible words so the JSON payload is not truncated. Do not leave the summary or the payload unfinished."
+            )
+
+    if passes_used <= 0 or not summary_md:
+        result = generate_pass(initial_user_prompt, current_for_mock="", pass_target=target_words)
         passes_used = 1
-        responses.append(_json_safe(dict(result.raw_response)))
-        total_cost += result.usage.generation_cost
-        total_uncached_cost += result.usage.uncached_generation_cost or result.usage.generation_cost
         summary_md = result.summary_md.strip()
         first_pass_summary_md = summary_md
         update_best(summary_md)
@@ -856,25 +894,8 @@ def run_length_controlled_stage(
                     retrieved_source_excerpts=retrieved_source_excerpts,
                 )
             current_for_mock = summary_md
-        use_json_schema = stage_config.use_json_schema if stage_config.use_json_schema is not None else spec.use_json_schema
-        repair_request = build_openrouter_request(
-            stage=stage_config,
-            system_prompt=system_prompt,
-            user_prompt=repair_user_prompt,
-            schema_name=spec.json_schema_name,
-            use_json_schema=use_json_schema,
-        )
-        result = invoke_generation(
-            client,
-            repair_request,
-            mock_source_md=mock_source_md,
-            target_words=target_words,
-            current_summary_md=current_for_mock,
-        )
+        result = generate_pass(repair_user_prompt, current_for_mock=current_for_mock, pass_target=target_words)
         passes_used += 1
-        responses.append(_json_safe(dict(result.raw_response)))
-        total_cost += result.usage.generation_cost
-        total_uncached_cost += result.usage.uncached_generation_cost or result.usage.generation_cost
         summary_md = result.summary_md.strip()
         if not first_pass_summary_md:
             first_pass_summary_md = summary_md
