@@ -81,6 +81,12 @@ class GenerationResult:
     raw_response: Dict[str, Any] = field(default_factory=dict)
     model_id: str = ""
     parsed_json: Optional[Dict[str, Any]] = None
+    finish_reason: Optional[str] = None
+    json_recovery: str = "exact"
+
+    @property
+    def truncated(self) -> bool:
+        return self.finish_reason == "length"
 
 
 @dataclass(frozen=True)
@@ -176,16 +182,210 @@ def _try_parse_json(text: str) -> Optional[Dict[str, Any]]:
     return parsed if isinstance(parsed, dict) else None
 
 
+def _escape_ctrl_in_strings(text: str) -> str:
+    """Escape raw control chars (\\n, \\t, \\r) that sit INSIDE JSON strings.
 
-def _extract_parsed_payload(response: Mapping[str, Any], content_text: str) -> Optional[Dict[str, Any]]:
+    Models occasionally emit literal newlines/tabs inside string values. The
+    JSON spec forbids that; json.loads raises 'Invalid control character'.
+    This rewrites only the control chars that are inside a string, leaving the
+    structural whitespace outside strings untouched."""
+    out: list[str] = []
+    in_string = False
+    escaped = False
+    escape_map = {"\n": "\\n", "\t": "\\t", "\r": "\\r"}
+    for ch in text:
+        if in_string:
+            if escaped:
+                out.append(ch)
+                escaped = False
+                continue
+            if ch == "\\":
+                out.append(ch)
+                escaped = True
+                continue
+            if ch == '"':
+                out.append(ch)
+                in_string = False
+                continue
+            if ch in escape_map:
+                out.append(escape_map[ch])
+                continue
+            out.append(ch)
+            continue
+        if ch == '"':
+            out.append(ch)
+            in_string = True
+            continue
+        out.append(ch)
+    return "".join(out)
+
+
+def _first_json_object(text: str) -> str:
+    """Cut text at the end of the first balanced JSON object.
+
+    Handles strings (including escaped quotes), so braces inside string
+    values do not count toward depth."""
+    depth = 0
+    in_string = False
+    escaped = False
+    for index, ch in enumerate(text):
+        if in_string:
+            if escaped:
+                escaped = False
+                continue
+            if ch == "\\":
+                escaped = True
+                continue
+            if ch == '"':
+                in_string = False
+            continue
+        if ch == '"':
+            in_string = True
+            continue
+        if ch == "{":
+            depth += 1
+            continue
+        if ch == "}":
+            depth -= 1
+            if depth == 0:
+                return text[: index + 1]
+    return text
+
+
+def _decode_json_string(raw: str) -> str:
+    """Decode the inner content of a JSON string (text between the quotes).
+
+    Tolerates an unterminated trailing escape sequence (truncated output),
+    which json.loads rejects with 'Invalid \\escape'."""
+    out: list[str] = []
+    index = 0
+    while index < len(raw):
+        ch = raw[index]
+        if ch == "\\" and index + 1 < len(raw):
+            nxt = raw[index + 1]
+            simple = {
+                "n": "\n",
+                "t": "\t",
+                "r": "\r",
+                "b": "\b",
+                "f": "\f",
+                '"': '"',
+                "\\": "\\",
+                "/": "/",
+            }
+            if nxt in simple:
+                out.append(simple[nxt])
+                index += 2
+                continue
+            if nxt == "u" and index + 5 <= len(raw):
+                try:
+                    out.append(chr(int(raw[index + 2 : index + 6], 16)))
+                    index += 6
+                    continue
+                except ValueError:
+                    pass
+            out.append(nxt)
+            index += 2
+            continue
+        out.append(ch)
+        index += 1
+    return "".join(out)
+
+
+def _salvage_truncated_json(text: str) -> Optional[Dict[str, Any]]:
+    """Recover a summary_md from truncated JSON output (finish_reason == length).
+
+    The model ran out of output budget mid-payload: the closing of the
+    summary_md string (or the whole payload tail) is missing. Takes everything
+    from the start of the summary_md value to end-of-text, decodes it, and
+    drops an incomplete trailing token."""
+    key_start = text.find('"summary_md"')
+    while key_start != -1:
+        colon = text.find(":", key_start)
+        if colon == -1:
+            return None
+        quote = text.find('"', colon + 1)
+        if quote == -1:
+            return None
+        raw = text[quote + 1 :]
+        end = None
+        escaped = False
+        for index, ch in enumerate(raw):
+            if escaped:
+                escaped = False
+                continue
+            if ch == "\\":
+                escaped = True
+                continue
+            if ch == '"':
+                end = index
+                break
+        value = _decode_json_string(raw if end is None else raw[:end])
+        if end is None:
+            value = re.sub(r"\s+\S*$", "", value.rstrip())
+        value = value.strip()
+        if value:
+            return {"summary_md": value}
+        key_start = text.find('"summary_md"', colon + 1)
+    return None
+
+
+def _recover_json_payload(text: str) -> Tuple[Optional[Dict[str, Any]], str]:
+    """Parse model JSON, trying successively more aggressive repairs.
+
+    Returns (payload, mode) where mode describes how the payload was obtained:
+      'exact'        - parsed cleanly first try
+      'exact_parsed' - provider's structured 'parsed' message (used upstream)
+      'escaped'      - raw control chars inside strings escaped
+      'truncate_obj'  - trailing garbage after first balanced JSON object
+      'escaped_truncate_obj' - both of the above
+      'salvaged'      - truncated JSON: summary_md recovered to end-of-text
+      None            - unrecoverable; text is not (repair-wise) JSON
+    """
+    candidate = _unwrap_fenced_json(text)
+    if not candidate:
+        return None, "None"
+    if candidate.startswith("json\n"):
+        candidate = candidate.split("\n", 1)[1].strip()
+
+    try:
+        parsed = json.loads(candidate)
+        if isinstance(parsed, dict):
+            return parsed, "exact"
+    except json.JSONDecodeError:
+        pass
+
+    escaped = _escape_ctrl_in_strings(candidate)
+    modes = (
+        ("escaped", escaped),
+        ("truncate_obj", _first_json_object(candidate)),
+        ("escaped_truncate_obj", _first_json_object(escaped)),
+    )
+    for mode, cand in modes:
+        try:
+            parsed = json.loads(cand)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, dict):
+            return parsed, mode
+
+    salvaged = _salvage_truncated_json(candidate)
+    if isinstance(salvaged, dict):
+        return salvaged, "salvaged"
+    return None, "None"
+
+
+def _extract_parsed_payload(
+    response: Mapping[str, Any], content_text: str
+) -> Tuple[Optional[Dict[str, Any]], str]:
     choices = response.get("choices") or []
     if not choices:
-        return None
+        return None, "None"
     message = choices[0].get("message") or {}
     parsed = message.get("parsed")
     if isinstance(parsed, dict):
-        return dict(parsed)
-    return _try_parse_json(content_text)
+        return dict(parsed), "exact_parsed"
+    return _recover_json_payload(content_text)
 
 
 
@@ -543,7 +743,8 @@ class OpenRouterClient:
 
         message = choices[0].get("message") or {}
         content_text = _extract_message_text(message.get("content", ""))
-        parsed_json = _extract_parsed_payload(response, content_text)
+        parsed_json, json_recovery = _extract_parsed_payload(response, content_text)
+        finish_reason = choices[0].get("finish_reason") or ""
         model_id = str(response.get("model") or payload.get("model") or "")
 
         if isinstance(parsed_json, dict):
@@ -564,4 +765,6 @@ class OpenRouterClient:
             raw_response=dict(response),
             model_id=model_id,
             parsed_json=parsed_json,
+            finish_reason=finish_reason or None,
+            json_recovery=json_recovery,
         )

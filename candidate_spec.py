@@ -93,6 +93,7 @@ class LengthControlConfig:
     repair_strategy: RepairStrategy = "edit_existing"
     repair_more_prompt_id: str = "expand_missing_detail"
     repair_less_prompt_id: str = "shrink_dedup_first"
+    max_truncation_retries: int = 1
 
 
 @dataclass
