@@ -146,6 +146,9 @@ async function findRunJsonFiles() {
 async function loadRuns(doRender = true) {
   try {
     const files = await findRunJsonFiles()
+    const hiddenProfiles = new Set(
+      (await fetch('/api/models/hidden').then(r => r.json()).catch(() => ({ hidden: [] }))).hidden || []
+    )
     runs = []
 
     for (const file of files) {
@@ -214,6 +217,7 @@ async function loadRuns(doRender = true) {
           avg_time_per_chapter_seconds: avgTimePerChapterSeconds,
           file: file
         }
+        if (hiddenProfiles.has(run.candidate_name)) continue
         runs.push(run)
       } catch (e) {
         console.warn(`Failed to load ${file}:`, e)

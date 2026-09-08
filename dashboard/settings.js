@@ -168,7 +168,7 @@ const MODAL_TEMPLATE = `
         <div class="field cm-hidden" id="dlgVariantsField">
           <div class="field-label-row">
             <label>Variants</label>
-            <span class="field-hint">Effort tier per time budget. Check to keep a profile, uncheck to remove it. Checking an absent row creates it.</span>
+            <span class="field-hint">Effort tier per time budget. Check to show a profile, uncheck to hide it (run data kept). Checking an absent row creates it. Use &#8943; &rarr; Remove variant to delete.</span>
           </div>
           <table class="variant-table">
             <thead><tr><th></th><th>Time</th><th>Effort</th><th>temp</th><th>max tokens</th><th>status</th><th></th></tr></thead>
@@ -259,6 +259,7 @@ function effortDefaultMaxTokens(effort) {
 function modelCells(m) {
   const byCell = new Map()
   for (const p of m.profiles || []) {
+    if (p.hidden) continue
     const e = effortOf(p.slug)
     if (EFFORT_ORDER.includes(e)) byCell.set(`${p.time_budget}_${e}`, p)
   }
@@ -279,6 +280,7 @@ function renderModelsPage(models) {
     return
   }
   list.innerHTML = models.map(m => {
+    const visible = m.profiles.filter(p => !p.hidden)
     const chipsHtml = modelCells(m).map(({ tb, effort, profile: p }) => {
       const statusCls = p.status === 'tested' ? 'is-tested' : 'is-pending'
       const statusTxt = p.status === 'tested' ? 'tested' : 'pending'
@@ -287,7 +289,7 @@ function renderModelsPage(models) {
         <span class="pc-status">${statusTxt}</span>
       </span>`
     }).join('')
-    const tested = m.profiles.some(p => p.status === 'tested')
+    const tested = visible.some(p => p.status === 'tested')
     const chips = chipsHtml || '<span class="profile-chip is-empty" title="No reasoning variants selected">no variants selected &mdash; edit to add</span>'
     const det = fmtQuality(m.best_quality_det)
     const llm = fmtQuality(m.best_quality_llm)
@@ -296,7 +298,7 @@ function renderModelsPage(models) {
         <div class="model-dot"></div>
         <div class="model-main">
           <div class="model-name">${esc(m.model)}</div>
-          <div class="model-sub">${m.profiles.length} profile${m.profiles.length === 1 ? '' : 's'} &middot; ${m.runs_count} run${m.runs_count === 1 ? '' : 's'} &middot; last tested ${fmtDate(m.last_tested)}</div>
+          <div class="model-sub">${visible.length} profile${visible.length === 1 ? '' : 's'} &middot; ${m.runs_count} run${m.runs_count === 1 ? '' : 's'} &middot; last tested ${fmtDate(m.last_tested)}</div>
         </div>
         <div class="model-stats">
           <div class="ms-col"><span class="ms-k">det Q</span><span class="ms-v ${tested ? '' : 'ms-muted'}">${det}</span></div>
@@ -424,24 +426,25 @@ function parseRoute(raw) {
 const LOCKED_MENU_ACTIONS = ['run', 'prefill', 'judge', 'agent']
 
 function variantRowHtml({ tb, effort, existing, locked }) {
+  const hidden = existing && existing.hidden === true
   const temp = existing && existing.temperature != null ? existing.temperature : DEFAULTS.temperature
   const maxT = existing && existing.max_tokens != null ? existing.max_tokens : effortDefaultMaxTokens(effort)
-  const status = existing ? (existing.status === 'tested' ? 'tested' : 'pending') : 'not created'
+  const status = !existing ? 'not created' : hidden ? 'hidden' : (existing.status === 'tested' ? 'tested' : 'pending')
   const numAttrs = locked ? ' readonly' : ''
   const opt = existing
     ? `<button type="button" class="vc-opt-btn" data-slug="${esc(existing.slug)}" aria-haspopup="menu" aria-expanded="false" aria-label="Options for ${esc(existing.slug)}" title="Profile options">\u22EF</button>
       <div class="vc-opt-menu cm-hidden" role="menu">
         ${LOCKED_MENU_ACTIONS.map(a => `<button type="button" class="vc-opt-item" data-action="${a}" role="menuitem"${locked ? ' disabled' : ''}>${{ run: 'Run candidate now', prefill: 'Run with options\u2026', judge: 'Re-judge (LLM)\u2026', agent: 'Autoresearch agent\u2026' }[a]}</button>`).join('')}
-        ${locked ? '<button type="button" class="vc-opt-item vc-opt-remove" data-action="remove" role="menuitem">Remove variant</button>' : ''}
+        <button type="button" class="vc-opt-item vc-opt-remove" data-action="remove" role="menuitem">Remove variant</button>
       </div>`
     : ''
   return `<tr data-tb="${tb}" data-effort="${effort}" data-existing="${existing ? '1' : '0'}"${locked ? ' data-locked="1"' : ''} data-orig-status="${status}" class="${locked ? 'vc-locked' : ''}">
-    <td><input type="checkbox" class="vc-check" ${existing ? 'checked' : ''}${locked ? ' disabled' : ''} /></td>
+    <td><input type="checkbox" class="vc-check" ${existing && !hidden ? 'checked' : ''}${locked ? ' disabled' : ''} /></td>
     <td class="vc-tb">${tb}</td>
-    <td class="vc-mode"${locked ? ` data-tooltip="Canonical effort profiles cannot be modified. Remove variant to hide this baseline."` : ''}>${effortLabel(effort)}</td>
+    <td class="vc-mode"${locked ? ` data-tooltip="Canonical effort profiles cannot be modified. Remove variant to delete this baseline."` : ''}>${effortLabel(effort)}</td>
     <td><input type="number" step="0.1" min="0" max="2" class="vc-temp" value="${temp}"${numAttrs} /></td>
     <td><input type="number" step="256" min="0" class="vc-max" value="${maxT}"${numAttrs} /></td>
-    <td class="vc-status ${existing ? 'vc-has' : 'vc-none'}">${status}</td>
+    <td class="vc-status ${hidden ? 'vc-hidden-status' : (existing ? 'vc-has' : 'vc-none')}">${status}</td>
     <td class="vc-opt">${opt}</td>
   </tr>`
 }
@@ -496,13 +499,17 @@ function collectEditPayload(model) {
     const temp = parseFloat(tr.querySelector('.vc-temp').value)
     const maxT = parseInt(tr.querySelector('.vc-max').value, 10)
     const existing = existingByKey.get(`${tb}_${effort}`)
+    const removing = tr.classList.contains('vc-to-remove')
     const entry = { time_budget: tb, effort }
     if (isFinite(temp)) entry.temperature = temp
     if (isFinite(maxT)) entry.max_tokens = maxT
     if (existing) {
-      if (tr.dataset.locked === '1' && checked) continue // locked baseline kept as-is
+      if (tr.dataset.locked === '1') {
+        if (!removing) continue // locked baseline kept as-is (cannot be hidden)
+      }
       entry.key = existing.slug
-      entry.keep = checked
+      entry.keep = !removing
+      if (!removing) entry.hidden = !checked
       edits.push(entry)
     } else if (checked) {
       create.push(entry)
@@ -567,12 +574,9 @@ function closeProfileMenus() {
 }
 
 function toggleRowRemoval(row) {
-  const check = row.querySelector('.vc-check')
   const statusEl = row.querySelector('.vc-status')
-  if (!check) return
-  const removing = check.checked
-  check.checked = !removing
-  row.classList.toggle('vc-to-remove', removing)
+  if (!row) return
+  const removing = row.classList.toggle('vc-to-remove')
   if (statusEl) statusEl.textContent = removing ? 'will remove' : (row.dataset.origStatus || '')
 }
 
@@ -580,7 +584,7 @@ function profileMenuAction(slug, action, row) {
   const tb = row && row.dataset.tb ? row.dataset.tb : 'all'
   closeProfileMenus()
   if (action === 'remove') {
-    if (row && row.dataset.locked === '1') toggleRowRemoval(row)
+    if (row) toggleRowRemoval(row)
     return
   }
   if (LOCKED_MENU_ACTIONS.includes(action) && row && row.dataset.locked === '1') return

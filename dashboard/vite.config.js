@@ -304,7 +304,7 @@ function serveStaticFile(rootDir, urlPath) {
 
 // ── Models API ─────────────────────────────────────────────────
 
-function collectRunStats(models, runsDir) {
+function collectRunStats(models, runsDir, hiddenKeys = null) {
   try {
     const dirs = readdirSync(runsDir, { withFileTypes: true })
     for (const dir of dirs) {
@@ -318,6 +318,9 @@ function collectRunStats(models, runsDir) {
         const rm = run && run.run_manifest
         const model = rm && rm.chapter_model
         if (!model || !models[model]) continue
+        // Hidden variants keep their run files on disk but are excluded from the
+        // aggregate stats (runs_count, best_quality, last_tested).
+        if (hiddenKeys && rm.profile && hiddenKeys.has(rm.profile)) continue
         const m = models[model]
         m.runs_count = (m.runs_count || 0) + 1
         if (rm.profile) m._testedProfiles.add(rm.profile)
@@ -339,6 +342,11 @@ function buildModelsIndex(ctx) {
   const data = readCandidates(ctx.candidatesPath)
   const models = {}
   const profiles = data.profiles || {}
+  const hiddenKeys = new Set(
+    Object.entries(profiles)
+      .filter(([, spec]) => spec && spec.hidden === true)
+      .map(([key]) => key)
+  )
   // Registered models (data.models) stay in the list even when they have zero
   // profiles — e.g. after every variant was removed in the editor.
   const registered = data.models || {}
@@ -376,6 +384,7 @@ function buildModelsIndex(ctx) {
     }
     m.profiles.push({
       slug: key,
+      hidden: hiddenKeys.has(key),
       time_budget: timeBudgetOf(key),
       thinking: effortOf(key) === 'thinking',
       effort: effortOf(key),
@@ -386,7 +395,7 @@ function buildModelsIndex(ctx) {
       provider_route: (spec.chapter_stage && spec.chapter_stage.provider) ? JSON.stringify(spec.chapter_stage.provider) : '',
     })
   }
-  collectRunStats(models, ctx.runsDir)
+  collectRunStats(models, ctx.runsDir, hiddenKeys)
   for (const m of Object.values(models)) {
     for (const p of m.profiles) {
       if (m._testedProfiles.has(p.slug)) p.status = 'tested'
@@ -605,6 +614,13 @@ function applyProfileEdit(data, body) {
     nSpec.profile = finalKey
     nSpec.name = `${finalKey}_v${vNum}`
 
+    // Soft hide: keep the profile + run data, just stop showing it. Deleting is
+    // a separate action (edit.keep === false) and still requires confirmation.
+    if (typeof edit.hidden === 'boolean') {
+      if (edit.hidden) nSpec.hidden = true
+      else delete nSpec.hidden
+    }
+
     newProfiles[finalKey] = nSpec
     if (finalKey !== oldKey) {
       renamed.push(`${oldKey} -> ${finalKey}`)
@@ -692,6 +708,20 @@ async function handleModelsApi(req, res, ctx, getJobs = () => null) {
     try {
       const models = buildModelsIndex(ctx)
       sendJson(res, 200, { ok: true, count: models.length, models })
+    } catch (e) {
+      sendJson(res, 500, { ok: false, error: e.message })
+    }
+    return true
+  }
+
+  if (req.method === 'GET' && url === '/api/models/hidden') {
+    try {
+      const data = readCandidates(ctx.candidatesPath)
+      const profiles = data.profiles || {}
+      const hidden = Object.entries(profiles)
+        .filter(([, spec]) => spec && spec.hidden === true)
+        .map(([key]) => key)
+      sendJson(res, 200, { ok: true, hidden })
     } catch (e) {
       sendJson(res, 500, { ok: false, error: e.message })
     }

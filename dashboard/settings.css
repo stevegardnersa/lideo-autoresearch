@@ -398,6 +398,8 @@
 .vc-to-remove { opacity: 0.55; }
 .vc-to-remove .vc-mode { text-decoration: line-through; }
 .vc-to-remove .vc-status { color: #b91c1c; font-weight: 650; }
+.vc-hidden-status { color: var(--muted, #6b7280); font-style: italic; }
+.vc-locked.vc-to-remove .vc-mode::after { content: ''; }
 
 /* profile quick-action menu */
 .vc-opt { position: relative; text-align: right; white-space: nowrap; }
