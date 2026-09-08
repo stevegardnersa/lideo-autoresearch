@@ -64,6 +64,13 @@ function reasonOf(reasoningEffort, thinkingEnabled) {
   return thinkingEnabled ? 'thinking' : 'notthinking'
 }
 
+function reasonOfProfile(profile, reasoningEffort, thinkingEnabled) {
+  const tail = profile ? profile.split('_').pop() : ''
+  if (tail.startsWith('effort-')) return tail.slice('effort-'.length)
+  if (tail === 'thinking' || tail === 'notthinking') return tail
+  return reasonOf(reasoningEffort, thinkingEnabled)
+}
+
 const STORAGE_KEY = 'scatter_explorer_state'
 
 let runs = []
@@ -197,7 +204,7 @@ async function loadRuns(doRender = true) {
           judge_version_resolved: judgeVersion,
           is_llm_judged: isLlmJudged,
           judge_type: isLlmJudged ? `LLM:${judgeModelSlug}` : 'deterministic',
-          reasoning: reasonOf(manifest.reasoning_effort, manifest.thinking_enabled),
+          reasoning: reasonOfProfile(manifest.profile, manifest.reasoning_effort, manifest.thinking_enabled),
           n_samples: score.n_samples || 0,
           hard_fail_rate: score.hard_fail_rate ?? 0,
           mean_quality: score.mean_quality ?? 0,
