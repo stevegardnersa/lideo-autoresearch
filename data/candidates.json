@@ -6570,8 +6570,8 @@
   "models": {
     "openai/gpt-5.6-luna": {
       "provider_route": null,
-      "updated_at": "2026-09-08T08:36:23.329Z",
-      "added_at": "2026-09-08T08:36:23.329Z"
+      "updated_at": "2026-09-08T08:55:13.703Z",
+      "added_at": "2026-09-08T08:55:13.703Z"
     }
   }
 }

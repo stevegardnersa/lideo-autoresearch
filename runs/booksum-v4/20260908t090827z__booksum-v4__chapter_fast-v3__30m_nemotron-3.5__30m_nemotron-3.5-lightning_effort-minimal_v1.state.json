@@ -1,0 +1,394 @@
+{
+  "run_id": "20260908t090827z__booksum-v4__chapter_fast-v3__30m_nemotron-3.5__30m_nemotron-3.5-lightning_effort-minimal_v1",
+  "created_at_utc": "2026-09-08T09:08:27.691394+00:00",
+  "status": "running",
+  "run_manifest": {
+    "run_id": "20260908t090827z__booksum-v4__chapter_fast-v3__30m_nemotron-3.5__30m_nemotron-3.5-lightning_effort-minimal_v1",
+    "created_at_utc": "2026-09-08T09:08:27.691394+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v4",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v2",
+    "judge_version_resolved": "judge-absolute-v1::deterministic",
+    "profile": "30m_nemotron-3.5-lightning_effort-minimal",
+    "bench": "chapter_fast-v3",
+    "bench_path": "bench/chapter_fast-v3.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "30m_nemotron-3.5-lightning_effort-minimal_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "72b25d7c8903a5f88a850a36c655e28cb614b830564cc2ff5f5275653b6352dc",
+    "chapter_model": "nvidia/nemotron-3.5-lightning",
+    "composer_model": "nvidia/nemotron-3.5-lightning",
+    "judge_model": "",
+    "use_json_schema": true,
+    "thinking_enabled": true,
+    "reasoning_effort": "kept",
+    "chapter_provider": null,
+    "composer_provider": null,
+    "prompt_hashes": {
+      "candidate_dict_sha256": "4e6e7c3442394b3c25d5beab5ae6bb650d946f6f34a639def3a35711bcf147c3",
+      "chapter_stage_sha256": "2c6ef76ac050cfac82d54a882435731f1c93d8340c0f84fb1c4a7b39f19ad163",
+      "composer_stage_sha256": "7cb36ba3e746a7a65eb5331cde73c67c90cddc936aa1dd8317722f7779c790c8",
+      "length_control_sha256": "22c6e5997e11a9561348c6bb84d5e2e08dedf7ec0aa7de7d434abb0f3ce72e09",
+      "budget_allocator_sha256": "3737d8daf7be7690d5deaa82ec7cf6718dc30f991ffa80439c8a8ba342a691dd",
+      "chapter_system_prompt_sha256": "2906d9c5015f7f2119361da0251930f92f6cfa699028740d40b5e31357e5fe91",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "efebadeb9ca47c9ebdc7bd107e1ef76b086635dade60a6051370cc4ee74e0bf8",
+      "render_repair_user_sha256": "4627a4438b712323118f9736605f4016c91cf0f37953b53dc8c774c7186d4302",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "f89f35f9aa88b8ba722bfb5f3504ec296b94525a31631292c23c72139339fe87",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "snapshots/catalog/20260908T090827Z__booksum-v4.json",
+    "price_snapshot": "snapshots/pricing/20260908T090827Z__booksum-v4.json",
+    "hypothesis": "",
+    "notes": ""
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v4",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-30T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v2",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "v4: per-profile scoring gates - 30m profiles use min_faithfulness=0.50, min_concept_coverage=0.15. v3 used uniform 0.70/0.60 gates for all profiles.",
+    "scoring_gates": {
+      "default": {
+        "min_faithfulness": 0.7,
+        "min_concept_coverage": 0.6,
+        "max_final_length_error_pct": null,
+        "max_passes": null
+      },
+      "30m": {
+        "min_faithfulness": 0.5,
+        "min_concept_coverage": 0.15,
+        "max_final_length_error_pct": null,
+        "max_passes": null
+      },
+      "60m": {
+        "min_faithfulness": 0.6,
+        "min_concept_coverage": 0.5,
+        "max_final_length_error_pct": null,
+        "max_passes": null
+      }
+    }
+  },
+  "bench_rows": [
+    {
+      "sample_id": "do-hard-things-magness-2022:003",
+      "level": "chapter",
+      "book_id": "do-hard-things-magness-2022",
+      "group_id": "do-hard-things-magness-2022",
+      "chapter_id": "003",
+      "chapter_title": "Chapter 1",
+      "book_title": "Do Hard Things",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "performance_and_resilience",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "getting-things-done-allen-2015:013",
+      "level": "chapter",
+      "book_id": "getting-things-done-allen-2015",
+      "group_id": "getting-things-done-allen-2015",
+      "chapter_id": "013",
+      "chapter_title": "Organizing: Setting Up the Right Buckets",
+      "book_title": "Getting Things Done",
+      "genre_macro": "business_economics_productivity",
+      "genre_micro": "productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "low",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:004",
+      "level": "chapter",
+      "book_id": "everything-is-f-cked-manson-2019",
+      "group_id": "everything-is-f-cked-manson-2019",
+      "chapter_id": "004",
+      "chapter_title": "Chapter 4: How to Make All Your Dreams Come True",
+      "book_title": "Everything Is F*cked",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "philosophy_and_psychology",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:006",
+      "level": "chapter",
+      "book_id": "everything-is-f-cked-manson-2019",
+      "group_id": "everything-is-f-cked-manson-2019",
+      "chapter_id": "006",
+      "chapter_title": "Chapter 6: The Formula of Humanity",
+      "book_title": "Everything Is F*cked",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "philosophy_and_psychology",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:009",
+      "level": "chapter",
+      "book_id": "everything-is-f-cked-manson-2019",
+      "group_id": "everything-is-f-cked-manson-2019",
+      "chapter_id": "009",
+      "chapter_title": "Chapter 9: The Final Religion",
+      "book_title": "Everything Is F*cked",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "philosophy_and_psychology",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:001",
+      "level": "chapter",
+      "book_id": "everything-is-f-cked-manson-2019",
+      "group_id": "everything-is-f-cked-manson-2019",
+      "chapter_id": "001",
+      "chapter_title": "Chapter 1: The Uncomfortable Truth",
+      "book_title": "Everything Is F*cked",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "philosophy_and_psychology",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "do-hard-things-magness-2022:004",
+      "level": "chapter",
+      "book_id": "do-hard-things-magness-2022",
+      "group_id": "do-hard-things-magness-2022",
+      "chapter_id": "004",
+      "chapter_title": "Chapter 2",
+      "book_title": "Do Hard Things",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "performance_and_resilience",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:005",
+      "level": "chapter",
+      "book_id": "atomic-habits-clear-2018",
+      "group_id": "atomic-habits-clear-2018",
+      "chapter_id": "005",
+      "chapter_title": "2: How Your Habits Shape Your Identity (and Vice Versa)",
+      "book_title": "Atomic Habits",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ],
+  "completed_sample_ids": [],
+  "completed_count": 0,
+  "n_total_samples": 8,
+  "current_item": {
+    "kind": "chapter",
+    "phase": "stage",
+    "item_key": "do-hard-things-magness-2022:003",
+    "item": {
+      "sample_id": "do-hard-things-magness-2022:003",
+      "level": "chapter",
+      "book_id": "do-hard-things-magness-2022",
+      "group_id": "do-hard-things-magness-2022",
+      "chapter_id": "003",
+      "chapter_title": "Chapter 1",
+      "book_title": "Do Hard Things",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "performance_and_resilience",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    "book_id": "do-hard-things-magness-2022",
+    "chapter_id": "003",
+    "sample_id": "do-hard-things-magness-2022:003",
+    "target_words": 1023,
+    "stage_state": {
+      "summary_md": "# Chapter 1: From Tough Coaches, Tough Parents, and Tough Guys to Finding Real Inner Strength\n\n## The Old Model of Toughness\nWhen college students described toughness, words like gritty, perseverance, stoic, and playing through pain came to mind. Among 160 elite athletes, perseverance ranked highest. The traditional view equates toughness with overcoming obstacles through discipline and stoicism—often picturing a strong brute of a man. Bobby Knight, who won over 900 games and three NCAA championships, embodied this: his 1976 Indiana team went undefeated, which he attributed to toughness, strength, and size. Yet Knight’s methods were abusive—tampons hanging from lockers, genitalia pictures taped to rooms, profanity-laced tirades, and the 1991 video of him choking a player. His definition of toughness rested on showing no weakness, bulldozing obstacles, and using fear to control.\n\n## Tough Parenting\nDevelopmental psychologist Diana Baumrind identified two parenting dimensions: responsiveness and demandingness. Authoritarian parents are high in demandingness but low in responsiveness—cold, controlling, relying on fear and punishment. In one study, only 31% of authoritarian parents said they loved their child unconditionally. Eighty-one percent of Americans believed parents were too soft. The “just right” style combines high demands with high support.\n\n## To Be Callous\nWe’ve conflated toughness with callousness—hardening, becoming insensitive. Language reinforces this: “harden up,” “show no weakness,” “man up,” “stop being a pussy.” Toughness has been tied to masculinity and machismo. The Rock or Vin Diesel typify this image, yet those displaying external machismo are often the “weakest.” Women, who research shows handle pain better, may have the truer definition: based on reality, not false confidence.\n\n## The Downfall of a Callous View of Toughness\nOn May 29, 2018, University of Maryland football player Jordan McNair died from heatstroke after coaches forced him to complete ten 110-yard sprints despite signs of distress. Trainers waited 34 minutes to remove him; 28 more passed before calling 911. Rhabdomyolysis, once rare, has become common due to extreme workouts designed not to improve fitness but to “test” athletes. Authoritarian parenting similarly produces lower independence, more aggression, substance abuse, and risky behaviors. In sport, it’s linked to lower grit, emotional exhaustion, burnout, and fear of failure. Even the military suffers: Israeli soldiers raised in authoritarian homes coped worse. The young athlete quoted: “Coaches use exercise as punishment… I need to work harder because I don’t want to be punished.” This creates fragility, not resilience.\n\n## Redefining Toughness\nPete Carroll (NFL/college champion) avoids screaming; he “finds a way to turn a mistake into a positive.” He’s one of only three coaches to win both an NCAA title and Super Bowl. In 2008, Eastern Washington researchers studied nearly 200 basketball players and concluded the “keys to promoting mental toughness” lie not in autocratic styles but in “trust and inclusion, humility, and service.” Real toughness is navigating discomfort to make the best decision—not bulldozing through. It provides tools, not just a hammer.\n\n## Searching for Real Toughness\nThe author recounts the 1957 Don Bowden Mile, where he competed against pacers. His strategy: zone out early, save mental energy for the final lap. Mid-race, he experienced paradoxical vocal cord dysfunction (VCD)—his vocal cords shut on inhalation, blocking airflow. Diagnosed by Dr. Stephen Miles, VCD stems from a hyperresponsive larynx and stress. His prior habit of “pushing until I puked” worsened the condition. He had to learn to relax, keep breathing and neck steady, and control his mind—lessons that became the book’s foundation. Running, he notes, is a perfect backdrop for studying toughness because it forces one alone with discomfort.\n\n## Toughness = Filling Our Basic Needs\nEdward Deci and Richard Ryan’s self-determination theory (SDT) posits three innate needs: autonomy, competence, and relatedness. Satisfying these fuels well-being and performance. John Mahoney’s PhD work found that cross-country runners and rowers with need satisfaction were tougher and performed better; the coach’s atmosphere was key. In the workplace, psychological safety (the ability to take risks without fear of punishment) is the strongest predictor of how well people handle demanding work. Google’s two-year study on team performance found psychological safety atop five good-team traits.\n\n### Support, Not Thwart\nSteve Kerr (Golden State Warriors coach) relinquished play-calling to players mid-game to restore focus. The Warriors won 129–83. Autonomy-supportive leaders foster choice, input, and trust. Eastern Washington research on sixty-four NCAA track teams found athletes under servant leaders scored higher on mental toughness and ran faster. In workplaces, feeling respected and valued by managers boosts engagement, loyalty, and resilience.\n\n### Can I Make Progress?\nObjective sports clarify improvement; in workplaces, lack of growth path kills motivation. Psychological safety enables risk-taking and innovation. Leaders must provide pathways for growth and a sense that progress is possible.\n\n### A Need to Belong\nMichael Kraus, Cassey Huang, and Dacher Keltner’s 2010 NBA study found that cooperation/trust behaviors (fist bumps, high fives) correlated with better team performance—not the acts themselves, but what they represented: belonging. Scott Barry Kaufman: “When one feels belonging, one feels accepted and seen.” Loneliness triggers the brain like physical pain. The calm-and-connect system releases feel-good opioids and oxytocin, dampening stress. Gregg Popovich’s San Antonio Spurs attribute cohesion to three-hour team meals with free-flowing conversation—not forced activities. Dan Coyle’s “vulnerability loop” argues we must first be vulnerable to build trust. Family dinners lower depression, anxiety, substance abuse, eating disorders, and early pregnancy.\n\n## Toughness = Filling Our Basic Needs\nMaslow’s hierarchy is often misrepresented as a pyramid; Maslow himself preferred “self-transcendence” as the peak—reaching beyond individual concerns. He warned society “conceal[s]... idealism under a mask of toughness.” When basic needs are met, we can utilize toughness strategies. Control and punishment thwart needs; care and support satisfy them. Three key needs for leaders: being supported (having input/voice/choice), making progress/growth, and feeling connected/belonging.\n\n## Chapter 11: Find Meaning in Discomfort\nA professor’s lecture series on “suicide-forced annihilation, the world of the mentally ill, sexual education” concluded three keys to meaning: doing (creating), experiencing (awe), and suffering (authentic fate as highest achievement). Viktor Frankl, in his imagined lecture and real camp experience, argued meaning is found in every moment, even in suffering. Freedom to choose one’s mindset survives even extreme atrocity.\n\n### The Will to Continue\nPerformance = Actual effort / Expected effort × Drive. Drive—purpose, motivation—determines how close to exhaustion we push. The body has a safety governor; we never truly reach zero energy. Purpose acts as a turbo boost. Research links purpose to persistence in classroom, workplace, and sport. Willie the dog sprints after squirrels despite fatigue, illustrating drive overriding physical limits.\n\n### From Fear to Despair to Apathy\nViktor Frankl’s Holocaust survival hinged on finding meaning. Phases: shock, then apathy (emotions hibernate, focus narrows to food). Yet those who survived often did so by finding meaning: support, preserving normalcy, luck, making choices, inner control, conscious decision to live. Post-traumatic growth (PTG) research shows severe trauma can lead to higher personal strength and life appreciation. Deliberate, constructive rumination (problem-solving focus) versus intrusive rumination enables growth. Meaning provides the freedom to adapt one’s fate.\n\n### The Nuance of Inner Strength\nThe author’s childhood OCD illustrates how intrusive thoughts + strong urges create compulsion. OCD sufferers struggle to learn what’s “safe”; once threatening, it’s “carved in stone.” Parallels to toughness: a rigid thought-feeling-urge pattern that misfires. He learned to create space between thought and action, accepting OCD as part of himself rather than fighting it. Society props up the boisterous, brash, overconfident—even when results don’t match. Real toughness, instead, is living in nuance and complexity, accepting who you are and what you face. It’s not a facade but inner strength forged through acceptance, emotional honesty, basic need satisfaction, and purpose.\n\n## Conclusion\nReal toughness isn’t about external displays or callousness. It’s about navigating discomfort with awareness, flexibility, and purpose. Ditch the facade; embrace reality. Support basic needs. Find meaning. Everyone is capable of inner strength—even those labeled weak. Be who you are.",
+      "best_summary_md": "# Chapter 1: From Tough Coaches, Tough Parents, and Tough Guys to Finding Real Inner Strength\n\n## The Old Model of Toughness\nWhen college students described toughness, words like gritty, perseverance, stoic, and playing through pain came to mind. Among 160 elite athletes, perseverance ranked highest. The traditional view equates toughness with overcoming obstacles through discipline and stoicism—often picturing a strong brute of a man. Bobby Knight, who won over 900 games and three NCAA championships, embodied this: his 1976 Indiana team went undefeated, which he attributed to toughness, strength, and size. Yet Knight’s methods were abusive—tampons hanging from lockers, genitalia pictures taped to rooms, profanity-laced tirades, and the 1991 video of him choking a player. His definition of toughness rested on showing no weakness, bulldozing obstacles, and using fear to control.\n\n## Tough Parenting\nDevelopmental psychologist Diana Baumrind identified two parenting dimensions: responsiveness and demandingness. Authoritarian parents are high in demandingness but low in responsiveness—cold, controlling, relying on fear and punishment. In one study, only 31% of authoritarian parents said they loved their child unconditionally. Eighty-one percent of Americans believed parents were too soft. The “just right” style combines high demands with high support.\n\n## To Be Callous\nWe’ve conflated toughness with callousness—hardening, becoming insensitive. Language reinforces this: “harden up,” “show no weakness,” “man up,” “stop being a pussy.” Toughness has been tied to masculinity and machismo. The Rock or Vin Diesel typify this image, yet those displaying external machismo are often the “weakest.” Women, who research shows handle pain better, may have the truer definition: based on reality, not false confidence.\n\n## The Downfall of a Callous View of Toughness\nOn May 29, 2018, University of Maryland football player Jordan McNair died from heatstroke after coaches forced him to complete ten 110-yard sprints despite signs of distress. Trainers waited 34 minutes to remove him; 28 more passed before calling 911. Rhabdomyolysis, once rare, has become common due to extreme workouts designed not to improve fitness but to “test” athletes. Authoritarian parenting similarly produces lower independence, more aggression, substance abuse, and risky behaviors. In sport, it’s linked to lower grit, emotional exhaustion, burnout, and fear of failure. Even the military suffers: Israeli soldiers raised in authoritarian homes coped worse. The young athlete quoted: “Coaches use exercise as punishment… I need to work harder because I don’t want to be punished.” This creates fragility, not resilience.\n\n## Redefining Toughness\nPete Carroll (NFL/college champion) avoids screaming; he “finds a way to turn a mistake into a positive.” He’s one of only three coaches to win both an NCAA title and Super Bowl. In 2008, Eastern Washington researchers studied nearly 200 basketball players and concluded the “keys to promoting mental toughness” lie not in autocratic styles but in “trust and inclusion, humility, and service.” Real toughness is navigating discomfort to make the best decision—not bulldozing through. It provides tools, not just a hammer.\n\n## Searching for Real Toughness\nThe author recounts the 1957 Don Bowden Mile, where he competed against pacers. His strategy: zone out early, save mental energy for the final lap. Mid-race, he experienced paradoxical vocal cord dysfunction (VCD)—his vocal cords shut on inhalation, blocking airflow. Diagnosed by Dr. Stephen Miles, VCD stems from a hyperresponsive larynx and stress. His prior habit of “pushing until I puked” worsened the condition. He had to learn to relax, keep breathing and neck steady, and control his mind—lessons that became the book’s foundation. Running, he notes, is a perfect backdrop for studying toughness because it forces one alone with discomfort.\n\n## Toughness = Filling Our Basic Needs\nEdward Deci and Richard Ryan’s self-determination theory (SDT) posits three innate needs: autonomy, competence, and relatedness. Satisfying these fuels well-being and performance. John Mahoney’s PhD work found that cross-country runners and rowers with need satisfaction were tougher and performed better; the coach’s atmosphere was key. In the workplace, psychological safety (the ability to take risks without fear of punishment) is the strongest predictor of how well people handle demanding work. Google’s two-year study on team performance found psychological safety atop five good-team traits.\n\n### Support, Not Thwart\nSteve Kerr (Golden State Warriors coach) relinquished play-calling to players mid-game to restore focus. The Warriors won 129–83. Autonomy-supportive leaders foster choice, input, and trust. Eastern Washington research on sixty-four NCAA track teams found athletes under servant leaders scored higher on mental toughness and ran faster. In workplaces, feeling respected and valued by managers boosts engagement, loyalty, and resilience.\n\n### Can I Make Progress?\nObjective sports clarify improvement; in workplaces, lack of growth path kills motivation. Psychological safety enables risk-taking and innovation. Leaders must provide pathways for growth and a sense that progress is possible.\n\n### A Need to Belong\nMichael Kraus, Cassey Huang, and Dacher Keltner’s 2010 NBA study found that cooperation/trust behaviors (fist bumps, high fives) correlated with better team performance—not the acts themselves, but what they represented: belonging. Scott Barry Kaufman: “When one feels belonging, one feels accepted and seen.” Loneliness triggers the brain like physical pain. The calm-and-connect system releases feel-good opioids and oxytocin, dampening stress. Gregg Popovich’s San Antonio Spurs attribute cohesion to three-hour team meals with free-flowing conversation—not forced activities. Dan Coyle’s “vulnerability loop” argues we must first be vulnerable to build trust. Family dinners lower depression, anxiety, substance abuse, eating disorders, and early pregnancy.\n\n## Toughness = Filling Our Basic Needs\nMaslow’s hierarchy is often misrepresented as a pyramid; Maslow himself preferred “self-transcendence” as the peak—reaching beyond individual concerns. He warned society “conceal[s]... idealism under a mask of toughness.” When basic needs are met, we can utilize toughness strategies. Control and punishment thwart needs; care and support satisfy them. Three key needs for leaders: being supported (having input/voice/choice), making progress/growth, and feeling connected/belonging.\n\n## Chapter 11: Find Meaning in Discomfort\nA professor’s lecture series on “suicide-forced annihilation, the world of the mentally ill, sexual education” concluded three keys to meaning: doing (creating), experiencing (awe), and suffering (authentic fate as highest achievement). Viktor Frankl, in his imagined lecture and real camp experience, argued meaning is found in every moment, even in suffering. Freedom to choose one’s mindset survives even extreme atrocity.\n\n### The Will to Continue\nPerformance = Actual effort / Expected effort × Drive. Drive—purpose, motivation—determines how close to exhaustion we push. The body has a safety governor; we never truly reach zero energy. Purpose acts as a turbo boost. Research links purpose to persistence in classroom, workplace, and sport. Willie the dog sprints after squirrels despite fatigue, illustrating drive overriding physical limits.\n\n### From Fear to Despair to Apathy\nViktor Frankl’s Holocaust survival hinged on finding meaning. Phases: shock, then apathy (emotions hibernate, focus narrows to food). Yet those who survived often did so by finding meaning: support, preserving normalcy, luck, making choices, inner control, conscious decision to live. Post-traumatic growth (PTG) research shows severe trauma can lead to higher personal strength and life appreciation. Deliberate, constructive rumination (problem-solving focus) versus intrusive rumination enables growth. Meaning provides the freedom to adapt one’s fate.\n\n### The Nuance of Inner Strength\nThe author’s childhood OCD illustrates how intrusive thoughts + strong urges create compulsion. OCD sufferers struggle to learn what’s “safe”; once threatening, it’s “carved in stone.” Parallels to toughness: a rigid thought-feeling-urge pattern that misfires. He learned to create space between thought and action, accepting OCD as part of himself rather than fighting it. Society props up the boisterous, brash, overconfident—even when results don’t match. Real toughness, instead, is living in nuance and complexity, accepting who you are and what you face. It’s not a facade but inner strength forged through acceptance, emotional honesty, basic need satisfaction, and purpose.\n\n## Conclusion\nReal toughness isn’t about external displays or callousness. It’s about navigating discomfort with awareness, flexibility, and purpose. Ditch the facade; embrace reality. Support basic needs. Find meaning. Everyone is capable of inner strength—even those labeled weak. Be who you are.",
+      "best_distance": 310,
+      "first_pass_summary_md": "# Chapter 1: From Tough Coaches, Tough Parents, and Tough Guys to Finding Real Inner Strength\n\n## The Old Model of Toughness\nWhen college students were asked to describe toughness, words like gritty, perseverance, stoic, and playing through pain came to mind. Among 160 elite athletes, perseverance ranked highest. The traditional view equates toughness with overcoming obstacles through discipline and stoicism—often picturing a strong brute of a man. Bobby Knight, who won over 900 games and three NCAA championships, embodied this: his 1976 Indiana team went undefeated, which he attributed to toughness, strength, and size. Yet Knight’s methods were abusive—tampons hanging from lockers, genitalia pictures taped to rooms, profanity-laced tirades, and the 1991 video of him choking a player. His definition of toughness rested on showing no weakness, bulldozing obstacles, and using fear to control.\n\n## Tough Parenting\nDevelopmental psychologist Diana Baumrind identified two parenting dimensions: responsiveness and demandingness. Authoritarian parents are high in demandingness but low in responsiveness—cold, controlling, relying on fear and punishment. In one study, only 31% of authoritarian parents said they loved their child unconditionally. Eighty-one percent of Americans believed parents were too soft. The “just right” style combines high demands with high support.\n\n## To Be Callous\nWe’ve conflated toughness with callousness—hardening, becoming insensitive. Language reinforces this: “harden up,” “show no weakness,” “man up,” “stop being a pussy.” Toughness has been tied to masculinity and machismo. The Rock or Vin Diesel typify this image, yet those displaying external machismo are often the “weakest.” Women, who research shows handle pain better, may have the truer definition: based on reality, not false confidence.\n\n## The Downfall of a Callous View of Toughness\nOn May 29, 2018, University of Maryland football player Jordan McNair died from heatstroke after coaches forced him to complete ten 110-yard sprints despite signs of distress. Trainers waited 34 minutes to remove him; 28 more passed before calling 911. Rhabdomyolysis, once rare, has become common due to extreme workouts designed not to improve fitness but to “test” athletes. Authoritarian parenting similarly produces lower independence, more aggression, substance abuse, and risky behaviors. In sport, it’s linked to lower grit, emotional exhaustion, burnout, and fear of failure. Even the military suffers: Israeli soldiers raised in authoritarian homes coped worse. The young athlete quoted: “Coaches use exercise as punishment... I need to work harder because I don’t want to be punished.” This creates fragility, not resilience.\n\n## Redefining Toughness\nPete Carroll (NFL/college champion) avoids screaming; he “finds a way to turn a mistake into a positive.” He’s one of only three coaches to win both an NCAA title and Super Bowl. In 2008, Eastern Washington researchers studied nearly 200 basketball players and concluded the “keys to promoting mental toughness” lie not in autocratic styles but in “trust and inclusion, humility, and service.” Real toughness is navigating discomfort to make the best decision—not bulldozing through. It provides tools, not just a hammer.\n\n## Searching for Real Toughness\nThe author recounts the 1957 Don Bowden Mile, where he competed against pacers. His strategy: zone out early, save mental energy for the final lap. Mid-race, he experienced paradoxical vocal cord dysfunction (VCD)—his vocal cords shut on inhalation, blocking airflow. Diagnosed by Dr. Stephen Miles, VCD stems from a hyperresponsive larynx and stress. His prior habit of “pushing until I puked” worsened the condition. He had to learn to relax, keep breathing and neck steady, and control his mind—lessons that became the book’s foundation. Running, he notes, is a perfect backdrop for studying toughness because it forces one alone with discomfort.\n\n## Toughness = Filling Our Basic Needs\nEdward Deci and Richard Ryan’s self-determination theory (SDT) posits three innate needs: autonomy, competence, and relatedness. Satisfying these fuels well-being and performance. John Mahoney’s PhD work found that cross-country runners and rowers with need satisfaction were tougher and performed better; the coach’s atmosphere was key. In the workplace, psychological safety (the ability to take risks without fear of punishment) is the strongest predictor of how well people handle demanding work. Google’s two-year study on team performance found psychological safety atop five good-team traits.\n\n### Support, Not Thwart\nSteve Kerr (Golden State Warriors coach) relinquished play-calling to players mid-game to restore focus. The Warriors won 129–83. Autonomy-supportive leaders foster choice, input, and trust. Eastern Washington research on sixty-four NCAA track teams found athletes under servant leaders scored higher on mental toughness and ran faster. In workplaces, feeling respected and valued by managers boosts engagement, loyalty, and resilience.\n\n### Can I Make Progress?\nObjective sports clarify improvement; in workplaces, lack of growth path kills motivation. Psychological safety enables risk-taking and innovation. Leaders must provide pathways for growth and a sense that progress is possible.\n\n### A Need to Belong\nMichael Kraus, Cassey Huang, and Dacher Keltner’s 2010 NBA study found that cooperation/trust behaviors (fist bumps, high fives) correlated with better team performance—not the acts themselves, but what they represented: belonging. Scott Barry Kaufman: “When one feels belonging, one feels accepted and seen.” Loneliness triggers the brain like physical pain. The calm-and-connect system releases feel-good opioids and oxytocin, dampening stress. Gregg Popovich’s San Antonio Spurs attribute cohesion to three-hour team meals with free-flowing conversation—not forced activities. Dan Coyle’s “vulnerability loop” argues we must first be vulnerable to build trust. Family dinners lower depression, anxiety, substance abuse, eating disorders, and early pregnancy.\n\n## Toughness = Filling Our Basic Needs\nMaslow’s hierarchy is often misrepresented as a pyramid; Maslow himself preferred “self-transcendence” as the peak—reaching beyond individual concerns. He warned society “conceal[s]... idealism under a mask of toughness.” When basic needs are met, we can utilize toughness strategies. Control and punishment thwart needs; care and support satisfy them. Three key needs for leaders: being supported (having input/voice/choice), making progress/growth, and feeling connected/belonging.\n\n## Chapter 11: Find Meaning in Discomfort\nA professor’s lecture series on “suicide-forced annihilation, the world of the mentally ill, sexual education” concluded three keys to meaning: doing (creating), experiencing (awe), and suffering (authentic fate as highest achievement). Viktor Frankl, in his imagined lecture and real camp experience, argued meaning is found in every moment, even in suffering. Freedom to choose one’s mindset survives even extreme atrocity.\n\n### The Will to Continue\nPerformance = Actual effort / Expected effort × Drive. Drive—purpose, motivation—determines how close to exhaustion we push. The body has a safety governor; we never truly reach zero energy. Purpose acts as a turbo boost. Research links purpose to persistence in classroom, workplace, and sport. Willie the dog sprints after squirrels despite fatigue, illustrating drive overriding physical limits.\n\n### From Fear to Despair to Apathy\nViktor Frankl’s Holocaust survival hinged on finding meaning. Phases: shock, then apathy (emotions hibernate, focus narrows to food). Yet those who survived often did so by finding meaning: support, preserving normalcy, luck, making choices, inner control, conscious decision to live. Post-traumatic growth (PTG) research shows severe trauma can lead to higher personal strength and life appreciation. Deliberate, constructive rumination (problem-solving focus) versus intrusive rumination enables growth. Meaning provides the freedom to adapt one’s fate.\n\n### The Nuance of Inner Strength\nThe author’s childhood OCD illustrates how intrusive thoughts + strong urges create compulsion. OCD sufferers struggle to learn what’s “safe”; once threatening, it’s “carved in stone.” Parallels to toughness: a rigid thought-feeling-urge pattern that misfires. He learned to create space between thought and action, accepting OCD as part of himself rather than fighting it. Society props up the boisterous, brash, overconfident—even when results don’t match. Real toughness, instead, is living in nuance and complexity, accepting who you are and what you face. It’s not a facade but inner strength forged through acceptance, emotional honesty, basic need satisfaction, and purpose.\n\n## Conclusion\nReal toughness isn’t about external displays or callousness. It’s about navigating discomfort with awareness, flexibility, and purpose. Ditch the facade; embrace reality. Support basic needs. Find meaning. Everyone is capable of inner strength—even those labeled weak. Be who you are.",
+      "passes_used": 3,
+      "generation_cost": 0.00834631,
+      "uncached_generation_cost": 0.007160720000000001,
+      "truncation_retries": 0,
+      "raw_responses": [
+        {
+          "id": "gen-1788858511-51C1lqeoStxz9nY3Ipcz",
+          "object": "chat.completion",
+          "created": 1788858511,
+          "model": "nvidia/nemotron-3.5-lightning",
+          "provider": "CoreWeave",
+          "system_fingerprint": null,
+          "service_tier": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\n  \"summary_md\": \"# Chapter 1: From Tough Coaches, Tough Parents, and Tough Guys to Finding Real Inner Strength\\n\\n## The Old Model of Toughness\\nWhen college students were asked to describe toughness, words like gritty, perseverance, stoic, and playing through pain came to mind. Among 160 elite athletes, perseverance ranked highest. The traditional view equates toughness with overcoming obstacles through discipline and stoicism—often picturing a strong brute of a man. Bobby Knight, who won over 900 games and three NCAA championships, embodied this: his 1976 Indiana team went undefeated, which he attributed to toughness, strength, and size. Yet Knight’s methods were abusive—tampons hanging from lockers, genitalia pictures taped to rooms, profanity-laced tirades, and the 1991 video of him choking a player. His definition of toughness rested on showing no weakness, bulldozing obstacles, and using fear to control.\\n\\n## Tough Parenting\\nDevelopmental psychologist Diana Baumrind identified two parenting dimensions: responsiveness and demandingness. Authoritarian parents are high in demandingness but low in responsiveness—cold, controlling, relying on fear and punishment. In one study, only 31% of authoritarian parents said they loved their child unconditionally. Eighty-one percent of Americans believed parents were too soft. The “just right” style combines high demands with high support.\\n\\n## To Be Callous\\nWe’ve conflated toughness with callousness—hardening, becoming insensitive. Language reinforces this: “harden up,” “show no weakness,” “man up,” “stop being a pussy.” Toughness has been tied to masculinity and machismo. The Rock or Vin Diesel typify this image, yet those displaying external machismo are often the “weakest.” Women, who research shows handle pain better, may have the truer definition: based on reality, not false confidence.\\n\\n## The Downfall of a Callous View of Toughness\\nOn May 29, 2018, University of Maryland football player Jordan McNair died from heatstroke after coaches forced him to complete ten 110-yard sprints despite signs of distress. Trainers waited 34 minutes to remove him; 28 more passed before calling 911. Rhabdomyolysis, once rare, has become common due to extreme workouts designed not to improve fitness but to “test” athletes. Authoritarian parenting similarly produces lower independence, more aggression, substance abuse, and risky behaviors. In sport, it’s linked to lower grit, emotional exhaustion, burnout, and fear of failure. Even the military suffers: Israeli soldiers raised in authoritarian homes coped worse. The young athlete quoted: “Coaches use exercise as punishment... I need to work harder because I don’t want to be punished.” This creates fragility, not resilience.\\n\\n## Redefining Toughness\\nPete Carroll (NFL/college champion) avoids screaming; he “finds a way to turn a mistake into a positive.” He’s one of only three coaches to win both an NCAA title and Super Bowl. In 2008, Eastern Washington researchers studied nearly 200 basketball players and concluded the “keys to promoting mental toughness” lie not in autocratic styles but in “trust and inclusion, humility, and service.” Real toughness is navigating discomfort to make the best decision—not bulldozing through. It provides tools, not just a hammer.\\n\\n## Searching for Real Toughness\\nThe author recounts the 1957 Don Bowden Mile, where he competed against pacers. His strategy: zone out early, save mental energy for the final lap. Mid-race, he experienced paradoxical vocal cord dysfunction (VCD)—his vocal cords shut on inhalation, blocking airflow. Diagnosed by Dr. Stephen Miles, VCD stems from a hyperresponsive larynx and stress. His prior habit of “pushing until I puked” worsened the condition. He had to learn to relax, keep breathing and neck steady, and control his mind—lessons that became the book’s foundation. Running, he notes, is a perfect backdrop for studying toughness because it forces one alone with discomfort.\\n\\n## Toughness = Filling Our Basic Needs\\nEdward Deci and Richard Ryan’s self-determination theory (SDT) posits three innate needs: autonomy, competence, and relatedness. Satisfying these fuels well-being and performance. John Mahoney’s PhD work found that cross-country runners and rowers with need satisfaction were tougher and performed better; the coach’s atmosphere was key. In the workplace, psychological safety (the ability to take risks without fear of punishment) is the strongest predictor of how well people handle demanding work. Google’s two-year study on team performance found psychological safety atop five good-team traits.\\n\\n### Support, Not Thwart\\nSteve Kerr (Golden State Warriors coach) relinquished play-calling to players mid-game to restore focus. The Warriors won 129–83. Autonomy-supportive leaders foster choice, input, and trust. Eastern Washington research on sixty-four NCAA track teams found athletes under servant leaders scored higher on mental toughness and ran faster. In workplaces, feeling respected and valued by managers boosts engagement, loyalty, and resilience.\\n\\n### Can I Make Progress?\\nObjective sports clarify improvement; in workplaces, lack of growth path kills motivation. Psychological safety enables risk-taking and innovation. Leaders must provide pathways for growth and a sense that progress is possible.\\n\\n### A Need to Belong\\nMichael Kraus, Cassey Huang, and Dacher Keltner’s 2010 NBA study found that cooperation/trust behaviors (fist bumps, high fives) correlated with better team performance—not the acts themselves, but what they represented: belonging. Scott Barry Kaufman: “When one feels belonging, one feels accepted and seen.” Loneliness triggers the brain like physical pain. The calm-and-connect system releases feel-good opioids and oxytocin, dampening stress. Gregg Popovich’s San Antonio Spurs attribute cohesion to three-hour team meals with free-flowing conversation—not forced activities. Dan Coyle’s “vulnerability loop” argues we must first be vulnerable to build trust. Family dinners lower depression, anxiety, substance abuse, eating disorders, and early pregnancy.\\n\\n## Toughness = Filling Our Basic Needs\\nMaslow’s hierarchy is often misrepresented as a pyramid; Maslow himself preferred “self-transcendence” as the peak—reaching beyond individual concerns. He warned society “conceal[s]... idealism under a mask of toughness.” When basic needs are met, we can utilize toughness strategies. Control and punishment thwart needs; care and support satisfy them. Three key needs for leaders: being supported (having input/voice/choice), making progress/growth, and feeling connected/belonging.\\n\\n## Chapter 11: Find Meaning in Discomfort\\nA professor’s lecture series on “suicide-forced annihilation, the world of the mentally ill, sexual education” concluded three keys to meaning: doing (creating), experiencing (awe), and suffering (authentic fate as highest achievement). Viktor Frankl, in his imagined lecture and real camp experience, argued meaning is found in every moment, even in suffering. Freedom to choose one’s mindset survives even extreme atrocity.\\n\\n### The Will to Continue\\nPerformance = Actual effort / Expected effort × Drive. Drive—purpose, motivation—determines how close to exhaustion we push. The body has a safety governor; we never truly reach zero energy. Purpose acts as a turbo boost. Research links purpose to persistence in classroom, workplace, and sport. Willie the dog sprints after squirrels despite fatigue, illustrating drive overriding physical limits.\\n\\n### From Fear to Despair to Apathy\\nViktor Frankl’s Holocaust survival hinged on finding meaning. Phases: shock, then apathy (emotions hibernate, focus narrows to food). Yet those who survived often did so by finding meaning: support, preserving normalcy, luck, making choices, inner control, conscious decision to live. Post-traumatic growth (PTG) research shows severe trauma can lead to higher personal strength and life appreciation. Deliberate, constructive rumination (problem-solving focus) versus intrusive rumination enables growth. Meaning provides the freedom to adapt one’s fate.\\n\\n### The Nuance of Inner Strength\\nThe author’s childhood OCD illustrates how intrusive thoughts + strong urges create compulsion. OCD sufferers struggle to learn what’s “safe”; once threatening, it’s “carved in stone.” Parallels to toughness: a rigid thought-feeling-urge pattern that misfires. He learned to create space between thought and action, accepting OCD as part of himself rather than fighting it. Society props up the boisterous, brash, overconfident—even when results don’t match. Real toughness, instead, is living in nuance and complexity, accepting who you are and what you face. It’s not a facade but inner strength forged through acceptance, emotional honesty, basic need satisfaction, and purpose.\\n\\n## Conclusion\\nReal toughness isn’t about external displays or callousness. It’s about navigating discomfort with awareness, flexibility, and purpose. Ditch the facade; embrace reality. Support basic needs. Find meaning. Everyone is capable of inner strength—even those labeled weak. Be who you are.\",\n  \"estimated_visible_words\": 1023\n}",
+                "refusal": null,
+                "reasoning": null
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 23987,
+            "completion_tokens": 2024,
+            "total_tokens": 26011,
+            "cost": 0.0029047,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.0029047,
+              "upstream_inference_prompt_cost": 0.0023987,
+              "upstream_inference_completions_cost": 0.000506
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        },
+        {
+          "id": "gen-1788858525-trJbWLdagrTMKMxNdesJ",
+          "object": "chat.completion",
+          "created": 1788858525,
+          "model": "nvidia/nemotron-3.5-lightning",
+          "provider": "CoreWeave",
+          "system_fingerprint": null,
+          "service_tier": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\n  \"summary_md\": \"# Chapter 1: From Tough Coaches, Tough Parents, and Tough Guys to Finding Real Inner Strength\\n\\n## The Old Model of Toughness\\nWhen college students described toughness, words like gritty, perseverance, stoic, and playing through pain came to mind. Among 160 elite athletes, perseverance ranked highest. The traditional view equates toughness with overcoming obstacles through discipline and stoicism—often picturing a strong brute of a man. Bobby Knight, who won over 900 games and three NCAA championships, embodied this: his 1976 Indiana team went undefeated, which he attributed to toughness, strength, and size. Yet Knight’s methods were abusive—tampons hanging from lockers, genitalia pictures taped to rooms, profanity-laced tirades, and the 1991 video of him choking a player. His definition of toughness rested on showing no weakness, bulldozing obstacles, and using fear to control.\\n\\n## Tough Parenting\\nDevelopmental psychologist Diana Baumrind identified two parenting dimensions: responsiveness and demandingness. Authoritarian parents are high in demandingness but low in responsiveness—cold, controlling, relying on fear and punishment. In one study, only 31% of authoritarian parents said they loved their child unconditionally. Eighty-one percent of Americans believed parents were too soft. The “just right” style combines high demands with high support.\\n\\n## To Be Callous\\nWe’ve conflated toughness with callousness—hardening, becoming insensitive. Language reinforces this: “harden up,” “show no weakness,” “man up,” “stop being a pussy.” Toughness has been tied to masculinity and machismo. The Rock or Vin Diesel typify this image, yet those displaying external machismo are often the “weakest.” Women, who research shows handle pain better, may have the truer definition: based on reality, not false confidence.\\n\\n## The Downfall of a Callous View of Toughness\\nOn May 29, 2018, University of Maryland football player Jordan McNair died from heatstroke after coaches forced him to complete ten 110-yard sprints despite signs of distress. Trainers waited 34 minutes to remove him; 28 more passed before calling 911. Rhabdomyolysis, once rare, has become common due to extreme workouts designed not to improve fitness but to “test” athletes. Authoritarian parenting similarly produces lower independence, more aggression, substance abuse, and risky behaviors. In sport, it’s linked to lower grit, emotional exhaustion, burnout, and fear of failure. Even the military suffers: Israeli soldiers raised in authoritarian homes coped worse. The young athlete quoted: “Coaches use exercise as punishment… I need to work harder because I don’t want to be punished.” This creates fragility, not resilience.\\n\\n## Redefining Toughness\\nPete Carroll (NFL/college champion) avoids screaming; he “finds a way to turn a mistake into a positive.” He’s one of only three coaches to win both an NCAA title and Super Bowl. In 2008, Eastern Washington researchers studied nearly 200 basketball players and concluded the “keys to promoting mental toughness” lie not in autocratic styles but in “trust and inclusion, humility, and service.” Real toughness is navigating discomfort to make the best decision—not bulldozing through. It provides tools, not just a hammer.\\n\\n## Searching for Real Toughness\\nThe author recounts the 1957 Don Bowden Mile, where he competed against pacers. His strategy: zone out early, save mental energy for the final lap. Mid-race, he experienced paradoxical vocal cord dysfunction (VCD)—his vocal cords shut on inhalation, blocking airflow. Diagnosed by Dr. Stephen Miles, VCD stems from a hyperresponsive larynx and stress. His prior habit of “pushing until I puked” worsened the condition. He had to learn to relax, keep breathing and neck steady, and control his mind—lessons that became the book’s foundation. Running, he notes, is a perfect backdrop for studying toughness because it forces one alone with discomfort.\\n\\n## Toughness = Filling Our Basic Needs\\nEdward Deci and Richard Ryan’s self-determination theory (SDT) posits three innate needs: autonomy, competence, and relatedness. Satisfying these fuels well-being and performance. John Mahoney’s PhD work found that cross-country runners and rowers with need satisfaction were tougher and performed better; the coach’s atmosphere was key. In the workplace, psychological safety (the ability to take risks without fear of punishment) is the strongest predictor of how well people handle demanding work. Google’s two-year study on team performance found psychological safety atop five good-team traits.\\n\\n### Support, Not Thwart\\nSteve Kerr (Golden State Warriors coach) relinquished play-calling to players mid-game to restore focus. The Warriors won 129–83. Autonomy-supportive leaders foster choice, input, and trust. Eastern Washington research on sixty-four NCAA track teams found athletes under servant leaders scored higher on mental toughness and ran faster. In workplaces, feeling respected and valued by managers boosts engagement, loyalty, and resilience.\\n\\n### Can I Make Progress?\\nObjective sports clarify improvement; in workplaces, lack of growth path kills motivation. Psychological safety enables risk-taking and innovation. Leaders must provide pathways for growth and a sense that progress is possible.\\n\\n### A Need to Belong\\nMichael Kraus, Cassey Huang, and Dacher Keltner’s 2010 NBA study found that cooperation/trust behaviors (fist bumps, high fives) correlated with better team performance—not the acts themselves, but what they represented: belonging. Scott Barry Kaufman: “When one feels belonging, one feels accepted and seen.” Loneliness triggers the brain like physical pain. The calm-and-connect system releases feel-good opioids and oxytocin, dampening stress. Gregg Popovich’s San Antonio Spurs attribute cohesion to three-hour team meals with free-flowing conversation—not forced activities. Dan Coyle’s “vulnerability loop” argues we must first be vulnerable to build trust. Family dinners lower depression, anxiety, substance abuse, eating disorders, and early pregnancy.\\n\\n## Toughness = Filling Our Basic Needs\\nMaslow’s hierarchy is often misrepresented as a pyramid; Maslow himself preferred “self-transcendence” as the peak—reaching beyond individual concerns. He warned society “conceal[s]... idealism under a mask of toughness.” When basic needs are met, we can utilize toughness strategies. Control and punishment thwart needs; care and support satisfy them. Three key needs for leaders: being supported (having input/voice/choice), making progress/growth, and feeling connected/belonging.\\n\\n## Chapter 11: Find Meaning in Discomfort\\nA professor’s lecture series on “suicide-forced annihilation, the world of the mentally ill, sexual education” concluded three keys to meaning: doing (creating), experiencing (awe), and suffering (authentic fate as highest achievement). Viktor Frankl, in his imagined lecture and real camp experience, argued meaning is found in every moment, even in suffering. Freedom to choose one’s mindset survives even extreme atrocity.\\n\\n### The Will to Continue\\nPerformance = Actual effort / Expected effort × Drive. Drive—purpose, motivation—determines how close to exhaustion we push. The body has a safety governor; we never truly reach zero energy. Purpose acts as a turbo boost. Research links purpose to persistence in classroom, workplace, and sport. Willie the dog sprints after squirrels despite fatigue, illustrating drive overriding physical limits.\\n\\n### From Fear to Despair to Apathy\\nViktor Frankl’s Holocaust survival hinged on finding meaning. Phases: shock, then apathy (emotions hibernate, focus narrows to food). Yet those who survived often did so by finding meaning: support, preserving normalcy, luck, making choices, inner control, conscious decision to live. Post-traumatic growth (PTG) research shows severe trauma can lead to higher personal strength and life appreciation. Deliberate, constructive rumination (problem-solving focus) versus intrusive rumination enables growth. Meaning provides the freedom to adapt one’s fate.\\n\\n### The Nuance of Inner Strength\\nThe author’s childhood OCD illustrates how intrusive thoughts + strong urges create compulsion. OCD sufferers struggle to learn what’s “safe”; once threatening, it’s “carved in stone.” Parallels to toughness: a rigid thought-feeling-urge pattern that misfires. He learned to create space between thought and action, accepting OCD as part of himself rather than fighting it. Society props up the boisterous, brash, overconfident—even when results don’t match. Real toughness, instead, is living in nuance and complexity, accepting who you are and what you face. It’s not a facade but inner strength forged through acceptance, emotional honesty, basic need satisfaction, and purpose.\\n\\n## Conclusion\\nReal toughness isn’t about external displays or callousness. It’s about navigating discomfort with awareness, flexibility, and purpose. Ditch the facade; embrace reality. Support basic needs. Find meaning. Everyone is capable of inner strength—even those labeled weak. Be who you are.\",\n  \"estimated_visible_words\": 1023\n}",
+                "refusal": null,
+                "reasoning": null
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 25185,
+            "completion_tokens": 2019,
+            "total_tokens": 27204,
+            "cost": 0.00302325,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.00302325,
+              "upstream_inference_prompt_cost": 0.0025185,
+              "upstream_inference_completions_cost": 0.00050475
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        },
+        {
+          "id": "gen-1788858545-P4Eza5iIwIeRWLcj70NN",
+          "object": "chat.completion",
+          "created": 1788858545,
+          "model": "nvidia/nemotron-3.5-lightning",
+          "provider": "DeepInfra",
+          "system_fingerprint": null,
+          "service_tier": null,
+          "choices": [
+            {
+              "index": 0,
+              "logprobs": null,
+              "finish_reason": "stop",
+              "native_finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "content": "{\n  \"summary_md\": \"# Chapter 1: From Tough Coaches, Tough Parents, and Tough Guys to Finding Real Inner Strength\\n\\n## The Old Model of Toughness\\nWhen college students described toughness, words like gritty, perseverance, stoic, and playing through pain came to mind. Among 160 elite athletes, perseverance ranked highest. The traditional view equates toughness with overcoming obstacles through discipline and stoicism—often picturing a strong brute of a man. Bobby Knight, who won over 900 games and three NCAA championships, embodied this: his 1976 Indiana team went undefeated, which he attributed to toughness, strength, and size. Yet Knight’s methods were abusive—tampons hanging from lockers, genitalia pictures taped to rooms, profanity-laced tirades, and the 1991 video of him choking a player. His definition of toughness rested on showing no weakness, bulldozing obstacles, and using fear to control.\\n\\n## Tough Parenting\\nDevelopmental psychologist Diana Baumrind identified two parenting dimensions: responsiveness and demandingness. Authoritarian parents are high in demandingness but low in responsiveness—cold, controlling, relying on fear and punishment. In one study, only 31% of authoritarian parents said they loved their child unconditionally. Eighty-one percent of Americans believed parents were too soft. The “just right” style combines high demands with high support.\\n\\n## To Be Callous\\nWe’ve conflated toughness with callousness—hardening, becoming insensitive. Language reinforces this: “harden up,” “show no weakness,” “man up,” “stop being a pussy.” Toughness has been tied to masculinity and machismo. The Rock or Vin Diesel typify this image, yet those displaying external machismo are often the “weakest.” Women, who research shows handle pain better, may have the truer definition: based on reality, not false confidence.\\n\\n## The Downfall of a Callous View of Toughness\\nOn May 29, 2018, University of Maryland football player Jordan McNair died from heatstroke after coaches forced him to complete ten 110-yard sprints despite signs of distress. Trainers waited 34 minutes to remove him; 28 more passed before calling 911. Rhabdomyolysis, once rare, has become common due to extreme workouts designed not to improve fitness but to “test” athletes. Authoritarian parenting similarly produces lower independence, more aggression, substance abuse, and risky behaviors. In sport, it’s linked to lower grit, emotional exhaustion, burnout, and fear of failure. Even the military suffers: Israeli soldiers raised in authoritarian homes coped worse. The young athlete quoted: “Coaches use exercise as punishment… I need to work harder because I don’t want to be punished.” This creates fragility, not resilience.\\n\\n## Redefining Toughness\\nPete Carroll (NFL/college champion) avoids screaming; he “finds a way to turn a mistake into a positive.” He’s one of only three coaches to win both an NCAA title and Super Bowl. In 2008, Eastern Washington researchers studied nearly 200 basketball players and concluded the “keys to promoting mental toughness” lie not in autocratic styles but in “trust and inclusion, humility, and service.” Real toughness is navigating discomfort to make the best decision—not bulldozing through. It provides tools, not just a hammer.\\n\\n## Searching for Real Toughness\\nThe author recounts the 1957 Don Bowden Mile, where he competed against pacers. His strategy: zone out early, save mental energy for the final lap. Mid-race, he experienced paradoxical vocal cord dysfunction (VCD)—his vocal cords shut on inhalation, blocking airflow. Diagnosed by Dr. Stephen Miles, VCD stems from a hyperresponsive larynx and stress. His prior habit of “pushing until I puked” worsened the condition. He had to learn to relax, keep breathing and neck steady, and control his mind—lessons that became the book’s foundation. Running, he notes, is a perfect backdrop for studying toughness because it forces one alone with discomfort.\\n\\n## Toughness = Filling Our Basic Needs\\nEdward Deci and Richard Ryan’s self-determination theory (SDT) posits three innate needs: autonomy, competence, and relatedness. Satisfying these fuels well-being and performance. John Mahoney’s PhD work found that cross-country runners and rowers with need satisfaction were tougher and performed better; the coach’s atmosphere was key. In the workplace, psychological safety (the ability to take risks without fear of punishment) is the strongest predictor of how well people handle demanding work. Google’s two-year study on team performance found psychological safety atop five good-team traits.\\n\\n### Support, Not Thwart\\nSteve Kerr (Golden State Warriors coach) relinquished play-calling to players mid-game to restore focus. The Warriors won 129–83. Autonomy-supportive leaders foster choice, input, and trust. Eastern Washington research on sixty-four NCAA track teams found athletes under servant leaders scored higher on mental toughness and ran faster. In workplaces, feeling respected and valued by managers boosts engagement, loyalty, and resilience.\\n\\n### Can I Make Progress?\\nObjective sports clarify improvement; in workplaces, lack of growth path kills motivation. Psychological safety enables risk-taking and innovation. Leaders must provide pathways for growth and a sense that progress is possible.\\n\\n### A Need to Belong\\nMichael Kraus, Cassey Huang, and Dacher Keltner’s 2010 NBA study found that cooperation/trust behaviors (fist bumps, high fives) correlated with better team performance—not the acts themselves, but what they represented: belonging. Scott Barry Kaufman: “When one feels belonging, one feels accepted and seen.” Loneliness triggers the brain like physical pain. The calm-and-connect system releases feel-good opioids and oxytocin, dampening stress. Gregg Popovich’s San Antonio Spurs attribute cohesion to three-hour team meals with free-flowing conversation—not forced activities. Dan Coyle’s “vulnerability loop” argues we must first be vulnerable to build trust. Family dinners lower depression, anxiety, substance abuse, eating disorders, and early pregnancy.\\n\\n## Toughness = Filling Our Basic Needs\\nMaslow’s hierarchy is often misrepresented as a pyramid; Maslow himself preferred “self-transcendence” as the peak—reaching beyond individual concerns. He warned society “conceal[s]... idealism under a mask of toughness.” When basic needs are met, we can utilize toughness strategies. Control and punishment thwart needs; care and support satisfy them. Three key needs for leaders: being supported (having input/voice/choice), making progress/growth, and feeling connected/belonging.\\n\\n## Chapter 11: Find Meaning in Discomfort\\nA professor’s lecture series on “suicide-forced annihilation, the world of the mentally ill, sexual education” concluded three keys to meaning: doing (creating), experiencing (awe), and suffering (authentic fate as highest achievement). Viktor Frankl, in his imagined lecture and real camp experience, argued meaning is found in every moment, even in suffering. Freedom to choose one’s mindset survives even extreme atrocity.\\n\\n### The Will to Continue\\nPerformance = Actual effort / Expected effort × Drive. Drive—purpose, motivation—determines how close to exhaustion we push. The body has a safety governor; we never truly reach zero energy. Purpose acts as a turbo boost. Research links purpose to persistence in classroom, workplace, and sport. Willie the dog sprints after squirrels despite fatigue, illustrating drive overriding physical limits.\\n\\n### From Fear to Despair to Apathy\\nViktor Frankl’s Holocaust survival hinged on finding meaning. Phases: shock, then apathy (emotions hibernate, focus narrows to food). Yet those who survived often did so by finding meaning: support, preserving normalcy, luck, making choices, inner control, conscious decision to live. Post-traumatic growth (PTG) research shows severe trauma can lead to higher personal strength and life appreciation. Deliberate, constructive rumination (problem-solving focus) versus intrusive rumination enables growth. Meaning provides the freedom to adapt one’s fate.\\n\\n### The Nuance of Inner Strength\\nThe author’s childhood OCD illustrates how intrusive thoughts + strong urges create compulsion. OCD sufferers struggle to learn what’s “safe”; once threatening, it’s “carved in stone.” Parallels to toughness: a rigid thought-feeling-urge pattern that misfires. He learned to create space between thought and action, accepting OCD as part of himself rather than fighting it. Society props up the boisterous, brash, overconfident—even when results don’t match. Real toughness, instead, is living in nuance and complexity, accepting who you are and what you face. It’s not a facade but inner strength forged through acceptance, emotional honesty, basic need satisfaction, and purpose.\\n\\n## Conclusion\\nReal toughness isn’t about external displays or callousness. It’s about navigating discomfort with awareness, flexibility, and purpose. Ditch the facade; embrace reality. Support basic needs. Find meaning. Everyone is capable of inner strength—even those labeled weak. Be who you are.\",\n  \"estimated_visible_words\": 1023\n}",
+                "refusal": null,
+                "reasoning": null
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 25182,
+            "completion_tokens": 2019,
+            "total_tokens": 27201,
+            "cost": 0.00241836,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.00241836,
+              "upstream_inference_prompt_cost": 0.00201456,
+              "upstream_inference_completions_cost": 0.0004038
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "latest_error": null,
+  "resume_events_utc": [],
+  "state_path": "runs/booksum-v4/20260908t090827z__booksum-v4__chapter_fast-v3__30m_nemotron-3.5__30m_nemotron-3.5-lightning_effort-minimal_v1.state.json",
+  "samples_path": "runs/booksum-v4/20260908t090827z__booksum-v4__chapter_fast-v3__30m_nemotron-3.5__30m_nemotron-3.5-lightning_effort-minimal_v1.samples.jsonl",
+  "out_path": "runs/booksum-v4/20260908t090827z__booksum-v4__chapter_fast-v3__30m_nemotron-3.5__30m_nemotron-3.5-lightning_effort-minimal_v1.json",
+  "updated_at_utc": "2026-09-08T09:09:19.765134+00:00"
+}
