@@ -19,7 +19,11 @@ CANDIDATE_SPEC_PY = Path("candidate_spec.py")
 def load_profiles() -> dict:
     with open(CANDIDATES_JSON, encoding="utf-8") as f:
         data = json.load(f)
-    return data.get("profiles", {})
+    profiles = data.get("profiles", {})
+    # Hidden profiles are kept on disk (run data preserved) but excluded from the
+    # run harness (PROFILE_CANDIDATES) so they no longer appear in "all profiles"
+    # runs or get_all_profiles()/get_profiles_by_time().
+    return {k: v for k, v in profiles.items() if not (v and v.get("hidden"))}
 
 
 def build_literal(profile_keys: list[str]) -> str:

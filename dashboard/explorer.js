@@ -100,7 +100,11 @@ async function fetchAndParseSamples(sampleFile) {
 }
 
 async function discoverProfiles(timeBudget) {
-  const allFiles = await fetch('/runs-list').then(r => r.json())
+  const [allFiles, hiddenResp] = await Promise.all([
+    fetch('/runs-list').then(r => r.json()),
+    fetch('/api/models/hidden').then(r => r.json()).catch(() => ({ hidden: [] })),
+  ])
+  const hiddenProfiles = new Set(hiddenResp.hidden || [])
   const jsonFiles = allFiles.filter(f =>
     f.endsWith('.json') && !f.includes('/mock/') && !f.endsWith('.state.json') && !f.includes('__llmj_')
   )
@@ -116,6 +120,7 @@ async function discoverProfiles(timeBudget) {
       if (!name.startsWith(timeBudget + '_')) continue
       if (seen.has(name)) continue
       seen.add(name)
+      if (hiddenProfiles.has(name)) continue
       profiles.push({
         candidateName: name,
         runId: manifest.run_manifest?.run_id || '',

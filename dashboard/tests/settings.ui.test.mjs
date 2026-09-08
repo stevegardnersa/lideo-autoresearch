@@ -588,7 +588,8 @@ test('edit save builds PUT payload with locked-row removal and tier creation', a
   const lockedRow = rows.find(r => r.dataset.tb === '30m' && r.dataset.effort === 'thinking')
   assert.equal(lockedRow.dataset.locked, '1', 'canonic profile row is locked')
   click(lockedRow.querySelector('.vc-opt-item[data-action="remove"]'))
-  assert.equal(lockedRow.querySelector('.vc-check').checked, false, 'Remove variant unchecks locked row')
+  assert.ok(lockedRow.classList.contains('vc-to-remove'), 'Remove variant marks locked row for removal')
+  assert.equal(lockedRow.querySelector('.vc-check').checked, true, 'checkbox untouched by remove (checkbox = hide)')
 
   const tierRow = rows.find(r => r.dataset.tb === '60m' && r.dataset.effort === 'medium')
   tierRow.querySelector('.vc-check').checked = true
@@ -648,7 +649,7 @@ test('locked canonic rows and hidden cells render correctly', async () => {
   assert.ok(editable.every(r => !r.querySelector('.vc-mode').dataset.tooltip), 'no tooltip on editable rows')
 })
 
-test('Remove variant on locked row toggles and can be restored', async () => {
+test('Remove variant toggles removal on a row and can be restored (checkbox unchanged)', async () => {
   const { doc, click, postRender } = h
   click(doc.querySelector('[data-settings-toggle]'))
   await new Promise(r => setImmediate(r))
@@ -662,7 +663,7 @@ test('Remove variant on locked row toggles and can be restored', async () => {
   const removeBtn = row.querySelector('.vc-opt-item[data-action="remove"]')
   assert.equal(check.checked, true)
   click(removeBtn)
-  assert.equal(check.checked, false)
+  assert.equal(check.checked, true, 'remove never touches the checkbox (checkbox = hide)')
   assert.ok(row.classList.contains('vc-to-remove'))
   assert.equal(row.querySelector('.vc-status').textContent.trim(), 'will remove')
   click(removeBtn)
@@ -683,6 +684,117 @@ test('edit rename sends new_model in payload', async () => {
   await new Promise(r => setImmediate(r))
   const putCall = state.calls.find(c => c.method === 'PUT' && c.url === '/api/models')
   assert.equal(putCall.body.new_model, 'deepseek-v4-flash-turbo')
+})
+
+test('unchecking a non-locked variant hides it in the PUT payload (keep stays true)', async () => {
+  const { doc, click, postRender, state } = h
+  click(doc.querySelector('[data-settings-toggle]'))
+  await new Promise(r => setImmediate(r))
+  const els = postRender()
+  click(els.list.querySelector('.model-card [data-action="edit"]'))
+  await new Promise(r => setImmediate(r))
+
+  const row = els.rows().find(r => r.dataset.tb === '30m' && r.dataset.effort === 'high')
+  assert.equal(row.querySelector('.vc-check').checked, true, 'visible variant starts checked')
+  row.querySelector('.vc-check').checked = false
+  assert.ok(!row.classList.contains('vc-to-remove'), 'unchecking is NOT a removal')
+  click(els.create)
+  await new Promise(r => setImmediate(r))
+
+  const putCall = state.calls.find(c => c.method === 'PUT' && c.url === '/api/models')
+  assert.ok(putCall, 'PUT issued')
+  const edit = putCall.body.edits.find(e => e.key === '30m_deepseek-v4-flash_effort-high')
+  assert.ok(edit, 'edit sent for the unchecked variant')
+  assert.equal(edit.keep, true, 'uncheck keeps the profile (does not delete)')
+  assert.equal(edit.hidden, true, 'uncheck hides the variant')
+})
+
+test('hidden variant renders unchecked with hidden status and is excluded from model card chips', async () => {
+  const { doc, click, postRender } = h
+  h.state.modelsGet = {
+    ok: true,
+    count: 1,
+    models: [
+      {
+        ...MODELS_PAYLOAD.models[0],
+        runs_count: 3,
+        profiles: [
+          { slug: '30m_deepseek-v4-flash_thinking', time_budget: '30m', thinking: true, status: 'tested', temperature: 0.2, max_tokens: 8192, provider_route: '' },
+          { slug: '60m_deepseek-v4-flash_notthinking', time_budget: '60m', thinking: false, status: 'tested', temperature: 0.0, max_tokens: 8192, provider_route: '' },
+          { slug: '30m_deepseek-v4-flash_effort-high', time_budget: '30m', thinking: null, status: 'pending', temperature: 0.7, max_tokens: 40960, provider_route: '', hidden: true },
+        ],
+      },
+    ],
+  }
+  click(doc.querySelector('[data-settings-toggle]'))
+  const els = postRender()
+  await new Promise(r => setImmediate(r))
+
+  const card = els.list.querySelector('.model-card')
+  const chips = card.querySelectorAll('.model-chip-row .profile-chip')
+  const chipTitles = [...chips].map(c => c.title)
+  assert.ok(!chipTitles.includes('30m_deepseek-v4-flash_effort-high'), 'hidden variant chip absent from card')
+  assert.ok(chipTitles.includes('30m_deepseek-v4-flash_thinking'), 'visible variant chip present')
+  assert.match(card.querySelector('.model-sub').textContent, /2 profiles/, 'profile count excludes hidden')
+
+  click(card.querySelector('[data-action="edit"]'))
+  await new Promise(r => setImmediate(r))
+  const row = els.rows().find(r => r.dataset.tb === '30m' && r.dataset.effort === 'high')
+  assert.ok(row, 'hidden variant still listed in dialog')
+  assert.equal(row.querySelector('.vc-check').checked, false, 'hidden variant checkbox unchecked')
+  assert.equal(row.querySelector('.vc-status').textContent.trim(), 'hidden')
+})
+
+test('re-checking a hidden variant unhides it (hidden: false)', async () => {
+  const { doc, click, postRender, state } = h
+  h.state.modelsGet = {
+    ok: true,
+    count: 1,
+    models: [
+      {
+        ...MODELS_PAYLOAD.models[0],
+        profiles: [
+          { slug: '30m_deepseek-v4-flash_thinking', time_budget: '30m', thinking: true, status: 'tested', temperature: 0.2, max_tokens: 8192, provider_route: '' },
+          { slug: '60m_deepseek-v4-flash_notthinking', time_budget: '60m', thinking: false, status: 'pending', temperature: 0.0, max_tokens: 8192, provider_route: '' },
+          { slug: '30m_deepseek-v4-flash_effort-high', time_budget: '30m', thinking: null, status: 'pending', temperature: 0.7, max_tokens: 40960, provider_route: '', hidden: true },
+        ],
+      },
+    ],
+  }
+  click(doc.querySelector('[data-settings-toggle]'))
+  await new Promise(r => setImmediate(r))
+  const els = postRender()
+  click(els.list.querySelector('.model-card [data-action="edit"]'))
+  await new Promise(r => setImmediate(r))
+
+  const row = els.rows().find(r => r.dataset.tb === '30m' && r.dataset.effort === 'high')
+  row.querySelector('.vc-check').checked = true
+  click(els.create)
+  await new Promise(r => setImmediate(r))
+
+  const putCall = state.calls.find(c => c.method === 'PUT' && c.url === '/api/models')
+  const edit = putCall.body.edits.find(e => e.key === '30m_deepseek-v4-flash_effort-high')
+  assert.equal(edit.keep, true, 'kept, not deleted')
+  assert.equal(edit.hidden, false, 'unhide request sent')
+})
+
+test('hide never triggers the confirmation gate; only removal does', async () => {
+  const { doc, click, postRender, state } = h
+  click(doc.querySelector('[data-settings-toggle]'))
+  await new Promise(r => setImmediate(r))
+  const els = postRender()
+  click(els.list.querySelector('.model-card [data-action="edit"]'))
+  await new Promise(r => setImmediate(r))
+
+  const row = els.rows().find(r => r.dataset.tb === '30m' && r.dataset.effort === 'high')
+  row.querySelector('.vc-check').checked = false
+  click(els.create)
+  await new Promise(r => setImmediate(r))
+
+  const puts = state.calls.filter(c => c.method === 'PUT' && c.url === '/api/models')
+  assert.equal(puts.length, 1, 'single PUT, no preflight 409 round-trip')
+  assert.equal(puts[0].body.confirm, undefined, 'no confirm needed for a hide')
+  assert.ok(doc.getElementById('confirmDeleteOverlay').classList.contains('cm-hidden'), 'confirmation dialog stays closed')
 })
 
 // ── delete ───────────────────────────────────────────────────
@@ -923,9 +1035,13 @@ test('edit dialog shows ⋯ menu on existing profile rows only', async () => {
   click(plainBtn)
   const plainMenu = plainBtn.closest('.vc-opt').querySelector('.vc-opt-menu')
   assert.deepEqual([...plainMenu.querySelectorAll('.vc-opt-item')].map(i => i.dataset.action),
-    ['run', 'prefill', 'judge', 'agent'])
-  assert.ok([...plainMenu.querySelectorAll('.vc-opt-item')].every(i => !i.disabled),
-    'editable profile keeps all actions enabled')
+    ['run', 'prefill', 'judge', 'agent', 'remove'])
+  assert.ok([...plainMenu.querySelectorAll('.vc-opt-item')]
+    .filter(i => i.dataset.action !== 'remove').every(i => !i.disabled),
+  'editable profile keeps all actions enabled')
+  assert.ok([...plainMenu.querySelectorAll('.vc-opt-item')]
+    .find(i => i.dataset.action === 'remove') && !plainMenu.querySelector('.vc-opt-item[data-action="remove"]').disabled,
+  'remove enabled on editable row too')
 })
 
 test('clicking outside the menu closes it', async () => {

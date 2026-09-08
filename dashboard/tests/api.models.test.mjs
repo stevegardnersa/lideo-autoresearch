@@ -630,7 +630,96 @@ test('PUT skips a variant with an active job and reports skippedActive', async (
   }
 })
 
-test('PUT rejects unknown profile key', async () => {
+test('PUT hides a variant without confirmation and keeps its data', async () => {
+  const { server, base, runner } = await startServer()
+  try {
+    const edits = [
+      { key: '30m_deepseek-v4-flash_thinking', keep: true, hidden: true },
+      { key: '60m_deepseek-v4-flash_thinking', keep: true, hidden: true },
+      { key: '30m_deepseek-v4-flash_notthinking', keep: true },
+    ]
+    const { status, body } = await call(base, '/api/models', {
+      method: 'PUT',
+      body: { old_model: 'deepseek/deepseek-v4-flash', new_model: 'deepseek/deepseek-v4-flash', edits, create: [] },
+    })
+    assert.equal(status, 200, 'hiding needs no confirmation')
+    assert.deepEqual(body.plan.removed, [], 'hiding is not removal')
+    assert.ok(!runner.calls.some(c => c.args.includes('--remove-profile')), 'no cascade for a hide')
+
+    const onDisk = freshCandidates()
+    assert.equal(onDisk.profiles['30m_deepseek-v4-flash_thinking'].hidden, true)
+    assert.equal(onDisk.profiles['60m_deepseek-v4-flash_thinking'].hidden, true)
+    assert.ok(!('hidden' in onDisk.profiles['30m_deepseek-v4-flash_notthinking']), 'unflagged variant has no hidden key')
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('PUT unhides a variant by clearing the hidden flag', async () => {
+  writeCandidatesFile({
+    version: 2,
+    profiles: {
+      ...baseCandidates().profiles,
+      '30m_deepseek-v4-flash_thinking': { ...baseCandidates().profiles['30m_deepseek-v4-flash_thinking'], hidden: true },
+    },
+  })
+  const { server, base } = await startServer()
+  try {
+    const edits = [{ key: '30m_deepseek-v4-flash_thinking', keep: true, hidden: false }]
+    const { status, body } = await call(base, '/api/models', {
+      method: 'PUT',
+      body: { old_model: 'deepseek/deepseek-v4-flash', new_model: 'deepseek/deepseek-v4-flash', edits, create: [] },
+    })
+    assert.equal(status, 200)
+    const onDisk = freshCandidates()
+    assert.ok(!('hidden' in onDisk.profiles['30m_deepseek-v4-flash_thinking']), 'hidden flag cleared on unhide')
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('GET /api/models reports hidden flag and excludes hidden runs from stats', async () => {
+  writeCandidatesFile({
+    version: 2,
+    profiles: {
+      ...baseCandidates().profiles,
+      '30m_deepseek-v4-flash_thinking': { ...baseCandidates().profiles['30m_deepseek-v4-flash_thinking'], hidden: true },
+    },
+  })
+  const { server, base } = await startServer()
+  try {
+    const { status, body } = await call(base, '/api/models')
+    assert.equal(status, 200)
+    const m = body.models.find(x => x.model === 'deepseek/deepseek-v4-flash')
+    const hidden = m.profiles.find(p => p.slug === '30m_deepseek-v4-flash_thinking')
+    const visible = m.profiles.find(p => p.slug === '60m_deepseek-v4-flash_thinking')
+    assert.equal(hidden.hidden, true)
+    assert.equal(visible.hidden, false)
+    // r1 (30m_thinking) is hidden; r2 (60m_thinking) and r3 (30m_notthinking) count
+    assert.equal(m.runs_count, 2, 'hidden run excluded from runs_count')
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('GET /api/models/hidden lists hidden profile keys', async () => {
+  writeCandidatesFile({
+    version: 2,
+    profiles: {
+      ...baseCandidates().profiles,
+      '30m_deepseek-v4-flash_thinking': { ...baseCandidates().profiles['30m_deepseek-v4-flash_thinking'], hidden: true },
+    },
+  })
+  const { server, base } = await startServer()
+  try {
+    const { status, body } = await call(base, '/api/models/hidden')
+    assert.equal(status, 200)
+    assert.deepEqual(body.hidden, ['30m_deepseek-v4-flash_thinking'])
+  } finally {
+    await closeServer(server)
+  }
+})
+  test('PUT rejects unknown profile key', async () => {
   const { server, base } = await startServer()
   try {
     const { status, body } = await call(base, '/api/models', {
