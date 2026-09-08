@@ -18,7 +18,7 @@ from core.versioning import derive_price_snapshot_from_catalog, save_json
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--api-key-env", default="OPENROUTER_API_KEY")
+    parser.add_argument("--api-key-env", default="LLM_API_KEY")
     parser.add_argument("--catalog-dir", type=Path, default=PROJECT_ROOT / "snapshots" / "catalog")
     parser.add_argument("--price-dir", type=Path, default=PROJECT_ROOT / "snapshots" / "pricing")
     parser.add_argument("--referer", default="")

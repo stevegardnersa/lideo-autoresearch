@@ -98,8 +98,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--api-key-env",
-        default="OPENROUTER_API_KEY",
-        help="Environment variable holding OpenRouter API key.",
+        default="LLM_API_KEY",
+        help="Environment variable holding the API key for the provider.",
     )
     return parser.parse_args()
 
