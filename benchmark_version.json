@@ -8,7 +8,7 @@
   "judge_version": "judge-absolute-v1",
   "split_seed": 42,
   "words_per_minute": 200,
-  "notes": "v4: per-profile scoring gates - 30m profiles use min_faithfulness=0.50, min_concept_coverage=0.15. v3 used uniform 0.70/0.60 gates for all profiles.",
+  "notes": "v4: per-profile scoring gates - 30m profiles use min_faithfulness=0.50, min_concept_coverage=0.15. v3 used uniform 0.70/0.60 gates for all profiles. Judge-less (deterministic) runs use the *_deterministic gates with min_faithfulness/min_concept_coverage=null (semantic gates disabled) because deterministic proxies are not calibrated to judged thresholds; objective length/passes/malformed gates still apply.",
   "scoring_gates": {
     "default": {
       "min_faithfulness": 0.70,
@@ -25,6 +25,24 @@
     "60m": {
       "min_faithfulness": 0.60,
       "min_concept_coverage": 0.50,
+      "max_final_length_error_pct": null,
+      "max_passes": null
+    },
+    "default_deterministic": {
+      "min_faithfulness": null,
+      "min_concept_coverage": null,
+      "max_final_length_error_pct": null,
+      "max_passes": null
+    },
+    "30m_deterministic": {
+      "min_faithfulness": null,
+      "min_concept_coverage": null,
+      "max_final_length_error_pct": null,
+      "max_passes": null
+    },
+    "60m_deterministic": {
+      "min_faithfulness": null,
+      "min_concept_coverage": null,
       "max_final_length_error_pct": null,
       "max_passes": null
     }

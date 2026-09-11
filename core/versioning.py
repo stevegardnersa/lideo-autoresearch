@@ -42,6 +42,27 @@ DEFAULT_BENCHMARK_MANIFEST: Dict[str, Any] = {
             "max_final_length_error_pct": None,
             "max_passes": None,
         },
+        # Judge-less runs score against deterministic proxies that are not
+        # calibrated to the judged thresholds above, so semantic gates are
+        # disabled (null). Objective length/passes/malformed gates still apply.
+        "default_deterministic": {
+            "min_faithfulness": None,
+            "min_concept_coverage": None,
+            "max_final_length_error_pct": None,
+            "max_passes": None,
+        },
+        "30m_deterministic": {
+            "min_faithfulness": None,
+            "min_concept_coverage": None,
+            "max_final_length_error_pct": None,
+            "max_passes": None,
+        },
+        "60m_deterministic": {
+            "min_faithfulness": None,
+            "min_concept_coverage": None,
+            "max_final_length_error_pct": None,
+            "max_passes": None,
+        },
     },
 }
 

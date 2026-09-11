@@ -143,8 +143,11 @@ class ScoringWeights:
 class GateConfig:
     max_final_length_error_pct: float = 0.10
     max_passes: int = 5
-    min_faithfulness: float = 0.70
-    min_concept_coverage: float = 0.60
+    # None disables the semantic gate entirely. Deterministic (judge-less) runs
+    # use None because the deterministic proxies are not calibrated to these
+    # thresholds; only the objective length/passes/malformed gates apply.
+    min_faithfulness: Optional[float] = 0.70
+    min_concept_coverage: Optional[float] = 0.60
 
 
 @dataclass(frozen=True)
@@ -165,23 +168,33 @@ class ScoringConfig:
 DEFAULT_SCORING_CONFIG = ScoringConfig()
 
 
+# Sentinel distinguishing "argument not supplied" from an explicit ``None``
+# (which, for the semantic gates, means "disable this gate").
+_UNSET = object()
+
+
 def apply_gates_override(
     config: ScoringConfig,
     *,
-    min_faithfulness: Optional[float] = None,
-    min_concept_coverage: Optional[float] = None,
-    max_final_length_error_pct: Optional[float] = None,
-    max_passes: Optional[int] = None,
+    min_faithfulness: object = _UNSET,
+    min_concept_coverage: object = _UNSET,
+    max_final_length_error_pct: object = _UNSET,
+    max_passes: object = _UNSET,
 ) -> ScoringConfig:
-    if min_faithfulness is None and min_concept_coverage is None and max_final_length_error_pct is None and max_passes is None:
+    if (
+        min_faithfulness is _UNSET
+        and min_concept_coverage is _UNSET
+        and max_final_length_error_pct is _UNSET
+        and max_passes is _UNSET
+    ):
         return config
 
     gates = config.gates
     new_gates = GateConfig(
-        max_final_length_error_pct=max_final_length_error_pct if max_final_length_error_pct is not None else gates.max_final_length_error_pct,
-        max_passes=max_passes if max_passes is not None else gates.max_passes,
-        min_faithfulness=min_faithfulness if min_faithfulness is not None else gates.min_faithfulness,
-        min_concept_coverage=min_concept_coverage if min_concept_coverage is not None else gates.min_concept_coverage,
+        max_final_length_error_pct=gates.max_final_length_error_pct if max_final_length_error_pct is _UNSET else max_final_length_error_pct,
+        max_passes=gates.max_passes if max_passes is _UNSET else max_passes,
+        min_faithfulness=gates.min_faithfulness if min_faithfulness is _UNSET else min_faithfulness,
+        min_concept_coverage=gates.min_concept_coverage if min_concept_coverage is _UNSET else min_concept_coverage,
     )
     return ScoringConfig(
         weights=config.weights,
@@ -549,9 +562,9 @@ def hard_fail_reasons(
         reasons.append("length_outside_hard_tolerance")
     if sample.passes_used > config.gates.max_passes:
         reasons.append("too_many_passes")
-    if resolved.faithfulness < config.gates.min_faithfulness:
+    if config.gates.min_faithfulness is not None and resolved.faithfulness < config.gates.min_faithfulness:
         reasons.append("faithfulness_below_threshold")
-    if resolved.concept_coverage < config.gates.min_concept_coverage:
+    if config.gates.min_concept_coverage is not None and resolved.concept_coverage < config.gates.min_concept_coverage:
         reasons.append("concept_coverage_below_threshold")
     return tuple(reasons)
 

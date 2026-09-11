@@ -9,6 +9,8 @@ rubrics:
 test:
 	$(PYTHON) tests/test_best_pass_selection.py
 	$(PYTHON) tests/test_chapter_parallel.py
+	$(PYTHON) tests/test_scoring_gates.py
+	$(PYTHON) tests/test_length_control.py
 
 bench:
 	$(PYTHON) tools/build_bench.py --books-root $(BOOKS_ROOT) --bench-dir $(BENCH_DIR) --dev-books 10 --gate-books 4 --holdout-books 4 --seed 42

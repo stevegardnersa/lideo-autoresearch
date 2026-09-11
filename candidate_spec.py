@@ -555,6 +555,7 @@ def render_repair_user(
     direction: Literal["more", "less"],
     book_title: str = "",
     chapter_title: str = "",
+    current_word_count: Optional[int] = None,
 ) -> str:
     policy = (
         REPAIR_MORE_POLICIES[spec.length_control.repair_more_prompt_id]
@@ -562,6 +563,22 @@ def render_repair_user(
         else REPAIR_LESS_POLICIES[spec.length_control.repair_less_prompt_id]
     )
     low, high = visible_word_range(target_words, spec.length_control.tolerance_pct)
+    numeric_delta = ""
+    if current_word_count is not None:
+        if direction == "less":
+            numeric_delta = (
+                f"Current summary is {current_word_count} visible words; target is {target_words} "
+                f"(range {low}-{high}). Cut approximately {max(0, current_word_count - high)} words so "
+                f"the final markdown lands inside [{low}, {high}]. Count the visible words of your output "
+                "before finishing and adjust if needed."
+            )
+        else:
+            numeric_delta = (
+                f"Current summary is {current_word_count} visible words; target is {target_words} "
+                f"(range {low}-{high}). Add approximately {max(0, low - current_word_count)} words so "
+                f"the final markdown lands inside [{low}, {high}]. Count the visible words of your output "
+                "before finishing and adjust if needed."
+            )
     return "\n\n".join(
         block
         for block in [
@@ -572,6 +589,7 @@ def render_repair_user(
                 f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
                 f"This repair direction is: {direction}."
             ),
+            numeric_delta if numeric_delta else "",
             policy,
             FORMAT_INSTRUCTIONS[spec.chapter_stage.format_mode],
             "Keep the result faithful to the source.",
@@ -645,11 +663,16 @@ def build_openrouter_request(
     user_prompt: str,
     schema_name: str,
     use_json_schema: bool = True,
+    max_tokens: Optional[int] = None,
 ) -> Dict[str, object]:
     """Return a single-model OpenRouter chat request body.
 
     The benchmark should keep one model per stage and avoid model arrays or
     benchmark-time fallbacks. Provider routing can still be pinned externally.
+
+    ``max_tokens`` overrides ``stage.max_tokens`` per request (the
+    target-aware generation-time cap); when omitted the stage's effort-scaled
+    budget is used.
     """
     request: Dict[str, object] = {
         "model": stage.model,
@@ -658,7 +681,7 @@ def build_openrouter_request(
             {"role": "user", "content": user_prompt},
         ],
         "temperature": stage.temperature,
-        "max_tokens": stage.max_tokens,
+        "max_tokens": stage.max_tokens if max_tokens is None else int(max_tokens),
     }
     if stage.seed is not None:
         request["seed"] = stage.seed

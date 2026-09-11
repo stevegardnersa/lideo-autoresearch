@@ -41,12 +41,18 @@ Boots the dev server plus an in-process OpenRouter stub, then drives the real
 make cf-client-smoke PYTHON=.venv/bin/python
 ```
 
-Verifies 5 checks:
+Verifies 7 checks:
 1. scoring-only round trip (zero cost, `scoring` block, `meta.scoring_version` surfaced)
 2. generation round trip through the stub; the Function's `LLM_API_KEY` reaches the provider hop
-3. `reasoning_effort` forwarded to the provider (no `extra_body`)
-4. `reasoning` dict forwarded (no `extra_body`)
-5. `thinking`-only maps to `extra_body.thinking.type=disabled`
+3. `reasoning_effort` maps to native `reasoning.effort` (no top-level scalar, no `extra_body`)
+4. `reasoning` dict forwarded verbatim (no `extra_body`)
+5. legacy `thinking=false` maps to native `reasoning.enabled=false`
+6. `reasoning_effort="none"` maps to native `reasoning.enabled=false`
+7. legacy `thinking=true` maps to native `reasoning.enabled=true`
+
+The handler emits OpenRouter-native reasoning controls only; the litellm
+`extra_body` wrapper is never produced (OpenRouter ignores it, silently leaving
+reasoning at provider defaults).
 
 Any failure here = bug in `cf_client.py` or `handler.py`. Fix before Tier 2/deploy.
 

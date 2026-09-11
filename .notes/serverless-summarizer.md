@@ -55,7 +55,9 @@ Content-Type: application/json
   "user_prompt": "...",           // required — composed user prompt
   "base_url": "",                 // optional — API base URL (default: https://openrouter.ai/api/v1)
   "api_key": "",                  // optional — API key (omit to use LLM_API_KEY env var)
-  "thinking": false,              // optional — enable reasoning tokens
+  "thinking": false,              // optional (legacy) — reasoning on/off, maps to reasoning.enabled
+  "reasoning_effort": "minimal",  // optional — native OpenRouter reasoning effort
+  "reasoning": { "effort": "high" }, // optional — native OpenRouter reasoning object (wins over the above)
   "use_json_schema": true,        // optional — structured JSON output
   "target_words": 400,            // optional — triggers deterministic scoring
   "judge": false,                 // optional — run LLM judge
@@ -63,6 +65,13 @@ Content-Type: application/json
   "rubric": { ... }               // optional — rubric fields for scoring
 }
 ```
+
+> **Reasoning control is OpenRouter-native.** When `reasoning` is supplied it is
+> forwarded verbatim. Else `reasoning_effort` becomes `{"reasoning": {"effort": ...}}`
+> (or `{"enabled": false}` for `"none"`). Else the legacy `thinking` bool becomes
+> `{"reasoning": {"enabled": true|false}}`. The litellm-style
+> `extra_body={"thinking": {...}}` wrapper is **never** emitted — OpenRouter
+> ignores it, which would silently leave reasoning at provider defaults.
 
 ### Response
 
@@ -79,7 +88,7 @@ Content-Type: application/json
 ### Flow
 
 1. `run_summarize()` in `handler.py` — builds payload via `_build_openrouter_payload()` (stdlib — no `requests`/`openai`)
-2. `_build_client()` — `OpenRouterClient.from_env()` (reads API key from request body, else `LLM_API_KEY` env; base URL from request, else `LLM_BASE_URL` env, else OpenRouter default; 600s timeout, 3 retries)
+2. `_build_client()` — `OpenRouterClient.from_env()` (reads API key from request body, else `LLM_API_KEY` env; base URL from request, else `LLM_BASE_URL` env, else OpenRouter default; 600s timeout, 3 retries). Reasoning params are translated to native OpenRouter form (see Request note above).
 3. Parse structured JSON response (handles `use_json_schema=true/false`)
 4. If rubric + target_words present → create `SummarySample`, call `score_sample()`, optionally `judge_summary_absolute()`
 5. Return aggregated dict
@@ -113,11 +122,17 @@ gcloud functions deploy summarize \
   --entry-point summarize \
   --source . \
   --region us-central1 \
-  --set-secrets 'LLM_API_KEY=llm-api-key:latest' \
+  --set-secrets 'LLM_API_KEY=openrouter-api-key:latest' \
+  --set-env-vars 'LLM_BASE_URL=https://openrouter.ai/api/v1,LOG_EXECUTION_ID=true' \
   --timeout 3600 \
   --memory 1024Mi \
   --no-allow-unauthenticated
 ```
+
+Production facts (project `lideo-387b7`, URL, service account, secret) are in
+`.notes/setup-cloud-function.md` → **This Project (production facts)**. The
+function calls OpenRouter directly; the old litellm gateway hop was removed after
+it returned `no healthy deployments` for `openai/gpt-5.6-luna`.
 
 ---
 
@@ -254,6 +269,28 @@ Second LLM call from the CF (default: `gpt-4o-mini`):
 
 Returns in `judge_scores` key. If judge call fails, returns in `judge_error` key.
 
+### Scoring gates: deterministic vs judged
+
+`benchmark_version.json` `scoring_gates` has two gate sets per time budget:
+
+- `<budget>` (`default` / `30m` / `60m`) — **judged** gates. Used when the run
+  passes `--judge-model`. v4 values are unchanged: `default` 0.70/0.60,
+  `30m` 0.50/0.15, `60m` 0.60/0.50 (`min_faithfulness` / `min_concept_coverage`).
+- `<budget>_deterministic` — **judge-less** gates, with `min_faithfulness` and
+  `min_concept_coverage` set to `null` (semantic gates disabled). Judge-less runs
+  score with the deterministic proxies, which are not calibrated to the judged
+  thresholds (a run that never called a judge can otherwise never pass). The
+  objective gates still apply: length (`max_final_length_error_pct`, 0.10 + a
+  100-word floor), `max_passes` (5), and `malformed`.
+
+`core/run_candidate.py::select_scoring_config()` picks the gate set from
+`args.judge_model` (empty ⇒ deterministic) and records the choice on the
+artifact (`run_manifest.scoring_mode`, `scoring_gate_key`, and
+`scoring_gates_override`). Manifests predating the `_deterministic` keys fall
+back to the judged budget gate, so old manifests behave exactly as before.
+`None`/`null` on a semantic gate means "disabled"; `scoring.apply_gates_override`
+uses a sentinel so an explicit `None` disables rather than inheriting the default.
+
 ### Data source for scoring
 
 Rubrics are generated offline by `tools/build_rubrics.py` and stored at `artifacts/rubrics/<book_id>/<chapter_id>.json`. The CF accepts them inline in the request body. The batch tool loads them from disk and passes them in the CF payload.
@@ -298,14 +335,19 @@ requests.post(FUNCTION_URL, json=payload,
 
 ### Secrets
 
-For the deployed CF, the API key comes from Secret Manager: `LLM_API_KEY` → Secret Manager → bound via `--set-secrets`. Base URL defaults to `LLM_BASE_URL` env when set.
+For the deployed CF, the API key comes from Secret Manager: `LLM_API_KEY` → Secret Manager → bound via `--set-secrets`. Production secret name is `openrouter-api-key`. Base URL comes from `LLM_BASE_URL` env (production sets `https://openrouter.ai/api/v1`).
 
 For batch tool direct API mode, use `--api-key <key>` or `--api-key-env <env_var>`.
 
 Never hardcode keys in source or command history.
 
 ```bash
-printf "sk-or-v1-..." | gcloud secrets create llm-api-key \
+printf "sk-or-v1-..." | gcloud secrets create openrouter-api-key \
+  --data-file=-
+```
+```bash
+# Rotate: add a new version; :latest picks it up, then redeploy.
+printf "sk-or-v1-new..." | gcloud secrets versions add openrouter-api-key \
   --data-file=-
 ```
 
@@ -315,3 +357,74 @@ printf "sk-or-v1-..." | gcloud secrets create llm-api-key \
 - Errors surface in both CF response (`error` key) and stderr logs
 - Batch tool prints per-item failures with `[index/total] FAIL item_key: error`
 - `state.json` records `latest_error` and `status` (`running` → `finished`)
+
+---
+
+## Main Runner: Chapter Parallelism
+
+`core/run_candidate.py` runs chapters concurrently through the Cloud Function.
+
+- **Flag:** `--chapter-concurrency N` (env `CF_CHAPTER_CONCURRENCY`, default `1`).
+  `1` keeps the historical sequential path; `>1` dispatches chapter generation
+  from a `ThreadPoolExecutor`. Only active in CF transport mode
+  (`_is_cloud_function(client)`); direct-API runs stay sequential.
+- **Gate:** a module-level `threading.Semaphore` (`cf_concurrency_slot()` /
+  `set_cf_concurrency()`) bounds in-flight CF invocations. Every CF call —
+  chapter generation *and* judging — passes through it, so concurrency is a true
+  cap on simultaneous function requests. No gate set ⇒ unbounded.
+- **Two levels share the flag:**
+  - `run_book_sample` parallelizes the chapters of one book.
+  - `_run_single` parallelizes top-level chapter bench items (the `chapter_fast`
+    default path for profile runs). Book-level items are never parallelized at
+    the top level.
+- **Determinism:** parallel chapter results are re-sorted into book order before
+  composing, so `chapter_outputs` / `passes` / trace rows are identical to the
+  sequential ordering.
+- **Resume:** per-chapter stage state is written to `chapter_stage_states` and
+  completed chapters to `chapter_outputs`; a mid-flight chapter resumes from its
+  checkpoint instead of regenerating. Top-level items checkpoint to
+  `.samples.jsonl` + `state.json` with a `current_items` map (a legacy
+  `current_item` is still written for older readers).
+
+## Failure Isolation & Resilience
+
+Chapter-level failures no longer abort a book or a run.
+
+- **Chapter failures:** a chapter that raises after the CF client's own retries
+  is recorded in the sample's `chapter_errors` (and mirrored in progress) and the
+  remaining chapters continue. The book still composes from surviving chapters
+  with a partial/short final. If **every** chapter fails there is nothing to
+  compose, so `run_book_sample` raises `ChapterRunError`.
+- **Top-level item failures:** recorded in `state.failed_items`; the run finishes
+  `finished_with_errors`, still writes its (partial) artifact, and a later
+  `--resume` retries exactly the failed items. A run is only `failed` when
+  *nothing* succeeded.
+- **Insufficient credits (HTTP 402):** still pauses the run
+  (`paused_insufficient_credits`, `SystemExit(2)`), honoring `--wait-for-credits`
+  when set.
+- **Model unavailable:** see below — pauses (`paused_model_unavailable`,
+  `SystemExit(3)`) rather than marking items failed.
+
+### Model-unavailable resilience
+
+When a provider/gateway reports it has no healthy deployment for a model, that
+is a transient infrastructure fault, not a bad sample, and nothing was billed.
+
+- `core/openrouter_client.py` defines `ModelUnavailableError(OpenRouterHTTPError)`
+  and treats messages containing `no healthy deployments`,
+  `no fallback model group`, or `no deployments available` as model-unavailable.
+- `core/cf_client.py` detects this while unwrapping HTTP errors and applies a
+  dedicated bounded backoff: `MODEL_UNAVAILABLE_BACKOFF = (15, 30, 60, 120)`
+  seconds (`model_unavailable_retries` defaults to its length). After exhausting
+  retries it raises `ModelUnavailableError` (carrying `model`).
+- `core/run_candidate.py` treats `ModelUnavailableError` as **fatal, not
+  isolatable** — it is never counted as a chapter/item failure. It sets
+  `paused_model_unavailable`, prints a banner naming the model and the exact
+  `--resume` command, and exits `3`. Restore the deployment, then resume.
+- **Root cause fixed in production:** the CF had been routed through a litellm
+  gateway with no healthy deployment for `openai/gpt-5.6-luna`. It now calls
+  OpenRouter directly (`LLM_BASE_URL=https://openrouter.ai/api/v1`, secret
+  `openrouter-api-key`). Because OpenRouter controls the model unavailability,
+  this error should no longer occur for that model; the resilience path remains
+  for any future provider outage.
+

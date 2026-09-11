@@ -44,14 +44,22 @@ def _build_openrouter_payload(
         "max_tokens": max_tokens,
         "seed": seed,
     }
+    # Emit OpenRouter-native reasoning controls only. The legacy litellm
+    # ``extra_body={"thinking": {...}}`` wrapper is silently ignored by
+    # OpenRouter, which would leave reasoning at provider defaults; translate
+    # it to the unified ``reasoning`` object instead. Mirrors
+    # core/reasoning.py so the direct and Cloud Function paths agree.
     if reasoning:
-        payload["reasoning"] = reasoning
+        payload["reasoning"] = dict(reasoning)
     elif reasoning_effort is not None:
-        payload["reasoning_effort"] = str(reasoning_effort)
+        effort = str(reasoning_effort).strip()
+        if effort.lower() == "none":
+            payload["reasoning"] = {"enabled": False}
+        else:
+            payload["reasoning"] = {"effort": effort}
     else:
-        payload["extra_body"] = {
-            "thinking": {"type": "enabled" if thinking else "disabled"},
-        }
+        # Legacy ``thinking`` flag, derived by cf_client from extra_body.thinking.
+        payload["reasoning"] = {"enabled": bool(thinking)}
     if use_json_schema:
         payload["response_format"] = {
             "type": "json_schema",

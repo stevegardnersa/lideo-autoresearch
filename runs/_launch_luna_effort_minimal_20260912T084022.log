@@ -1,0 +1,115 @@
+Cloud Function mode: skipping catalog/pricing snapshot capture.
+Run ID: 20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1
+Running 8 chapter items concurrently via Cloud Function (concurrency=4).
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] do-hard-things-magness-2022:003 stage chapter=003 target=1023w pass=1 words=1436 cost=$0.0083
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] getting-things-done-allen-2015:013 stage chapter=013 target=1288w pass=1 words=1807 cost=$0.0091
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:006 stage chapter=006 target=1314w pass=1 words=1995 cost=$0.0054
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:004 stage chapter=004 target=1706w pass=1 words=2250 cost=$0.0069
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] do-hard-things-magness-2022:003 stage chapter=003 target=1023w pass=2 words=1134 cost=$0.0164
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] getting-things-done-allen-2015:013 stage chapter=013 target=1288w pass=2 words=1663 cost=$0.0179
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:006 stage chapter=006 target=1314w pass=2 words=1717 cost=$0.0110
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] do-hard-things-magness-2022:003 stage chapter=003 target=1023w pass=3 words=1115 cost=$0.0244
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:004 stage chapter=004 target=1706w pass=2 words=2094 cost=$0.0141
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:006 stage chapter=006 target=1314w pass=3 words=1618 cost=$0.0163
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] do-hard-things-magness-2022:003 stage chapter=003 target=1023w pass=4 words=1110 cost=$0.0324
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] getting-things-done-allen-2015:013 stage chapter=013 target=1288w pass=3 words=1605 cost=$0.0265
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:004 stage chapter=004 target=1706w pass=3 words=2120 cost=$0.0214
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] do-hard-things-magness-2022:003 stage chapter=003 target=1023w pass=5 words=1108 cost=$0.0403
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] do-hard-things-magness-2022:003 judge chapter=003 target=1023w
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] do-hard-things-magness-2022:003 completed target=1023w
+[1/8] do-hard-things-magness-2022:003: words=1108 target=1023 passes=5 cost=0.034256
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:006 stage chapter=006 target=1314w pass=4 words=1616 cost=$0.0216
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] getting-things-done-allen-2015:013 stage chapter=013 target=1288w pass=4 words=1579 cost=$0.0351
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:006 stage chapter=006 target=1314w pass=5 words=1582 cost=$0.0269
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:006 judge chapter=006 target=1314w
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:006 completed target=1314w
+[2/8] everything-is-f-cked-manson-2019:006: words=1582 target=1314 passes=5 cost=0.024212
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:009 stage chapter=009 target=995w pass=1 words=1396 cost=$0.0041
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:004 stage chapter=004 target=1706w pass=4 words=2068 cost=$0.0286
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] getting-things-done-allen-2015:013 stage chapter=013 target=1288w pass=5 words=1561 cost=$0.0437
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] getting-things-done-allen-2015:013 judge chapter=013 target=1288w
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] getting-things-done-allen-2015:013 completed target=1288w
+[3/8] getting-things-done-allen-2015:013: words=1561 target=1288 passes=5 cost=0.037795
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] do-hard-things-magness-2022:004 stage chapter=004 target=360w pass=1 words=486 cost=$0.0027
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:001 stage chapter=001 target=990w pass=1 words=1295 cost=$0.0040
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:009 stage chapter=009 target=995w pass=2 words=1277 cost=$0.0084
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] do-hard-things-magness-2022:004 stage chapter=004 target=360w pass=2 words=445 cost=$0.0054
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:004 stage chapter=004 target=1706w pass=5 words=2029 cost=$0.0356
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:004 judge chapter=004 target=1706w
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:004 completed target=1706w
+[4/8] everything-is-f-cked-manson-2019:004: words=2029 target=1706 passes=5 cost=0.031979
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] do-hard-things-magness-2022:004 stage chapter=004 target=360w pass=3 words=439 cost=$0.0080
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:001 stage chapter=001 target=990w pass=2 words=1247 cost=$0.0081
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:009 stage chapter=009 target=995w pass=3 words=1210 cost=$0.0125
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] atomic-habits-clear-2018:005 stage chapter=005 target=353w pass=1 words=420 cost=$0.0026
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] atomic-habits-clear-2018:005 stage chapter=005 target=353w pass=2 words=423 cost=$0.0052
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] do-hard-things-magness-2022:004 stage chapter=004 target=360w pass=4 words=434 cost=$0.0106
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:009 stage chapter=009 target=995w pass=4 words=1194 cost=$0.0166
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:001 stage chapter=001 target=990w pass=3 words=1159 cost=$0.0122
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] atomic-habits-clear-2018:005 stage chapter=005 target=353w pass=3 words=384 cost=$0.0078
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] do-hard-things-magness-2022:004 stage chapter=004 target=360w pass=5 words=424 cost=$0.0132
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] do-hard-things-magness-2022:004 judge chapter=004 target=360w
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] do-hard-things-magness-2022:004 completed target=360w
+[5/8] do-hard-things-magness-2022:004: words=424 target=360 passes=5 cost=0.011426
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] atomic-habits-clear-2018:005 stage chapter=005 target=353w pass=4 words=401 cost=$0.0104
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:001 stage chapter=001 target=990w pass=4 words=1176 cost=$0.0162
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:009 stage chapter=009 target=995w pass=5 words=1192 cost=$0.0206
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:009 judge chapter=009 target=995w
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:009 completed target=995w
+[6/8] everything-is-f-cked-manson-2019:009: words=1192 target=995 passes=5 cost=0.018542
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] atomic-habits-clear-2018:005 stage chapter=005 target=353w pass=5 words=402 cost=$0.0131
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] atomic-habits-clear-2018:005 judge chapter=005 target=353w
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] atomic-habits-clear-2018:005 completed target=353w
+[7/8] atomic-habits-clear-2018:005: words=384 target=353 passes=5 cost=0.011227
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:001 stage chapter=001 target=990w pass=5 words=1171 cost=$0.0203
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:001 judge chapter=001 target=990w
+[20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1] everything-is-f-cked-manson-2019:001 completed target=990w
+[8/8] everything-is-f-cked-manson-2019:001: words=1159 target=990 passes=5 cost=0.018214
+{
+  "run_id": "20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1",
+  "benchmark_version": "booksum-v4",
+  "bench": "chapter_fast-v3",
+  "profile": "30m_gpt-5.6-luna_effort-minimal",
+  "candidate_name": "30m_gpt-5.6-luna_effort-minimal_v1",
+  "n_samples": 8,
+  "scoring_gates_override": {
+    "weights": {
+      "faithfulness": 0.33,
+      "concept_coverage": 0.2,
+      "qualifier_preservation": 0.1,
+      "no_fluff": 0.1,
+      "readability_band": 0.07,
+      "structure_quality": 0.05,
+      "final_length_accuracy": 0.1,
+      "first_pass_accuracy": 0.05
+    },
+    "gates": {
+      "max_final_length_error_pct": 0.1,
+      "max_passes": 5,
+      "min_faithfulness": 0.5,
+      "min_concept_coverage": 0.15
+    },
+    "penalties": {
+      "cost_penalty_per_cost_unit": 0.02,
+      "extra_pass_penalty": 0.01
+    },
+    "target_tolerance_pct": 0.05,
+    "zero_accuracy_at_error_pct": 0.25
+  },
+  "hard_fail_rate": 1.0,
+  "mean_quality": 0.30725448820845114,
+  "mean_utility": 0.26677898945845113,
+  "mean_faithfulness": 0.21763392857142858,
+  "mean_concept_coverage": 0.04114583333333333,
+  "mean_final_length_error_pct": 0.16532851539694854,
+  "mean_first_pass_length_error_pct": 0.3618377324120119,
+  "mean_passes_used": 5,
+  "mean_uncached_cost": 0.023456374999999998,
+  "mean_generation_cost": 0.02672775625,
+  "worst_genre_macro": "business_economics_productivity",
+  "worst_genre_macro_utility": 0.1944501772090284,
+  "genre_macro_spread_utility": 0.10306289805866375,
+  "n_genre_macros": 2,
+  "n_failed_items": 0
+}
+Wrote run artifact: runs/booksum-v4/20260911t204023z__booksum-v4__chapter_fast-v3__30m_gpt-5.6-luna__30m_gpt-5.6-luna_effort-minimal_v1.json

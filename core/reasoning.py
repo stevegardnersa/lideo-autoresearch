@@ -36,6 +36,12 @@ DEFAULT_THINKING_EFFORT = "high"  # legacy thinking:enabled migrates to this eff
 
 DEFAULT_MAX_TOKEN_CAP = 163_840
 
+# Generation-time length control (target-aware max_tokens cap).
+TOKENS_PER_WORD = 1.4  # ~0.7 words/token for English markdown
+JSON_OVERHEAD_TOKENS = 200  # response_format wrapper + markdown framing
+DEFAULT_VISIBLE_HEADROOM = 1.6  # visible-output headroom over the target words
+DEFAULT_MIN_OUTPUT_TOKENS = 512  # degenerate tiny targets still get a usable budget
+
 
 def effort_token_fraction(effort: Optional[str]) -> float:
     """Fraction of the max_output_tokens budget reasoning is expected to consume."""
@@ -51,6 +57,33 @@ def scaled_max_tokens(base: int = 8192, effort: Optional[str] = None, cap: int =
         return int(base)
     scaled = math.ceil((float(base) / (1.0 - fraction)) - 1e-9)
     return min(int(scaled), int(cap))
+
+
+def visible_max_tokens(
+    target_words: int,
+    *,
+    effort: Optional[str] = None,
+    headroom: float = DEFAULT_VISIBLE_HEADROOM,
+    cap: int = DEFAULT_MAX_TOKEN_CAP,
+) -> int:
+    """Per-request ``max_tokens`` derived from a visible-word target.
+
+    The visible-output budget is ``ceil(target_words * headroom)`` words converted
+    at ``TOKENS_PER_WORD`` plus ``JSON_OVERHEAD_TOKENS``, then inflated by the
+    reasoning effort's token reservation (the same ``1 / (1 - fraction)`` divisor
+    as ``scaled_max_tokens``, so the two stay consistent for the same effort).
+    Clamped to ``[DEFAULT_MIN_OUTPUT_TOKENS, cap]``.
+
+    Monotonic non-decreasing in ``target_words`` for fixed effort/headroom; never
+    exceeds ``cap``; never drops below the floor. ``effort=None`` and
+    ``"none"`` apply no inflation.
+    """
+    fraction = effort_token_fraction(effort)
+    visible_base_words = max(1, math.ceil(float(target_words) * float(headroom)))
+    tokens = float(visible_base_words) * TOKENS_PER_WORD + JSON_OVERHEAD_TOKENS
+    if fraction > 0.0:
+        tokens /= (1.0 - fraction)
+    return int(min(int(cap), max(DEFAULT_MIN_OUTPUT_TOKENS, math.ceil(tokens))))
 
 
 def stage_reasoning_effort(stage: Any) -> Optional[str]:

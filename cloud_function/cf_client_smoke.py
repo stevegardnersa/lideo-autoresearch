@@ -202,7 +202,7 @@ def main() -> None:
         assert last_stub_headers().get("Authorization") == "Bearer sk-placeholder", last_stub_headers()
         checks += 1
 
-        # 3. reasoning_effort passthrough: handler forwards to stub, no extra_body.
+        # 3. reasoning_effort -> native reasoning.effort; no litellm extra_body.
         client.chat_completion(
             {
                 "model": "test/echo",
@@ -217,8 +217,8 @@ def main() -> None:
             target_words=0,
         )
         stub_body = last_stub_body()
-        assert stub_body.get("reasoning_effort") == "high", stub_body
-        assert "extra_body" not in stub_body, stub_body
+        assert stub_body.get("reasoning") == {"effort": "high"}, stub_body
+        assert "reasoning_effort" not in stub_body and "extra_body" not in stub_body, stub_body
         checks += 1
 
         # 4. reasoning dict passthrough.
@@ -241,7 +241,7 @@ def main() -> None:
         assert "extra_body" not in stub_body, stub_body
         checks += 1
 
-        # 5. thinking-only (legacy) maps to extra_body.thinking disabled.
+        # 5. thinking-only (legacy disabled) maps to native reasoning.enabled=false.
         client.chat_completion(
             {
                 "model": "test/echo",
@@ -256,8 +256,46 @@ def main() -> None:
             thinking=False,
         )
         stub_body = last_stub_body()
-        assert stub_body.get("extra_body", {}).get("thinking", {}).get("type") == "disabled", stub_body
-        assert "reasoning" not in stub_body and "reasoning_effort" not in stub_body, stub_body
+        assert stub_body.get("reasoning") == {"enabled": False}, stub_body
+        assert "extra_body" not in stub_body and "reasoning_effort" not in stub_body, stub_body
+        checks += 1
+
+        # 6. reasoning_effort "none" maps to native reasoning.enabled=false.
+        client.chat_completion(
+            {
+                "model": "test/echo",
+                "reasoning_effort": "none",
+                "messages": [
+                    {"role": "system", "content": "Summarize the chapter."},
+                    {"role": "user", "content": SOURCE_MD},
+                ],
+            },
+            source_md=SOURCE_MD,
+            score=False,
+            target_words=0,
+        )
+        stub_body = last_stub_body()
+        assert stub_body.get("reasoning") == {"enabled": False}, stub_body
+        assert "reasoning_effort" not in stub_body and "extra_body" not in stub_body, stub_body
+        checks += 1
+
+        # 7. thinking-only (legacy enabled) maps to native reasoning.enabled=true.
+        client.chat_completion(
+            {
+                "model": "test/echo",
+                "messages": [
+                    {"role": "system", "content": "Summarize the chapter."},
+                    {"role": "user", "content": SOURCE_MD},
+                ],
+            },
+            source_md=SOURCE_MD,
+            score=False,
+            target_words=0,
+            thinking=True,
+        )
+        stub_body = last_stub_body()
+        assert stub_body.get("reasoning") == {"enabled": True}, stub_body
+        assert "extra_body" not in stub_body and "reasoning_effort" not in stub_body, stub_body
         checks += 1
 
         print(f"cf-client-smoke OK ({checks} checks)")

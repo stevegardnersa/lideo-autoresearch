@@ -46,7 +46,7 @@ from core.openrouter_client import (
     OpenRouterInsufficientCreditsError,
     UsageRecord,
 )
-from core.reasoning import effort_enables_thinking, manifest_effort_label, stage_reasoning_effort
+from core.reasoning import DEFAULT_MAX_TOKEN_CAP, effort_enables_thinking, manifest_effort_label, stage_reasoning_effort, visible_max_tokens
 from core.versioning import (
     build_prompt_hashes,
     build_run_id,
@@ -778,6 +778,7 @@ def render_composer_repair_user(
     toc_md: str,
     book_metadata: str,
     retrieved_source_excerpts: str,
+    current_word_count: Optional[int] = None,
 ) -> str:
     repair_more_policies = getattr(candidate_module, "REPAIR_MORE_POLICIES", {})
     repair_less_policies = getattr(candidate_module, "REPAIR_LESS_POLICIES", {})
@@ -788,10 +789,27 @@ def render_composer_repair_user(
     else:
         policy = repair_less_policies.get(spec.length_control.repair_less_prompt_id, "Shorten by removing repetition.")
     format_instructions = getattr(candidate_module, "FORMAT_INSTRUCTIONS", {})[spec.composer_stage.format_mode]
+    numeric_delta = ""
+    if current_word_count is not None:
+        if direction == "less":
+            numeric_delta = (
+                f"Current summary is {current_word_count} visible words; target is {target_words} "
+                f"(range {low}-{high}). Cut approximately {max(0, current_word_count - high)} words so "
+                f"the final markdown lands inside [{low}, {high}]. Count the visible words of your output "
+                "before finishing and adjust if needed."
+            )
+        else:
+            numeric_delta = (
+                f"Current summary is {current_word_count} visible words; target is {target_words} "
+                f"(range {low}-{high}). Add approximately {max(0, low - current_word_count)} words so "
+                f"the final markdown lands inside [{low}, {high}]. Count the visible words of your output "
+                "before finishing and adjust if needed."
+            )
     blocks = [
         "Revise the whole-book summary to hit the target length more accurately.",
         f"Book title: {book_title}" if book_title else "",
         f"Target visible words: {target_words}. Acceptable range: {low}-{high}. This repair direction is: {direction}.",
+        numeric_delta if numeric_delta else "",
         policy,
         format_instructions,
         "Keep the result faithful to the chapter summaries and any retrieved source excerpts.",
@@ -987,12 +1005,22 @@ def run_length_controlled_stage(
         retry_count = 0
         retry_prompt = user_prompt
         while True:
+            # Target-aware generation-time cap: derive max_tokens from the
+            # visible-word target (plus reasoning reservation) so the model cannot
+            # free-run to multiples of the target. Re-derived per truncation retry
+            # from the lowered pass_target, so retries automatically tighten.
+            effective_max_tokens = visible_max_tokens(
+                attempt_target,
+                effort=stage_reasoning_effort(stage_config),
+                cap=int(stage_config.max_tokens or DEFAULT_MAX_TOKEN_CAP),
+            )
             request = build_openrouter_request(
                 stage=stage_config,
                 system_prompt=system_prompt,
                 user_prompt=retry_prompt,
                 schema_name=spec.json_schema_name,
                 use_json_schema=use_json_schema,
+                max_tokens=effective_max_tokens,
             )
             result = invoke_generation(
                 client,
@@ -1051,6 +1079,7 @@ def run_length_controlled_stage(
                     direction=direction,
                     book_title=current_book_title,
                     chapter_title=current_chapter_title,
+                    current_word_count=words,
                 )
             else:
                 repair_user_prompt = render_composer_repair_user(
@@ -1064,6 +1093,7 @@ def run_length_controlled_stage(
                     toc_md=toc_md,
                     book_metadata=book_metadata,
                     retrieved_source_excerpts=retrieved_source_excerpts,
+                    current_word_count=words,
                 )
             current_for_mock = summary_md
         result = generate_pass(repair_user_prompt, current_for_mock=current_for_mock, pass_target=target_words)
@@ -2235,6 +2265,55 @@ def run_all_profiles(
         _run_single(args, benchmark_manifest, spec_path, inherited_run_id=None)
 
 
+def select_scoring_config(
+    benchmark_manifest: Mapping[str, Any],
+    *,
+    profile_name: str,
+    judge_model: str,
+    base_config=DEFAULT_SCORING_CONFIG,
+) -> Tuple[Any, str, str]:
+    """Resolve the scoring config for a run.
+
+    Judge-less ("deterministic") runs use ``<budget>_deterministic`` gates, whose
+    semantic thresholds are ``null`` (disabled) because the deterministic proxies
+    are not calibrated to the judged thresholds. Manifests without those keys
+    fall back to the judged budget gate.
+
+    Returns ``(scoring_config, scoring_mode, gate_key)``.
+    """
+    if profile_name.startswith("30m_"):
+        budget_key = "30m"
+    elif profile_name.startswith("60m_"):
+        budget_key = "60m"
+    else:
+        budget_key = "default"
+    scoring_mode = "judged" if judge_model else "deterministic"
+    scoring_gates = benchmark_manifest.get("scoring_gates", {}) or {}
+    gate_key = budget_key if scoring_mode == "judged" else f"{budget_key}_deterministic"
+    gates = scoring_gates.get(gate_key)
+    if not gates and gate_key != budget_key:
+        # Old manifests lack *_deterministic keys; fall back to the judged gate
+        # for this budget so behavior is unchanged for them.
+        gate_key = budget_key
+        gates = scoring_gates.get(budget_key)
+
+    scoring_config = base_config
+    if gates:
+        override_kwargs: Dict[str, Any] = {}
+        # Explicit keys (including null => disable) are honored; absent keys keep defaults.
+        if "min_faithfulness" in gates:
+            override_kwargs["min_faithfulness"] = gates["min_faithfulness"]
+        if "min_concept_coverage" in gates:
+            override_kwargs["min_concept_coverage"] = gates["min_concept_coverage"]
+        if gates.get("max_final_length_error_pct") is not None:
+            override_kwargs["max_final_length_error_pct"] = gates["max_final_length_error_pct"]
+        if gates.get("max_passes") is not None:
+            override_kwargs["max_passes"] = gates["max_passes"]
+        if override_kwargs:
+            scoring_config = apply_gates_override(scoring_config, **override_kwargs)
+    return scoring_config, scoring_mode, gate_key
+
+
 def _run_single(
     args: argparse.Namespace,
     benchmark_manifest: Dict[str, Any],
@@ -2745,23 +2824,11 @@ def _run_single(
         save_run_state(state_path, state)
         raise all_failed_error
 
-    scoring_config = DEFAULT_SCORING_CONFIG
-    profile_name = spec.profile
-    if profile_name.startswith("30m_"):
-        gate_key = "30m"
-    elif profile_name.startswith("60m_"):
-        gate_key = "60m"
-    else:
-        gate_key = "default"
-    gates = benchmark_manifest.get("scoring_gates", {}).get(gate_key)
-    if gates:
-        scoring_config = apply_gates_override(
-            scoring_config,
-            min_faithfulness=gates.get("min_faithfulness"),
-            min_concept_coverage=gates.get("min_concept_coverage"),
-            max_final_length_error_pct=gates.get("max_final_length_error_pct"),
-            max_passes=gates.get("max_passes"),
-        )
+    scoring_config, scoring_mode, gate_key = select_scoring_config(
+        benchmark_manifest,
+        profile_name=spec.profile,
+        judge_model=args.judge_model,
+    )
 
     dataset_score = score_dataset(samples, config=scoring_config)
     mean_generation_cost = _mean([sample.generation_cost for sample in samples])
@@ -2779,6 +2846,8 @@ def _run_single(
             run_manifest["cloud_function_meta"] = dict(cf_meta)
     resume_events = list(state.get("resume_events_utc") or [])
     run_manifest["resume_count"] = len(resume_events)
+    run_manifest["scoring_mode"] = scoring_mode
+    run_manifest["scoring_gate_key"] = gate_key
     if resume_events:
         run_manifest["resume_events_utc"] = resume_events
     if failed_items:
@@ -2805,6 +2874,7 @@ def _run_single(
         "profile": spec.profile,
         "candidate_name": spec.name,
         "n_samples": dataset_score.n_samples,
+        "scoring_mode": scoring_mode,
         "scoring_gates_override": scoring_gates_override_dict,
         "hard_fail_rate": dataset_score.hard_fail_rate,
         "mean_quality": dataset_score.mean_quality,

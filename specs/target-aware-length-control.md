@@ -170,11 +170,11 @@ When `current_word_count is None` (in-flight resumed stages, any legacy caller),
 
 ### 4.3 Tests — new `tests/test_length_control.py` (offline, no network)
 
-1. **`visible_max_tokens` table** (assert exact expected ints):
-   - `visible_max_tokens(353, effort="minimal", cap=9103) == 1101` (and `< 9103`).
-   - `visible_max_tokens(353, effort="medium", cap=16384) == 2382` (and `< 16384`).
-   - `visible_max_tokens(1288, effort="minimal", cap=9103) == 3430`.
-   - `visible_max_tokens(1288, effort="medium", cap=16384) == 6173` (≤ cap; inflated vs `effort="none"`).
+1. **`visible_max_tokens` table** (assert exact expected ints; values are `ceil(ceil(target × headroom) × TOKENS_PER_WORD + JSON_OVERHEAD_TOKENS) / (1 − effort_fraction)`, i.e. the §4.1 formula):
+   - `visible_max_tokens(353, effort="minimal", cap=9103) == 1102` (and `< 9103`).
+   - `visible_max_tokens(353, effort="medium", cap=16384) == 1982` (and `< 16384`).
+   - `visible_max_tokens(1288, effort="minimal", cap=9103) == 3429`.
+   - `visible_max_tokens(1288, effort="medium", cap=16384) == 6171` (≤ cap; inflated vs `effort="none"` == 991).
    - Monotonicity: `visible_max_tokens(t+1) >= visible_max_tokens(t)` for t in 100..2000.
    - Cap/floor: `visible_max_tokens(10_000, cap=16384) == 16384`; `visible_max_tokens(10, effort="none") == 512` (floor); `visible_max_tokens(10_000_000, cap=16384) == 16384`.
    - `effort=None` and `effort="none"` produce identical values (no inflation).

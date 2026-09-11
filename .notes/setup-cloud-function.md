@@ -155,14 +155,27 @@ gcloud config set functions/region us-central1
 
 ## 5. Create the API Key Secret
 
-The secret name can be anything; the deploy command binds it as `LLM_API_KEY` env var. The function resolves the API key in this order:
+The secret name can be anything; the deploy command binds it as the `LLM_API_KEY` env var. This project's production convention is the secret name **`openrouter-api-key`** (bound as `LLM_API_KEY`). The function resolves the API key in this order:
 1. `api_key` field from the request body
 2. `LLM_API_KEY` environment variable
 
 ```bash
 # Paste your key (replace with your actual API key)
 printf "sk-or-v1-your-actual-api-key-here" | \
-  gcloud secrets create llm-api-key \
+  gcloud secrets create openrouter-api-key \
+    --data-file=- \
+    --project $PROJECT_ID
+```
+
+> **Base URL:** when calling OpenRouter directly (no litellm/gateway), also set
+> `LLM_BASE_URL=https://openrouter.ai/api/v1` at deploy time (see §7c). Without
+> it the function falls back to OpenRouter's default, but the explicit env var
+> documents the intended provider and survives future default changes.
+
+**Rotate an existing key** (adds a new version; `:latest` picks it up):
+```bash
+printf "sk-or-v1-new-key" | \
+  gcloud secrets versions add openrouter-api-key \
     --data-file=- \
     --project $PROJECT_ID
 ```
@@ -171,11 +184,11 @@ printf "sk-or-v1-your-actual-api-key-here" | \
 
 **Verify:**
 ```bash
-gcloud secrets versions list llm-api-key --project $PROJECT_ID
+gcloud secrets versions list openrouter-api-key --project $PROJECT_ID
 # → NAME: 1, STATE: enabled
 ```
 
-> **Tip:** You can use any provider's key here — OpenRouter, OpenAI, Anthropic (via API proxy), or a self-hosted endpoint. The function supports any OpenAI-compatible API. The secret name `llm-api-key` is just a convention.
+> **Tip:** You can use any provider's key here — OpenRouter, OpenAI, Anthropic (via API proxy), or a self-hosted endpoint. The function supports any OpenAI-compatible API. The secret name is just a convention; production uses `openrouter-api-key`.
 
 ---
 
@@ -195,7 +208,7 @@ echo "Service account: $SA_EMAIL"
 ### 6b. Grant Secret Manager access
 
 ```bash
-gcloud secrets add-iam-policy-binding llm-api-key \
+gcloud secrets add-iam-policy-binding openrouter-api-key \
   --member="serviceAccount:$SA_EMAIL" \
   --role="roles/secretmanager.secretAccessor" \
   --project $PROJECT_ID
@@ -203,7 +216,7 @@ gcloud secrets add-iam-policy-binding llm-api-key \
 
 **Verify:**
 ```bash
-gcloud secrets get-iam-policy llm-api-key --project $PROJECT_ID
+gcloud secrets get-iam-policy openrouter-api-key --project $PROJECT_ID
 # → bindings:
 # →   - members: serviceAccount:123456789-compute@developer.gserviceaccount.com
 # →     role: roles/secretmanager.secretAccessor
@@ -215,8 +228,11 @@ gcloud secrets get-iam-policy llm-api-key --project $PROJECT_ID
 
 ### 7a. Navigate to the project root
 
+`--source .` uploads the directory you run from, so deploy from the repo root
+(the directory containing `cloud_function/`, `core/`, and `scoring.py`):
+
 ```bash
-cd /Users/stevegardner/Documents/Projects/Lideo/autoresearch/tool.worktrees/wt1
+cd "$(git rev-parse --show-toplevel)"
 ```
 
 ### 7b. Verify the source structure
@@ -237,7 +253,8 @@ gcloud functions deploy summarize \
   --source . \
   --region us-central1 \
   --project $PROJECT_ID \
-  --set-secrets 'LLM_API_KEY=llm-api-key:latest' \
+  --set-secrets 'LLM_API_KEY=openrouter-api-key:latest' \
+  --set-env-vars 'LLM_BASE_URL=https://openrouter.ai/api/v1,LOG_EXECUTION_ID=true' \
   --timeout 3600 \
   --memory 1024Mi \
   --no-allow-unauthenticated
@@ -254,6 +271,7 @@ gcloud functions deploy summarize \
 | `--source` | `.` | Uploads the entire project root. `.gcloudignore` excludes unnecessary files |
 | `--region` | `us-central1` | Iowa. Closest to west coast. Cheapest. |
 | `--set-secrets` | `KEY=secret-name:latest` | Binds the Secret Manager secret as env var `LLM_API_KEY` |
+| `--set-env-vars` | `LLM_BASE_URL=...` | Plain env vars. `LLM_BASE_URL` points the client at the provider (OpenRouter direct here) |
 | `--timeout` | `3600` | Maximum 60 minutes (LLM calls can take minutes per request) |
 | `--memory` | `1024Mi` | 1 GB RAM. Increase to 2048Mi for thinking/reasoning models |
 | `--no-allow-unauthenticated` | _(flag)_ | Require auth. No public internet access without OIDC token |
@@ -371,7 +389,8 @@ gcloud functions deploy summarize \
   --source . \
   --region us-central1 \
   --project $PROJECT_ID \
-  --set-secrets 'LLM_API_KEY=llm-api-key:latest' \
+  --set-secrets 'LLM_API_KEY=openrouter-api-key:latest' \
+  --set-env-vars 'LLM_BASE_URL=https://openrouter.ai/api/v1,LOG_EXECUTION_ID=true' \
   --timeout 3600 \
   --memory 1024Mi \
   --no-allow-unauthenticated
@@ -430,7 +449,7 @@ gcloud functions logs read summarize \
 
 **Common causes:**
 - **Missing import or syntax error** in a file the function imports. Fix: test locally first.
-- **API key expired or invalid.** Check: `printf "test" | gcloud secrets versions access latest --secret=llm-api-key`
+- **API key expired or invalid.** Check: `printf "test" | gcloud secrets versions access latest --secret=openrouter-api-key`
 - **Environment variable not bound.** Check: `--set-secrets` flag was included in deploy command.
 
 ### 10c. Function deploys but returns 403 on test
@@ -454,12 +473,12 @@ gcloud config set builds/timeout 600
 **Verify creation:**
 ```bash
 gcloud secrets list --project $PROJECT_ID
-gcloud secrets versions list llm-api-key --project $PROJECT_ID
+gcloud secrets versions list openrouter-api-key --project $PROJECT_ID
 ```
 
 **Verify the binding:**
 ```bash
-gcloud secrets get-iam-policy llm-api-key --project $PROJECT_ID
+gcloud secrets get-iam-policy openrouter-api-key --project $PROJECT_ID
 ```
 If no binding for your service account, re-run step 6b.
 
@@ -486,7 +505,7 @@ gcloud functions delete summarize \
   --gen2 --region us-central1 --project $PROJECT_ID --quiet
 
 # Delete the secret and its versions
-gcloud secrets delete llm-api-key --project $PROJECT_ID --quiet
+gcloud secrets delete openrouter-api-key --project $PROJECT_ID --quiet
 
 # Delete the project (removes all resources, billing stops)
 gcloud projects delete $PROJECT_ID --quiet
@@ -501,7 +520,8 @@ gcloud projects delete $PROJECT_ID --quiet
 gcloud functions deploy summarize --gen2 --runtime python312 \
   --trigger-http --entry-point summarize --source . \
   --region us-central1 \
-  --set-secrets 'LLM_API_KEY=llm-api-key:latest' \
+  --set-secrets 'LLM_API_KEY=openrouter-api-key:latest' \
+  --set-env-vars 'LLM_BASE_URL=https://openrouter.ai/api/v1,LOG_EXECUTION_ID=true' \
   --timeout 3600 --memory 1024Mi --no-allow-unauthenticated
 
 # Get URL
@@ -520,3 +540,29 @@ gcloud functions logs read summarize --gen2 --region us-central1 --limit 20
 # Delete
 gcloud functions delete summarize --gen2 --region us-central1 --quiet
 ```
+
+---
+
+## This Project (production facts)
+
+| Fact | Value |
+|------|-------|
+| GCP project | `lideo-387b7` |
+| Function name | `summarize` (gen2, `us-central1`) |
+| Function URL | `https://summarize-q2dzk4wjva-uc.a.run.app` |
+| Runtime service account | `284443646398-compute@developer.gserviceaccount.com` |
+| LLM base URL | `https://openrouter.ai/api/v1` (direct OpenRouter, no litellm) |
+| API key secret | `openrouter-api-key` → bound as `LLM_API_KEY:latest` |
+
+Redeploy after any change to `cloud_function/`, `core/*.py`, or `scoring.py`
+(the function imports `core/` and `scoring.py`, so those are part of the build).
+Verify the deploy actually fetched the new secret/key with the local smoke test
+in `.claude/skills/cloud-function-deploy/` (or `make cf-client-smoke`), then send
+one scoring-only request against the live URL.
+
+> **History (why this block was corrected):** an earlier revision documented the
+> secret as `llm-api-key`, omitted `LLM_BASE_URL`, and pointed at a deleted
+> worktree path. Production actually runs secret `openrouter-api-key` with
+> `LLM_BASE_URL=https://openrouter.ai/api/v1`. The function previously depended
+> on a litellm gateway that had no healthy deployment for `openai/gpt-5.6-luna`;
+> it now calls OpenRouter directly.
