@@ -32,6 +32,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from core.book_data import BookTaxonomy, taxonomy_from_manifest
+from core.dotenv import load_dotenv
 from core.judge import AbsoluteJudgeResult, judge_summary_absolute
 from core.openrouter_client import (
     GenerationResult,
@@ -1932,6 +1933,7 @@ def summarize_trace(
 
 
 def main() -> None:
+    load_dotenv()
     args = parse_args()
     benchmark_manifest_path = resolve_path(args.benchmark_manifest)
     ensure_default_benchmark_manifest(benchmark_manifest_path)

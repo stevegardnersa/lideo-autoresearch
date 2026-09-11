@@ -26,10 +26,17 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from pathlib import Path
 import sys
 import time
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from core.dotenv import load_dotenv
 
 from .notes_reader import (
     Signals,
@@ -321,6 +328,7 @@ def run_grid_search(
 # ── Main entry point ────────────────────────────────────────────────────
 
 def main():
+    load_dotenv()
     parser = argparse.ArgumentParser(
         description="Autoresearch — optimize prompt components using human notes.",
     )
