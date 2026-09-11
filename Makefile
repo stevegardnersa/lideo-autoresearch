@@ -1,10 +1,14 @@
-PYTHON ?= python
+PYTHON ?= python3
 BOOKS_ROOT ?= data/books
 ARTIFACTS_ROOT ?= artifacts
 BENCH_DIR ?= bench
 
 rubrics:
 	$(PYTHON) tools/build_rubrics.py --books-root $(BOOKS_ROOT) --artifacts-root $(ARTIFACTS_ROOT)
+
+test:
+	$(PYTHON) tests/test_best_pass_selection.py
+	$(PYTHON) tests/test_chapter_parallel.py
 
 bench:
 	$(PYTHON) tools/build_bench.py --books-root $(BOOKS_ROOT) --bench-dir $(BENCH_DIR) --dev-books 10 --gate-books 4 --holdout-books 4 --seed 42

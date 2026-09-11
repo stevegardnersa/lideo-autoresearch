@@ -16,6 +16,8 @@ from __future__ import annotations
 
 import argparse
 import csv
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, as_completed, wait as futures_wait
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 import importlib.util
@@ -24,6 +26,7 @@ import os
 from pathlib import Path
 import re
 import sys
+import threading
 import time
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
 
@@ -56,7 +59,50 @@ from scoring import JudgeScores, Rubric, SummarySample, readability_metrics, sco
 
 
 PROGRESS_PRINT_INTERVAL_S = 15.0
-_last_progress_print: Dict[str, Any] = {"ts": 0.0, "phase": "", "item_key": ""}
+_progress_print_lock = threading.Lock()
+_last_progress_print: Dict[str, Any] = {
+    "ts": 0.0,
+    "phase": "",
+    "item_key": "",
+    "chapter_id": "",
+    "passes_used": -1,
+}
+
+# Cloud Function concurrency gate. When a --chapter-concurrency > 1 is active,
+# chapter generation is dispatched from a thread pool; the gate bounds how many
+# Cloud Function invocations are in flight at once. Unset => no cap.
+_cf_concurrency_gate: Optional[threading.Semaphore] = None
+_cf_concurrency_gate_lock = threading.Lock()
+
+
+def set_cf_concurrency(concurrency: Optional[int]) -> None:
+    """Configure the module-level Cloud Function concurrency gate.
+
+    ``None`` or ``< 1`` disables the gate (unlimited in-flight invocations).
+    """
+    global _cf_concurrency_gate
+    with _cf_concurrency_gate_lock:
+        if concurrency is None or concurrency < 1:
+            _cf_concurrency_gate = None
+        else:
+            _cf_concurrency_gate = threading.Semaphore(int(concurrency))
+
+
+@contextmanager
+def cf_concurrency_slot():
+    """Bound concurrent Cloud Function invocations when a gate is configured.
+
+    No-op when the gate is disabled. Safe to enter from any worker thread.
+    """
+    gate = _cf_concurrency_gate
+    if gate is None:
+        yield
+        return
+    gate.acquire()
+    try:
+        yield
+    finally:
+        gate.release()
 
 
 def maybe_print_progress(run_id: str, payload: Mapping[str, Any]) -> None:
@@ -64,11 +110,30 @@ def maybe_print_progress(run_id: str, payload: Mapping[str, Any]) -> None:
     now = time.time()
     phase = str(payload.get("phase") or "")
     item_key = str(payload.get("item_key") or "")
-    changed = phase != _last_progress_print["phase"] or item_key != _last_progress_print["item_key"]
-    if not changed and (now - float(_last_progress_print["ts"])) < PROGRESS_PRINT_INTERVAL_S:
-        return
-    _last_progress_print = {"ts": now, "phase": phase, "item_key": item_key}
+    chapter_id = str(payload.get("chapter_id") or "")
+    stage_state = payload.get("stage_state")
+    passes_used = -1
+    if isinstance(stage_state, Mapping):
+        passes_used = int(stage_state.get("passes_used") or 0)
+    with _progress_print_lock:
+        changed = (
+            phase != _last_progress_print["phase"]
+            or item_key != _last_progress_print["item_key"]
+            or chapter_id != _last_progress_print["chapter_id"]
+            or passes_used != _last_progress_print["passes_used"]
+        )
+        if not changed and (now - float(_last_progress_print["ts"])) < PROGRESS_PRINT_INTERVAL_S:
+            return
+        _last_progress_print = {
+            "ts": now,
+            "phase": phase,
+            "item_key": item_key,
+            "chapter_id": chapter_id,
+            "passes_used": passes_used,
+        }
     pieces = [f"[{run_id}]", item_key, phase]
+    if chapter_id and phase in ("stage", "chapters", "judge"):
+        pieces.append(f"chapter={chapter_id}")
     target = payload.get("target_words")
     if target is not None:
         pieces.append(f"target={target}w")
@@ -480,6 +545,16 @@ def parse_args() -> argparse.Namespace:
         help="HTTP timeout in seconds for Cloud Function calls (CF max 3600). "
         "Defaults to the CF_TIMEOUT env var or 600.",
     )
+    parser.add_argument(
+        "--chapter-concurrency",
+        type=int,
+        default=int(os.getenv("CF_CHAPTER_CONCURRENCY", "1")),
+        help="Run chapters in parallel via the Cloud Function. 1 (default) runs "
+        "sequentially. >1 dispatches chapter generation from a thread pool, bounded "
+        "by a shared semaphore on in-flight Cloud Function invocations. Only "
+        "effective in Cloud Function transport mode. Defaults to the "
+        "CF_CHAPTER_CONCURRENCY env var or 1.",
+    )
     parser.add_argument("--run-id", default="", help="Optional explicit run id for a new run.")
     parser.add_argument("--resume", default="", help="Resume an existing run id from its checkpoint/state files.")
     parser.add_argument(
@@ -755,13 +830,14 @@ def invoke_generation(
         )
     if _is_cloud_function(client):
         use_json = bool(request_body.get("response_format")) if isinstance(request_body, dict) else True
-        return client.chat_completion(
-            request_body,
-            source_md=mock_source_md,
-            score=False,
-            target_words=0,
-            use_json_schema=use_json,
-        )
+        with cf_concurrency_slot():
+            return client.chat_completion(
+                request_body,
+                source_md=mock_source_md,
+                score=False,
+                target_words=0,
+                use_json_schema=use_json,
+            )
     try:
         return client.chat_completion(request_body)
     except (OpenRouterAPIError, OpenRouterHTTPError) as e:
@@ -999,18 +1075,19 @@ def judge_if_requested(
     if _is_cloud_function(client):
         from core.cf_client import parse_cf_judge_scores
 
-        result = client.chat_completion(
-            {"model": judge_model},
-            source_md=source_md[:source_char_limit],
-            summary_md=summary_md,
-            judge=True,
-            judge_model=judge_model,
-            rubric=rubric,
-            score=False,
-            thinking=False,
-            use_json_schema=True,
-            judge_source_char_limit=source_char_limit or 32000,
-        )
+        with cf_concurrency_slot():
+            result = client.chat_completion(
+                {"model": judge_model},
+                source_md=source_md[:source_char_limit],
+                summary_md=summary_md,
+                judge=True,
+                judge_model=judge_model,
+                rubric=rubric,
+                score=False,
+                thinking=False,
+                use_json_schema=True,
+                judge_source_char_limit=source_char_limit or 32000,
+            )
         error = str((result.raw_response or {}).get("judge_error") or "").strip()
         if error:
             print(f"Judge error: {error}")
@@ -1222,6 +1299,84 @@ def join_book_source(book: BookContext) -> str:
     return "\n\n".join(f"# {chapter.chapter_title}\n\n{chapter.source_md.strip()}" for chapter in book.chapters).strip()
 
 
+def _run_one_chapter(
+    *,
+    candidate_module,
+    spec,
+    client: Optional[OpenRouterClient],
+    book: BookContext,
+    chapter: ChapterContext,
+    target_words: int,
+    chapter_system_prompt: str,
+    resume_stage_state: Optional[Mapping[str, Any]],
+    checkpoint_callback: Callable[[Mapping[str, Any]], None],
+    judge_model: str,
+    judge_source_char_limit: int,
+) -> Tuple[StageRun, Optional[JudgeScores], Dict[str, Any]]:
+    """Run a single chapter's stage (plus optional judge) and build its trace row.
+
+    Safe to call from multiple worker threads: all mutable book-level state lives
+    in ``run_book_sample``; this function only mutates local state.
+    """
+    chapter_user_prompt = candidate_module.render_chapter_user(
+        spec,
+        source_md=chapter.source_md,
+        target_words=target_words,
+        book_title=book.book_title,
+        chapter_title=chapter.chapter_title,
+        toc_md=book.toc_md,
+        book_metadata=book.metadata_md,
+    )
+    chapter_run = run_length_controlled_stage(
+        candidate_module=candidate_module,
+        spec=spec,
+        stage_kind="chapter",
+        stage_config=spec.chapter_stage,
+        system_prompt=chapter_system_prompt,
+        initial_user_prompt=chapter_user_prompt,
+        target_words=target_words,
+        mock_source_md=chapter.source_md,
+        client=client,
+        current_book_title=book.book_title,
+        current_chapter_title=chapter.chapter_title,
+        resume_state=resume_stage_state,
+        checkpoint_callback=checkpoint_callback,
+    )
+    chapter_judge_scores: Optional[JudgeScores] = None
+    if spec.disable_composer and client is not None and judge_model:
+        chapter_judge_result = judge_if_requested(
+            client,
+            judge_model,
+            summary_md=chapter_run.summary_md,
+            rubric=chapter.rubric,
+            source_md=chapter.source_md,
+            source_char_limit=judge_source_char_limit,
+        )
+        if chapter_judge_result is not None and chapter_judge_result.scores is not None:
+            chapter_judge_scores = chapter_judge_result.scores
+
+    chapter_row: Dict[str, Any] = {
+        "chapter_id": chapter.chapter_id,
+        "chapter_title": chapter.chapter_title,
+        "target_words": target_words,
+        "output_words": visible_word_count(chapter_run.summary_md),
+        "passes_used": chapter_run.passes_used,
+        "generation_cost": chapter_run.generation_cost,
+        "uncached_generation_cost": chapter_run.uncached_generation_cost,
+        "judge_faithfulness": chapter_judge_scores.faithfulness if chapter_judge_scores else None,
+        "judge_concept_coverage": chapter_judge_scores.concept_coverage if chapter_judge_scores else None,
+        "judge_qualifier_preservation": chapter_judge_scores.qualifier_preservation if chapter_judge_scores else None,
+        "judge_no_fluff": chapter_judge_scores.no_fluff if chapter_judge_scores else None,
+        "judge_structure_quality": chapter_judge_scores.structure_quality if chapter_judge_scores else None,
+    }
+    if chapter_run.summary_md:
+        rm = readability_metrics(chapter_run.summary_md)
+        chapter_row["flesch_reading_ease"] = rm.flesch_reading_ease
+        chapter_row["flesch_kincaid_grade"] = rm.flesch_kincaid_grade
+        chapter_row["sentence_count"] = rm.sentence_count
+    return chapter_run, chapter_judge_scores, chapter_row
+
+
 def run_book_sample(
     item: Mapping[str, Any],
     *,
@@ -1234,6 +1389,7 @@ def run_book_sample(
     resume_progress: Optional[Mapping[str, Any]] = None,
     progress_callback: Optional[Callable[[Mapping[str, Any]], None]] = None,
     run_dir: Optional[Path] = None,
+    chapter_concurrency: int = 1,
 ) -> Tuple[SummarySample, Dict[str, Any]]:
     book_id = str(item["book_id"])
     sample_id = str(item.get("sample_id", book_id))
@@ -1295,6 +1451,11 @@ def run_book_sample(
 
     chapter_outputs: List[Tuple[ChapterContext, StageRun]] = []
     chapter_passes: List[int] = []
+    for chapter in book.chapters:
+        completed_stage = completed_map.get(chapter.chapter_id)
+        if completed_stage is not None:
+            chapter_outputs.append((chapter, completed_stage))
+            chapter_passes.append(completed_stage.passes_used)
     completed_generation_cost = sum(stage.generation_cost for stage in completed_map.values())
     completed_uncached_cost = sum(stage.uncached_generation_cost for stage in completed_map.values())
     if "total_generation_cost" in progress:
@@ -1308,120 +1469,31 @@ def run_book_sample(
 
     chapter_system_prompt = candidate_module.render_chapter_system(spec)
     current_stage = progress.get("current_stage") if isinstance(progress.get("current_stage"), Mapping) else {}
+    chapter_stage_states = progress.get("chapter_stage_states")
+    if not isinstance(chapter_stage_states, Mapping):
+        chapter_stage_states = {}
 
-    for chapter, target_words in zip(book.chapters, chapter_targets):
-        if chapter.chapter_id in completed_map:
-            chapter_run = completed_map[chapter.chapter_id]
-            chapter_outputs.append((chapter, chapter_run))
-            chapter_passes.append(chapter_run.passes_used)
-            total_generation_cost += chapter_run.generation_cost
-            total_uncached_cost += chapter_run.uncached_generation_cost
-            existing_row = next((r for r in chapter_runs_rows if r.get("chapter_id") == chapter.chapter_id), None)
-            if existing_row is None:
-                chapter_row: Dict[str, Any] = {
-                    "chapter_id": chapter.chapter_id,
-                    "chapter_title": chapter.chapter_title,
-                    "target_words": target_words,
-                    "output_words": visible_word_count(chapter_run.summary_md),
-                    "passes_used": chapter_run.passes_used,
-                    "generation_cost": chapter_run.generation_cost,
-                    "uncached_generation_cost": chapter_run.uncached_generation_cost,
-                }
-                if chapter_run.summary_md:
-                    rm = readability_metrics(chapter_run.summary_md)
-                    chapter_row["flesch_reading_ease"] = rm.flesch_reading_ease
-                    chapter_row["flesch_kincaid_grade"] = rm.flesch_kincaid_grade
-                    chapter_row["sentence_count"] = rm.sentence_count
-                chapter_runs_rows.append(chapter_row)
-            continue
+    pending = [
+        (chapter, target_words)
+        for chapter, target_words in zip(book.chapters, chapter_targets)
+        if chapter.chapter_id not in completed_map
+    ]
 
-        chapter_user_prompt = candidate_module.render_chapter_user(
-            spec,
-            source_md=chapter.source_md,
-            target_words=target_words,
-            book_title=book.book_title,
-            chapter_title=chapter.chapter_title,
-            toc_md=book.toc_md,
-            book_metadata=book.metadata_md,
-        )
-        resume_stage_state = None
+    def resume_state_for(chapter_id: str) -> Optional[Mapping[str, Any]]:
+        stored = chapter_stage_states.get(chapter_id)
+        if isinstance(stored, Mapping):
+            return stored
         if (
             str(current_stage.get("stage_kind") or "") == "chapter"
-            and str(current_stage.get("chapter_id") or "") == chapter.chapter_id
+            and str(current_stage.get("chapter_id") or "") == chapter_id
             and isinstance(current_stage.get("stage_state"), Mapping)
         ):
-            resume_stage_state = current_stage.get("stage_state")
+            return current_stage.get("stage_state")
+        return None
 
-        def chapter_checkpoint(stage_state: Mapping[str, Any], *, chapter_key: str = chapter.chapter_id) -> None:
-            progress.clear()
-            progress.update(base_progress)
-            progress["phase"] = "chapters"
-            progress["chapter_targets"] = list(chapter_targets)
-            progress["chapter_outputs"] = serialize_completed_chapter_runs(chapter_outputs)
-            progress["chapter_passes"] = list(chapter_passes)
-            progress["total_generation_cost"] = total_generation_cost
-            progress["total_uncached_cost"] = total_uncached_cost
-            progress["current_stage"] = {
-                "stage_kind": "chapter",
-                "chapter_id": chapter_key,
-                "stage_state": _json_safe(stage_state),
-            }
-            emit()
+    progress_lock = threading.Lock()
 
-        chapter_run = run_length_controlled_stage(
-            candidate_module=candidate_module,
-            spec=spec,
-            stage_kind="chapter",
-            stage_config=spec.chapter_stage,
-            system_prompt=chapter_system_prompt,
-            initial_user_prompt=chapter_user_prompt,
-            target_words=target_words,
-            mock_source_md=chapter.source_md,
-            client=client,
-            current_book_title=book.book_title,
-            current_chapter_title=chapter.chapter_title,
-            resume_state=resume_stage_state,
-            checkpoint_callback=chapter_checkpoint,
-        )
-        chapter_outputs.append((chapter, chapter_run))
-        chapter_passes.append(chapter_run.passes_used)
-        total_generation_cost += chapter_run.generation_cost
-        total_uncached_cost += chapter_run.uncached_generation_cost
-
-        if spec.disable_composer and client is not None and judge_model:
-            chapter_judge_result = judge_if_requested(
-                client,
-                judge_model,
-                summary_md=chapter_run.summary_md,
-                rubric=chapter.rubric,
-                source_md=chapter.source_md,
-                source_char_limit=judge_source_char_limit,
-            )
-            if chapter_judge_result is not None and chapter_judge_result.scores is not None:
-                chapter_judge_scores[chapter.chapter_id] = chapter_judge_result.scores
-
-        chapter_row = {
-            "chapter_id": chapter.chapter_id,
-            "chapter_title": chapter.chapter_title,
-            "target_words": target_words,
-            "output_words": visible_word_count(chapter_run.summary_md),
-            "passes_used": chapter_run.passes_used,
-            "generation_cost": chapter_run.generation_cost,
-            "uncached_generation_cost": chapter_run.uncached_generation_cost,
-            "judge_faithfulness": chapter_judge_scores.get(chapter.chapter_id, {}).get("faithfulness"),
-            "judge_concept_coverage": chapter_judge_scores.get(chapter.chapter_id, {}).get("concept_coverage"),
-            "judge_qualifier_preservation": chapter_judge_scores.get(chapter.chapter_id, {}).get("qualifier_preservation"),
-            "judge_no_fluff": chapter_judge_scores.get(chapter.chapter_id, {}).get("no_fluff"),
-            "judge_structure_quality": chapter_judge_scores.get(chapter.chapter_id, {}).get("structure_quality"),
-            "judge_rationale": chapter_judge_scores.get(chapter.chapter_id, ""),
-        }
-        if chapter_run.summary_md:
-            rm = readability_metrics(chapter_run.summary_md)
-            chapter_row["flesch_reading_ease"] = rm.flesch_reading_ease
-            chapter_row["flesch_kincaid_grade"] = rm.flesch_kincaid_grade
-            chapter_row["sentence_count"] = rm.sentence_count
-        chapter_runs_rows.append(chapter_row)
-
+    def _snapshot_progress(*, current_stage_payload: Optional[Mapping[str, Any]]) -> None:
         progress.clear()
         progress.update(base_progress)
         progress["phase"] = "chapters"
@@ -1430,13 +1502,110 @@ def run_book_sample(
         progress["chapter_passes"] = list(chapter_passes)
         progress["total_generation_cost"] = total_generation_cost
         progress["total_uncached_cost"] = total_uncached_cost
-        progress["chapter_runs_rows"] = chapter_runs_rows
+        progress["chapter_runs_rows"] = list(chapter_runs_rows)
         if spec.disable_composer and chapter_judge_scores:
             progress["chapter_judge_scores"] = {
                 ch_id: judge_scores_to_dict(scores) for ch_id, scores in chapter_judge_scores.items()
             }
-        progress["current_stage"] = None
+        if current_stage_payload is not None:
+            progress["chapter_stage_states"] = dict(chapter_stage_states)
+            progress["current_stage"] = current_stage_payload
+        else:
+            progress["current_stage"] = None
         emit()
+
+    def _make_checkpoint(chapter_id: str) -> Callable[[Mapping[str, Any]], None]:
+        def chapter_checkpoint(stage_state: Mapping[str, Any]) -> None:
+            with progress_lock:
+                chapter_stage_states[chapter_id] = _json_safe(stage_state)
+                _snapshot_progress(
+                    current_stage_payload={
+                        "stage_kind": "chapter",
+                        "chapter_id": chapter_id,
+                        "stage_state": _json_safe(stage_state),
+                    }
+                )
+
+        return chapter_checkpoint
+
+    def _emit_completed_snapshot() -> None:
+        with progress_lock:
+            _snapshot_progress(current_stage_payload=None)
+
+    def _run_pending_chapter(chapter: ChapterContext, target_words: int) -> Tuple[StageRun, Optional[JudgeScores], Dict[str, Any]]:
+        return _run_one_chapter(
+            candidate_module=candidate_module,
+            spec=spec,
+            client=client,
+            book=book,
+            chapter=chapter,
+            target_words=target_words,
+            chapter_system_prompt=chapter_system_prompt,
+            resume_stage_state=resume_state_for(chapter.chapter_id),
+            checkpoint_callback=_make_checkpoint(chapter.chapter_id),
+            judge_model=judge_model,
+            judge_source_char_limit=judge_source_char_limit,
+        )
+
+    def _record_chapter_result(
+        chapter: ChapterContext,
+        target_words: int,
+        chapter_run: StageRun,
+        chapter_scores: Optional[JudgeScores],
+        chapter_row: Dict[str, Any],
+    ) -> None:
+        nonlocal total_generation_cost, total_uncached_cost
+        with progress_lock:
+            chapter_outputs.append((chapter, chapter_run))
+            chapter_passes.append(chapter_run.passes_used)
+            total_generation_cost += chapter_run.generation_cost
+            total_uncached_cost += chapter_run.uncached_generation_cost
+            if chapter_scores is not None:
+                chapter_judge_scores[chapter.chapter_id] = chapter_scores
+            chapter_runs_rows.append(chapter_row)
+
+    if chapter_concurrency is not None and chapter_concurrency > 1 and pending and _is_cloud_function(client):
+        workers = min(int(chapter_concurrency), len(pending))
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            futures = {
+                executor.submit(_run_pending_chapter, chapter, target_words): (chapter, target_words)
+                for chapter, target_words in pending
+            }
+            for future in as_completed(futures):
+                chapter, target_words = futures[future]
+                chapter_run, chapter_scores, chapter_row = future.result()
+                _record_chapter_result(chapter, target_words, chapter_run, chapter_scores, chapter_row)
+                _emit_completed_snapshot()
+        book_order = {chapter.chapter_id: index for index, chapter in enumerate(book.chapters)}
+        chapter_outputs.sort(key=lambda pair: book_order[pair[0].chapter_id])
+        chapter_passes = [run.passes_used for _, run in chapter_outputs]
+        chapter_runs_rows.sort(key=lambda row: book_order.get(str(row.get("chapter_id")), 0))
+        _emit_completed_snapshot()
+    else:
+        for chapter, target_words in zip(book.chapters, chapter_targets):
+            if chapter.chapter_id in completed_map:
+                chapter_run = completed_map[chapter.chapter_id]
+                existing_row = next((r for r in chapter_runs_rows if r.get("chapter_id") == chapter.chapter_id), None)
+                if existing_row is None:
+                    chapter_row: Dict[str, Any] = {
+                        "chapter_id": chapter.chapter_id,
+                        "chapter_title": chapter.chapter_title,
+                        "target_words": target_words,
+                        "output_words": visible_word_count(chapter_run.summary_md),
+                        "passes_used": chapter_run.passes_used,
+                        "generation_cost": chapter_run.generation_cost,
+                        "uncached_generation_cost": chapter_run.uncached_generation_cost,
+                    }
+                    if chapter_run.summary_md:
+                        rm = readability_metrics(chapter_run.summary_md)
+                        chapter_row["flesch_reading_ease"] = rm.flesch_reading_ease
+                        chapter_row["flesch_kincaid_grade"] = rm.flesch_kincaid_grade
+                        chapter_row["sentence_count"] = rm.sentence_count
+                    chapter_runs_rows.append(chapter_row)
+                continue
+            chapter_run, chapter_scores, chapter_row = _run_pending_chapter(chapter, target_words)
+            _record_chapter_result(chapter, target_words, chapter_run, chapter_scores, chapter_row)
+            _emit_completed_snapshot()
 
     chapter_summaries_md = render_chapter_summaries_for_composer(chapter_outputs)
     retrieved_source_excerpts = ""
@@ -1995,6 +2164,10 @@ def _run_single(
     candidate_module = load_module_from_path("candidate_spec_runtime", spec_path)
     spec = candidate_module.get_candidate(args.profile)
     client = make_client(args)
+    if _is_cloud_function(client) and args.chapter_concurrency and args.chapter_concurrency > 1:
+        set_cf_concurrency(args.chapter_concurrency)
+    else:
+        set_cf_concurrency(None)
 
     bench_name = Path(args.bench).stem if str(args.bench).endswith(".jsonl") else args.bench
     bench_path = resolve_path(args.bench) if str(args.bench).endswith(".jsonl") else (ROOT / "bench" / f"{args.bench}.jsonl")
@@ -2156,6 +2329,187 @@ def _run_single(
     if completed_set:
         print(f"Loaded {len(completed_set)} completed checkpointed samples.")
 
+    state_lock = threading.Lock()
+    if not isinstance(state.get("current_items"), dict):
+        state["current_items"] = {}
+
+    def _item_uses_chapter_path(item: Mapping[str, Any]) -> bool:
+        return str(item.get("level", "")) == "chapter" or bench_name == "chapter_fast"
+
+    def _resume_progress_for(item_key: str) -> Optional[Mapping[str, Any]]:
+        current_items = state.get("current_items")
+        if isinstance(current_items, Mapping):
+            stored = current_items.get(item_key)
+            if isinstance(stored, Mapping):
+                return stored
+        legacy = state.get("current_item")
+        if isinstance(legacy, Mapping) and str(legacy.get("item_key") or "") == item_key:
+            return legacy
+        return None
+
+    def _process_parallel_chapter_item(index: int, item: Mapping[str, Any]) -> None:
+        item_key = sample_key_from_item(item, bench_name=bench_name)
+
+        def _set_progress(progress_payload: Mapping[str, Any]) -> None:
+            maybe_print_progress(run_id, progress_payload)
+            with state_lock:
+                state["current_items"][item_key] = _json_safe(progress_payload)
+                state["current_item"] = _json_safe(progress_payload)
+                state["status"] = "running"
+                save_run_state(state_path, state)
+
+        with state_lock:
+            current_progress = _resume_progress_for(item_key)
+            if not isinstance(current_progress, Mapping):
+                current_progress = initial_progress_for_item(item, bench_name=bench_name)
+            state["current_items"][item_key] = _json_safe(current_progress)
+            state["current_item"] = _json_safe(current_progress)
+            state["status"] = "running"
+            state["latest_error"] = None
+            save_run_state(state_path, state)
+
+        try:
+            sample, trace = run_chapter_sample(
+                item,
+                candidate_module=candidate_module,
+                spec=spec,
+                client=client,
+                data_dir=data_dir,
+                judge_model=args.judge_model,
+                judge_source_char_limit=args.judge_source_char_limit,
+                resume_progress=current_progress,
+                progress_callback=_set_progress,
+                run_dir=run_dir,
+            )
+        except OpenRouterInsufficientCreditsError:
+            with state_lock:
+                state["status"] = "paused_insufficient_credits"
+                save_run_state(state_path, state)
+            raise
+        except Exception as exc:
+            with state_lock:
+                state["status"] = "failed"
+                state["latest_error"] = error_to_dict(exc)
+                save_run_state(state_path, state)
+            raise
+
+        with state_lock:
+            append_sample_checkpoint(
+                path=samples_path,
+                run_id=run_id,
+                sample_index=index,
+                item_key=item_key,
+                sample=sample,
+                trace=trace,
+            )
+            completed_set.add(item_key)
+            if item_key not in state["completed_sample_ids"]:
+                state["completed_sample_ids"].append(item_key)
+            state["completed_count"] = len(completed_set)
+            state["current_items"].pop(item_key, None)
+            if str((state.get("current_item") or {}).get("item_key") or "") == item_key:
+                state["current_item"] = None
+            state["latest_error"] = None
+            state["status"] = "running"
+            save_run_state(state_path, state)
+            completed_now = len(completed_set)
+        print(
+            f"[{completed_now}/{len(bench_rows)}] {sample.sample_id}: "
+            f"words={visible_word_count(sample.summary_md)} target={sample.target_words} "
+            f"passes={sample.passes_used} cost={sample.uncached_generation_cost:.6f}"
+        )
+
+    pending_entries = [
+        (index, item)
+        for index, item in enumerate(bench_rows)
+        if sample_key_from_item(item, bench_name=bench_name) not in completed_set
+    ]
+    use_parallel = (
+        _is_cloud_function(client)
+        and int(args.chapter_concurrency or 1) > 1
+        and len(pending_entries) > 1
+        and all(_item_uses_chapter_path(item) for _, item in pending_entries)
+    )
+
+    if use_parallel:
+        max_workers = min(int(args.chapter_concurrency), len(pending_entries))
+        print(
+            f"Running {len(pending_entries)} chapter items concurrently via Cloud Function "
+            f"(concurrency={max_workers})."
+        )
+        executor = ThreadPoolExecutor(max_workers=max_workers)
+        try:
+            while True:
+                pending_entries = [
+                    (index, item)
+                    for index, item in enumerate(bench_rows)
+                    if sample_key_from_item(item, bench_name=bench_name) not in completed_set
+                ]
+                if not pending_entries:
+                    break
+                pending_iter = iter(pending_entries)
+                in_flight: Dict[Any, Tuple[int, Mapping[str, Any]]] = {}
+                credits_exc: Optional[BaseException] = None
+
+                def _submit_next() -> bool:
+                    try:
+                        index, item = next(pending_iter)
+                    except StopIteration:
+                        return False
+                    future = executor.submit(_process_parallel_chapter_item, index, item)
+                    in_flight[future] = (index, item)
+                    return True
+
+                for _ in range(max_workers):
+                    if not _submit_next():
+                        break
+
+                while in_flight:
+                    done, _ = futures_wait(list(in_flight.keys()), return_when=FIRST_COMPLETED)
+                    for future in done:
+                        in_flight.pop(future, None)
+                        try:
+                            future.result()
+                        except OpenRouterInsufficientCreditsError as exc:
+                            credits_exc = exc
+                        if credits_exc is None:
+                            _submit_next()
+                    if credits_exc is not None:
+                        break
+
+                if credits_exc is None:
+                    break
+
+                for future in list(in_flight.keys()):
+                    future.cancel()
+                executor.shutdown(wait=True)
+                state["status"] = "paused_insufficient_credits"
+                state["latest_error"] = error_to_dict(credits_exc)
+                save_run_state(state_path, state)
+                print(
+                    f"Paused run {run_id} due to insufficient OpenRouter credits while running chapter items."
+                )
+                if not args.wait_for_credits:
+                    print(
+                        "Add credits, then resume with: "
+                        f"python core/run_candidate.py --bench {bench_name} --profile {spec.profile} --resume {run_id}"
+                        + (f" --judge-model {args.judge_model}" if args.judge_model else "")
+                        + (" --write-results" if args.write_results else "")
+                    )
+                    raise SystemExit(2)
+                if not wait_for_credits(client=client, args=args, run_id=run_id):
+                    print(f"Stopped waiting for credits. Resume later with --resume {run_id}.")
+                    raise SystemExit(2)
+                state["status"] = "running"
+                state["latest_error"] = None
+                save_run_state(state_path, state)
+                executor = ThreadPoolExecutor(max_workers=max_workers)
+        finally:
+            executor.shutdown(wait=True)
+
+        samples, traces, completed_item_keys = load_sample_checkpoints(samples_path, data_dir)
+        completed_set = set(completed_item_keys)
+
     for index, item in enumerate(bench_rows):
         item_key = sample_key_from_item(item, bench_name=bench_name)
         if item_key in completed_set:
@@ -2203,6 +2557,7 @@ def _run_single(
                         resume_progress=current_progress,
                         progress_callback=progress_callback,
                         run_dir=run_dir,
+                        chapter_concurrency=args.chapter_concurrency,
                     )
 
                 append_sample_checkpoint(
