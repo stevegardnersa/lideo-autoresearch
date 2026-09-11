@@ -319,6 +319,8 @@ class CloudFunctionClient:
     ) -> GenerationResult:
         body: Dict[str, Any] = {}
         summary_md = str(summary_md or "").strip()
+        reasoning: Any = None
+        reasoning_effort: Optional[str] = None
         if summary_md:
             body["summary_md"] = summary_md
             body["model"] = str(payload.get("model") or judge_model or "")

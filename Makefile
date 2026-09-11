@@ -27,5 +27,9 @@ cf-smoke:
 	sleep 4; \
 	$(PYTHON) cloud_function/cf_smoke.py http://localhost:$$PORT
 
+cf-client-smoke:
+	$(PYTHON) -m pip show functions-framework >/dev/null 2>&1 || $(PYTHON) -m pip install functions-framework
+	$(PYTHON) cloud_function/cf_client_smoke.py
+
 corpus-report:
 	$(PYTHON) tools/corpus_report.py --books-root $(BOOKS_ROOT)
