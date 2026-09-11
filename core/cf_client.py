@@ -28,6 +28,7 @@ from typing import Any, Dict, Mapping, Optional, Tuple
 
 from core.openrouter_client import (
     GenerationResult,
+    ModelUnavailableError,
     OpenRouterAPIError,
     OpenRouterHTTPError,
     OpenRouterInsufficientCreditsError,
@@ -43,6 +44,23 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # Default judge source truncation, matching core/run_candidate.py default.
 DEFAULT_JUDGE_SOURCE_CHAR_LIMIT = 32000
+
+# Gateway "model unavailable" signals (litellm and compatible proxies).
+MODEL_UNAVAILABLE_MARKERS = (
+    "no healthy deployments",
+    "no fallback model group",
+    "no deployments available",
+)
+
+# Model-unavailable failures are usually transient gateway health flaps that can
+# last 30-120s, so they get their own longer bounded backoff (seconds).
+MODEL_UNAVAILABLE_BACKOFF = (15.0, 30.0, 60.0, 120.0)
+DEFAULT_MODEL_UNAVAILABLE_RETRIES = len(MODEL_UNAVAILABLE_BACKOFF)
+
+
+def _is_model_unavailable(message: str) -> bool:
+    lowered = str(message or "").lower()
+    return any(marker in lowered for marker in MODEL_UNAVAILABLE_MARKERS)
 
 
 def _local_scoring_sha() -> str:
@@ -178,6 +196,7 @@ class CloudFunctionClient:
         auth_mode: str = "oidc",
         timeout: int = 600,
         max_retries: int = 3,
+        model_unavailable_retries: int = DEFAULT_MODEL_UNAVAILABLE_RETRIES,
         api_key: str = "",
     ) -> None:
         self.function_url = str(function_url).rstrip("/")
@@ -185,6 +204,7 @@ class CloudFunctionClient:
             raise ValueError(f"function_url must be an http(s) URL, got {function_url!r}")
         self.timeout = int(timeout)
         self.max_retries = int(max_retries)
+        self.model_unavailable_retries = max(0, int(model_unavailable_retries))
         self.api_key = str(api_key).strip()
 
         scheme = urllib.parse.urlparse(self.function_url).scheme.lower()
@@ -231,9 +251,12 @@ class CloudFunctionClient:
 
     def _request_json(self, payload: Mapping[str, Any]) -> Dict[str, Any]:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        model = str(payload.get("model") or "") if isinstance(payload, Mapping) else ""
         auth_refreshed = False
+        model_unavailable_attempts = 0
         last_error: Optional[BaseException] = None
-        for attempt in range(self.max_retries + 1):
+        max_attempts = self.max_retries + 1 + self.model_unavailable_retries
+        for attempt in range(max_attempts):
             request = urllib.request.Request(
                 self.function_url,
                 data=body,
@@ -278,6 +301,27 @@ class CloudFunctionClient:
                         404,
                         self.function_url,
                         message[:1200],
+                        response_text=response_text[:4000],
+                        error_payload=error_payload,
+                    )
+                if _is_model_unavailable(message):
+                    if model_unavailable_attempts < self.model_unavailable_retries:
+                        delay = MODEL_UNAVAILABLE_BACKOFF[
+                            min(model_unavailable_attempts, len(MODEL_UNAVAILABLE_BACKOFF) - 1)
+                        ]
+                        model_unavailable_attempts += 1
+                        print(
+                            f"WARN: model {model or '<unknown>'} has no healthy deployment; "
+                            f"retrying in {delay:.0f}s "
+                            f"({model_unavailable_attempts}/{self.model_unavailable_retries})."
+                        )
+                        time.sleep(delay)
+                        continue
+                    raise ModelUnavailableError(
+                        exc.code,
+                        self.function_url,
+                        message[:1200],
+                        model=model,
                         response_text=response_text[:4000],
                         error_payload=error_payload,
                     )

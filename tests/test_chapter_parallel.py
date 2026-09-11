@@ -9,23 +9,30 @@ Covers:
     of both checkpointed chapters and mid-flight chapter stage state
   * run_candidate._run_single parallelizing chapter bench items, checkpointing
     each item, recovering on resume, and pausing on insufficient credits
+  * ModelUnavailableError detection/backoff at the CF client, the runner banner,
+    and a run pausing (not failing items) when the gateway has no deployment
 """
 
 import dataclasses
+import contextlib
+import io
 import json
 import sys
 import tempfile
 import threading
 import time
+import urllib.error
 from pathlib import Path
 from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import candidate_spec
+from core import cf_client
 from core import run_candidate as rc
 from core.openrouter_client import (
     GenerationResult,
+    ModelUnavailableError,
     OpenRouterInsufficientCreditsError,
     UsageRecord,
 )
@@ -47,13 +54,30 @@ class FakeCloudFunctionClient:
     """Thread-safe fake Cloud Function client.
 
     Tracks how many invocations are in flight at once (to assert the concurrency
-    cap) and can raise an insufficient-credits error after N calls.
+    cap). Can raise an insufficient-credits error after N calls, or inject a
+    generic failure for a specific chapter identified by its source text.
     """
 
-    def __init__(self, *, delay: float = 0.0, summary_words: int = 80, fail_after: Optional[int] = None):
+    def __init__(
+        self,
+        *,
+        delay: float = 0.0,
+        summary_words: int = 80,
+        fail_after: Optional[int] = None,
+        fail_source_exact: Optional[str] = None,
+        fail_source_marker: Optional[str] = None,
+        fail_exception_factory=None,
+        model_unavailable: bool = False,
+        model_unavailable_model: str = "gpt-5.6-luna",
+    ):
         self.delay = delay
         self.summary_words = summary_words
         self.fail_after = fail_after
+        self.fail_source_exact = fail_source_exact
+        self.fail_source_marker = fail_source_marker
+        self.fail_exception_factory = fail_exception_factory
+        self.model_unavailable = model_unavailable
+        self.model_unavailable_model = model_unavailable_model
         self.calls = 0
         self.in_flight = 0
         self.max_in_flight = 0
@@ -62,6 +86,11 @@ class FakeCloudFunctionClient:
         self.auth_mode = "none"
         self.last_meta = {}
         self.scoring_version_mismatch = False
+
+    def _should_fail_source(self, source_md: str) -> bool:
+        if self.fail_source_exact is not None and source_md == self.fail_source_exact:
+            return True
+        return bool(self.fail_source_marker and self.fail_source_marker in source_md)
 
     def chat_completion(self, request_body, **kwargs):
         with self._lock:
@@ -72,6 +101,19 @@ class FakeCloudFunctionClient:
         try:
             if self.fail_after is not None and call_index > self.fail_after:
                 raise OpenRouterInsufficientCreditsError(402, "/chat/completions", "no credits")
+            if self.model_unavailable:
+                raise ModelUnavailableError(
+                    500,
+                    "http://localhost/fake-cf",
+                    f"Internal error: no healthy deployments for model group {self.model_unavailable_model}",
+                    model=self.model_unavailable_model,
+                )
+            source_md = str(kwargs.get("source_md") or "")
+            if self._should_fail_source(source_md):
+                factory = self.fail_exception_factory or (
+                    lambda: RuntimeError("injected chapter failure")
+                )
+                raise factory()
             if self.delay:
                 time.sleep(self.delay)
             payload = json.dumps(
@@ -112,7 +154,7 @@ def make_synthetic_book(root: Path, *, book_id: str = "synthetic-book", n_chapte
     for index in range(n_chapters):
         chapter_id = f"{index:03d}"
         (book_dir / f"{chapter_id}.md").write_text(
-            "# Chapter\n\n" + ("source word " * source_words) + "\n",
+            "# Chapter\n\n" + f"marker-chapter-{chapter_id} " + ("source word " * source_words) + "\n",
             encoding="utf-8",
         )
         chapters.append({"chapter_id": chapter_id, "title": f"Chapter {index}", "source_path": f"{chapter_id}.md"})
@@ -466,15 +508,331 @@ def test_run_candidate_sequential_when_concurrency_one():
     print("test_run_candidate_sequential_when_concurrency_one: OK")
 
 
+def test_run_book_sample_isolates_chapter_exception_and_continues():
+    with tempfile.TemporaryDirectory() as tmp_name:
+        tmp = Path(tmp_name)
+        data_dir, chapter_ids = make_synthetic_book(tmp, n_chapters=6)
+        spec = chapter_parallel_spec()
+        client = FakeCloudFunctionClient(delay=0.01, fail_source_marker="marker-chapter-002")
+        install_fake_cf(client)
+        rc.set_cf_concurrency(3)
+        try:
+            events = []
+            sample, trace = rc.run_book_sample(
+                book_item("synthetic-book"),
+                candidate_module=candidate_spec,
+                spec=spec,
+                client=client,
+                data_dir=data_dir,
+                judge_model="",
+                judge_source_char_limit=32000,
+                resume_progress=None,
+                progress_callback=lambda payload: events.append(payload),
+                run_dir=tmp / "runs",
+                chapter_concurrency=3,
+            )
+        finally:
+            uninstall_fake_cf()
+
+        final = [event for event in events if event.get("phase") == "completed"][-1]
+        output_ids = [entry["chapter_id"] for entry in final["chapter_outputs"]]
+        assert "002" not in output_ids, output_ids
+        assert output_ids == [chapter_id for chapter_id in chapter_ids if chapter_id != "002"], output_ids
+        assert final["chapter_errors"]["002"]["type"] == "RuntimeError"
+        assert trace["n_failed_chapters"] == 1
+        assert trace["chapter_errors"]["002"]["message"] == "injected chapter failure"
+        # The failure is isolated: siblings still generated (and are not cancelled).
+        assert client.calls >= len(chapter_ids) - 1
+        # A partial book sample is still produced from the surviving chapters.
+        assert sample.summary_md.strip()
+    print("test_run_book_sample_isolates_chapter_exception_and_continues: OK")
+
+
+def test_run_book_sample_all_chapters_failing_raises():
+    with tempfile.TemporaryDirectory() as tmp_name:
+        tmp = Path(tmp_name)
+        data_dir, chapter_ids = make_synthetic_book(tmp, n_chapters=3)
+        spec = chapter_parallel_spec()
+        # Marker appears in every synthetic chapter's source.
+        client = FakeCloudFunctionClient(fail_source_marker="marker-chapter-")
+        install_fake_cf(client)
+        rc.set_cf_concurrency(2)
+        try:
+            try:
+                rc.run_book_sample(
+                    book_item("synthetic-book"),
+                    candidate_module=candidate_spec,
+                    spec=spec,
+                    client=client,
+                    data_dir=data_dir,
+                    judge_model="",
+                    judge_source_char_limit=32000,
+                    resume_progress=None,
+                    progress_callback=lambda payload: None,
+                    run_dir=tmp / "runs",
+                    chapter_concurrency=2,
+                )
+                raise AssertionError("expected ChapterRunError when every chapter fails")
+            except rc.ChapterRunError as exc:
+                assert exc.book_id == "synthetic-book"
+                assert set(exc.chapter_errors) == set(chapter_ids)
+        finally:
+            uninstall_fake_cf()
+    print("test_run_book_sample_all_chapters_failing_raises: OK")
+
+
+def test_run_candidate_parallel_isolates_item_exception_and_continues():
+    with tempfile.TemporaryDirectory() as tmp_name:
+        tmp = Path(tmp_name)
+        manifest = load_benchmark_manifest(ROOT / "benchmark_version.json")
+        target_book, target_chapter = "atomic-habits-clear-2018", "032"
+        target_key = f"{target_book}:{target_chapter}"
+        book = rc.load_book_context(target_book, ROOT / "data" / "books")
+        target_source = next(ch.source_md for ch in book.chapters if ch.chapter_id == target_chapter)
+
+        failing_client = FakeCloudFunctionClient(delay=0.01, fail_source_exact=target_source)
+        install_fake_cf(failing_client)
+        try:
+            args = build_run_args(tmp, run_id="item-error-smoke", concurrency=3)
+            rc._run_single(args, manifest, ROOT / "candidate_spec.py", inherited_run_id=None)
+        finally:
+            uninstall_fake_cf()
+
+        run_dir = tmp / "runs" / run_dir_for(manifest)
+        state = json.loads((run_dir / "item-error-smoke.state.json").read_text())
+        assert state["status"] == "finished_with_errors", state["status"]
+        assert target_key in state["failed_items"], state["failed_items"]
+        assert state["failed_items"][target_key]["message"] == "injected chapter failure"
+        assert state["completed_count"] == 3, state["completed_count"]
+        rows = [
+            json.loads(line)
+            for line in (run_dir / "item-error-smoke.samples.jsonl").read_text().splitlines()
+            if line.strip()
+        ]
+        assert len(rows) == 3, len(rows)
+        assert target_key not in {row["item_key"] for row in rows}
+        assert (run_dir / "item-error-smoke.json").exists(), "partial artifact should still be written"
+
+        # Resume with a healthy client: only the previously failed item runs.
+        healthy_client = FakeCloudFunctionClient(delay=0.005)
+        install_fake_cf(healthy_client)
+        try:
+            args = build_run_args(tmp, run_id="item-error-smoke", concurrency=3, resume="item-error-smoke")
+            rc._run_single(args, manifest, ROOT / "candidate_spec.py", inherited_run_id=None)
+        finally:
+            uninstall_fake_cf()
+
+        resumed_state = json.loads((run_dir / "item-error-smoke.state.json").read_text())
+        assert resumed_state["status"] == "finished", resumed_state["status"]
+        assert resumed_state["completed_count"] == 4, resumed_state["completed_count"]
+        assert resumed_state["failed_items"] == {}, resumed_state["failed_items"]
+        rows = [
+            json.loads(line)
+            for line in (run_dir / "item-error-smoke.samples.jsonl").read_text().splitlines()
+            if line.strip()
+        ]
+        assert len(rows) == 4, len(rows)
+        assert target_key in {row["item_key"] for row in rows}
+        assert healthy_client.calls > 0
+    print("test_run_candidate_parallel_isolates_item_exception_and_continues: OK")
+
+
+def test_run_book_sample_propagates_insufficient_credits():
+    """Credits errors must escape chapter isolation so the run can pause/resume."""
+    with tempfile.TemporaryDirectory() as tmp_name:
+        tmp = Path(tmp_name)
+        data_dir, _chapter_ids = make_synthetic_book(tmp, n_chapters=4)
+        spec = chapter_parallel_spec()
+        client = FakeCloudFunctionClient(fail_after=1)
+        install_fake_cf(client)
+        rc.set_cf_concurrency(2)
+        try:
+            try:
+                rc.run_book_sample(
+                    book_item("synthetic-book"),
+                    candidate_module=candidate_spec,
+                    spec=spec,
+                    client=client,
+                    data_dir=data_dir,
+                    judge_model="",
+                    judge_source_char_limit=32000,
+                    resume_progress=None,
+                    progress_callback=lambda payload: None,
+                    run_dir=tmp / "runs",
+                    chapter_concurrency=2,
+                )
+                raise AssertionError("expected OpenRouterInsufficientCreditsError to propagate")
+            except OpenRouterInsufficientCreditsError:
+                pass
+        finally:
+            uninstall_fake_cf()
+    print("test_run_book_sample_propagates_insufficient_credits: OK")
+
+
+# --------------------------------------------------------------------------- #
+# Model-unavailable (gateway has no healthy deployment) handling
+# --------------------------------------------------------------------------- #
+
+
+class _FakeHTTPResponse:
+    def __init__(self, body: str):
+        self._body = body.encode("utf-8")
+        self.headers = self
+
+    def get_content_charset(self):
+        return "utf-8"
+
+    def read(self):
+        return self._body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        return False
+
+
+def _model_unavailable_http_error(url: str, model: str = "gpt-5.6-luna"):
+    body = json.dumps(
+        {"success": False, "error": f"Internal error: no healthy deployments for model group {model}"}
+    )
+    return urllib.error.HTTPError(url, 500, "Internal Server Error", {}, io.BytesIO(body.encode("utf-8")))
+
+
+class _PatchUrlopen:
+    def __init__(self, handler):
+        self.handler = handler
+        self._original = None
+
+    def __enter__(self):
+        self._original = cf_client.urllib.request.urlopen
+        cf_client.urllib.request.urlopen = self.handler
+        return self
+
+    def __exit__(self, *exc_info):
+        cf_client.urllib.request.urlopen = self._original
+        return False
+
+
+def test_cf_client_model_unavailable_retries_then_raises():
+    calls = {"n": 0}
+
+    def fake_urlopen(request, timeout=None):
+        calls["n"] += 1
+        raise _model_unavailable_http_error(request.full_url)
+
+    original_backoff = cf_client.MODEL_UNAVAILABLE_BACKOFF
+    cf_client.MODEL_UNAVAILABLE_BACKOFF = (0.0, 0.0, 0.0)
+    try:
+        client = cf_client.CloudFunctionClient(
+            function_url="http://localhost/fake-cf",
+            auth_mode="none",
+            max_retries=1,
+            model_unavailable_retries=2,
+        )
+        with _PatchUrlopen(fake_urlopen):
+            try:
+                client._request_json({"model": "gpt-5.6-luna"})
+                raise AssertionError("expected ModelUnavailableError")
+            except ModelUnavailableError as exc:
+                assert exc.model == "gpt-5.6-luna", exc.model
+                assert exc.status_code == 500, exc.status_code
+                assert "no healthy deployments" in str(exc)
+        assert calls["n"] == 3, calls["n"]  # 1 initial + 2 bounded model-unavailable retries
+    finally:
+        cf_client.MODEL_UNAVAILABLE_BACKOFF = original_backoff
+    print("test_cf_client_model_unavailable_retries_then_raises: OK")
+
+
+def test_cf_client_model_unavailable_recovers_on_retry():
+    calls = {"n": 0}
+    good_body = json.dumps({"summary": {"summary_md": "ok", "estimated_visible_words": 1}})
+
+    def fake_urlopen(request, timeout=None):
+        calls["n"] += 1
+        if calls["n"] < 2:
+            raise _model_unavailable_http_error(request.full_url)
+        return _FakeHTTPResponse(good_body)
+
+    original_backoff = cf_client.MODEL_UNAVAILABLE_BACKOFF
+    cf_client.MODEL_UNAVAILABLE_BACKOFF = (0.0, 0.0, 0.0)
+    try:
+        client = cf_client.CloudFunctionClient(
+            function_url="http://localhost/fake-cf",
+            auth_mode="none",
+            max_retries=1,
+            model_unavailable_retries=3,
+        )
+        with _PatchUrlopen(fake_urlopen):
+            response = client._request_json({"model": "gpt-5.6-luna"})
+        assert response["summary"]["summary_md"] == "ok"
+        assert calls["n"] == 2, calls["n"]
+    finally:
+        cf_client.MODEL_UNAVAILABLE_BACKOFF = original_backoff
+    print("test_cf_client_model_unavailable_recovers_on_retry: OK")
+
+
+def test_model_unavailable_banner_names_model_and_resume_command():
+    with tempfile.TemporaryDirectory() as tmp_name:
+        args = build_run_args(Path(tmp_name), run_id="banner-smoke", concurrency=1)
+    exc = ModelUnavailableError(500, "http://localhost/fake-cf", "no healthy deployments", model="gpt-5.6-luna")
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        rc.print_model_unavailable_banner(
+            exc, bench_name="chapter_fast", profile=PROFILE, run_id="banner-smoke", args=args
+        )
+    text = buffer.getvalue()
+    assert "MODEL UNAVAILABLE: gpt-5.6-luna" in text, text
+    assert "--resume banner-smoke" in text, text
+    assert "--profile 30m_deepseek-v4-flash_notthinking" in text, text
+    print("test_model_unavailable_banner_names_model_and_resume_command: OK")
+
+
+def test_run_candidate_pauses_on_model_unavailable():
+    with tempfile.TemporaryDirectory() as tmp_name:
+        tmp = Path(tmp_name)
+        manifest = load_benchmark_manifest(ROOT / "benchmark_version.json")
+        client = FakeCloudFunctionClient(model_unavailable=True)
+        install_fake_cf(client)
+        try:
+            args = build_run_args(tmp, run_id="model-unavailable-smoke", concurrency=2)
+            buffer = io.StringIO()
+            try:
+                with contextlib.redirect_stdout(buffer):
+                    rc._run_single(args, manifest, ROOT / "candidate_spec.py", inherited_run_id=None)
+                raise AssertionError("expected SystemExit(3) on model unavailable")
+            except SystemExit as exit_signal:
+                assert exit_signal.code == 3, exit_signal.code
+        finally:
+            uninstall_fake_cf()
+
+        run_dir = tmp / "runs" / run_dir_for(manifest)
+        state = json.loads((run_dir / "model-unavailable-smoke.state.json").read_text())
+        assert state["status"] == "paused_model_unavailable", state["status"]
+        assert state["latest_error"]["type"] == "ModelUnavailableError", state["latest_error"]
+        assert state["latest_error"]["message"].find("no healthy deployments") >= 0
+        assert not (run_dir / "model-unavailable-smoke.json").exists(), "no artifact while paused"
+        assert "MODEL UNAVAILABLE: gpt-5.6-luna" in buffer.getvalue()
+    print("test_run_candidate_pauses_on_model_unavailable: OK")
+
+
 def main():
     tests = [
         test_cf_concurrency_slot_caps_inflight,
         test_run_book_sample_runs_chapters_concurrently_and_orders_outputs,
         test_run_book_sample_resume_keeps_completed_and_resumes_midflight,
+        test_run_book_sample_isolates_chapter_exception_and_continues,
+        test_run_book_sample_all_chapters_failing_raises,
+        test_run_book_sample_propagates_insufficient_credits,
         test_run_candidate_parallelizes_chapter_bench_items,
         test_run_candidate_resume_runs_only_remaining_items,
         test_run_candidate_parallel_pauses_on_insufficient_credits,
+        test_run_candidate_parallel_isolates_item_exception_and_continues,
         test_run_candidate_sequential_when_concurrency_one,
+        test_cf_client_model_unavailable_retries_then_raises,
+        test_cf_client_model_unavailable_recovers_on_retry,
+        test_model_unavailable_banner_names_model_and_resume_command,
+        test_run_candidate_pauses_on_model_unavailable,
     ]
     for test in tests:
         test()

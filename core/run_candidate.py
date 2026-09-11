@@ -39,6 +39,7 @@ from core.dotenv import load_dotenv
 from core.judge import AbsoluteJudgeResult, judge_summary_absolute
 from core.openrouter_client import (
     GenerationResult,
+    ModelUnavailableError,
     OpenRouterAPIError,
     OpenRouterHTTPError,
     OpenRouterClient,
@@ -230,6 +231,50 @@ def error_to_dict(exc: BaseException) -> Dict[str, Any]:
             if value not in (None, ""):
                 payload[attr] = str(value)
     return payload
+
+
+class ChapterRunError(RuntimeError):
+    """Raised when every chapter in a book sample failed.
+
+    Individual chapter failures are isolated and recorded on the sample trace
+    (``chapter_errors``); this aggregate error is only used when there is no
+    chapter output left to compose.
+    """
+
+    def __init__(self, book_id: str, chapter_errors: Mapping[str, Mapping[str, Any]]):
+        super().__init__(f"All {len(chapter_errors)} chapter(s) failed for {book_id}")
+        self.book_id = book_id
+        self.chapter_errors = {str(key): dict(value) for key, value in chapter_errors.items()}
+
+
+def resume_command_hint(*, bench_name: str, profile: str, run_id: str, args: argparse.Namespace) -> str:
+    hint = f"python core/run_candidate.py --bench {bench_name} --profile {profile} --resume {run_id}"
+    judge_model = getattr(args, "judge_model", "")
+    if judge_model:
+        hint += f" --judge-model {judge_model}"
+    if getattr(args, "write_results", False):
+        hint += " --write-results"
+    return hint
+
+
+def print_model_unavailable_banner(
+    exc: BaseException,
+    *,
+    bench_name: str,
+    profile: str,
+    run_id: str,
+    args: argparse.Namespace,
+) -> None:
+    model = str(getattr(exc, "model", "") or "<unknown>")
+    print()
+    print("=" * 72)
+    print(f"MODEL UNAVAILABLE: {model}")
+    print("The provider/gateway reported no healthy deployment for this model.")
+    print("These attempts never reached a model, so they were not billed.")
+    print("Restore the deployment/fallback upstream, then resume this run with:")
+    print("  " + resume_command_hint(bench_name=bench_name, profile=profile, run_id=run_id, args=args))
+    print("=" * 72)
+    print()
 
 
 def sample_key_from_item(item: Mapping[str, Any], *, bench_name: str) -> str:
@@ -1451,6 +1496,7 @@ def run_book_sample(
 
     chapter_outputs: List[Tuple[ChapterContext, StageRun]] = []
     chapter_passes: List[int] = []
+    chapter_errors: Dict[str, Dict[str, Any]] = {}
     for chapter in book.chapters:
         completed_stage = completed_map.get(chapter.chapter_id)
         if completed_stage is not None:
@@ -1503,6 +1549,8 @@ def run_book_sample(
         progress["total_generation_cost"] = total_generation_cost
         progress["total_uncached_cost"] = total_uncached_cost
         progress["chapter_runs_rows"] = list(chapter_runs_rows)
+        if chapter_errors:
+            progress["chapter_errors"] = dict(chapter_errors)
         if spec.disable_composer and chapter_judge_scores:
             progress["chapter_judge_scores"] = {
                 ch_id: judge_scores_to_dict(scores) for ch_id, scores in chapter_judge_scores.items()
@@ -1564,6 +1612,17 @@ def run_book_sample(
                 chapter_judge_scores[chapter.chapter_id] = chapter_scores
             chapter_runs_rows.append(chapter_row)
 
+    def _record_chapter_error(chapter: ChapterContext, exc: BaseException) -> None:
+        error_payload = error_to_dict(exc)
+        with progress_lock:
+            chapter_errors[chapter.chapter_id] = error_payload
+            _snapshot_progress(current_stage_payload=None)
+        print(
+            f"WARN: chapter {chapter.chapter_id} of {book_id} failed; continuing with remaining chapters. "
+            f"{error_payload['type']}: {error_payload['message']}",
+            file=sys.stderr,
+        )
+
     if chapter_concurrency is not None and chapter_concurrency > 1 and pending and _is_cloud_function(client):
         workers = min(int(chapter_concurrency), len(pending))
         with ThreadPoolExecutor(max_workers=workers) as executor:
@@ -1573,7 +1632,13 @@ def run_book_sample(
             }
             for future in as_completed(futures):
                 chapter, target_words = futures[future]
-                chapter_run, chapter_scores, chapter_row = future.result()
+                try:
+                    chapter_run, chapter_scores, chapter_row = future.result()
+                except (OpenRouterInsufficientCreditsError, ModelUnavailableError):
+                    raise
+                except Exception as exc:
+                    _record_chapter_error(chapter, exc)
+                    continue
                 _record_chapter_result(chapter, target_words, chapter_run, chapter_scores, chapter_row)
                 _emit_completed_snapshot()
         book_order = {chapter.chapter_id: index for index, chapter in enumerate(book.chapters)}
@@ -1603,9 +1668,18 @@ def run_book_sample(
                         chapter_row["sentence_count"] = rm.sentence_count
                     chapter_runs_rows.append(chapter_row)
                 continue
-            chapter_run, chapter_scores, chapter_row = _run_pending_chapter(chapter, target_words)
+            try:
+                chapter_run, chapter_scores, chapter_row = _run_pending_chapter(chapter, target_words)
+            except (OpenRouterInsufficientCreditsError, ModelUnavailableError):
+                raise
+            except Exception as exc:
+                _record_chapter_error(chapter, exc)
+                continue
             _record_chapter_result(chapter, target_words, chapter_run, chapter_scores, chapter_row)
             _emit_completed_snapshot()
+
+    if chapter_errors and not chapter_outputs:
+        raise ChapterRunError(book_id, chapter_errors)
 
     chapter_summaries_md = render_chapter_summaries_for_composer(chapter_outputs)
     retrieved_source_excerpts = ""
@@ -1653,6 +1727,8 @@ def run_book_sample(
             progress["final_target_words"] = final_target_words
             progress["total_generation_cost"] = total_generation_cost
             progress["total_uncached_cost"] = total_uncached_cost
+            if chapter_errors:
+                progress["chapter_errors"] = dict(chapter_errors)
             progress["current_stage"] = {
                 "stage_kind": "composer",
                 "stage_state": _json_safe(stage_state),
@@ -1689,6 +1765,8 @@ def run_book_sample(
         progress["composer_stage_run"] = serialize_stage_run(composer_run)
         progress["total_generation_cost"] = total_generation_cost
         progress["total_uncached_cost"] = total_uncached_cost
+        if chapter_errors:
+            progress["chapter_errors"] = dict(chapter_errors)
         progress["current_stage"] = None
         emit()
     else:
@@ -1787,6 +1865,9 @@ def run_book_sample(
             (sum((s.faithfulness - trace["agg_faithfulness"]) ** 2 for s in all_scores) / n) ** 0.5
         )
     trace.update(taxonomy_trace_payload(book.taxonomy))
+    if chapter_errors:
+        trace["chapter_errors"] = dict(chapter_errors)
+        trace["n_failed_chapters"] = len(chapter_errors)
     progress.clear()
     progress.update(base_progress)
     progress["phase"] = "completed"
@@ -1797,6 +1878,8 @@ def run_book_sample(
     progress["composer_stage_run"] = serialize_stage_run(composer_run)
     progress["total_generation_cost"] = total_generation_cost
     progress["total_uncached_cost"] = total_uncached_cost
+    if chapter_errors:
+        progress["chapter_errors"] = dict(chapter_errors)
     progress["current_stage"] = None
     progress["sample_record"] = build_sample_record(sample, trace, item_key=sample_id)
     emit()
@@ -2332,6 +2415,9 @@ def _run_single(
     state_lock = threading.Lock()
     if not isinstance(state.get("current_items"), dict):
         state["current_items"] = {}
+    failed_items: Dict[str, Dict[str, Any]] = {}
+    attempted_failed: set = set()
+    state["failed_items"] = failed_items
 
     def _item_uses_chapter_path(item: Mapping[str, Any]) -> bool:
         return str(item.get("level", "")) == "chapter" or bench_name == "chapter_fast"
@@ -2347,7 +2433,7 @@ def _run_single(
             return legacy
         return None
 
-    def _process_parallel_chapter_item(index: int, item: Mapping[str, Any]) -> None:
+    def _process_parallel_chapter_item(index: int, item: Mapping[str, Any]) -> Optional[Dict[str, Any]]:
         item_key = sample_key_from_item(item, bench_name=bench_name)
 
         def _set_progress(progress_payload: Mapping[str, Any]) -> None:
@@ -2386,12 +2472,26 @@ def _run_single(
                 state["status"] = "paused_insufficient_credits"
                 save_run_state(state_path, state)
             raise
-        except Exception as exc:
+        except ModelUnavailableError as exc:
             with state_lock:
-                state["status"] = "failed"
+                state["status"] = "paused_model_unavailable"
                 state["latest_error"] = error_to_dict(exc)
                 save_run_state(state_path, state)
             raise
+        except Exception as exc:
+            error_payload = error_to_dict(exc)
+            with state_lock:
+                state["failed_items"][item_key] = error_payload
+                # Keep current_items[item_key] so a later resume can continue this
+                # sample from its last checkpoint instead of regenerating it.
+                state["latest_error"] = error_payload
+                save_run_state(state_path, state)
+            print(
+                f"WARN: sample {item_key} failed; continuing with remaining items. "
+                f"{error_payload['type']}: {error_payload['message']}",
+                file=sys.stderr,
+            )
+            return error_payload
 
         with state_lock:
             append_sample_checkpoint(
@@ -2418,6 +2518,7 @@ def _run_single(
             f"words={visible_word_count(sample.summary_md)} target={sample.target_words} "
             f"passes={sample.passes_used} cost={sample.uncached_generation_cost:.6f}"
         )
+        return None
 
     pending_entries = [
         (index, item)
@@ -2444,12 +2545,13 @@ def _run_single(
                     (index, item)
                     for index, item in enumerate(bench_rows)
                     if sample_key_from_item(item, bench_name=bench_name) not in completed_set
+                    and sample_key_from_item(item, bench_name=bench_name) not in attempted_failed
                 ]
                 if not pending_entries:
                     break
                 pending_iter = iter(pending_entries)
                 in_flight: Dict[Any, Tuple[int, Mapping[str, Any]]] = {}
-                credits_exc: Optional[BaseException] = None
+                abort_exc: Optional[BaseException] = None
 
                 def _submit_next() -> bool:
                     try:
@@ -2467,24 +2569,37 @@ def _run_single(
                 while in_flight:
                     done, _ = futures_wait(list(in_flight.keys()), return_when=FIRST_COMPLETED)
                     for future in done:
-                        in_flight.pop(future, None)
+                        _index, item = in_flight.pop(future, (None, None))
                         try:
-                            future.result()
-                        except OpenRouterInsufficientCreditsError as exc:
-                            credits_exc = exc
-                        if credits_exc is None:
+                            item_error = future.result()
+                        except (OpenRouterInsufficientCreditsError, ModelUnavailableError) as exc:
+                            abort_exc = exc
+                            item_error = None
+                        if item_error is not None and item is not None:
+                            attempted_failed.add(sample_key_from_item(item, bench_name=bench_name))
+                        if abort_exc is None:
                             _submit_next()
-                    if credits_exc is not None:
+                    if abort_exc is not None:
                         break
 
-                if credits_exc is None:
+                if abort_exc is None:
                     break
 
                 for future in list(in_flight.keys()):
                     future.cancel()
                 executor.shutdown(wait=True)
+
+                if isinstance(abort_exc, ModelUnavailableError):
+                    state["status"] = "paused_model_unavailable"
+                    state["latest_error"] = error_to_dict(abort_exc)
+                    save_run_state(state_path, state)
+                    print_model_unavailable_banner(
+                        abort_exc, bench_name=bench_name, profile=spec.profile, run_id=run_id, args=args
+                    )
+                    raise SystemExit(3)
+
                 state["status"] = "paused_insufficient_credits"
-                state["latest_error"] = error_to_dict(credits_exc)
+                state["latest_error"] = error_to_dict(abort_exc)
                 save_run_state(state_path, state)
                 print(
                     f"Paused run {run_id} due to insufficient OpenRouter credits while running chapter items."
@@ -2492,9 +2607,9 @@ def _run_single(
                 if not args.wait_for_credits:
                     print(
                         "Add credits, then resume with: "
-                        f"python core/run_candidate.py --bench {bench_name} --profile {spec.profile} --resume {run_id}"
-                        + (f" --judge-model {args.judge_model}" if args.judge_model else "")
-                        + (" --write-results" if args.write_results else "")
+                        + resume_command_hint(
+                            bench_name=bench_name, profile=spec.profile, run_id=run_id, args=args
+                        )
                     )
                     raise SystemExit(2)
                 if not wait_for_credits(client=client, args=args, run_id=run_id):
@@ -2512,7 +2627,7 @@ def _run_single(
 
     for index, item in enumerate(bench_rows):
         item_key = sample_key_from_item(item, bench_name=bench_name)
-        if item_key in completed_set:
+        if item_key in completed_set or item_key in attempted_failed:
             continue
 
         while True:
@@ -2594,9 +2709,9 @@ def _run_single(
                 if not args.wait_for_credits:
                     print(
                         "Add credits, then resume with: "
-                        f"python core/run_candidate.py --bench {bench_name} --profile {spec.profile} --resume {run_id}"
-                        + (f" --judge-model {args.judge_model}" if args.judge_model else "")
-                        + (" --write-results" if args.write_results else "")
+                        + resume_command_hint(
+                            bench_name=bench_name, profile=spec.profile, run_id=run_id, args=args
+                        )
                     )
                     raise SystemExit(2)
                 if not wait_for_credits(client=client, args=args, run_id=run_id):
@@ -2606,11 +2721,29 @@ def _run_single(
                 state["latest_error"] = None
                 save_run_state(state_path, state)
                 continue
+            except ModelUnavailableError as exc:
+                state["status"] = "paused_model_unavailable"
+                state["latest_error"] = error_to_dict(exc)
+                save_run_state(state_path, state)
+                print_model_unavailable_banner(
+                    exc, bench_name=bench_name, profile=spec.profile, run_id=run_id, args=args
+                )
+                raise SystemExit(3)
             except Exception as exc:
                 state["status"] = "failed"
                 state["latest_error"] = error_to_dict(exc)
                 save_run_state(state_path, state)
                 raise
+
+    if not samples:
+        all_failed_error = RuntimeError(
+            f"All {len(failed_items)} sample(s) failed for run {run_id}; nothing to score."
+        )
+        state["status"] = "failed"
+        state["latest_error"] = error_to_dict(all_failed_error)
+        state["failed_items"] = failed_items
+        save_run_state(state_path, state)
+        raise all_failed_error
 
     scoring_config = DEFAULT_SCORING_CONFIG
     profile_name = spec.profile
@@ -2648,6 +2781,9 @@ def _run_single(
     run_manifest["resume_count"] = len(resume_events)
     if resume_events:
         run_manifest["resume_events_utc"] = resume_events
+    if failed_items:
+        run_manifest["failed_items"] = dict(failed_items)
+        run_manifest["n_failed_items"] = len(failed_items)
 
     artifact_payload = summarize_trace(
         dataset_score,
@@ -2684,6 +2820,7 @@ def _run_single(
         "worst_genre_macro_utility": float(worst_genre_macro.get("mean_utility", 0.0) or 0.0),
         "genre_macro_spread_utility": float(dataset_payload.get("genre_macro_spread_utility", 0.0) or 0.0),
         "n_genre_macros": int(dataset_payload.get("n_genre_macros", 0) or 0),
+        "n_failed_items": len(failed_items),
     }
     print(json.dumps(summary_block, ensure_ascii=False, indent=2))
 
@@ -2705,11 +2842,12 @@ def _run_single(
         )
         print(f"Updated results table: {display_path(results_path)}")
 
-    state["status"] = "finished"
+    state["status"] = "finished_with_errors" if failed_items else "finished"
     state["current_item"] = None
     state["latest_error"] = None
     state["completed_count"] = len(completed_set)
     state["completed_sample_ids"] = list(state.get("completed_sample_ids") or [])
+    state["failed_items"] = failed_items
     state["run_manifest"] = run_manifest
     state["out_path"] = display_path(out_path)
     save_run_state(state_path, state)

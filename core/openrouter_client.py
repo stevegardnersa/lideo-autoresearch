@@ -39,6 +39,35 @@ class OpenRouterInsufficientCreditsError(OpenRouterHTTPError):
     """Raised when OpenRouter returns HTTP 402 insufficient credits."""
 
 
+class ModelUnavailableError(OpenRouterHTTPError):
+    """Raised when the provider/gateway has no healthy deployment for a model.
+
+    Surfaced when a proxy (e.g. litellm) answers with "no healthy deployments"
+    / "no fallback model group" for the requested model group. Distinct from a
+    generic HTTP error so callers can print actionable guidance and resume once
+    the deployment is restored, without silently swapping models.
+    """
+
+    def __init__(
+        self,
+        status_code: int,
+        path: str,
+        message: str,
+        *,
+        model: str = "",
+        response_text: str = "",
+        error_payload: Optional[Mapping[str, Any]] = None,
+    ) -> None:
+        self.model = str(model or "")
+        super().__init__(
+            status_code,
+            path,
+            message,
+            response_text=response_text,
+            error_payload=error_payload,
+        )
+
+
 @dataclass(frozen=True)
 class ModelPricingTier:
     prompt: float = 0.0
