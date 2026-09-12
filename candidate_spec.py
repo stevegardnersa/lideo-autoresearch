@@ -1048,7 +1048,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
         budget_allocator=BudgetAllocatorConfig(
-            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
@@ -1320,7 +1320,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
         budget_allocator=BudgetAllocatorConfig(
-            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
@@ -1768,7 +1768,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
         budget_allocator=BudgetAllocatorConfig(
-            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
         ),
         use_json_schema=True,
         json_schema_name="summary_response",

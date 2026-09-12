@@ -319,8 +319,46 @@ async function loadModels() {
   try {
     const { models } = await api('/api/models')
     renderModelsPage(models)
+    refreshOpenVariantDialog(models)
   } catch (e) {
     list.innerHTML = `<div class="placeholder-text">Failed to load models: ${esc(e.message)}</div>`
+  }
+}
+
+// Updates the judged/status/runs-dir cells of an open edit dialog in place, so a
+// completed run refreshes the variant list without clobbering unsaved edits.
+function refreshOpenVariantDialog(models) {
+  const overlay = document.getElementById('modelDialogOverlay')
+  if (!overlay || overlay.classList.contains('cm-hidden') || overlay.dataset.mode !== 'edit') return
+  let editing = null
+  try { editing = JSON.parse(overlay.dataset.editingModel || 'null') } catch { editing = null }
+  if (!editing) return
+  const fresh = models.find(m => m.model === editing.model)
+  if (!fresh) return
+  const byKey = new Map()
+  for (const p of fresh.profiles || []) byKey.set(`${p.time_budget}_${effortOf(p.slug)}`, p)
+  overlay.dataset.editingModel = JSON.stringify(fresh)
+  for (const tr of overlay.querySelectorAll('#dlgVariantRows tr')) {
+    if (tr.dataset.existing !== '1') continue
+    const p = byKey.get(`${tr.dataset.tb}_${tr.dataset.effort}`)
+    if (!p) continue
+    const hidden = p.hidden === true
+    const status = hidden ? 'hidden' : (p.status === 'tested' ? 'tested' : 'pending')
+    tr.dataset.runsDir = p.runsDir || ''
+    tr.dataset.origStatus = status
+    const judgedCell = tr.querySelector('.vc-judged')
+    if (judgedCell) {
+      judgedCell.textContent = p.judged ? 'yes' : 'no'
+      judgedCell.classList.toggle('vc-has', !!p.judged)
+      judgedCell.classList.toggle('vc-none', !p.judged)
+    }
+    const statusCell = tr.querySelector('.vc-status')
+    if (statusCell) {
+      statusCell.textContent = status
+      statusCell.classList.toggle('vc-hidden-status', hidden)
+      statusCell.classList.toggle('vc-has', !hidden)
+      statusCell.classList.toggle('vc-none', hidden)
+    }
   }
 }
 
@@ -433,6 +471,7 @@ function variantRowHtml({ tb, effort, existing, locked }) {
   const judged = !existing ? '\u2014' : (existing.judged ? 'yes' : 'no')
   const judgedCls = !existing ? 'vc-none' : (existing.judged ? 'vc-has' : 'vc-none')
   const numAttrs = locked ? ' readonly' : ''
+  const runsDir = existing && existing.runsDir ? esc(existing.runsDir) : ''
   const opt = existing
     ? `<button type="button" class="vc-opt-btn" data-slug="${esc(existing.slug)}" aria-haspopup="menu" aria-expanded="false" aria-label="Options for ${esc(existing.slug)}" title="Profile options">\u22EF</button>
       <div class="vc-opt-menu cm-hidden" role="menu">
@@ -440,7 +479,7 @@ function variantRowHtml({ tb, effort, existing, locked }) {
         <button type="button" class="vc-opt-item vc-opt-remove" data-action="remove" role="menuitem">Remove variant</button>
       </div>`
     : ''
-  return `<tr data-tb="${tb}" data-effort="${effort}" data-existing="${existing ? '1' : '0'}"${locked ? ' data-locked="1"' : ''} data-orig-status="${status}" class="${locked ? 'vc-locked' : ''}">
+  return `<tr data-tb="${tb}" data-effort="${effort}" data-existing="${existing ? '1' : '0'}"${locked ? ' data-locked="1"' : ''} data-orig-status="${status}" data-runs-dir="${runsDir}" class="${locked ? 'vc-locked' : ''}">
     <td><input type="checkbox" class="vc-check" ${existing && !hidden ? 'checked' : ''}${locked ? ' disabled' : ''} /></td>
     <td class="vc-tb">${tb}</td>
     <td class="vc-mode"${locked ? ` data-tooltip="Canonical effort profiles cannot be modified. Remove variant to delete this baseline."` : ''}>${effortLabel(effort)}</td>
@@ -555,7 +594,7 @@ async function refreshProfileMeta() {
       if (a['judge-model'] && !prefJudgeModel) prefJudgeModel = a['judge-model']
       if (a.profile && a.profile !== 'all') {
         const meta = PROFILE_META.get(a.profile) || {}
-        if (a.bench) meta.lastBench = a.bench
+        if (job.toolId === 'run_candidate' && a.bench) meta.lastBench = a.bench
         if (a['judge-model']) meta.lastJudgeModel = a['judge-model']
         PROFILE_META.set(a.profile, meta)
       }
@@ -601,19 +640,18 @@ function profileMenuAction(slug, action, row) {
     return
   }
   if (action === 'judge') {
-    let judgeModel = storageGet('mm.judgeModel') || prefJudgeModel
-    if (!judgeModel) {
-      let entered = null
-      try { entered = window.prompt('Judge model (e.g. openai/gpt-5.4-mini):', DEFAULT_JUDGE_MODEL) } catch { entered = null }
-      if (!entered || !entered.trim()) return
-      judgeModel = entered.trim()
-      storageSet('mm.judgeModel', judgeModel)
-    }
+    const remembered = storageGet('mm.judgeModel') || prefJudgeModel || DEFAULT_JUDGE_MODEL
+    let entered = null
+    try { entered = window.prompt('Judge model (e.g. openai/gpt-5.4-mini):', remembered) } catch { entered = null }
+    if (!entered || !entered.trim()) return
+    const judgeModel = entered.trim()
+    storageSet('mm.judgeModel', judgeModel)
+    const judgeBench = (row && row.dataset.runsDir) || benchFor(slug)
     launchProfileJob('judge_existing', {
-      bench: benchFor(slug),
+      bench: judgeBench,
       'judge-model': judgeModel,
       profile: slug,
-    }, `re-judge of <code>${esc(slug)}</code> on <code>${esc(benchFor(slug))}</code> with <code>${esc(judgeModel)}</code>`)
+    }, `re-judge of <code>${esc(slug)}</code> on <code>${esc(judgeBench)}</code> with <code>${esc(judgeModel)}</code>`)
     return
   }
   if (action === 'agent') {
@@ -1557,9 +1595,21 @@ function wireGearButtons() {
   })
 }
 
+function runJobsActive() {
+  return (RUN_STATE.jobs || []).some(j => j.status === 'running' || j.status === 'queued')
+}
+
+function settingsOverlayHidden() {
+  const o = document.getElementById('settingsOverlay')
+  return !o || o.classList.contains('cm-hidden')
+}
+
 function hideOverlay(overlay) {
   overlay.classList.add('cm-hidden')
-  stopRunPolling()
+  // Keep monitoring while runs are in flight: closing the drawer must not stop
+  // the live stream, so a job that finishes behind the drawer still refreshes
+  // the scatter explorer, model list and variant list.
+  if (!runJobsActive()) stopRunPolling()
 }
 
 function activateSection(section) {
@@ -1652,8 +1702,7 @@ function bindModal() {
   })
 
   window.addEventListener('dashboard:candidates-refreshed', () => {
-    const modelSec = document.getElementById('settingsModelsSection')
-    if (modelSec && modelSec.classList.contains('active')) loadModels()
+    loadModels()
   })
   document.getElementById('dlgModel').addEventListener('input', (e) => {
     const btn = document.getElementById('dlgCreate')
@@ -2317,6 +2366,9 @@ async function refreshJobs() {
     clearOffline()
     notifyAllHints()
     renderJobs()
+    // Once the last run finishes behind a closed drawer, nothing is left to
+    // monitor — shut the poll down instead of polling forever.
+    if (settingsOverlayHidden() && !runJobsActive()) stopRunPolling()
   } catch (e) {
     setOffline()
     throw e
@@ -2407,11 +2459,11 @@ function notifyAllHints() {
 
 function dispatchHints(job, hints) {
   if (RUN_STATE.hintedJobs.has(job)) return
-  if (hints.resultsTsvUpdated) {
+  if (hints.resultsTsvUpdated || hints.runCompleted) {
     RUN_STATE.hintedJobs.add(job)
     window.dispatchEvent(new window.Event('dashboard:results-refreshed'))
   }
-  if (hints.specPyChanged) {
+  if (hints.specPyChanged || hints.modelsChanged) {
     RUN_STATE.hintedJobs.add(job)
     window.dispatchEvent(new window.Event('dashboard:candidates-refreshed'))
   }

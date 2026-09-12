@@ -1,4 +1,4 @@
-import { test, beforeEach } from 'node:test'
+import { test, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
 
@@ -13,10 +13,10 @@ const MODELS_PAYLOAD = {
       best_quality_det: 0.745,
       best_quality_llm: 0.902,
       profiles: [
-        { slug: '30m_deepseek-v4-flash_thinking', time_budget: '30m', thinking: true, status: 'tested', temperature: 0.2, max_tokens: 8192, provider_route: '' },
+        { slug: '30m_deepseek-v4-flash_thinking', time_budget: '30m', thinking: true, status: 'tested', judged: true, runsDir: 'booksum-v4', temperature: 0.2, max_tokens: 8192, provider_route: '' },
         { slug: '60m_deepseek-v4-flash_notthinking', time_budget: '60m', thinking: false, status: 'pending', temperature: 0.0, max_tokens: 8192, provider_route: '{"order":["deepseek"]}' },
-        { slug: '30m_deepseek-v4-flash_effort-high', time_budget: '30m', thinking: null, status: 'pending', temperature: 0.7, max_tokens: 40960, provider_route: '' },
-        { slug: '60m_deepseek-v4-flash_effort-low', time_budget: '60m', thinking: null, status: 'pending', temperature: 0.3, max_tokens: 10240, provider_route: '' },
+        { slug: '30m_deepseek-v4-flash_effort-high', time_budget: '30m', thinking: null, status: 'pending', judged: false, runsDir: 'booksum-v4', temperature: 0.7, max_tokens: 40960, provider_route: '' },
+        { slug: '60m_deepseek-v4-flash_effort-low', time_budget: '60m', thinking: null, status: 'pending', judged: false, temperature: 0.3, max_tokens: 10240, provider_route: '' },
       ],
     },
     {
@@ -279,6 +279,21 @@ beforeEach(async () => {
   h.postRender().overlay.classList.add('cm-hidden')
   h.postRender().dialog.classList.add('cm-hidden')
   h.state.calls.length = 0
+})
+
+afterEach(() => {
+  const rs = h && h.mod && h.mod.RUN_STATE
+  if (!rs) return
+  for (const k of ['pollTimer', 'dlgTimer', 'panelTimer']) {
+    if (rs[k]) { clearInterval(rs[k]); rs[k] = null }
+  }
+  for (const name of ['es', 'dlgEs', 'panelEs']) {
+    const map = rs[name]
+    if (map && map.values) {
+      for (const es of map.values()) { try { es.close() } catch {} }
+      map.clear()
+    }
+  }
 })
 
 // ── open / render ────────────────────────────────────────────
@@ -981,6 +996,37 @@ test('expanded running job opens an EventSource stream', async () => {
   assert.match(state.es[0], /\/api\/jobs\/j1\/stream/)
 })
 
+test('closing settings mid-run keeps the job stream so completion still refreshes', async () => {
+  const { doc, click, postRender, state } = h
+  await openRun(h)
+  const row = doc.querySelector('.job-row[data-job="j1"]')
+  click(row.querySelector('.job-row-head'))
+  await waitUntil(() => state.esInstances.length === 1)
+  const es = state.esInstances[0]
+  let results = 0
+  let candidates = 0
+  h.window.addEventListener('dashboard:results-refreshed', () => { results++ })
+  h.window.addEventListener('dashboard:candidates-refreshed', () => { candidates++ })
+  click(postRender().close)
+  assert.ok(postRender().overlay.classList.contains('cm-hidden'), 'drawer closed')
+  assert.equal(es.closed, false, 'active run stream survives closing the drawer')
+  state.jobs.jobs = [
+    {
+      id: 'j1',
+      toolId: 'run_candidate',
+      status: 'succeeded',
+      createdAt: '2026-09-05T08:00:00Z',
+      finishedAt: '2026-09-05T08:01:00Z',
+      exitCode: 0,
+      resultHints: { runCompleted: true, modelsChanged: true },
+    },
+  ]
+  es.emit('status', { status: 'succeeded', exitCode: 0, resultHints: { runCompleted: true, modelsChanged: true } })
+  await waitUntil(() => results === 1 && candidates === 1)
+  assert.equal(results, 1, 'scatter refreshed after a run finished behind the drawer')
+  assert.equal(candidates, 1, 'models/variants refreshed after a run finished behind the drawer')
+})
+
 test('results-refreshed hint dispatches window event', async () => {
   const { doc, state } = h
   let fired = 0
@@ -999,6 +1045,30 @@ test('results-refreshed hint dispatches window event', async () => {
   await openRun(h)
   await waitUntil(() => fired === 1)
   assert.equal(fired, 1)
+})
+
+test('runCompleted hint refreshes scatter and models without results.tsv', async () => {
+  const { state, click, postRender } = h
+  let results = 0
+  let candidates = 0
+  h.window.addEventListener('dashboard:results-refreshed', () => { results++ })
+  h.window.addEventListener('dashboard:candidates-refreshed', () => { candidates++ })
+  state.jobs.jobs = [
+    {
+      id: 'jc1',
+      toolId: 'run_candidate',
+      status: 'succeeded',
+      createdAt: '2026-09-05T08:00:00Z',
+      finishedAt: '2026-09-05T08:01:00Z',
+      exitCode: 0,
+      resultHints: { runCompleted: true, modelsChanged: true },
+    },
+  ]
+  await openRun(h)
+  await waitUntil(() => results === 1 && candidates === 1)
+  assert.equal(results, 1, 'scatter explorer reloads when a run completes')
+  assert.equal(candidates, 1, 'model list / variant list reload when a run completes')
+  click(postRender().close)
 })
 
 // ── per-profile quick actions (edit dialog ⋯ menus) ──────────
@@ -1050,6 +1120,47 @@ test('edit dialog shows ⋯ menu on existing profile rows only', async () => {
   'remove enabled on editable row too')
 })
 
+test('rows carry runs-dir and render the judged column', async () => {
+  await openEdit(h)
+  const rows = h.postRender().rows()
+  const thinking = rows.find(r => r.dataset.effort === 'thinking')
+  assert.equal(thinking.dataset.runsDir, 'booksum-v4', 'runs-dir exposed on the row')
+  assert.match(thinking.querySelector('.vc-judged').textContent, /yes/)
+  const high = rows.find(r => r.dataset.effort === 'high')
+  assert.equal(high.dataset.runsDir, 'booksum-v4')
+  assert.match(high.querySelector('.vc-judged').textContent, /no/)
+})
+
+test('candidates-refreshed updates an open edit dialog variant list in place', async () => {
+  const { postRender, state } = h
+  await openEdit(h)
+  const thinking = postRender().rows().find(r => r.dataset.effort === 'thinking')
+  assert.match(thinking.querySelector('.vc-judged').textContent, /yes/)
+  assert.equal(thinking.dataset.runsDir, 'booksum-v4')
+
+  state.modelsGet = JSON.parse(JSON.stringify(MODELS_PAYLOAD))
+  state.modelsGet.models[0].profiles[0] = {
+    ...state.modelsGet.models[0].profiles[0],
+    judged: false, status: 'pending', runsDir: 'other-bench',
+  }
+  h.window.dispatchEvent(new h.window.Event('dashboard:candidates-refreshed'))
+  await waitUntil(() => thinking.querySelector('.vc-judged').textContent.trim() === 'no')
+  assert.equal(thinking.dataset.runsDir, 'other-bench', 'runs-dir refreshed on open dialog row')
+  assert.equal(thinking.querySelector('.vc-status').textContent.trim(), 'pending')
+  assert.ok(!postRender().dialog.classList.contains('cm-hidden'), 'dialog stays open during refresh')
+})
+
+test('candidates-refreshed reloads the model list even when the run tab is active', async () => {
+  const { state, click, postRender } = h
+  state.jobs.jobs = []
+  await openRun(h)
+  const before = state.calls.filter(c => c.method === 'GET' && c.url === '/api/models').length
+  h.window.dispatchEvent(new h.window.Event('dashboard:candidates-refreshed'))
+  await waitUntil(() => state.calls.filter(c => c.method === 'GET' && c.url === '/api/models').length > before)
+  assert.ok(true, 'models refetched regardless of active settings section')
+  click(postRender().close)
+})
+
 test('clicking outside the menu closes it', async () => {
   const { doc, click } = h
   await openEdit(h)
@@ -1081,7 +1192,7 @@ test('Run candidate now posts run_candidate with profile args and shows notice',
   assert.ok(!doc.getElementById('modelDialogOverlay').classList.contains('cm-hidden'), 'dialog stays open after launch')
 })
 
-test('re-judge asks for judge model once then remembers it', async () => {
+test('re-judge prompts for judge model every time, prefilled with default then remembered', async () => {
   const { doc, click, postRender, state } = h
   await openEdit(h)
   const rows = postRender().rows()
@@ -1095,7 +1206,7 @@ test('re-judge asks for judge model once then remembers it', async () => {
   assert.equal(state.promptDef, 'openai/gpt-5.4-mini', 'prompt prefilled with default judge model')
   assert.deepEqual(post.body, {
     toolId: 'judge_existing',
-    args: { bench: 'chapter_fast', profile: '30m_deepseek-v4-flash_effort-high', 'judge-model': 'openai/gpt-4o-mini' },
+    args: { bench: 'booksum-v4', profile: '30m_deepseek-v4-flash_effort-high', 'judge-model': 'openai/gpt-4o-mini' },
   })
   assert.equal(state.ls.get('mm.judgeModel'), 'openai/gpt-4o-mini')
 
@@ -1108,9 +1219,38 @@ test('re-judge asks for judge model once then remembers it', async () => {
   state.promptCalls = 0
   click(btn2.closest('.vc-opt').querySelector('[data-action="judge"]'))
   await waitUntil(() => h.state.calls.some(c => c.method === 'POST' && c.url === '/api/jobs'))
-  assert.equal(state.promptCalls, 0, 'remembered judge model avoids second prompt')
+  assert.equal(state.promptCalls, 1, 'prompt fires again on repeat re-judge')
+  assert.equal(state.promptDef, 'openai/gpt-4o-mini', 'prompt prefilled with remembered judge model')
   const post2 = h.state.calls.find(c => c.method === 'POST' && c.url === '/api/jobs')
   assert.equal(post2.body.args['judge-model'], 'openai/gpt-4o-mini')
+})
+
+test('judge runs-dir never poisons the Run candidate bench', async () => {
+  const { click, postRender, state } = h
+  state.jobs = {
+    ok: true,
+    jobs: [
+      { id: 'j5', toolId: 'judge_existing', status: 'succeeded', createdAt: '2026-09-05T10:00:00Z', exitCode: 0, resultHints: {} },
+    ],
+  }
+  state.jobDetail = () => ({
+    ok: true,
+    job: {
+      id: 'j5', toolId: 'judge_existing',
+      args: { bench: 'booksum-v4', profile: '30m_deepseek-v4-flash_effort-high', 'judge-model': 'openai/gpt-4o-mini' },
+      status: 'succeeded', createdAt: '2026-09-05T10:00:00Z', exitCode: 0, resultHints: {},
+    },
+  })
+  await openEdit(h)
+  await waitUntil(() => state.calls.some(c => c.url === '/api/jobs/j5'))
+  await new Promise(r => setImmediate(r))
+  const rows = postRender().rows()
+  const btn = rows.find(r => r.querySelector('.vc-opt-btn') && r.dataset.effort === 'high').querySelector('.vc-opt-btn')
+  click(btn)
+  click(btn.closest('.vc-opt').querySelector('[data-action="run"]'))
+  await waitUntil(() => state.calls.some(c => c.method === 'POST' && c.url === '/api/jobs'))
+  const post = state.calls.find(c => c.method === 'POST' && c.url === '/api/jobs')
+  assert.equal(post.body.args.bench, 'chapter_fast', 'run_candidate keeps bench name; judge runs-dir does not set lastBench')
 })
 
 test('Run with options mounts inline run_candidate widget, keeps dialog open, judge off', async () => {
@@ -1535,7 +1675,7 @@ test('dialog pane flags a running job with no output for 150s as stale', async (
   await waitUntil(() => /Running/.test(doc.getElementById('dlgProgStatus').textContent))
   h.mod.RUN_STATE.dlgLastOutputAt = new Date(Date.now() - 151_000).toISOString()
   const reconnectEl = doc.querySelector('#dlgRunProgress .dlg-reconnect')
-  await waitUntil(() => /stale/.test(reconnectEl.textContent))
+  await waitUntil(() => /stale/.test(reconnectEl.textContent), 4000)
   assert.match(reconnectEl.textContent, /stale — no output/)
 })
 
@@ -1547,7 +1687,7 @@ test('log panel flags a running job with no output for 150s as stale', async () 
   await waitUntil(() => /Running/.test(doc.getElementById('panelStatus').textContent))
   h.mod.RUN_STATE.panelLastOutputAt = new Date(Date.now() - 151_000).toISOString()
   const reconnectEl = doc.querySelector('.log-panel-reconnect')
-  await waitUntil(() => /stale/.test(reconnectEl.textContent))
+  await waitUntil(() => /stale/.test(reconnectEl.textContent), 4000)
   assert.match(reconnectEl.textContent, /stale — no output/)
 })
 

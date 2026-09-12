@@ -565,3 +565,62 @@ test('add_candidate runs a follow-up gen_profile_literal regen on success', asyn
     await closeServer(server)
   }
 })
+
+async function awaitTerminal(base, id) {
+  let detail = { body: { job: { status: 'running' } } }
+  for (let i = 0; i < 50 && detail.body.job.status === 'running'; i++) {
+    await new Promise(r => setTimeout(r, 10))
+    detail = await call(base, `/api/jobs/${id}`)
+  }
+  return detail.body.job
+}
+
+test('run_candidate success advertises runCompleted and modelsChanged hints', async () => {
+  const { server, base, procs } = await startServer()
+  try {
+    const a = await call(base, '/api/jobs', { method: 'POST', body: { toolId: 'run_candidate', args: runArgs() } })
+    procs[0].write('stdout', 'Run ID: r123\n')
+    procs[0].exit(0, null)
+    const job = await awaitTerminal(base, a.body.job.id)
+    assert.equal(job.status, 'succeeded')
+    assert.equal(job.resultHints.runCompleted, true, 'scatter refresh trigger set on any completed run')
+    assert.equal(job.resultHints.modelsChanged, true, 'model/variant refresh trigger set')
+    assert.equal(job.resultHints.resultsTsvUpdated, true)
+    assert.equal(job.resultHints.runId, 'r123')
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('run_candidate success triggers refresh even without write-results', async () => {
+  const { server, base, procs } = await startServer()
+  try {
+    const args = { ...runArgs() }
+    delete args['write-results']
+    const a = await call(base, '/api/jobs', { method: 'POST', body: { toolId: 'run_candidate', args } })
+    procs[0].exit(0, null)
+    const job = await awaitTerminal(base, a.body.job.id)
+    assert.equal(job.resultHints.resultsTsvUpdated, false)
+    assert.equal(job.resultHints.runCompleted, true, 'run completion refreshes scatter regardless of results.tsv')
+    assert.equal(job.resultHints.modelsChanged, true)
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('judge_existing success advertises runCompleted and modelsChanged hints', async () => {
+  const { server, base, procs } = await startServer()
+  try {
+    const a = await call(base, '/api/jobs', {
+      method: 'POST',
+      body: { toolId: 'judge_existing', args: { bench: 'chapter_fast', 'judge-model': 'openai/gpt-4o-mini', profile: '30m_deepseek-v4-flash_thinking' } },
+    })
+    procs[0].exit(0, null)
+    const job = await awaitTerminal(base, a.body.job.id)
+    assert.equal(job.status, 'succeeded')
+    assert.equal(job.resultHints.runCompleted, true)
+    assert.equal(job.resultHints.modelsChanged, true, 'judged flag change refreshes models')
+  } finally {
+    await closeServer(server)
+  }
+})

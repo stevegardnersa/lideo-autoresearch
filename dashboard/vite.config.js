@@ -327,6 +327,11 @@ function collectRunStats(models, runsDir, hiddenKeys = null) {
         if (rm.profile) {
           m._testedProfiles.add(rm.profile)
           if (isLlm) m._judgedProfiles.add(rm.profile)
+          const created = rm.created_at_utc
+          const prev = m._profileDirs.get(rm.profile)
+          if (!prev || !prev.created || (created && created > prev.created)) {
+            m._profileDirs.set(rm.profile, { dir: dir.name, created: created || null })
+          }
         }
         const created = rm.created_at_utc
         if (created && (!m.last_tested || created > m.last_tested)) m.last_tested = created
@@ -367,6 +372,7 @@ function buildModelsIndex(ctx) {
       registered: true,
       _testedProfiles: new Set(),
       _judgedProfiles: new Set(),
+      _profileDirs: new Map(),
     }
   }
   for (const [key, spec] of Object.entries(profiles)) {
@@ -385,6 +391,7 @@ function buildModelsIndex(ctx) {
         registered: false,
         _testedProfiles: new Set(),
         _judgedProfiles: new Set(),
+        _profileDirs: new Map(),
       }
     }
     m.profiles.push({
@@ -396,6 +403,7 @@ function buildModelsIndex(ctx) {
       style: specStyle(spec),
       status: 'pending',
       judged: false,
+      runsDir: '',
       temperature: (spec.chapter_stage && typeof spec.chapter_stage.temperature === 'number') ? spec.chapter_stage.temperature : null,
       max_tokens: (spec.chapter_stage && typeof spec.chapter_stage.max_tokens === 'number') ? spec.chapter_stage.max_tokens : null,
       provider_route: (spec.chapter_stage && spec.chapter_stage.provider) ? JSON.stringify(spec.chapter_stage.provider) : '',
@@ -406,9 +414,12 @@ function buildModelsIndex(ctx) {
     for (const p of m.profiles) {
       if (m._testedProfiles.has(p.slug)) p.status = 'tested'
       if (m._judgedProfiles.has(p.slug)) p.judged = true
+      const d = m._profileDirs.get(p.slug)
+      if (d && d.dir) p.runsDir = d.dir
     }
     delete m._testedProfiles
     delete m._judgedProfiles
+    delete m._profileDirs
   }
   return Object.values(models).sort((a, b) => a.model.localeCompare(b.model))
 }
@@ -1636,8 +1647,15 @@ function createJobManager(opts = {}) {
       if (job.status === 'succeeded') {
         hints.bench = String(job.args.bench || '')
         hints.resultsTsvUpdated = !!job.args['write-results']
+        hints.runCompleted = true
+        hints.modelsChanged = true
         const m = job._stdoutTail.join('\n').match(/Run ID: (\S+)/)
         if (m) hints.runId = m[1]
+      }
+    } else if (tool.id === 'judge_existing') {
+      if (job.status === 'succeeded') {
+        hints.runCompleted = true
+        hints.modelsChanged = true
       }
     } else if (tool.id === 'gen_profile_literal' || tool.id === 'agent') {
       hints.specPyChanged = job.status === 'succeeded'

@@ -25,6 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from core.dotenv import load_dotenv
 from core.judge import AbsoluteJudgeResult, judge_summary_absolute
 from core.openrouter_client import OpenRouterClient
 from scoring import JudgeScores, Rubric, SummarySample, score_dataset
@@ -98,7 +99,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--api-key-env",
-        default="LLM_API_KEY",
+        default="OPENROUTER_API_KEY",
         help="Environment variable holding the API key for the provider.",
     )
     return parser.parse_args()
@@ -365,6 +366,7 @@ def dry_run_report(run_json_path: Path) -> tuple[str, str, str, int, int]:
 
 
 def main() -> None:
+    load_dotenv()
     args = parse_args()
     run_dir = Path(args.runs_dir).resolve() / args.bench
 
