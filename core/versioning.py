@@ -42,6 +42,23 @@ DEFAULT_BENCHMARK_MANIFEST: Dict[str, Any] = {
             "max_final_length_error_pct": None,
             "max_passes": None,
         },
+        # Optimal pipeline brief's stricter accuracy bar. Opt-in only
+        # (--scoring-profile strict-v1); never the default gate.
+        "strict-v1": {
+            "min_faithfulness": 0.88,
+            "min_concept_coverage": 0.80,
+            "max_final_length_error_pct": None,
+            "max_passes": None,
+        },
+        # Explicit profile while running without a judge: the deterministic
+        # proxies are not calibrated to the 0.88/0.80 bar, so the semantic
+        # gates stay disabled and only the objective length/passes gates apply.
+        "strict-v1_deterministic": {
+            "min_faithfulness": None,
+            "min_concept_coverage": None,
+            "max_final_length_error_pct": None,
+            "max_passes": None,
+        },
         # Judge-less runs score against deterministic proxies that are not
         # calibrated to the judged thresholds above, so semantic gates are
         # disabled (null). Objective length/passes/malformed gates still apply.
@@ -106,6 +123,15 @@ def load_benchmark_manifest(path: Path) -> Dict[str, Any]:
         raise ValueError(f"Benchmark manifest must be a JSON object: {path}")
     for key, value in DEFAULT_BENCHMARK_MANIFEST.items():
         manifest.setdefault(key, value)
+    # New named gate profiles (e.g. strict-v1) must reach manifests written
+    # before they existed. Merge per key so operator-specific tuning of an
+    # existing profile is never overwritten.
+    existing_gates = manifest.get("scoring_gates")
+    if not isinstance(existing_gates, dict):
+        existing_gates = {}
+        manifest["scoring_gates"] = existing_gates
+    for name, gates in DEFAULT_BENCHMARK_MANIFEST.get("scoring_gates", {}).items():
+        existing_gates.setdefault(name, dict(gates))
     missing = [key for key in REQUIRED_MANIFEST_KEYS if key not in manifest]
     if missing:
         raise ValueError(f"Benchmark manifest missing required keys {missing}: {path}")

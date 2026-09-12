@@ -40,7 +40,7 @@ Adds a **System prompt** toggle group to the explorer Controls sidebar, directly
 
 ## Evaluation
 
-Adds per-pass `latency_seconds` + `mean_latency_seconds`; keeps cost, `final_length_error_pct`, faithfulness/coverage. Brief's 0.88/0.80 thresholds exposed as optional `strict-v1` scoring profile; defaults stay 0.70/0.60 and gate 0.10. `results.tsv`/manifests gain `prompt_version` + fingerprint columns.
+Adds per-pass `latency_seconds` + `mean_latency_seconds`; keeps cost, `final_length_error_pct`, faithfulness/coverage. Brief's 0.88/0.80 thresholds exposed as optional `strict-v1` scoring profile selectable via `--scoring-profile` (`auto` default unchanged; `strict-v1_deterministic` disables semantic gates), resolved gate key recorded in the run manifest; defaults stay 0.70/0.60 and gate 0.10. `results.tsv`/manifests gain `prompt_version` + fingerprint columns.
 
 ## Acceptance
 

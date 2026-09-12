@@ -570,6 +570,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--title", default="autoresearch-book-summary-benchmark")
     parser.add_argument("--judge-model", default="")
     parser.add_argument("--judge-source-char-limit", type=int, default=32000)
+    parser.add_argument(
+        "--scoring-profile",
+        default="auto",
+        help="Named scoring gate profile (e.g. 'strict-v1' for the 0.88/0.80 accuracy bar) "
+        "or 'auto' (default) to derive gates from the time budget. Deterministic runs use the "
+        "profile's '<name>_deterministic' variant when present.",
+    )
     parser.add_argument("--hypothesis", default="")
     parser.add_argument("--notes", default="")
     parser.add_argument("--write-results", action="store_true")
@@ -2394,6 +2401,16 @@ def main() -> None:
     ensure_default_benchmark_manifest(benchmark_manifest_path)
     benchmark_manifest = load_benchmark_manifest(benchmark_manifest_path)
 
+    # Fail fast on an unknown named scoring profile, before any API spend.
+    requested_scoring_profile = str(getattr(args, "scoring_profile", "auto") or "auto")
+    if requested_scoring_profile not in ("auto", ""):
+        available = sorted((benchmark_manifest.get("scoring_gates") or {}).keys())
+        if requested_scoring_profile not in available:
+            raise SystemExit(
+                f"Unknown scoring profile {requested_scoring_profile!r}. "
+                f"Available: {', '.join(available) or '(none)'}"
+            )
+
     spec_path = resolve_path(args.spec)
     candidate_module = load_module_from_path("candidate_spec_runtime", spec_path)
 
@@ -2438,11 +2455,21 @@ def run_all_profiles(
         _run_single(args, benchmark_manifest, spec_path, inherited_run_id=None)
 
 
+class UnknownScoringProfile(ValueError):
+    def __init__(self, profile: str, allowed: list):
+        self.profile = profile
+        self.allowed = list(allowed)
+        super().__init__(
+            f"Unknown scoring profile {profile!r}. Available: {', '.join(self.allowed) or '(none)'}"
+        )
+
+
 def select_scoring_config(
     benchmark_manifest: Mapping[str, Any],
     *,
     profile_name: str,
     judge_model: str,
+    scoring_profile: str = "auto",
     base_config=DEFAULT_SCORING_CONFIG,
 ) -> Tuple[Any, str, str]:
     """Resolve the scoring config for a run.
@@ -2451,6 +2478,10 @@ def select_scoring_config(
     semantic thresholds are ``null`` (disabled) because the deterministic proxies
     are not calibrated to the judged thresholds. Manifests without those keys
     fall back to the judged budget gate.
+
+    ``scoring_profile="auto"`` derives the gate key from the budget as before.
+    A named profile (e.g. ``"strict-v1"``) selects that gate explicitly; in
+    deterministic mode its ``<name>_deterministic`` variant is preferred.
 
     Returns ``(scoring_config, scoring_mode, gate_key)``.
     """
@@ -2462,13 +2493,25 @@ def select_scoring_config(
         budget_key = "default"
     scoring_mode = "judged" if judge_model else "deterministic"
     scoring_gates = benchmark_manifest.get("scoring_gates", {}) or {}
-    gate_key = budget_key if scoring_mode == "judged" else f"{budget_key}_deterministic"
-    gates = scoring_gates.get(gate_key)
-    if not gates and gate_key != budget_key:
-        # Old manifests lack *_deterministic keys; fall back to the judged gate
-        # for this budget so behavior is unchanged for them.
-        gate_key = budget_key
-        gates = scoring_gates.get(budget_key)
+
+    named = str(scoring_profile or "auto").strip() or "auto"
+    if named != "auto":
+        if named not in scoring_gates:
+            raise UnknownScoringProfile(named, sorted(scoring_gates.keys()))
+        if scoring_mode == "deterministic":
+            deterministic_key = f"{named}_deterministic"
+            gate_key = deterministic_key if deterministic_key in scoring_gates else named
+        else:
+            gate_key = named
+        gates = scoring_gates.get(gate_key)
+    else:
+        gate_key = budget_key if scoring_mode == "judged" else f"{budget_key}_deterministic"
+        gates = scoring_gates.get(gate_key)
+        if not gates and gate_key != budget_key:
+            # Old manifests lack *_deterministic keys; fall back to the judged gate
+            # for this budget so behavior is unchanged for them.
+            gate_key = budget_key
+            gates = scoring_gates.get(budget_key)
 
     scoring_config = base_config
     if gates:
@@ -3024,11 +3067,15 @@ def _run_single(
         save_run_state(state_path, state)
         raise all_failed_error
 
-    scoring_config, scoring_mode, gate_key = select_scoring_config(
-        benchmark_manifest,
-        profile_name=spec.profile,
-        judge_model=args.judge_model,
-    )
+    try:
+        scoring_config, scoring_mode, gate_key = select_scoring_config(
+            benchmark_manifest,
+            profile_name=spec.profile,
+            judge_model=args.judge_model,
+            scoring_profile=getattr(args, "scoring_profile", "auto"),
+        )
+    except UnknownScoringProfile as exc:
+        raise SystemExit(str(exc))
 
     dataset_score = score_dataset(samples, config=scoring_config)
     mean_generation_cost = _mean([sample.generation_cost for sample in samples])
@@ -3048,6 +3095,14 @@ def _run_single(
     run_manifest["resume_count"] = len(resume_events)
     run_manifest["scoring_mode"] = scoring_mode
     run_manifest["scoring_gate_key"] = gate_key
+    requested_profile = str(getattr(args, "scoring_profile", "auto") or "auto")
+    run_manifest["scoring_profile"] = requested_profile
+    if requested_profile not in ("auto", "") and scoring_mode == "deterministic":
+        print(
+            f"WARN: --scoring-profile {requested_profile} requested without --judge-model; "
+            "semantic gates are unavailable for deterministic proxies and stay disabled.",
+            file=sys.stderr,
+        )
     mean_latency_seconds = _mean(_LATENCY_ACCUMULATOR) if _LATENCY_ACCUMULATOR else 0.0
     run_manifest["mean_latency_seconds"] = mean_latency_seconds
     run_manifest["n_latency_samples"] = len(_LATENCY_ACCUMULATOR)

@@ -10,6 +10,7 @@ test:
 	$(PYTHON) tests/test_best_pass_selection.py
 	$(PYTHON) tests/test_chapter_parallel.py
 	$(PYTHON) tests/test_scoring_gates.py
+	$(PYTHON) tests/test_scoring_profiles.py
 	$(PYTHON) tests/test_length_control.py
 	$(PYTHON) tests/test_reasoning_migration.py
 	$(PYTHON) tests/test_prompt_registry.py

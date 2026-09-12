@@ -411,6 +411,7 @@ For every model pass, the pipeline records into the run manifest (extend existin
 
 - Faithfulness/alignment and concept-coverage are already produced by `scoring.py` (deterministic proxies) and optional LLM-judge (`core/judge.py`).
 - The pipeline brief's targets (`faithfulness > 0.88`, `context recall/coverage > 0.80`) are exposed as an **optional named scoring profile** (`strict-v1`) selectable per run; the default gate profile keeps `min_faithfulness=0.70` / `min_concept_coverage=0.60` and `max_final_length_error_pct=0.10`. No default moves without a separate decision.
+  - **Implemented as** `--scoring-profile {auto|default|strict-v1}` on `run_candidate.py` (default `auto` = unchanged budget-derived gates), backed by named `scoring_gates` entries in the benchmark manifest: `strict-v1` (judged: 0.88/0.80) and `strict-v1_deterministic` (semantic gates `null`, since deterministic proxies are not calibrated to the judged bar). Unknown names fail fast before any API spend. The resolved key is recorded as `run_manifest.scoring_gate_key`; `run_manifest.scoring_profile` records the request. New named profiles are merged into pre-existing on-disk manifests on load without overwriting operator tuning.
 
 ### 10.3 Test matrix output
 

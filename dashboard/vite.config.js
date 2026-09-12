@@ -1124,6 +1124,7 @@ const SCRIPT_REGISTRY = [
       arg('profile', 'Profile', { type: 'text', required: true, pattern: '^[A-Za-z0-9_.\\-]+$', default: 'all', hint: "Profile key, or 'all' with a --time filter." }),
       arg('time', 'Time budget', { type: 'enum', default: 'all', choices: ['all', '30m', '60m'] }),
       arg('judge-model', 'Judge model', { type: 'text', pattern: MODEL_PATTERN, toggle: true, default: 'openai/gpt-5.4-mini', placeholder: 'openai/gpt-5.4-mini', hint: 'When enabled the LLM judge scores the run. Uncheck to score deterministically without calling a judge model.' }),
+      arg('scoring-profile', 'Scoring profile', { type: 'enum', default: 'auto', choices: ['auto', 'default', 'strict-v1'], hint: "Named gate profile. 'strict-v1' applies the 0.88 faithfulness / 0.80 coverage accuracy bar (requires the judge)." }),
       arg('mock', 'Mock (no API calls)', { type: 'bool', default: false }),
       arg('write-results', 'Write results.tsv', { type: 'bool', default: false }),
       arg('max-samples', 'Max samples (0 = all)', { type: 'int', default: 0, min: 0, advanced: true }),
