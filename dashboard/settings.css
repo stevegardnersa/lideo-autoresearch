@@ -351,7 +351,10 @@
   border-bottom: 1px solid var(--line, #d8dee8);
 }
 .variant-table td { padding: 6px 8px; border-bottom: 1px solid var(--line, #d8dee8); }
-.variant-table .vc-temp, .variant-table .vc-max { width: 90px; padding: 4px 8px; }
+.variant-table .vc-temp { width: 90px; padding: 4px 8px; }
+.variant-table .vc-max { width: 45px; padding: 4px 4px; }
+.variant-table th.vc-judged-col, .variant-table td.vc-judged { width: 52px; text-align: center; }
+.vc-judged { font-size: 11px; }
 .vc-check { accent-color: #2563eb; }
 .vc-tb { font-weight: 650; }
 .vc-mode { color: var(--muted, #6b7280); }

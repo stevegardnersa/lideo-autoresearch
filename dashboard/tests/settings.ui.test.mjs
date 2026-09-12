@@ -205,6 +205,8 @@ function makeHarness() {
   window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} })
   window.prompt = (msg, def) => {
     state.promptCalls++
+    state.promptMsg = msg
+    state.promptDef = def
     return state.promptReturn
   }
   Object.defineProperty(window, 'localStorage', {
@@ -1090,6 +1092,7 @@ test('re-judge asks for judge model once then remembers it', async () => {
   await waitUntil(() => h.state.calls.some(c => c.method === 'POST' && c.url === '/api/jobs'))
   const post = h.state.calls.find(c => c.method === 'POST' && c.url === '/api/jobs')
   assert.equal(state.promptCalls, 1)
+  assert.equal(state.promptDef, 'openai/gpt-5.4-mini', 'prompt prefilled with default judge model')
   assert.deepEqual(post.body, {
     toolId: 'judge_existing',
     args: { bench: 'chapter_fast', profile: '30m_deepseek-v4-flash_effort-high', 'judge-model': 'openai/gpt-4o-mini' },

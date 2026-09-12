@@ -323,14 +323,17 @@ function collectRunStats(models, runsDir, hiddenKeys = null) {
         if (hiddenKeys && rm.profile && hiddenKeys.has(rm.profile)) continue
         const m = models[model]
         m.runs_count = (m.runs_count || 0) + 1
-        if (rm.profile) m._testedProfiles.add(rm.profile)
+        const isLlm = !!(rm.judge_model && rm.judge_version_resolved && String(rm.judge_version_resolved).includes('judge-absolute-v1'))
+        if (rm.profile) {
+          m._testedProfiles.add(rm.profile)
+          if (isLlm) m._judgedProfiles.add(rm.profile)
+        }
         const created = rm.created_at_utc
         if (created && (!m.last_tested || created > m.last_tested)) m.last_tested = created
         const score = run.dataset_score && typeof run.dataset_score.mean_quality === 'number'
           ? run.dataset_score.mean_quality
           : null
         if (score == null) continue
-        const isLlm = !!(rm.judge_model && rm.judge_version_resolved && String(rm.judge_version_resolved).includes('judge-absolute-v1'))
         const bucket = isLlm ? 'best_quality_llm' : 'best_quality_det'
         if (m[bucket] == null || score > m[bucket]) m[bucket] = score
       }
@@ -363,6 +366,7 @@ function buildModelsIndex(ctx) {
       provider_route: reg.provider_route || null,
       registered: true,
       _testedProfiles: new Set(),
+      _judgedProfiles: new Set(),
     }
   }
   for (const [key, spec] of Object.entries(profiles)) {
@@ -380,6 +384,7 @@ function buildModelsIndex(ctx) {
         provider_route: null,
         registered: false,
         _testedProfiles: new Set(),
+        _judgedProfiles: new Set(),
       }
     }
     m.profiles.push({
@@ -390,6 +395,7 @@ function buildModelsIndex(ctx) {
       effort: effortOf(key),
       style: specStyle(spec),
       status: 'pending',
+      judged: false,
       temperature: (spec.chapter_stage && typeof spec.chapter_stage.temperature === 'number') ? spec.chapter_stage.temperature : null,
       max_tokens: (spec.chapter_stage && typeof spec.chapter_stage.max_tokens === 'number') ? spec.chapter_stage.max_tokens : null,
       provider_route: (spec.chapter_stage && spec.chapter_stage.provider) ? JSON.stringify(spec.chapter_stage.provider) : '',
@@ -399,8 +405,10 @@ function buildModelsIndex(ctx) {
   for (const m of Object.values(models)) {
     for (const p of m.profiles) {
       if (m._testedProfiles.has(p.slug)) p.status = 'tested'
+      if (m._judgedProfiles.has(p.slug)) p.judged = true
     }
     delete m._testedProfiles
+    delete m._judgedProfiles
   }
   return Object.values(models).sort((a, b) => a.model.localeCompare(b.model))
 }

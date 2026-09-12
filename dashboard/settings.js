@@ -171,7 +171,7 @@ const MODAL_TEMPLATE = `
             <span class="field-hint">Effort tier per time budget. Check to show a profile, uncheck to hide it (run data kept). Checking an absent row creates it. Use &#8943; &rarr; Remove variant to delete.</span>
           </div>
           <table class="variant-table">
-            <thead><tr><th></th><th>Time</th><th>Effort</th><th>temp</th><th>max tokens</th><th>status</th><th></th></tr></thead>
+            <thead><tr><th></th><th>Time</th><th>Effort</th><th>temp</th><th>max tokens</th><th class="vc-judged-col">judged</th><th>status</th><th></th></tr></thead>
             <tbody id="dlgVariantRows"></tbody>
           </table>
         </div>
@@ -430,6 +430,8 @@ function variantRowHtml({ tb, effort, existing, locked }) {
   const temp = existing && existing.temperature != null ? existing.temperature : DEFAULTS.temperature
   const maxT = existing && existing.max_tokens != null ? existing.max_tokens : effortDefaultMaxTokens(effort)
   const status = !existing ? 'not created' : hidden ? 'hidden' : (existing.status === 'tested' ? 'tested' : 'pending')
+  const judged = !existing ? '\u2014' : (existing.judged ? 'yes' : 'no')
+  const judgedCls = !existing ? 'vc-none' : (existing.judged ? 'vc-has' : 'vc-none')
   const numAttrs = locked ? ' readonly' : ''
   const opt = existing
     ? `<button type="button" class="vc-opt-btn" data-slug="${esc(existing.slug)}" aria-haspopup="menu" aria-expanded="false" aria-label="Options for ${esc(existing.slug)}" title="Profile options">\u22EF</button>
@@ -444,6 +446,7 @@ function variantRowHtml({ tb, effort, existing, locked }) {
     <td class="vc-mode"${locked ? ` data-tooltip="Canonical effort profiles cannot be modified. Remove variant to delete this baseline."` : ''}>${effortLabel(effort)}</td>
     <td><input type="number" step="0.1" min="0" max="2" class="vc-temp" value="${temp}"${numAttrs} /></td>
     <td><input type="number" step="256" min="0" class="vc-max" value="${maxT}"${numAttrs} /></td>
+    <td class="vc-judged ${judgedCls}">${judged}</td>
     <td class="vc-status ${hidden ? 'vc-hidden-status' : (existing ? 'vc-has' : 'vc-none')}">${status}</td>
     <td class="vc-opt">${opt}</td>
   </tr>`
@@ -521,6 +524,7 @@ function collectEditPayload(model) {
 // ── per-profile quick actions (edit dialog ⋯ menus) ──────────
 
 const PROFILE_META = new Map()
+const DEFAULT_JUDGE_MODEL = 'openai/gpt-5.4-mini'
 let prefJudgeModel = ''
 let rememberedJudgeModel = ''
 
@@ -600,7 +604,7 @@ function profileMenuAction(slug, action, row) {
     let judgeModel = storageGet('mm.judgeModel') || prefJudgeModel
     if (!judgeModel) {
       let entered = null
-      try { entered = window.prompt('Judge model (e.g. openai/gpt-4o):', '') } catch { entered = null }
+      try { entered = window.prompt('Judge model (e.g. openai/gpt-5.4-mini):', DEFAULT_JUDGE_MODEL) } catch { entered = null }
       if (!entered || !entered.trim()) return
       judgeModel = entered.trim()
       storageSet('mm.judgeModel', judgeModel)
