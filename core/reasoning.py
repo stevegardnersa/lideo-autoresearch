@@ -8,8 +8,15 @@ guide:
 - ``reasoning_effort: X``       (Option B, top-level scalar)
 
 New-style stage configs use the ``reasoning`` / ``reasoning_effort`` fields.
-Legacy ``extra_body={"thinking": ...}`` configs keep byte-identical requests
-and are only translated to the new API on explicit migration.
+The ``effort="none"`` tier is canonicalised to ``reasoning={"enabled": false}``
+(forced-off) at request-build time — absent reasoning is the provider default,
+which may still reason. Models with mandatory reasoning (probe
+``none_style="mandatory"``, e.g. stepfun/step-3.7-flash) reject the disabled
+form and reason on plain requests, so requesting ``enabled: false`` on them
+raises immediately instead of silently running at default effort.
+``extra_body={"thinking": ...}`` legacy configs are no longer produced by the
+profile set; support is retained only for back-compat of in-flight stages and
+kept byte-identical until explicit migration.
 """
 
 from __future__ import annotations
@@ -41,6 +48,45 @@ TOKENS_PER_WORD = 1.4  # ~0.7 words/token for English markdown
 JSON_OVERHEAD_TOKENS = 200  # response_format wrapper + markdown framing
 DEFAULT_VISIBLE_HEADROOM = 1.6  # visible-output headroom over the target words
 DEFAULT_MIN_OUTPUT_TOKENS = 512  # degenerate tiny targets still get a usable budget
+
+# Models whose providers reject ``reasoning={"enabled": false}`` and still reason
+# on a plain request (no reasoning field). A ``_notthinking`` profile is
+# impossible for them — the request builder must fail loudly instead of silently
+# running at default effort. Populated by the generated candidate_spec via
+# ``register_mandatory_reasoning_models`` (see tools/gen_profile_literal.py).
+_MANDATORY_REASONING_MODELS: frozenset = frozenset()
+
+
+def register_mandatory_reasoning_models(models: Any) -> None:
+    """Set the set of model ids whose reasoning cannot be disabled.
+
+    Called by the generated ``candidate_spec`` module at import time so the
+    guard below fires on the direct path, the Cloud Function path, and any
+    offline consumer (tests). Idempotent; last call wins.
+    """
+    global _MANDATORY_REASONING_MODELS
+    _MANDATORY_REASONING_MODELS = frozenset(models or ())
+
+
+def mandatory_reasoning_models() -> frozenset:
+    return _MANDATORY_REASONING_MODELS
+
+
+def assert_disabling_reasoning_allowed(model: Any) -> None:
+    """Raise when a request would disable reasoning on a mandatory-reasoning model.
+
+    Without this, ``_notthinking`` on such a model silently reasons at default
+    effort (the provider ignores ``enabled: false`` and a plain request still
+    reasons). Failing loudly surfaces the impossible profile immediately.
+    """
+    model = str(model or "")
+    if model and model in _MANDATORY_REASONING_MODELS:
+        raise ValueError(
+            f"Model {model} has mandatory reasoning and cannot disable it: "
+            "reasoning.enabled=false is rejected by the provider, and a plain "
+            "request still reasons at default effort. Use an effort-tier profile "
+            f"(e.g. an {model} _effort-* profile) instead of a _notthinking profile."
+        )
 
 
 def effort_token_fraction(effort: Optional[str]) -> float:
@@ -125,10 +171,16 @@ def reasoning_request_params(stage: Any) -> Tuple[Dict[str, Any], bool]:
         return {}, True
     reasoning = getattr(stage, "reasoning", None)
     if isinstance(reasoning, dict) and reasoning:
+        if str(reasoning.get("effort") or "").strip().lower() == "none":
+            assert_disabling_reasoning_allowed(getattr(stage, "model", ""))
+            return {"reasoning": {"enabled": False}}, False
+        if reasoning.get("enabled") is False:
+            assert_disabling_reasoning_allowed(getattr(stage, "model", ""))
         return {"reasoning": reasoning}, False
     effort = getattr(stage, "reasoning_effort", None)
     if effort:
         if str(effort).strip().lower() == "none":
+            assert_disabling_reasoning_allowed(getattr(stage, "model", ""))
             return {"reasoning": {"enabled": False}}, False
         return {"reasoning_effort": str(effort)}, False
     return {}, True

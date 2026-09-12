@@ -40,6 +40,14 @@ from core.openrouter_client import (
 )
 from scoring import JudgeScores, Rubric, visible_word_count
 
+try:
+    from core.reasoning import assert_disabling_reasoning_allowed, register_mandatory_reasoning_models
+    from candidate_spec import MANDATORY_REASONING_MODELS as _DEFAULT_MANDATORY_MODELS
+    register_mandatory_reasoning_models(_DEFAULT_MANDATORY_MODELS)
+except ImportError:  # pragma: no cover - standalone runs without core/candidate_spec
+    def assert_disabling_reasoning_allowed(model: Any) -> None:
+        return None
+
 ROOT = Path(__file__).resolve().parents[1]
 
 # Default judge source truncation, matching core/run_candidate.py default.
@@ -70,11 +78,21 @@ def _local_scoring_sha() -> str:
         return ""
 
 
-def _thinking_from_payload(payload: Mapping[str, Any]) -> bool:
+def _thinking_from_payload(payload: Mapping[str, Any]) -> Optional[bool]:
+    """Resolve the effective ``thinking`` signal from a request payload.
+
+    Tri-state: ``True``/``False`` from ``extra_body.thinking.type`` (legacy
+    transport), else ``None`` when the payload carries no reasoning signal at
+    all. ``None`` must propagate so plain requests stay absent (no
+    ``reasoning.enabled``) on the CF path, matching the direct path.
+    """
     try:
-        return str(payload["extra_body"]["thinking"]["type"]) == "enabled"
+        thinking_cfg = payload["extra_body"]["thinking"]
+        if isinstance(thinking_cfg, dict):
+            return str(thinking_cfg.get("type")) == "enabled"
+        return None
     except (KeyError, TypeError):
-        return False
+        return None
 
 
 def parse_cf_judge_scores(response: Mapping) -> Optional[Tuple[JudgeScores, str]]:
@@ -393,11 +411,27 @@ class CloudFunctionClient:
         body["judge"] = bool(judge)
         body["score"] = bool(score)
         body["target_words"] = int(target_words)
-        body["thinking"] = bool(thinking if thinking is not None else False)
+        if thinking is not None:
+            body["thinking"] = bool(thinking)
         if reasoning:
             body["reasoning"] = reasoning
         elif reasoning_effort is not None:
             body["reasoning_effort"] = str(reasoning_effort)
+
+        # Client-side guard: never send a disable-reasoning request for a model
+        # whose reasoning is mandatory (it would silently reason at default
+        # effort). Mirrors core.reasoning.assert_disabling_reasoning_allowed on
+        # the direct path; registered via the generated candidate_spec.
+        disable_intent = bool(
+            thinking is False
+            or (isinstance(reasoning, dict) and (
+                reasoning.get("enabled") is False
+                or str(reasoning.get("effort") or "").strip().lower() == "none"
+            ))
+            or (reasoning_effort is not None and str(reasoning_effort).strip().lower() == "none")
+        )
+        if disable_intent:
+            assert_disabling_reasoning_allowed(body.get("model") or "")
         body["use_json_schema"] = bool(True if use_json_schema is None else use_json_schema)
         body["judge_source_char_limit"] = int(judge_source_char_limit)
         if judge_model:

@@ -27,7 +27,7 @@ def _build_openrouter_payload(
     system_prompt: str,
     user_prompt: str,
     use_json_schema: bool = True,
-    thinking: bool = False,
+    thinking: Optional[bool] = None,
     reasoning: Optional[Mapping[str, Any]] = None,
     reasoning_effort: Optional[str] = None,
     temperature: float = 0.2,
@@ -50,16 +50,20 @@ def _build_openrouter_payload(
     # it to the unified ``reasoning`` object instead. Mirrors
     # core/reasoning.py so the direct and Cloud Function paths agree.
     if reasoning:
-        payload["reasoning"] = dict(reasoning)
+        reasoning_norm = dict(reasoning)
+        if str(reasoning_norm.get("effort") or "").strip().lower() == "none":
+            reasoning_norm = {"enabled": False}
+        payload["reasoning"] = reasoning_norm
     elif reasoning_effort is not None:
         effort = str(reasoning_effort).strip()
         if effort.lower() == "none":
             payload["reasoning"] = {"enabled": False}
         else:
             payload["reasoning"] = {"effort": effort}
-    else:
+    elif thinking is not None:
         # Legacy ``thinking`` flag, derived by cf_client from extra_body.thinking.
         payload["reasoning"] = {"enabled": bool(thinking)}
+    # else: plain request — no reasoning field, provider default applies.
     if use_json_schema:
         payload["response_format"] = {
             "type": "json_schema",
@@ -247,7 +251,8 @@ def run_summarize(body: Dict[str, Any]) -> Dict[str, Any]:
     user_prompt = str(body.get("user_prompt") or "").strip()
     api_key = str(body.get("api_key", "")).strip()
     base_url = str(body.get("base_url", "")).strip()
-    thinking = bool(body.get("thinking", False))
+    thinking_raw = body.get("thinking")
+    thinking: Optional[bool] = bool(thinking_raw) if thinking_raw is not None else None
     reasoning = body.get("reasoning") if isinstance(body.get("reasoning"), Mapping) else None
     reasoning_effort = body.get("reasoning_effort") if body.get("reasoning_effort") is not None else None
     use_json = bool(body.get("use_json_schema", True))

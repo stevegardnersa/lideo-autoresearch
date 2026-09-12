@@ -233,7 +233,7 @@ const MODAL_TEMPLATE = `
 </div>`
 
 const EFFORT_ORDER = ['thinking', 'none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max']
-const EFFORT_LABEL = { thinking: 'think', none: 'plain' }
+const EFFORT_LABEL = { thinking: 'think', none: 'off' }
 const CANONIC_EFFORTS = new Set(['thinking', 'none'])
 const BUDGETS = ['30m', '60m']
 const EFFORT_FRACTION = { none: 0, minimal: 0.1, low: 0.2, medium: 0.5, high: 0.8, xhigh: 0.95, max: 0.95 }
@@ -357,7 +357,7 @@ function probeResultHtml(model, probe, created) {
   const box = (ok, label) => `<span class="probe-badge ${ok ? 'probe-ok' : 'probe-fail'}">${ok ? '\u2713' : '\u2717'} ${esc(label)}</span>`
   const schemaLine = probe.schema == null ? '' : box(!!probe.schema, 'JSON schema')
   const effortChips = (probe.efforts && probe.efforts.length)
-    ? `<span class="probe-badge probe-ok">efforts: ${probe.efforts.map(e => esc(e === 'none' ? 'none (plain)' : e)).join(', ')}</span>`
+    ? `<span class="probe-badge probe-ok">efforts: ${probe.efforts.map(e => esc(e === 'none' ? 'none (off)' : e)).join(', ')}</span>`
     : ''
   const legacyLine = (probe.thinking != null || probe.notthinking != null)
     ? `${box(probe.thinking === true, 'legacy thinking')}${box(probe.notthinking === true, 'legacy non-thinking')}`

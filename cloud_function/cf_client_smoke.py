@@ -10,7 +10,12 @@ OpenRouter stub, then drives the real :class:`CloudFunctionClient` through:
    no ``Authorization`` header over plain http
 3. ``reasoning_effort`` passthrough — forwarded to the stub, no ``extra_body``
 4. ``reasoning`` dict passthrough — forwarded to the stub, no ``extra_body``
-5. ``thinking``-only (legacy) — maps to ``extra_body.thinking.type=disabled``
+5. ``thinking=False`` (legacy) — maps to ``reasoning.enabled=false``
+6. ``reasoning_effort="none"`` — maps to ``reasoning.enabled=false``
+7. ``thinking=True`` (legacy) — maps to ``reasoning.enabled=true``
+8. ``reasoning={"effort": "none"}`` — collapses to ``reasoning.enabled=false``
+9. plain payload (no reasoning signal) — no ``reasoning`` field in the stub body
+10. mandatory-reasoning model (stepfun) — disabling reasoning raises client-side
 
 Uses only the standard library plus the already-required project deps and
 ``functions-framework`` (installed by the ``cf-client-smoke`` Makefile target).
@@ -297,6 +302,69 @@ def main() -> None:
         assert stub_body.get("reasoning") == {"enabled": True}, stub_body
         assert "extra_body" not in stub_body and "reasoning_effort" not in stub_body, stub_body
         checks += 1
+
+        # 8. reasoning={"effort": "none"} collapses to native reasoning.enabled=false.
+        client.chat_completion(
+            {
+                "model": "test/echo",
+                "reasoning": {"effort": "none"},
+                "messages": [
+                    {"role": "system", "content": "Summarize the chapter."},
+                    {"role": "user", "content": SOURCE_MD},
+                ],
+            },
+            source_md=SOURCE_MD,
+            score=False,
+            target_words=0,
+        )
+        stub_body = last_stub_body()
+        assert stub_body.get("reasoning") == {"enabled": False}, stub_body
+        assert "reasoning_effort" not in stub_body and "extra_body" not in stub_body, stub_body
+        checks += 1
+
+        # 9. plain payload (no reasoning signal) -> no reasoning field in the stub body.
+        client.chat_completion(
+            {
+                "model": "test/echo",
+                "messages": [
+                    {"role": "system", "content": "Summarize the chapter."},
+                    {"role": "user", "content": SOURCE_MD},
+                ],
+            },
+            source_md=SOURCE_MD,
+            score=False,
+            target_words=0,
+        )
+        stub_body = last_stub_body()
+        assert "reasoning" not in stub_body, stub_body
+        assert "reasoning_effort" not in stub_body and "extra_body" not in stub_body, stub_body
+        checks += 1
+
+        # 10. mandatory-reasoning model: trying to disable reasoning fails loudly
+        #     client-side (registered via candidate_spec.MANDATORY_REASONING_MODELS),
+        #     instead of silently sending a plain request that reasons at default effort.
+        try:
+            client.chat_completion(
+                {
+                    "model": "stepfun/step-3.7-flash",
+                    "reasoning": {"enabled": False},
+                    "messages": [
+                        {"role": "system", "content": "Summarize the chapter."},
+                        {"role": "user", "content": SOURCE_MD},
+                    ],
+                },
+                source_md=SOURCE_MD,
+                score=False,
+                target_words=0,
+            )
+        except ValueError as e:
+            assert "mandatory reasoning" in str(e), e
+            checks += 1
+        else:
+            raise AssertionError(
+                "expected client-side ValueError for disabling reasoning on a "
+                "mandatory-reasoning model (stepfun/step-3.7-flash)"
+            )
 
         print(f"cf-client-smoke OK ({checks} checks)")
     except Exception:

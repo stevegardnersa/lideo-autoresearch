@@ -187,7 +187,9 @@ This requires a `Dockerfile` (not included; CF 2nd gen auto-detects Python runti
   "api_key": "",                // API key (omit to use LLM_API_KEY env var)
 
   // ── Optional — Model parameters ───────────────────────────
-  "thinking": false,            // Enable reasoning tokens (default: false)
+  "thinking": false,            // Legacy reasoning on/off, maps to reasoning.enabled (default: omit — see below)
+  "reasoning": { "effort": "high" },   // Native OpenRouter reasoning object (wins over the fields below)
+  "reasoning_effort": "minimal",      // Native scalar reasoning effort ("none" → reasoning.enabled=false)
   "use_json_schema": true,      // Request structured JSON output (default: true)
 
   // ── Optional — Scoring ────────────────────────────────────
@@ -479,9 +481,19 @@ Generate rubrics ahead of time and cache them. The rubric is a static analysis o
 uv run python tools/build_rubrics.py --book-id your-book
 ```
 
+### Reasoning Control (OpenRouter-native)
+
+Reasoning params are translated to native OpenRouter form in `handler.py`:
+
+- `reasoning` dict → forwarded verbatim; `{"effort": "none"}` collapses to `{"enabled": false}`.
+- `reasoning_effort="<tier>"` → `{"reasoning": {"effort": <tier>}}`; `"none"` → `{"enabled": false}`.
+- `thinking` bool (legacy) → `{"reasoning": {"enabled": true|false}}`. Only applied when present.
+- No reasoning signal at all → **no** `reasoning` field is emitted (provider default applies). The litellm `extra_body={"thinking": {...}}` wrapper is never emitted — OpenRouter ignores it.
+- **Mandatory-reasoning models** (`candidate_spec.MANDATORY_REASONING_MODELS`, currently `stepfun/step-3.7-flash`): the client raises a `ValueError` before sending any request that tries to disable reasoning (`enabled=false`, effort/scalar `"none"`), because the provider rejects the disabled form and a plain request still reasons at default effort.
+
 ### Cost Management
 
-- The `thinking` flag roughly doubles token output (reasoning tokens are billed separately). Use `false` for cost-sensitive bulk runs.
+- The `thinking` flag / enabled reasoning roughly doubles token output (reasoning tokens are billed separately). Use a `_notthinking` profile for cost-sensitive bulk runs — but only for models that can actually disable reasoning (not mandatory-reasoning models).
 - The `judge` flag adds a second LLM call (default: `gpt-4o-mini`, ~$0.15/M tokens). Omit for pipeline runs where only deterministic scoring is needed.
 - Set `use_json_schema=false` only if the model lacks JSON mode or you want free-form output. Structured output reduces parsing errors and is recommended.
 

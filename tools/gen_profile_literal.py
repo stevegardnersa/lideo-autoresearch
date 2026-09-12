@@ -26,6 +26,24 @@ def load_profiles() -> dict:
     return {k: v for k, v in profiles.items() if not (v and v.get("hidden"))}
 
 
+def load_mandatory_reasoning_models() -> frozenset:
+    """Model ids whose reasoning cannot be disabled (probe none_style=mandatory)."""
+    with open(CANDIDATES_JSON, encoding="utf-8") as f:
+        data = json.load(f)
+    caps = data.get("capabilities", {}) or {}
+    return frozenset(
+        model for model, c in caps.items()
+        if isinstance(c, dict) and c.get("none_style") in ("mandatory", "plain")
+    )
+
+
+def build_mandatory_literal(models: frozenset) -> str:
+    if not models:
+        return "MANDATORY_REASONING_MODELS: frozenset = frozenset()\n"
+    inner = ", ".join(f'"{m}"' for m in sorted(models))
+    return f"MANDATORY_REASONING_MODELS: frozenset = frozenset({{{inner}}})\n"
+
+
 def build_literal(profile_keys: list[str]) -> str:
     quoted = [f'"{v}"' for v in profile_keys]
     lines, line = [], ""
@@ -37,6 +55,15 @@ def build_literal(profile_keys: list[str]) -> str:
     if line:
         lines.append(line)
     return "Profile = Literal[\n    " + ",\n    ".join(lines) + "\n]\n"
+
+
+def py_literal(value) -> str:
+    """JSON value -> valid Python literal (booleans/null fixed).
+
+    ``json.dumps`` emits ``true``/``false``/``null`` which are not valid Python;
+    convert them so emitted stage configs (reasoning dicts, extra_body) import.
+    """
+    return json.dumps(value).replace("true", "True").replace("false", "False").replace("null", "None")
 
 
 def build_candidates_dict(profiles: dict) -> str:
@@ -67,11 +94,11 @@ def build_candidates_dict(profiles: dict) -> str:
                 f'provider={provider_repr}',
             ]
             if s.get("reasoning") is not None:
-                parts.append(f'reasoning={json.dumps(s.get("reasoning"))}')
+                parts.append(f'reasoning={py_literal(s.get("reasoning"))}')
             if s.get("reasoning_effort") is not None:
-                parts.append(f'reasoning_effort={json.dumps(s.get("reasoning_effort"))}')
+                parts.append(f'reasoning_effort={py_literal(s.get("reasoning_effort"))}')
             extra_body_val = s.get("extra_body")
-            extra_body_repr = "None" if extra_body_val is None else json.dumps(extra_body_val)
+            extra_body_repr = "None" if extra_body_val is None else py_literal(extra_body_val)
             parts.append(f'extra_body={extra_body_repr}')
             return f"StageConfig({', '.join(parts)})"
 
@@ -134,6 +161,15 @@ def update_candidate_spec_py(profiles: dict) -> None:
     else:
         print("WARNING: Profile literal pattern not found")
 
+    # Replace MANDATORY_REASONING_MODELS constant from probe capabilities.
+    mandatory = load_mandatory_reasoning_models()
+    mandatory_literal = build_mandatory_literal(mandatory)
+    m_pattern = r"MANDATORY_REASONING_MODELS: frozenset = frozenset\([^)]*\)\n"
+    if re.search(m_pattern, content):
+        content = re.sub(m_pattern, mandatory_literal, content, count=1)
+    else:
+        print("WARNING: MANDATORY_REASONING_MODELS pattern not found")
+
     # Replace PROFILE_CANDIDATES dict using brace matching
     marker = "PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {"
     if marker not in content:
@@ -155,6 +191,7 @@ def update_candidate_spec_py(profiles: dict) -> None:
     CANDIDATE_SPEC_PY.write_text(content, encoding="utf-8")
     print(f"Updated Profile literal in {CANDIDATE_SPEC_PY} ({len(profile_keys)} profiles)")
     print(f"Updated PROFILE_CANDIDATES in {CANDIDATE_SPEC_PY} ({len(profile_keys)} candidates)")
+    print(f"Updated MANDATORY_REASONING_MODELS in {CANDIDATE_SPEC_PY} ({len(mandatory)} models)")
 
 
 def main() -> None:

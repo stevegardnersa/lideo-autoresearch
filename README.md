@@ -255,8 +255,12 @@ python3 tools/add_candidate.py --model-full "deepseek/deepseek-v4-flash" --provi
 
 The script probes the model for (a) JSON schema support and (b) reasoning-effort tiers via the recommended OpenRouter API (`reasoning: {"effort": X}`, falling back to the top-level `reasoning_effort: X` scalar if the structured param is rejected). It creates one profile per supported effort among `none`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`:
 
-- `effort=none` → plain request, profile suffix `_notthinking` (backward compatible)
+- `effort=none` → `reasoning: {"enabled": false}` (forced-off), profile suffix `_notthinking`
 - anything higher → `reasoning`/`reasoning_effort` param, profile suffix `_effort-<name>` (never collides with legacy `_thinking`)
+
+The probe records `capabilities[<model>].none_style`:
+- `"enabled_false"` — model accepts `reasoning.enabled=false`; a `_notthinking` profile is created.
+- `"mandatory"` — model rejects `enabled=false` **and** still reasons on a plain request (e.g. `stepfun/step-3.7-flash`). Reasoning cannot be turned off, so **no** `_notthinking` profile is created for it, and `_resolve_efforts` raises if you explicitly request `--efforts none`. These models are registered in `candidate_spec.MANDATORY_REASONING_MODELS`; any code path that tries to disable their reasoning raises `ValueError` instead of silently running at default effort.
 
 Every new run also records the model's probed capability block under `data/candidates.json → capabilities[<model>]` and bumps `schema_version` to `2`.
 
@@ -273,13 +277,17 @@ python3 tools/add_candidate.py --model-full "openai/gpt-5.6-luna" --efforts none
 python3 tools/add_candidate.py --model-full "openai/gpt-5.6-luna" --probe-legacy
 ```
 
-Migrate an existing model's legacy `_thinking`/`_notthinking` profiles to new-style reasoning configs in place (same profile names, new request params):
+Migrate an existing model's legacy `_thinking`/`_notthinking` profiles to new-style reasoning configs in place:
 
 ```bash
-python3 tools/add_candidate.py --model-full "openai/gpt-5.6-luna" --migrate-legacy-thinking
+# Default: deterministic 1:1 migration — keys unchanged, no probing, whole file when --model omitted
+python3 tools/add_candidate.py --migrate-legacy-thinking
+
+# Opt-in upgrade: probe the model, map _thinking to an effort tier, rename the profile
+python3 tools/add_candidate.py --model-full "openai/gpt-5.6-luna" --migrate-legacy-thinking --upgrade-efforts
 ```
 
-Migrated `_thinking` profiles use `effort=high` (configurable via the resolved-capability fallback if `high` is unsupported); `_notthinking` maps to `effort=none`, which requires no reasoning param at all.
+The default 1:1 migration rewrites `_thinking → reasoning.enabled=true` and `_notthinking → reasoning.enabled=false` with profile keys unchanged (resume-safe); `_effort-*` legacy carriers keep their effort tier from the name. It also adds a `_notthinking` sibling for every family that lacks one (`--no-add-missing-none` to skip), and refuses to create or keep one for a mandatory-reasoning model. The opt-in `--upgrade-efforts` mode maps `_thinking → effort-high` (configurable via the resolved-capability fallback) and renames the profile.
 
 Key `--time-budget` values:
 - `30m` — only 30-minute whole-book summary profiles
@@ -292,9 +300,10 @@ Profiles are written to `data/candidates.json`.
 
 Each `StageConfig` carries the reasoning setup in `candidate_spec.py`:
 
-- `reasoning: {"effort": "..."}` — recommended structured param (OpenRouter Option A)
+- `reasoning: {"effort": "..."}` — recommended structured param (OpenRouter Option A); `{"effort": "none"}` collapses to `{"enabled": false}`
+- `reasoning: {"enabled": false}` — canonical "none"/forced-off
 - `reasoning_effort: "..."` — top-level scalar (Option B)
-- `extra_body: {"thinking": ...}` — legacy; byte-identical to previous behavior and only emitted by migration-then-facing tools
+- `extra_body: {"thinking": ...}` — legacy; retained only for back-compat of in-flight stages, **no longer produced by the profile set**
 
 `core/reasoning.py` is the single source of truth for effort tiers and the token-budget math. Because a high effort consumes most of the visible token budget, `tools/add_candidate.py` scales each stage's `max_tokens` up by `1 / (1 - fraction)` (e.g. effort `high` ≈ 0.80 of the budget → ~5× the base budget), capped at 163,840.
 

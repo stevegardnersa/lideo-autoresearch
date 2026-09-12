@@ -20,12 +20,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "deepseek/deepseek-v4-flash",
@@ -43,12 +41,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -69,7 +65,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 30m, thinking, schema=True"
+      "notes": "Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 30m, thinking (enabled=true), schema=True"
     },
     "30m_deepseek-v4-flash_notthinking": {
       "name": "30m_deepseek-v4-flash_notthinking_v1",
@@ -90,12 +86,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "deepseek/deepseek-v4-flash",
@@ -113,12 +107,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -139,7 +131,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 30m, notthinking, schema=True"
+      "notes": "Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 30m, notthinking (effort=none), schema=True"
     },
     "60m_deepseek-v4-flash_thinking": {
       "name": "60m_deepseek-v4-flash_thinking_v1",
@@ -160,12 +152,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "deepseek/deepseek-v4-flash",
@@ -183,12 +173,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -209,7 +197,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 60m, thinking (enabled=true), schema=True"
     },
     "60m_deepseek-v4-flash_notthinking": {
       "name": "60m_deepseek-v4-flash_notthinking_v1",
@@ -230,12 +218,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "deepseek/deepseek-v4-flash",
@@ -253,12 +239,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -279,7 +263,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 60m, notthinking, schema=True"
+      "notes": "Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 60m, notthinking (effort=none), schema=True"
     },
     "60m_deepseek-v4-pro_thinking": {
       "name": "60m_deepseek-v4-pro_thinking_v1",
@@ -300,12 +284,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "deepseek/deepseek-v4-pro",
@@ -323,12 +305,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -349,7 +329,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, thinking (enabled=true), schema=True"
     },
     "60m_deepseek-v4-pro_notthinking": {
       "name": "60m_deepseek-v4-pro_notthinking_v1",
@@ -370,12 +350,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "deepseek/deepseek-v4-pro",
@@ -393,12 +371,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -419,7 +395,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, notthinking, schema=True"
+      "notes": "Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, notthinking (effort=none), schema=True"
     },
     "30m_deepseek-v4-pro_thinking": {
       "name": "30m_deepseek-v4-pro_thinking_v1",
@@ -440,12 +416,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "deepseek/deepseek-v4-pro",
@@ -463,12 +437,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -489,7 +461,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 30m, thinking, schema=True"
+      "notes": "Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 30m, thinking (enabled=true), schema=True"
     },
     "30m_deepseek-v4-pro_notthinking": {
       "name": "30m_deepseek-v4-pro_notthinking_v1",
@@ -510,12 +482,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "deepseek/deepseek-v4-pro",
@@ -533,12 +503,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -559,7 +527,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 30m, notthinking, schema=True"
+      "notes": "Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 30m, notthinking (effort=none), schema=True"
     },
     "30m_mimo-v2-flash_thinking": {
       "name": "30m_mimo-v2-flash_thinking_v1",
@@ -580,12 +548,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "xiaomi/mimo-v2-flash",
@@ -603,12 +569,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -629,7 +593,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 30m, thinking, schema=True"
+      "notes": "Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 30m, thinking (enabled=true), schema=True"
     },
     "30m_mimo-v2-flash_notthinking": {
       "name": "30m_mimo-v2-flash_notthinking_v1",
@@ -650,12 +614,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "xiaomi/mimo-v2-flash",
@@ -673,12 +635,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -699,7 +659,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 30m, notthinking, schema=True"
+      "notes": "Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 30m, notthinking (effort=none), schema=True"
     },
     "60m_mimo-v2-flash_thinking": {
       "name": "60m_mimo-v2-flash_thinking_v1",
@@ -720,12 +680,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "xiaomi/mimo-v2-flash",
@@ -743,12 +701,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -769,7 +725,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 60m, thinking (enabled=true), schema=True"
     },
     "60m_mimo-v2-flash_notthinking": {
       "name": "60m_mimo-v2-flash_notthinking_v1",
@@ -790,12 +746,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "xiaomi/mimo-v2-flash",
@@ -813,12 +767,10 @@
           "terminology_policy": "keep_source_terms",
           "anti_fluff_policy": "hard"
         },
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -839,7 +791,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 60m, notthinking, schema=True"
+      "notes": "Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 60m, notthinking (effort=none), schema=True"
     },
     "30m_minimax-m2.7_thinking": {
       "name": "30m_minimax-m2.7_thinking_v1",
@@ -861,12 +813,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "minimax/minimax-m2.7",
@@ -885,12 +835,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -911,7 +859,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: minimax/minimax-m2.7 chapter+composer, 30m, thinking, schema=True"
+      "notes": "Auto-generated: minimax/minimax-m2.7 chapter+composer, 30m, thinking (enabled=true), schema=True"
     },
     "30m_minimax-m2.7_notthinking": {
       "name": "30m_minimax-m2.7_notthinking_v1",
@@ -933,12 +881,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "minimax/minimax-m2.7",
@@ -957,12 +903,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -983,7 +927,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: minimax/minimax-m2.7 chapter+composer, 30m, notthinking, schema=True"
+      "notes": "Auto-generated: minimax/minimax-m2.7 chapter+composer, 30m, notthinking (effort=none), schema=True"
     },
     "60m_minimax-m2.7_thinking": {
       "name": "60m_minimax-m2.7_thinking_v1",
@@ -1005,12 +949,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "minimax/minimax-m2.7",
@@ -1029,12 +971,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -1055,7 +995,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: minimax/minimax-m2.7 chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: minimax/minimax-m2.7 chapter+composer, 60m, thinking (enabled=true), schema=True"
     },
     "60m_minimax-m2.7_notthinking": {
       "name": "60m_minimax-m2.7_notthinking_v1",
@@ -1077,12 +1017,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "minimax/minimax-m2.7",
@@ -1101,12 +1039,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -1127,7 +1063,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: minimax/minimax-m2.7 chapter+composer, 60m, notthinking, schema=True"
+      "notes": "Auto-generated: minimax/minimax-m2.7 chapter+composer, 60m, notthinking (effort=none), schema=True"
     },
     "30m_minimax-m2.5_thinking": {
       "name": "30m_minimax-m2.5_thinking_v1",
@@ -1149,12 +1085,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "minimax/minimax-m2.5",
@@ -1173,12 +1107,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -1199,7 +1131,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: minimax/minimax-m2.5 chapter+composer, 30m, thinking, schema=False"
+      "notes": "Auto-generated: minimax/minimax-m2.5 chapter+composer, 30m, thinking (enabled=true), schema=False"
     },
     "30m_minimax-m2.5_notthinking": {
       "name": "30m_minimax-m2.5_notthinking_v1",
@@ -1221,12 +1153,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "minimax/minimax-m2.5",
@@ -1245,12 +1175,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -1271,7 +1199,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: minimax/minimax-m2.5 chapter+composer, 30m, notthinking, schema=False"
+      "notes": "Auto-generated: minimax/minimax-m2.5 chapter+composer, 30m, notthinking (effort=none), schema=False"
     },
     "60m_minimax-m2.5_thinking": {
       "name": "60m_minimax-m2.5_thinking_v1",
@@ -1293,12 +1221,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "minimax/minimax-m2.5",
@@ -1317,12 +1243,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -1343,7 +1267,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: minimax/minimax-m2.5 chapter+composer, 60m, thinking, schema=False"
+      "notes": "Auto-generated: minimax/minimax-m2.5 chapter+composer, 60m, thinking (enabled=true), schema=False"
     },
     "60m_minimax-m2.5_notthinking": {
       "name": "60m_minimax-m2.5_notthinking_v1",
@@ -1365,12 +1289,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "minimax/minimax-m2.5",
@@ -1389,12 +1311,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -1415,7 +1335,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: minimax/minimax-m2.5 chapter+composer, 60m, notthinking, schema=False"
+      "notes": "Auto-generated: minimax/minimax-m2.5 chapter+composer, 60m, notthinking (effort=none), schema=False"
     },
     "30m_gemini-3-flash-preview_thinking": {
       "name": "30m_gemini-3-flash-preview_thinking_v1",
@@ -1437,12 +1357,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "google/gemini-3-flash-preview",
@@ -1461,12 +1379,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -1487,7 +1403,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: google/gemini-3-flash-preview chapter+composer, 30m, thinking, schema=True"
+      "notes": "Auto-generated: google/gemini-3-flash-preview chapter+composer, 30m, thinking (enabled=true), schema=True"
     },
     "30m_gemini-3-flash-preview_notthinking": {
       "name": "30m_gemini-3-flash-preview_notthinking_v1",
@@ -1509,12 +1425,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "google/gemini-3-flash-preview",
@@ -1533,12 +1447,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -1559,7 +1471,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: google/gemini-3-flash-preview chapter+composer, 30m, notthinking, schema=True"
+      "notes": "Auto-generated: google/gemini-3-flash-preview chapter+composer, 30m, notthinking (effort=none), schema=True"
     },
     "60m_gemini-3-flash-preview_thinking": {
       "name": "60m_gemini-3-flash-preview_thinking_v1",
@@ -1581,12 +1493,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "google/gemini-3-flash-preview",
@@ -1605,12 +1515,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -1631,7 +1539,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: google/gemini-3-flash-preview chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: google/gemini-3-flash-preview chapter+composer, 60m, thinking (enabled=true), schema=True"
     },
     "60m_gemini-3-flash-preview_notthinking": {
       "name": "60m_gemini-3-flash-preview_notthinking_v1",
@@ -1653,12 +1561,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "google/gemini-3-flash-preview",
@@ -1677,12 +1583,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -1703,7 +1607,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: google/gemini-3-flash-preview chapter+composer, 60m, notthinking, schema=True"
+      "notes": "Auto-generated: google/gemini-3-flash-preview chapter+composer, 60m, notthinking (effort=none), schema=True"
     },
     "30m_gemini-3.1-flash-lite-preview_thinking": {
       "name": "30m_gemini-3.1-flash-lite-preview_thinking_v1",
@@ -1725,12 +1629,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "google/gemini-3.1-flash-lite-preview",
@@ -1749,12 +1651,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -1775,7 +1675,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: google/gemini-3.1-flash-lite-preview chapter+composer, 30m, thinking, schema=True"
+      "notes": "Auto-generated: google/gemini-3.1-flash-lite-preview chapter+composer, 30m, thinking (enabled=true), schema=True"
     },
     "30m_gemini-3.1-flash-lite-preview_notthinking": {
       "name": "30m_gemini-3.1-flash-lite-preview_notthinking_v1",
@@ -1797,12 +1697,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "google/gemini-3.1-flash-lite-preview",
@@ -1821,12 +1719,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -1847,7 +1743,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: google/gemini-3.1-flash-lite-preview chapter+composer, 30m, notthinking, schema=True"
+      "notes": "Auto-generated: google/gemini-3.1-flash-lite-preview chapter+composer, 30m, notthinking (effort=none), schema=True"
     },
     "60m_gemini-3.1-flash-lite-preview_thinking": {
       "name": "60m_gemini-3.1-flash-lite-preview_thinking_v1",
@@ -1869,12 +1765,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "google/gemini-3.1-flash-lite-preview",
@@ -1893,12 +1787,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -1919,7 +1811,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: google/gemini-3.1-flash-lite-preview chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: google/gemini-3.1-flash-lite-preview chapter+composer, 60m, thinking (enabled=true), schema=True"
     },
     "60m_gemini-3.1-flash-lite-preview_notthinking": {
       "name": "60m_gemini-3.1-flash-lite-preview_notthinking_v1",
@@ -1941,12 +1833,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "google/gemini-3.1-flash-lite-preview",
@@ -1965,12 +1855,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -1991,7 +1879,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: google/gemini-3.1-flash-lite-preview chapter+composer, 60m, notthinking, schema=True"
+      "notes": "Auto-generated: google/gemini-3.1-flash-lite-preview chapter+composer, 60m, notthinking (effort=none), schema=True"
     },
     "30m_gemini-3.1-pro-preview_thinking": {
       "name": "30m_gemini-3.1-pro-preview_thinking_v1",
@@ -2013,12 +1901,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "google/gemini-3.1-pro-preview",
@@ -2037,12 +1923,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -2063,7 +1947,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: google/gemini-3.1-pro-preview chapter+composer, 30m, thinking, schema=True"
+      "notes": "Auto-generated: google/gemini-3.1-pro-preview chapter+composer, 30m, thinking (enabled=true), schema=True"
     },
     "30m_gemini-3.1-pro-preview_notthinking": {
       "name": "30m_gemini-3.1-pro-preview_notthinking_v1",
@@ -2085,12 +1969,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "google/gemini-3.1-pro-preview",
@@ -2109,12 +1991,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -2135,7 +2015,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: google/gemini-3.1-pro-preview chapter+composer, 30m, notthinking, schema=True"
+      "notes": "Auto-generated: google/gemini-3.1-pro-preview chapter+composer, 30m, notthinking (effort=none), schema=True"
     },
     "60m_gemini-3.1-pro-preview_thinking": {
       "name": "60m_gemini-3.1-pro-preview_thinking_v1",
@@ -2157,12 +2037,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "google/gemini-3.1-pro-preview",
@@ -2181,12 +2059,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -2207,7 +2083,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: google/gemini-3.1-pro-preview chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: google/gemini-3.1-pro-preview chapter+composer, 60m, thinking (enabled=true), schema=True"
     },
     "60m_gemini-3.1-pro-preview_notthinking": {
       "name": "60m_gemini-3.1-pro-preview_notthinking_v1",
@@ -2229,12 +2105,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "google/gemini-3.1-pro-preview",
@@ -2253,12 +2127,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -2279,7 +2151,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: google/gemini-3.1-pro-preview chapter+composer, 60m, notthinking, schema=True"
+      "notes": "Auto-generated: google/gemini-3.1-pro-preview chapter+composer, 60m, notthinking (effort=none), schema=True"
     },
     "30m_nemotron-3-super-120b-a12b_thinking": {
       "name": "30m_nemotron-3-super-120b-a12b_thinking_v1",
@@ -2301,12 +2173,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "nvidia/nemotron-3-super-120b-a12b",
@@ -2325,12 +2195,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -2351,7 +2219,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 30m, thinking, schema=True"
+      "notes": "Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 30m, thinking (enabled=true), schema=True"
     },
     "30m_nemotron-3-super-120b-a12b_notthinking": {
       "name": "30m_nemotron-3-super-120b-a12b_notthinking_v1",
@@ -2373,12 +2241,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "nvidia/nemotron-3-super-120b-a12b",
@@ -2397,12 +2263,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -2423,7 +2287,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 30m, notthinking, schema=True"
+      "notes": "Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 30m, notthinking (effort=none), schema=True"
     },
     "60m_nemotron-3-super-120b-a12b_thinking": {
       "name": "60m_nemotron-3-super-120b-a12b_thinking_v1",
@@ -2445,12 +2309,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "nvidia/nemotron-3-super-120b-a12b",
@@ -2469,12 +2331,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -2495,7 +2355,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 60m, thinking (enabled=true), schema=True"
     },
     "60m_nemotron-3-super-120b-a12b_notthinking": {
       "name": "60m_nemotron-3-super-120b-a12b_notthinking_v1",
@@ -2517,12 +2377,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "nvidia/nemotron-3-super-120b-a12b",
@@ -2541,12 +2399,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -2567,7 +2423,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 60m, notthinking, schema=True"
+      "notes": "Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 60m, notthinking (effort=none), schema=True"
     },
     "30m_gpt-oss-120b_thinking": {
       "name": "30m_gpt-oss-120b_thinking_v1",
@@ -2589,12 +2445,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "openai/gpt-oss-120b",
@@ -2613,12 +2467,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -2639,7 +2491,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: openai/gpt-oss-120b chapter+composer, 30m, thinking, schema=False"
+      "notes": "Auto-generated: openai/gpt-oss-120b chapter+composer, 30m, thinking (enabled=true), schema=False"
     },
     "30m_gpt-oss-120b_notthinking": {
       "name": "30m_gpt-oss-120b_notthinking_v1",
@@ -2661,12 +2513,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "openai/gpt-oss-120b",
@@ -2685,12 +2535,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -2711,7 +2559,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: openai/gpt-oss-120b chapter+composer, 30m, notthinking, schema=False"
+      "notes": "Auto-generated: openai/gpt-oss-120b chapter+composer, 30m, notthinking (effort=none), schema=False"
     },
     "60m_gpt-oss-120b_thinking": {
       "name": "60m_gpt-oss-120b_thinking_v1",
@@ -2733,12 +2581,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "openai/gpt-oss-120b",
@@ -2757,12 +2603,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -2783,7 +2627,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: openai/gpt-oss-120b chapter+composer, 60m, thinking, schema=False"
+      "notes": "Auto-generated: openai/gpt-oss-120b chapter+composer, 60m, thinking (enabled=true), schema=False"
     },
     "60m_gpt-oss-120b_notthinking": {
       "name": "60m_gpt-oss-120b_notthinking_v1",
@@ -2805,12 +2649,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "openai/gpt-oss-120b",
@@ -2829,12 +2671,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -2855,7 +2695,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: openai/gpt-oss-120b chapter+composer, 60m, notthinking, schema=False"
+      "notes": "Auto-generated: openai/gpt-oss-120b chapter+composer, 60m, notthinking (effort=none), schema=False"
     },
     "30m_qwen3.6-35b-a3b_thinking": {
       "name": "30m_qwen3.6-35b-a3b_thinking_v1",
@@ -2877,12 +2717,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "qwen/qwen3.6-35b-a3b",
@@ -2901,12 +2739,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -2927,7 +2763,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 30m, thinking, schema=False"
+      "notes": "Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 30m, thinking (enabled=true), schema=False"
     },
     "30m_qwen3.6-35b-a3b_notthinking": {
       "name": "30m_qwen3.6-35b-a3b_notthinking_v1",
@@ -2949,12 +2785,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "qwen/qwen3.6-35b-a3b",
@@ -2973,12 +2807,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -2999,7 +2831,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 30m, notthinking, schema=False"
+      "notes": "Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 30m, notthinking (effort=none), schema=False"
     },
     "60m_qwen3.6-35b-a3b_thinking": {
       "name": "60m_qwen3.6-35b-a3b_thinking_v1",
@@ -3021,12 +2853,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "qwen/qwen3.6-35b-a3b",
@@ -3045,12 +2875,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -3071,7 +2899,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 60m, thinking, schema=False"
+      "notes": "Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 60m, thinking (enabled=true), schema=False"
     },
     "60m_qwen3.6-35b-a3b_notthinking": {
       "name": "60m_qwen3.6-35b-a3b_notthinking_v1",
@@ -3093,12 +2921,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "qwen/qwen3.6-35b-a3b",
@@ -3117,12 +2943,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -3143,7 +2967,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 60m, notthinking, schema=False"
+      "notes": "Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 60m, notthinking (effort=none), schema=False"
     },
     "30m_step-3.5-flash_thinking": {
       "name": "30m_step-3.5-flash_thinking_v1",
@@ -3165,12 +2989,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "stepfun/step-3.5-flash",
@@ -3189,12 +3011,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -3215,7 +3035,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, thinking, schema=True"
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, thinking (enabled=true), schema=True"
     },
     "30m_step-3.5-flash_notthinking": {
       "name": "30m_step-3.5-flash_notthinking_v1",
@@ -3237,12 +3057,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "stepfun/step-3.5-flash",
@@ -3261,12 +3079,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -3287,7 +3103,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, notthinking, schema=True"
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, notthinking (effort=none), schema=True"
     },
     "60m_step-3.5-flash_thinking": {
       "name": "60m_step-3.5-flash_thinking_v1",
@@ -3309,12 +3125,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "stepfun/step-3.5-flash",
@@ -3333,12 +3147,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -3359,7 +3171,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, thinking (enabled=true), schema=True"
     },
     "60m_step-3.5-flash_notthinking": {
       "name": "60m_step-3.5-flash_notthinking_v1",
@@ -3381,12 +3193,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "stepfun/step-3.5-flash",
@@ -3405,12 +3215,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -3431,7 +3239,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, notthinking, schema=True"
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, notthinking (effort=none), schema=True"
     },
     "30m_grok-4.3_thinking": {
       "name": "30m_grok-4.3_thinking_v1",
@@ -3453,12 +3261,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "x-ai/grok-4.3",
@@ -3477,12 +3283,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -3503,7 +3307,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: x-ai/grok-4.3 chapter+composer, 30m, thinking, schema=True"
+      "notes": "Auto-generated: x-ai/grok-4.3 chapter+composer, 30m, thinking (enabled=true), schema=True"
     },
     "30m_grok-4.3_notthinking": {
       "name": "30m_grok-4.3_notthinking_v1",
@@ -3525,12 +3329,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "x-ai/grok-4.3",
@@ -3549,12 +3351,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -3575,7 +3375,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: x-ai/grok-4.3 chapter+composer, 30m, notthinking, schema=True"
+      "notes": "Auto-generated: x-ai/grok-4.3 chapter+composer, 30m, notthinking (effort=none), schema=True"
     },
     "60m_grok-4.3_thinking": {
       "name": "60m_grok-4.3_thinking_v1",
@@ -3597,12 +3397,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "x-ai/grok-4.3",
@@ -3621,12 +3419,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -3647,7 +3443,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: x-ai/grok-4.3 chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: x-ai/grok-4.3 chapter+composer, 60m, thinking (enabled=true), schema=True"
     },
     "60m_grok-4.3_notthinking": {
       "name": "60m_grok-4.3_notthinking_v1",
@@ -3669,12 +3465,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "x-ai/grok-4.3",
@@ -3693,12 +3487,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -3719,7 +3511,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: x-ai/grok-4.3 chapter+composer, 60m, notthinking, schema=True"
+      "notes": "Auto-generated: x-ai/grok-4.3 chapter+composer, 60m, notthinking (effort=none), schema=True"
     },
     "30m_qwen3.6-plus_thinking": {
       "name": "30m_qwen3.6-plus_thinking_v1",
@@ -3741,12 +3533,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "qwen/qwen3.6-plus",
@@ -3765,12 +3555,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -3791,7 +3579,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: qwen/qwen3.6-plus chapter+composer, 30m, thinking, schema=True"
+      "notes": "Auto-generated: qwen/qwen3.6-plus chapter+composer, 30m, thinking (enabled=true), schema=True"
     },
     "30m_qwen3.6-plus_notthinking": {
       "name": "30m_qwen3.6-plus_notthinking_v1",
@@ -3813,12 +3601,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "qwen/qwen3.6-plus",
@@ -3837,12 +3623,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -3863,7 +3647,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: qwen/qwen3.6-plus chapter+composer, 30m, notthinking, schema=True"
+      "notes": "Auto-generated: qwen/qwen3.6-plus chapter+composer, 30m, notthinking (effort=none), schema=True"
     },
     "60m_qwen3.6-plus_thinking": {
       "name": "60m_qwen3.6-plus_thinking_v1",
@@ -3885,12 +3669,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "qwen/qwen3.6-plus",
@@ -3909,12 +3691,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -3935,7 +3715,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: qwen/qwen3.6-plus chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: qwen/qwen3.6-plus chapter+composer, 60m, thinking (enabled=true), schema=True"
     },
     "60m_qwen3.6-plus_notthinking": {
       "name": "60m_qwen3.6-plus_notthinking_v1",
@@ -3957,12 +3737,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "qwen/qwen3.6-plus",
@@ -3981,12 +3759,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -4007,7 +3783,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: qwen/qwen3.6-plus chapter+composer, 60m, notthinking, schema=True"
+      "notes": "Auto-generated: qwen/qwen3.6-plus chapter+composer, 60m, notthinking (effort=none), schema=True"
     },
     "30m_gpt-5.4-mini_thinking": {
       "name": "30m_gpt-5.4-mini_thinking_v1",
@@ -4029,12 +3805,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "openai/gpt-5.4-mini",
@@ -4053,12 +3827,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -4079,7 +3851,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: openai/gpt-5.4-mini chapter+composer, 30m, thinking, schema=True"
+      "notes": "Auto-generated: openai/gpt-5.4-mini chapter+composer, 30m, thinking (enabled=true), schema=True"
     },
     "30m_gpt-5.4-mini_notthinking": {
       "name": "30m_gpt-5.4-mini_notthinking_v1",
@@ -4101,12 +3873,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "openai/gpt-5.4-mini",
@@ -4125,12 +3895,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -4151,7 +3919,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: openai/gpt-5.4-mini chapter+composer, 30m, notthinking, schema=True"
+      "notes": "Auto-generated: openai/gpt-5.4-mini chapter+composer, 30m, notthinking (effort=none), schema=True"
     },
     "60m_gpt-5.4-mini_thinking": {
       "name": "60m_gpt-5.4-mini_thinking_v1",
@@ -4173,12 +3941,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "openai/gpt-5.4-mini",
@@ -4197,12 +3963,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -4223,7 +3987,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: openai/gpt-5.4-mini chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: openai/gpt-5.4-mini chapter+composer, 60m, thinking (enabled=true), schema=True"
     },
     "60m_gpt-5.4-mini_notthinking": {
       "name": "60m_gpt-5.4-mini_notthinking_v1",
@@ -4245,12 +4009,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "openai/gpt-5.4-mini",
@@ -4269,12 +4031,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -4295,7 +4055,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: openai/gpt-5.4-mini chapter+composer, 60m, notthinking, schema=True"
+      "notes": "Auto-generated: openai/gpt-5.4-mini chapter+composer, 60m, notthinking (effort=none), schema=True"
     },
     "30m_gpt-5.4-nano_thinking": {
       "name": "30m_gpt-5.4-nano_thinking_v1",
@@ -4317,12 +4077,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "openai/gpt-5.4-nano",
@@ -4341,12 +4099,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -4367,7 +4123,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: openai/gpt-5.4-nano chapter+composer, 30m, thinking, schema=True"
+      "notes": "Auto-generated: openai/gpt-5.4-nano chapter+composer, 30m, thinking (enabled=true), schema=True"
     },
     "30m_gpt-5.4-nano_notthinking": {
       "name": "30m_gpt-5.4-nano_notthinking_v1",
@@ -4389,12 +4145,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "openai/gpt-5.4-nano",
@@ -4413,12 +4167,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -4439,7 +4191,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: openai/gpt-5.4-nano chapter+composer, 30m, notthinking, schema=True"
+      "notes": "Auto-generated: openai/gpt-5.4-nano chapter+composer, 30m, notthinking (effort=none), schema=True"
     },
     "60m_gpt-5.4-nano_thinking": {
       "name": "60m_gpt-5.4-nano_thinking_v1",
@@ -4461,12 +4213,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "openai/gpt-5.4-nano",
@@ -4485,12 +4235,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -4511,7 +4259,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: openai/gpt-5.4-nano chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: openai/gpt-5.4-nano chapter+composer, 60m, thinking (enabled=true), schema=True"
     },
     "60m_gpt-5.4-nano_notthinking": {
       "name": "60m_gpt-5.4-nano_notthinking_v1",
@@ -4533,12 +4281,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "openai/gpt-5.4-nano",
@@ -4557,12 +4303,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -4583,7 +4327,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: openai/gpt-5.4-nano chapter+composer, 60m, notthinking, schema=True"
+      "notes": "Auto-generated: openai/gpt-5.4-nano chapter+composer, 60m, notthinking (effort=none), schema=True"
     },
     "30m_gemini-3.5-flash_thinking": {
       "name": "30m_gemini-3.5-flash_thinking_v1",
@@ -4605,12 +4349,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "google/gemini-3.5-flash",
@@ -4629,12 +4371,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -4655,7 +4395,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: google/gemini-3.5-flash chapter+composer, 30m, thinking, schema=False"
+      "notes": "Auto-generated: google/gemini-3.5-flash chapter+composer, 30m, thinking (enabled=true), schema=False"
     },
     "30m_gemini-3.5-flash_notthinking": {
       "name": "30m_gemini-3.5-flash_notthinking_v1",
@@ -4677,12 +4417,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "google/gemini-3.5-flash",
@@ -4701,12 +4439,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -4727,7 +4463,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: google/gemini-3.5-flash chapter+composer, 30m, notthinking, schema=False"
+      "notes": "Auto-generated: google/gemini-3.5-flash chapter+composer, 30m, notthinking (effort=none), schema=False"
     },
     "30m_qwen3.7-max_thinking": {
       "name": "30m_qwen3.7-max_thinking_v1",
@@ -4749,12 +4485,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "qwen/qwen3.7-max",
@@ -4773,12 +4507,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -4799,7 +4531,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: qwen/qwen3.7-max chapter+composer, 30m, thinking, schema=True"
+      "notes": "Auto-generated: qwen/qwen3.7-max chapter+composer, 30m, thinking (enabled=true), schema=True"
     },
     "30m_qwen3.7-max_notthinking": {
       "name": "30m_qwen3.7-max_notthinking_v1",
@@ -4821,12 +4553,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "qwen/qwen3.7-max",
@@ -4845,12 +4575,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -4871,7 +4599,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: qwen/qwen3.7-max chapter+composer, 30m, notthinking, schema=True"
+      "notes": "Auto-generated: qwen/qwen3.7-max chapter+composer, 30m, notthinking (effort=none), schema=True"
     },
     "30m_glm-5.3-flash_thinking": {
       "name": "30m_glm-5.3-flash_thinking_v1",
@@ -4893,12 +4621,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "z-ai/glm-5.3-flash",
@@ -4917,12 +4643,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -4943,7 +4667,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: z-ai/glm-5.3-flash chapter+composer, 30m, thinking, schema=True"
+      "notes": "Auto-generated: z-ai/glm-5.3-flash chapter+composer, 30m, thinking (enabled=true), schema=True"
     },
     "30m_glm-5.3-flash_notthinking": {
       "name": "30m_glm-5.3-flash_notthinking_v1",
@@ -4965,12 +4689,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "z-ai/glm-5.3-flash",
@@ -4989,12 +4711,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -5015,7 +4735,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: z-ai/glm-5.3-flash chapter+composer, 30m, notthinking, schema=True"
+      "notes": "Auto-generated: z-ai/glm-5.3-flash chapter+composer, 30m, notthinking (effort=none), schema=True"
     },
     "60m_glm-5.3-flash_thinking": {
       "name": "60m_glm-5.3-flash_thinking_v1",
@@ -5037,12 +4757,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_stage": {
         "model": "z-ai/glm-5.3-flash",
@@ -5061,12 +4779,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -5087,7 +4803,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: z-ai/glm-5.3-flash chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: z-ai/glm-5.3-flash chapter+composer, 60m, thinking (enabled=true), schema=True"
     },
     "60m_glm-5.3-flash_notthinking": {
       "name": "60m_glm-5.3-flash_notthinking_v1",
@@ -5109,12 +4825,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "z-ai/glm-5.3-flash",
@@ -5133,12 +4847,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "extra_body": {
-          "thinking": {
-            "type": "disabled"
-          }
-        },
-        "use_json_schema": true
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -5159,7 +4871,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: z-ai/glm-5.3-flash chapter+composer, 60m, notthinking, schema=True"
+      "notes": "Auto-generated: z-ai/glm-5.3-flash chapter+composer, 60m, notthinking (effort=none), schema=True"
     },
     "30m_muse-glimmer-30b_notthinking": {
       "name": "30m_muse-glimmer-30b_notthinking_v1",
@@ -5181,7 +4893,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "meta/muse-glimmer-30b",
@@ -5200,7 +4915,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -5311,7 +5029,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_stage": {
         "model": "meta/muse-glimmer-30b",
@@ -5330,7 +5051,10 @@
           "anti_fluff_policy": "hard"
         },
         "provider": null,
-        "use_json_schema": false
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
       },
       "composer_mode": "summaries_only",
       "length_control": {
@@ -5442,10 +5166,8 @@
         },
         "provider": null,
         "use_json_schema": true,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
+        "reasoning": {
+          "effort": "minimal"
         }
       },
       "composer_stage": {
@@ -5466,10 +5188,8 @@
         },
         "provider": null,
         "use_json_schema": true,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
+        "reasoning": {
+          "effort": "minimal"
         }
       },
       "composer_mode": "summaries_only",
@@ -5491,7 +5211,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: nvidia/nemotron-3.5-lightning chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: nvidia/nemotron-3.5-lightning chapter+composer, 30m, effort-minimal, schema=True"
     },
     "30m_nemotron-3.5-lightning_effort-medium": {
       "name": "30m_nemotron-3.5-lightning_effort-medium_v1",
@@ -5514,10 +5234,8 @@
         },
         "provider": null,
         "use_json_schema": true,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
+        "reasoning": {
+          "effort": "medium"
         }
       },
       "composer_stage": {
@@ -5538,10 +5256,8 @@
         },
         "provider": null,
         "use_json_schema": true,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
+        "reasoning": {
+          "effort": "medium"
         }
       },
       "composer_mode": "summaries_only",
@@ -5563,7 +5279,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: nvidia/nemotron-3.5-lightning chapter+composer, 60m, thinking, schema=True"
+      "notes": "Auto-generated: nvidia/nemotron-3.5-lightning chapter+composer, 30m, effort-medium, schema=True"
     },
     "30m_step-3.7-flash_effort-medium": {
       "name": "30m_step-3.7-flash_effort-medium_v1",
@@ -5586,10 +5302,8 @@
         },
         "provider": null,
         "use_json_schema": false,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
+        "reasoning": {
+          "effort": "medium"
         }
       },
       "composer_stage": {
@@ -5610,10 +5324,8 @@
         },
         "provider": null,
         "use_json_schema": false,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
+        "reasoning": {
+          "effort": "medium"
         }
       },
       "composer_mode": "summaries_only",
@@ -5635,7 +5347,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: stepfun/step-3.7-flash chapter+composer, 30m, notthinking, schema=False"
+      "notes": "Auto-generated: stepfun/step-3.7-flash chapter+composer, 30m, effort-medium, schema=False"
     },
     "60m_step-3.7-flash_effort-medium": {
       "name": "60m_step-3.7-flash_effort-medium_v1",
@@ -5658,10 +5370,8 @@
         },
         "provider": null,
         "use_json_schema": false,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
+        "reasoning": {
+          "effort": "medium"
         }
       },
       "composer_stage": {
@@ -5682,10 +5392,8 @@
         },
         "provider": null,
         "use_json_schema": false,
-        "extra_body": {
-          "thinking": {
-            "type": "enabled"
-          }
+        "reasoning": {
+          "effort": "medium"
         }
       },
       "composer_mode": "summaries_only",
@@ -5707,7 +5415,7 @@
         "max_summary_to_source_ratio": 0.9
       },
       "disable_composer": false,
-      "notes": "Auto-generated: stepfun/step-3.7-flash chapter+composer, 30m, notthinking, schema=False"
+      "notes": "Auto-generated: stepfun/step-3.7-flash chapter+composer, 60m, effort-medium, schema=False"
     },
     "30m_gpt-5.6-luna_effort-minimal": {
       "name": "30m_gpt-5.6-luna_effort-minimal_v1",
@@ -6532,6 +6240,210 @@
       "disable_composer": false,
       "notes": "Auto-generated: openai/gpt-5.6-luna chapter+composer, 60m, effort-max (effort=max), schema=False",
       "hidden": true
+    },
+    "30m_gpt-5.6-luna_notthinking": {
+      "name": "30m_gpt-5.6-luna_notthinking_v1",
+      "profile": "30m_gpt-5.6-luna_notthinking",
+      "chapter_stage": {
+        "model": "openai/gpt-5.6-luna",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
+      },
+      "composer_stage": {
+        "model": "openai/gpt-5.6-luna",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: openai/gpt-5.6-luna chapter+composer, 30m, notthinking (effort=none), schema=False"
+    },
+    "30m_nemotron-3.5-lightning_notthinking": {
+      "name": "30m_nemotron-3.5-lightning_notthinking_v1",
+      "profile": "30m_nemotron-3.5-lightning_notthinking",
+      "chapter_stage": {
+        "model": "nvidia/nemotron-3.5-lightning",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
+      },
+      "composer_stage": {
+        "model": "nvidia/nemotron-3.5-lightning",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": false
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: nvidia/nemotron-3.5-lightning chapter+composer, 30m, notthinking (effort=none), schema=True"
+    },
+    "60m_gpt-5.6-luna_notthinking": {
+      "name": "60m_gpt-5.6-luna_notthinking_v1",
+      "profile": "60m_gpt-5.6-luna_notthinking",
+      "chapter_stage": {
+        "model": "openai/gpt-5.6-luna",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
+      },
+      "composer_stage": {
+        "model": "openai/gpt-5.6-luna",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "enabled": false
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.15,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_dedup_first"
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1.0,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: openai/gpt-5.6-luna chapter+composer, 60m, notthinking (effort=none), schema=False"
     }
   },
   "capabilities": {
@@ -6551,7 +6463,7 @@
       "support_note": null
     },
     "openai/gpt-5.6-luna": {
-      "schema": false,
+      "schema": true,
       "efforts": [
         "none",
         "minimal",
@@ -6562,8 +6474,30 @@
         "max"
       ],
       "effort_style": "reasoning",
+      "none_style": "enabled_false",
       "thinking_param": null,
       "support_note": null
+    },
+    "nvidia/nemotron-3.5-lightning": {
+      "schema": true,
+      "efforts": [
+        "none",
+        "minimal",
+        "medium"
+      ],
+      "effort_style": "reasoning",
+      "none_style": "enabled_false",
+      "thinking_param": null,
+      "support_note": null
+    },
+    "stepfun/step-3.7-flash": {
+      "schema": true,
+      "efforts": [
+        "medium"
+      ],
+      "effort_style": "reasoning",
+      "none_style": "mandatory",
+      "support_note": "Reasoning is MANDATORY for this endpoint: reasoning.enabled:false is rejected, and a plain request still reasons at default effort. _notthinking is impossible; a request that tries to disable reasoning fails loudly (client-side)."
     }
   },
   "schema_version": 2,

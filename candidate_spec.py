@@ -31,25 +31,27 @@ Profile = Literal[
     "30m_gemini-3.1-pro-preview_notthinking", "30m_gemini-3.1-pro-preview_thinking", "30m_gemini-3.5-flash_notthinking",
     "30m_gemini-3.5-flash_thinking", "30m_glm-5.3-flash_notthinking", "30m_glm-5.3-flash_thinking",
     "30m_gpt-5.4-mini_notthinking", "30m_gpt-5.4-mini_thinking", "30m_gpt-5.4-nano_notthinking", "30m_gpt-5.4-nano_thinking",
-    "30m_gpt-5.6-luna_effort-medium", "30m_gpt-5.6-luna_effort-minimal", "30m_gpt-oss-120b_notthinking",
-    "30m_gpt-oss-120b_thinking", "30m_grok-4.3_notthinking", "30m_grok-4.3_thinking", "30m_mimo-v2-flash_notthinking",
-    "30m_mimo-v2-flash_thinking", "30m_minimax-m2.5_notthinking", "30m_minimax-m2.5_thinking",
-    "30m_minimax-m2.7_notthinking", "30m_minimax-m2.7_thinking", "30m_muse-glimmer-30b_effort-medium",
-    "30m_muse-glimmer-30b_notthinking", "30m_nemotron-3-super-120b-a12b_notthinking",
+    "30m_gpt-5.6-luna_effort-medium", "30m_gpt-5.6-luna_effort-minimal", "30m_gpt-5.6-luna_notthinking",
+    "30m_gpt-oss-120b_notthinking", "30m_gpt-oss-120b_thinking", "30m_grok-4.3_notthinking", "30m_grok-4.3_thinking",
+    "30m_mimo-v2-flash_notthinking", "30m_mimo-v2-flash_thinking", "30m_minimax-m2.5_notthinking",
+    "30m_minimax-m2.5_thinking", "30m_minimax-m2.7_notthinking", "30m_minimax-m2.7_thinking",
+    "30m_muse-glimmer-30b_effort-medium", "30m_muse-glimmer-30b_notthinking", "30m_nemotron-3-super-120b-a12b_notthinking",
     "30m_nemotron-3-super-120b-a12b_thinking", "30m_nemotron-3.5-lightning_effort-medium",
-    "30m_nemotron-3.5-lightning_effort-minimal", "30m_qwen3.6-35b-a3b_notthinking", "30m_qwen3.6-35b-a3b_thinking",
-    "30m_qwen3.6-plus_notthinking", "30m_qwen3.6-plus_thinking", "30m_qwen3.7-max_notthinking", "30m_qwen3.7-max_thinking",
-    "30m_step-3.5-flash_notthinking", "30m_step-3.5-flash_thinking", "30m_step-3.7-flash_effort-medium",
-    "60m_deepseek-v4-flash_notthinking", "60m_deepseek-v4-flash_thinking", "60m_deepseek-v4-pro_notthinking",
-    "60m_deepseek-v4-pro_thinking", "60m_gemini-3-flash-preview_notthinking", "60m_gemini-3-flash-preview_thinking",
+    "30m_nemotron-3.5-lightning_effort-minimal", "30m_nemotron-3.5-lightning_notthinking", "30m_qwen3.6-35b-a3b_notthinking",
+    "30m_qwen3.6-35b-a3b_thinking", "30m_qwen3.6-plus_notthinking", "30m_qwen3.6-plus_thinking",
+    "30m_qwen3.7-max_notthinking", "30m_qwen3.7-max_thinking", "30m_step-3.5-flash_notthinking",
+    "30m_step-3.5-flash_thinking", "30m_step-3.7-flash_effort-medium", "60m_deepseek-v4-flash_notthinking",
+    "60m_deepseek-v4-flash_thinking", "60m_deepseek-v4-pro_notthinking", "60m_deepseek-v4-pro_thinking",
+    "60m_gemini-3-flash-preview_notthinking", "60m_gemini-3-flash-preview_thinking",
     "60m_gemini-3.1-flash-lite-preview_notthinking", "60m_gemini-3.1-flash-lite-preview_thinking",
     "60m_gemini-3.1-pro-preview_notthinking", "60m_gemini-3.1-pro-preview_thinking", "60m_glm-5.3-flash_notthinking",
     "60m_glm-5.3-flash_thinking", "60m_gpt-5.4-mini_notthinking", "60m_gpt-5.4-mini_thinking",
     "60m_gpt-5.4-nano_notthinking", "60m_gpt-5.4-nano_thinking", "60m_gpt-5.6-luna_effort-medium",
-    "60m_gpt-5.6-luna_effort-minimal", "60m_gpt-oss-120b_notthinking", "60m_gpt-oss-120b_thinking",
-    "60m_grok-4.3_notthinking", "60m_grok-4.3_thinking", "60m_mimo-v2-flash_notthinking", "60m_mimo-v2-flash_thinking",
-    "60m_minimax-m2.5_notthinking", "60m_minimax-m2.5_thinking", "60m_minimax-m2.7_notthinking", "60m_minimax-m2.7_thinking",
-    "60m_muse-glimmer-30b_effort-medium", "60m_muse-glimmer-30b_notthinking", "60m_nemotron-3-super-120b-a12b_notthinking",
+    "60m_gpt-5.6-luna_effort-minimal", "60m_gpt-5.6-luna_notthinking", "60m_gpt-oss-120b_notthinking",
+    "60m_gpt-oss-120b_thinking", "60m_grok-4.3_notthinking", "60m_grok-4.3_thinking", "60m_mimo-v2-flash_notthinking",
+    "60m_mimo-v2-flash_thinking", "60m_minimax-m2.5_notthinking", "60m_minimax-m2.5_thinking",
+    "60m_minimax-m2.7_notthinking", "60m_minimax-m2.7_thinking", "60m_muse-glimmer-30b_effort-medium",
+    "60m_muse-glimmer-30b_notthinking", "60m_nemotron-3-super-120b-a12b_notthinking",
     "60m_nemotron-3-super-120b-a12b_thinking", "60m_qwen3.6-35b-a3b_notthinking", "60m_qwen3.6-35b-a3b_thinking",
     "60m_qwen3.6-plus_notthinking", "60m_qwen3.6-plus_thinking", "60m_step-3.5-flash_notthinking",
     "60m_step-3.5-flash_thinking", "60m_step-3.7-flash_effort-medium"
@@ -65,9 +67,19 @@ RepairStrategy = Literal["edit_existing", "regenerate_from_source"]
 ComposerMode = Literal["summaries_only", "hybrid_retrieve", "source_aware"]
 
 try:
-    from core.reasoning import reasoning_request_params
+    from core.reasoning import reasoning_request_params, register_mandatory_reasoning_models
 except ImportError:  # pragma: no cover - hosts without core on sys.path
     reasoning_request_params = None
+    register_mandatory_reasoning_models = None
+
+
+# Models whose providers reject ``reasoning={"enabled": false}`` and still reason
+# on a plain request. A ``_notthinking`` profile is impossible for them; the
+# request builder raises when one is attempted. Regenerated from
+# data/candidates.json capabilities by tools/gen_profile_literal.py.
+MANDATORY_REASONING_MODELS: frozenset = frozenset({"stepfun/step-3.7-flash"})
+if register_mandatory_reasoning_models is not None:
+    register_mandatory_reasoning_models(MANDATORY_REASONING_MODELS)
 
 
 @dataclass
@@ -710,8 +722,8 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
     "30m_deepseek-v4-flash_notthinking": CandidateSpec(
         name="30m_deepseek-v4-flash_notthinking_v1",
         profile="30m_deepseek-v4-flash_notthinking",
-        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -720,14 +732,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 30m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "30m_deepseek-v4-flash_thinking": CandidateSpec(
         name="30m_deepseek-v4-flash_thinking_v1",
         profile="30m_deepseek-v4-flash_thinking",
-        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -736,14 +748,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 30m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "30m_deepseek-v4-pro_notthinking": CandidateSpec(
         name="30m_deepseek-v4-pro_notthinking_v1",
         profile="30m_deepseek-v4-pro_notthinking",
-        chapter_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -752,14 +764,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 30m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "30m_deepseek-v4-pro_thinking": CandidateSpec(
         name="30m_deepseek-v4-pro_thinking_v1",
         profile="30m_deepseek-v4-pro_thinking",
-        chapter_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -768,14 +780,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 30m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "30m_gemini-3-flash-preview_notthinking": CandidateSpec(
         name="30m_gemini-3-flash-preview_notthinking_v1",
         profile="30m_gemini-3-flash-preview_notthinking",
-        chapter_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -784,14 +796,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: google/gemini-3-flash-preview chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: google/gemini-3-flash-preview chapter+composer, 30m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "30m_gemini-3-flash-preview_thinking": CandidateSpec(
         name="30m_gemini-3-flash-preview_thinking_v1",
         profile="30m_gemini-3-flash-preview_thinking",
-        chapter_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -800,14 +812,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: google/gemini-3-flash-preview chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: google/gemini-3-flash-preview chapter+composer, 30m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "30m_gemini-3.1-flash-lite-preview_notthinking": CandidateSpec(
         name="30m_gemini-3.1-flash-lite-preview_notthinking_v1",
         profile="30m_gemini-3.1-flash-lite-preview_notthinking",
-        chapter_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -816,14 +828,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: google/gemini-3.1-flash-lite-preview chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: google/gemini-3.1-flash-lite-preview chapter+composer, 30m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "30m_gemini-3.1-flash-lite-preview_thinking": CandidateSpec(
         name="30m_gemini-3.1-flash-lite-preview_thinking_v1",
         profile="30m_gemini-3.1-flash-lite-preview_thinking",
-        chapter_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -832,14 +844,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: google/gemini-3.1-flash-lite-preview chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: google/gemini-3.1-flash-lite-preview chapter+composer, 30m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "30m_gemini-3.1-pro-preview_notthinking": CandidateSpec(
         name="30m_gemini-3.1-pro-preview_notthinking_v1",
         profile="30m_gemini-3.1-pro-preview_notthinking",
-        chapter_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -848,14 +860,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: google/gemini-3.1-pro-preview chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: google/gemini-3.1-pro-preview chapter+composer, 30m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "30m_gemini-3.1-pro-preview_thinking": CandidateSpec(
         name="30m_gemini-3.1-pro-preview_thinking_v1",
         profile="30m_gemini-3.1-pro-preview_thinking",
-        chapter_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -864,14 +876,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: google/gemini-3.1-pro-preview chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: google/gemini-3.1-pro-preview chapter+composer, 30m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "30m_gemini-3.5-flash_notthinking": CandidateSpec(
         name="30m_gemini-3.5-flash_notthinking_v1",
         profile="30m_gemini-3.5-flash_notthinking",
-        chapter_stage=StageConfig(model="google/gemini-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="google/gemini-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="google/gemini-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="google/gemini-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -880,14 +892,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: google/gemini-3.5-flash chapter+composer, 30m, notthinking, schema=False",
+        notes="Auto-generated: google/gemini-3.5-flash chapter+composer, 30m, notthinking (effort=none), schema=False",
         disable_composer=False
     ),
     "30m_gemini-3.5-flash_thinking": CandidateSpec(
         name="30m_gemini-3.5-flash_thinking_v1",
         profile="30m_gemini-3.5-flash_thinking",
-        chapter_stage=StageConfig(model="google/gemini-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="google/gemini-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="google/gemini-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="google/gemini-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -896,14 +908,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: google/gemini-3.5-flash chapter+composer, 30m, thinking, schema=False",
+        notes="Auto-generated: google/gemini-3.5-flash chapter+composer, 30m, thinking (enabled=true), schema=False",
         disable_composer=False
     ),
     "30m_glm-5.3-flash_notthinking": CandidateSpec(
         name="30m_glm-5.3-flash_notthinking_v1",
         profile="30m_glm-5.3-flash_notthinking",
-        chapter_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -912,14 +924,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: z-ai/glm-5.3-flash chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: z-ai/glm-5.3-flash chapter+composer, 30m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "30m_glm-5.3-flash_thinking": CandidateSpec(
         name="30m_glm-5.3-flash_thinking_v1",
         profile="30m_glm-5.3-flash_thinking",
-        chapter_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -928,14 +940,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: z-ai/glm-5.3-flash chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: z-ai/glm-5.3-flash chapter+composer, 30m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "30m_gpt-5.4-mini_notthinking": CandidateSpec(
         name="30m_gpt-5.4-mini_notthinking_v1",
         profile="30m_gpt-5.4-mini_notthinking",
-        chapter_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -944,14 +956,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: openai/gpt-5.4-mini chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: openai/gpt-5.4-mini chapter+composer, 30m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "30m_gpt-5.4-mini_thinking": CandidateSpec(
         name="30m_gpt-5.4-mini_thinking_v1",
         profile="30m_gpt-5.4-mini_thinking",
-        chapter_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -960,14 +972,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: openai/gpt-5.4-mini chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: openai/gpt-5.4-mini chapter+composer, 30m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "30m_gpt-5.4-nano_notthinking": CandidateSpec(
         name="30m_gpt-5.4-nano_notthinking_v1",
         profile="30m_gpt-5.4-nano_notthinking",
-        chapter_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -976,14 +988,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: openai/gpt-5.4-nano chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: openai/gpt-5.4-nano chapter+composer, 30m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "30m_gpt-5.4-nano_thinking": CandidateSpec(
         name="30m_gpt-5.4-nano_thinking_v1",
         profile="30m_gpt-5.4-nano_thinking",
-        chapter_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -992,7 +1004,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: openai/gpt-5.4-nano chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: openai/gpt-5.4-nano chapter+composer, 30m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "30m_gpt-5.6-luna_effort-medium": CandidateSpec(
@@ -1027,11 +1039,27 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         notes="Auto-generated: openai/gpt-5.6-luna chapter+composer, 30m, effort-minimal (effort=minimal), schema=False",
         disable_composer=False
     ),
+    "30m_gpt-5.6-luna_notthinking": CandidateSpec(
+        name="30m_gpt-5.6-luna_notthinking_v1",
+        profile="30m_gpt-5.6-luna_notthinking",
+        chapter_stage=StageConfig(model="openai/gpt-5.6-luna", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="openai/gpt-5.6-luna", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: openai/gpt-5.6-luna chapter+composer, 30m, notthinking (effort=none), schema=False",
+        disable_composer=False
+    ),
     "30m_gpt-oss-120b_notthinking": CandidateSpec(
         name="30m_gpt-oss-120b_notthinking_v1",
         profile="30m_gpt-oss-120b_notthinking",
-        chapter_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1040,14 +1068,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: openai/gpt-oss-120b chapter+composer, 30m, notthinking, schema=False",
+        notes="Auto-generated: openai/gpt-oss-120b chapter+composer, 30m, notthinking (effort=none), schema=False",
         disable_composer=False
     ),
     "30m_gpt-oss-120b_thinking": CandidateSpec(
         name="30m_gpt-oss-120b_thinking_v1",
         profile="30m_gpt-oss-120b_thinking",
-        chapter_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1056,14 +1084,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: openai/gpt-oss-120b chapter+composer, 30m, thinking, schema=False",
+        notes="Auto-generated: openai/gpt-oss-120b chapter+composer, 30m, thinking (enabled=true), schema=False",
         disable_composer=False
     ),
     "30m_grok-4.3_notthinking": CandidateSpec(
         name="30m_grok-4.3_notthinking_v1",
         profile="30m_grok-4.3_notthinking",
-        chapter_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1072,14 +1100,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: x-ai/grok-4.3 chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: x-ai/grok-4.3 chapter+composer, 30m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "30m_grok-4.3_thinking": CandidateSpec(
         name="30m_grok-4.3_thinking_v1",
         profile="30m_grok-4.3_thinking",
-        chapter_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1088,14 +1116,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: x-ai/grok-4.3 chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: x-ai/grok-4.3 chapter+composer, 30m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "30m_mimo-v2-flash_notthinking": CandidateSpec(
         name="30m_mimo-v2-flash_notthinking_v1",
         profile="30m_mimo-v2-flash_notthinking",
-        chapter_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1104,14 +1132,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 30m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "30m_mimo-v2-flash_thinking": CandidateSpec(
         name="30m_mimo-v2-flash_thinking_v1",
         profile="30m_mimo-v2-flash_thinking",
-        chapter_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1120,14 +1148,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 30m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "30m_minimax-m2.5_notthinking": CandidateSpec(
         name="30m_minimax-m2.5_notthinking_v1",
         profile="30m_minimax-m2.5_notthinking",
-        chapter_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1136,14 +1164,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: minimax/minimax-m2.5 chapter+composer, 30m, notthinking, schema=False",
+        notes="Auto-generated: minimax/minimax-m2.5 chapter+composer, 30m, notthinking (effort=none), schema=False",
         disable_composer=False
     ),
     "30m_minimax-m2.5_thinking": CandidateSpec(
         name="30m_minimax-m2.5_thinking_v1",
         profile="30m_minimax-m2.5_thinking",
-        chapter_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1152,14 +1180,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: minimax/minimax-m2.5 chapter+composer, 30m, thinking, schema=False",
+        notes="Auto-generated: minimax/minimax-m2.5 chapter+composer, 30m, thinking (enabled=true), schema=False",
         disable_composer=False
     ),
     "30m_minimax-m2.7_notthinking": CandidateSpec(
         name="30m_minimax-m2.7_notthinking_v1",
         profile="30m_minimax-m2.7_notthinking",
-        chapter_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1168,14 +1196,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: minimax/minimax-m2.7 chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: minimax/minimax-m2.7 chapter+composer, 30m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "30m_minimax-m2.7_thinking": CandidateSpec(
         name="30m_minimax-m2.7_thinking_v1",
         profile="30m_minimax-m2.7_thinking",
-        chapter_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1184,7 +1212,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: minimax/minimax-m2.7 chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: minimax/minimax-m2.7 chapter+composer, 30m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "30m_muse-glimmer-30b_effort-medium": CandidateSpec(
@@ -1206,8 +1234,8 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
     "30m_muse-glimmer-30b_notthinking": CandidateSpec(
         name="30m_muse-glimmer-30b_notthinking_v1",
         profile="30m_muse-glimmer-30b_notthinking",
-        chapter_stage=StageConfig(model="meta/muse-glimmer-30b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body=None),
-        composer_stage=StageConfig(model="meta/muse-glimmer-30b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body=None),
+        chapter_stage=StageConfig(model="meta/muse-glimmer-30b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="meta/muse-glimmer-30b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1222,8 +1250,8 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
     "30m_nemotron-3-super-120b-a12b_notthinking": CandidateSpec(
         name="30m_nemotron-3-super-120b-a12b_notthinking_v1",
         profile="30m_nemotron-3-super-120b-a12b_notthinking",
-        chapter_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1232,14 +1260,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 30m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "30m_nemotron-3-super-120b-a12b_thinking": CandidateSpec(
         name="30m_nemotron-3-super-120b-a12b_thinking_v1",
         profile="30m_nemotron-3-super-120b-a12b_thinking",
-        chapter_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1248,14 +1276,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 30m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "30m_nemotron-3.5-lightning_effort-medium": CandidateSpec(
         name="30m_nemotron-3.5-lightning_effort-medium_v1",
         profile="30m_nemotron-3.5-lightning_effort-medium",
-        chapter_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
+        composer_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1264,14 +1292,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: nvidia/nemotron-3.5-lightning chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: nvidia/nemotron-3.5-lightning chapter+composer, 30m, effort-medium, schema=True",
         disable_composer=False
     ),
     "30m_nemotron-3.5-lightning_effort-minimal": CandidateSpec(
         name="30m_nemotron-3.5-lightning_effort-minimal_v1",
         profile="30m_nemotron-3.5-lightning_effort-minimal",
-        chapter_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
+        composer_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1280,14 +1308,30 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: nvidia/nemotron-3.5-lightning chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: nvidia/nemotron-3.5-lightning chapter+composer, 30m, effort-minimal, schema=True",
+        disable_composer=False
+    ),
+    "30m_nemotron-3.5-lightning_notthinking": CandidateSpec(
+        name="30m_nemotron-3.5-lightning_notthinking_v1",
+        profile="30m_nemotron-3.5-lightning_notthinking",
+        chapter_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: nvidia/nemotron-3.5-lightning chapter+composer, 30m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "30m_qwen3.6-35b-a3b_notthinking": CandidateSpec(
         name="30m_qwen3.6-35b-a3b_notthinking_v1",
         profile="30m_qwen3.6-35b-a3b_notthinking",
-        chapter_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1296,14 +1340,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 30m, notthinking, schema=False",
+        notes="Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 30m, notthinking (effort=none), schema=False",
         disable_composer=False
     ),
     "30m_qwen3.6-35b-a3b_thinking": CandidateSpec(
         name="30m_qwen3.6-35b-a3b_thinking_v1",
         profile="30m_qwen3.6-35b-a3b_thinking",
-        chapter_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1312,14 +1356,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 30m, thinking, schema=False",
+        notes="Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 30m, thinking (enabled=true), schema=False",
         disable_composer=False
     ),
     "30m_qwen3.6-plus_notthinking": CandidateSpec(
         name="30m_qwen3.6-plus_notthinking_v1",
         profile="30m_qwen3.6-plus_notthinking",
-        chapter_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1328,14 +1372,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: qwen/qwen3.6-plus chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: qwen/qwen3.6-plus chapter+composer, 30m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "30m_qwen3.6-plus_thinking": CandidateSpec(
         name="30m_qwen3.6-plus_thinking_v1",
         profile="30m_qwen3.6-plus_thinking",
-        chapter_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1344,14 +1388,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: qwen/qwen3.6-plus chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: qwen/qwen3.6-plus chapter+composer, 30m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "30m_qwen3.7-max_notthinking": CandidateSpec(
         name="30m_qwen3.7-max_notthinking_v1",
         profile="30m_qwen3.7-max_notthinking",
-        chapter_stage=StageConfig(model="qwen/qwen3.7-max", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="qwen/qwen3.7-max", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="qwen/qwen3.7-max", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="qwen/qwen3.7-max", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1360,14 +1404,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: qwen/qwen3.7-max chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: qwen/qwen3.7-max chapter+composer, 30m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "30m_qwen3.7-max_thinking": CandidateSpec(
         name="30m_qwen3.7-max_thinking_v1",
         profile="30m_qwen3.7-max_thinking",
-        chapter_stage=StageConfig(model="qwen/qwen3.7-max", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="qwen/qwen3.7-max", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="qwen/qwen3.7-max", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="qwen/qwen3.7-max", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1376,14 +1420,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: qwen/qwen3.7-max chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: qwen/qwen3.7-max chapter+composer, 30m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "30m_step-3.5-flash_notthinking": CandidateSpec(
         name="30m_step-3.5-flash_notthinking_v1",
         profile="30m_step-3.5-flash_notthinking",
-        chapter_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1392,14 +1436,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, notthinking, schema=True",
+        notes="Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "30m_step-3.5-flash_thinking": CandidateSpec(
         name="30m_step-3.5-flash_thinking_v1",
         profile="30m_step-3.5-flash_thinking",
-        chapter_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1408,14 +1452,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, thinking, schema=True",
+        notes="Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "30m_step-3.7-flash_effort-medium": CandidateSpec(
         name="30m_step-3.7-flash_effort-medium_v1",
         profile="30m_step-3.7-flash_effort-medium",
-        chapter_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
+        composer_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1424,14 +1468,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: stepfun/step-3.7-flash chapter+composer, 30m, notthinking, schema=False",
+        notes="Auto-generated: stepfun/step-3.7-flash chapter+composer, 30m, effort-medium, schema=False",
         disable_composer=False
     ),
     "60m_deepseek-v4-flash_notthinking": CandidateSpec(
         name="60m_deepseek-v4-flash_notthinking_v1",
         profile="60m_deepseek-v4-flash_notthinking",
-        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1440,14 +1484,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 60m, notthinking, schema=True",
+        notes="Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 60m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "60m_deepseek-v4-flash_thinking": CandidateSpec(
         name="60m_deepseek-v4-flash_thinking_v1",
         profile="60m_deepseek-v4-flash_thinking",
-        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1456,14 +1500,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: deepseek/deepseek-v4-flash chapter+composer, 60m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "60m_deepseek-v4-pro_notthinking": CandidateSpec(
         name="60m_deepseek-v4-pro_notthinking_v1",
         profile="60m_deepseek-v4-pro_notthinking",
-        chapter_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1472,14 +1516,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, notthinking, schema=True",
+        notes="Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "60m_deepseek-v4-pro_thinking": CandidateSpec(
         name="60m_deepseek-v4-pro_thinking_v1",
         profile="60m_deepseek-v4-pro_thinking",
-        chapter_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1488,14 +1532,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "60m_gemini-3-flash-preview_notthinking": CandidateSpec(
         name="60m_gemini-3-flash-preview_notthinking_v1",
         profile="60m_gemini-3-flash-preview_notthinking",
-        chapter_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1504,14 +1548,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: google/gemini-3-flash-preview chapter+composer, 60m, notthinking, schema=True",
+        notes="Auto-generated: google/gemini-3-flash-preview chapter+composer, 60m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "60m_gemini-3-flash-preview_thinking": CandidateSpec(
         name="60m_gemini-3-flash-preview_thinking_v1",
         profile="60m_gemini-3-flash-preview_thinking",
-        chapter_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1520,14 +1564,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: google/gemini-3-flash-preview chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: google/gemini-3-flash-preview chapter+composer, 60m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "60m_gemini-3.1-flash-lite-preview_notthinking": CandidateSpec(
         name="60m_gemini-3.1-flash-lite-preview_notthinking_v1",
         profile="60m_gemini-3.1-flash-lite-preview_notthinking",
-        chapter_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1536,14 +1580,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: google/gemini-3.1-flash-lite-preview chapter+composer, 60m, notthinking, schema=True",
+        notes="Auto-generated: google/gemini-3.1-flash-lite-preview chapter+composer, 60m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "60m_gemini-3.1-flash-lite-preview_thinking": CandidateSpec(
         name="60m_gemini-3.1-flash-lite-preview_thinking_v1",
         profile="60m_gemini-3.1-flash-lite-preview_thinking",
-        chapter_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1552,14 +1596,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: google/gemini-3.1-flash-lite-preview chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: google/gemini-3.1-flash-lite-preview chapter+composer, 60m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "60m_gemini-3.1-pro-preview_notthinking": CandidateSpec(
         name="60m_gemini-3.1-pro-preview_notthinking_v1",
         profile="60m_gemini-3.1-pro-preview_notthinking",
-        chapter_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1568,14 +1612,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: google/gemini-3.1-pro-preview chapter+composer, 60m, notthinking, schema=True",
+        notes="Auto-generated: google/gemini-3.1-pro-preview chapter+composer, 60m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "60m_gemini-3.1-pro-preview_thinking": CandidateSpec(
         name="60m_gemini-3.1-pro-preview_thinking_v1",
         profile="60m_gemini-3.1-pro-preview_thinking",
-        chapter_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1584,14 +1628,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: google/gemini-3.1-pro-preview chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: google/gemini-3.1-pro-preview chapter+composer, 60m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "60m_glm-5.3-flash_notthinking": CandidateSpec(
         name="60m_glm-5.3-flash_notthinking_v1",
         profile="60m_glm-5.3-flash_notthinking",
-        chapter_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1600,14 +1644,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: z-ai/glm-5.3-flash chapter+composer, 60m, notthinking, schema=True",
+        notes="Auto-generated: z-ai/glm-5.3-flash chapter+composer, 60m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "60m_glm-5.3-flash_thinking": CandidateSpec(
         name="60m_glm-5.3-flash_thinking_v1",
         profile="60m_glm-5.3-flash_thinking",
-        chapter_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1616,14 +1660,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: z-ai/glm-5.3-flash chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: z-ai/glm-5.3-flash chapter+composer, 60m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "60m_gpt-5.4-mini_notthinking": CandidateSpec(
         name="60m_gpt-5.4-mini_notthinking_v1",
         profile="60m_gpt-5.4-mini_notthinking",
-        chapter_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1632,14 +1676,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: openai/gpt-5.4-mini chapter+composer, 60m, notthinking, schema=True",
+        notes="Auto-generated: openai/gpt-5.4-mini chapter+composer, 60m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "60m_gpt-5.4-mini_thinking": CandidateSpec(
         name="60m_gpt-5.4-mini_thinking_v1",
         profile="60m_gpt-5.4-mini_thinking",
-        chapter_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1648,14 +1692,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: openai/gpt-5.4-mini chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: openai/gpt-5.4-mini chapter+composer, 60m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "60m_gpt-5.4-nano_notthinking": CandidateSpec(
         name="60m_gpt-5.4-nano_notthinking_v1",
         profile="60m_gpt-5.4-nano_notthinking",
-        chapter_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1664,14 +1708,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: openai/gpt-5.4-nano chapter+composer, 60m, notthinking, schema=True",
+        notes="Auto-generated: openai/gpt-5.4-nano chapter+composer, 60m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "60m_gpt-5.4-nano_thinking": CandidateSpec(
         name="60m_gpt-5.4-nano_thinking_v1",
         profile="60m_gpt-5.4-nano_thinking",
-        chapter_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1680,7 +1724,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: openai/gpt-5.4-nano chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: openai/gpt-5.4-nano chapter+composer, 60m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "60m_gpt-5.6-luna_effort-medium": CandidateSpec(
@@ -1715,11 +1759,27 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         notes="Auto-generated: openai/gpt-5.6-luna chapter+composer, 60m, effort-minimal (effort=minimal), schema=False",
         disable_composer=False
     ),
+    "60m_gpt-5.6-luna_notthinking": CandidateSpec(
+        name="60m_gpt-5.6-luna_notthinking_v1",
+        profile="60m_gpt-5.6-luna_notthinking",
+        chapter_stage=StageConfig(model="openai/gpt-5.6-luna", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="openai/gpt-5.6-luna", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: openai/gpt-5.6-luna chapter+composer, 60m, notthinking (effort=none), schema=False",
+        disable_composer=False
+    ),
     "60m_gpt-oss-120b_notthinking": CandidateSpec(
         name="60m_gpt-oss-120b_notthinking_v1",
         profile="60m_gpt-oss-120b_notthinking",
-        chapter_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1728,14 +1788,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: openai/gpt-oss-120b chapter+composer, 60m, notthinking, schema=False",
+        notes="Auto-generated: openai/gpt-oss-120b chapter+composer, 60m, notthinking (effort=none), schema=False",
         disable_composer=False
     ),
     "60m_gpt-oss-120b_thinking": CandidateSpec(
         name="60m_gpt-oss-120b_thinking_v1",
         profile="60m_gpt-oss-120b_thinking",
-        chapter_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1744,14 +1804,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: openai/gpt-oss-120b chapter+composer, 60m, thinking, schema=False",
+        notes="Auto-generated: openai/gpt-oss-120b chapter+composer, 60m, thinking (enabled=true), schema=False",
         disable_composer=False
     ),
     "60m_grok-4.3_notthinking": CandidateSpec(
         name="60m_grok-4.3_notthinking_v1",
         profile="60m_grok-4.3_notthinking",
-        chapter_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1760,14 +1820,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: x-ai/grok-4.3 chapter+composer, 60m, notthinking, schema=True",
+        notes="Auto-generated: x-ai/grok-4.3 chapter+composer, 60m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "60m_grok-4.3_thinking": CandidateSpec(
         name="60m_grok-4.3_thinking_v1",
         profile="60m_grok-4.3_thinking",
-        chapter_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1776,14 +1836,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: x-ai/grok-4.3 chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: x-ai/grok-4.3 chapter+composer, 60m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "60m_mimo-v2-flash_notthinking": CandidateSpec(
         name="60m_mimo-v2-flash_notthinking_v1",
         profile="60m_mimo-v2-flash_notthinking",
-        chapter_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1792,14 +1852,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 60m, notthinking, schema=True",
+        notes="Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 60m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "60m_mimo-v2-flash_thinking": CandidateSpec(
         name="60m_mimo-v2-flash_thinking_v1",
         profile="60m_mimo-v2-flash_thinking",
-        chapter_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1808,14 +1868,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: xiaomi/mimo-v2-flash chapter+composer, 60m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "60m_minimax-m2.5_notthinking": CandidateSpec(
         name="60m_minimax-m2.5_notthinking_v1",
         profile="60m_minimax-m2.5_notthinking",
-        chapter_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1824,14 +1884,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: minimax/minimax-m2.5 chapter+composer, 60m, notthinking, schema=False",
+        notes="Auto-generated: minimax/minimax-m2.5 chapter+composer, 60m, notthinking (effort=none), schema=False",
         disable_composer=False
     ),
     "60m_minimax-m2.5_thinking": CandidateSpec(
         name="60m_minimax-m2.5_thinking_v1",
         profile="60m_minimax-m2.5_thinking",
-        chapter_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1840,14 +1900,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: minimax/minimax-m2.5 chapter+composer, 60m, thinking, schema=False",
+        notes="Auto-generated: minimax/minimax-m2.5 chapter+composer, 60m, thinking (enabled=true), schema=False",
         disable_composer=False
     ),
     "60m_minimax-m2.7_notthinking": CandidateSpec(
         name="60m_minimax-m2.7_notthinking_v1",
         profile="60m_minimax-m2.7_notthinking",
-        chapter_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1856,14 +1916,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: minimax/minimax-m2.7 chapter+composer, 60m, notthinking, schema=True",
+        notes="Auto-generated: minimax/minimax-m2.7 chapter+composer, 60m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "60m_minimax-m2.7_thinking": CandidateSpec(
         name="60m_minimax-m2.7_thinking_v1",
         profile="60m_minimax-m2.7_thinking",
-        chapter_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1872,7 +1932,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: minimax/minimax-m2.7 chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: minimax/minimax-m2.7 chapter+composer, 60m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "60m_muse-glimmer-30b_effort-medium": CandidateSpec(
@@ -1894,8 +1954,8 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
     "60m_muse-glimmer-30b_notthinking": CandidateSpec(
         name="60m_muse-glimmer-30b_notthinking_v1",
         profile="60m_muse-glimmer-30b_notthinking",
-        chapter_stage=StageConfig(model="meta/muse-glimmer-30b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body=None),
-        composer_stage=StageConfig(model="meta/muse-glimmer-30b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body=None),
+        chapter_stage=StageConfig(model="meta/muse-glimmer-30b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="meta/muse-glimmer-30b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1910,8 +1970,8 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
     "60m_nemotron-3-super-120b-a12b_notthinking": CandidateSpec(
         name="60m_nemotron-3-super-120b-a12b_notthinking_v1",
         profile="60m_nemotron-3-super-120b-a12b_notthinking",
-        chapter_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1920,14 +1980,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 60m, notthinking, schema=True",
+        notes="Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 60m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "60m_nemotron-3-super-120b-a12b_thinking": CandidateSpec(
         name="60m_nemotron-3-super-120b-a12b_thinking_v1",
         profile="60m_nemotron-3-super-120b-a12b_thinking",
-        chapter_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1936,14 +1996,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: nvidia/nemotron-3-super-120b-a12b chapter+composer, 60m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "60m_qwen3.6-35b-a3b_notthinking": CandidateSpec(
         name="60m_qwen3.6-35b-a3b_notthinking_v1",
         profile="60m_qwen3.6-35b-a3b_notthinking",
-        chapter_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1952,14 +2012,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 60m, notthinking, schema=False",
+        notes="Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 60m, notthinking (effort=none), schema=False",
         disable_composer=False
     ),
     "60m_qwen3.6-35b-a3b_thinking": CandidateSpec(
         name="60m_qwen3.6-35b-a3b_thinking_v1",
         profile="60m_qwen3.6-35b-a3b_thinking",
-        chapter_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1968,14 +2028,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 60m, thinking, schema=False",
+        notes="Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 60m, thinking (enabled=true), schema=False",
         disable_composer=False
     ),
     "60m_qwen3.6-plus_notthinking": CandidateSpec(
         name="60m_qwen3.6-plus_notthinking_v1",
         profile="60m_qwen3.6-plus_notthinking",
-        chapter_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -1984,14 +2044,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: qwen/qwen3.6-plus chapter+composer, 60m, notthinking, schema=True",
+        notes="Auto-generated: qwen/qwen3.6-plus chapter+composer, 60m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "60m_qwen3.6-plus_thinking": CandidateSpec(
         name="60m_qwen3.6-plus_thinking_v1",
         profile="60m_qwen3.6-plus_thinking",
-        chapter_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -2000,14 +2060,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: qwen/qwen3.6-plus chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: qwen/qwen3.6-plus chapter+composer, 60m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "60m_step-3.5-flash_notthinking": CandidateSpec(
         name="60m_step-3.5-flash_notthinking_v1",
         profile="60m_step-3.5-flash_notthinking",
-        chapter_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
-        composer_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "disabled"}}),
+        chapter_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -2016,14 +2076,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, notthinking, schema=True",
+        notes="Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, notthinking (effort=none), schema=True",
         disable_composer=False
     ),
     "60m_step-3.5-flash_thinking": CandidateSpec(
         name="60m_step-3.5-flash_thinking_v1",
         profile="60m_step-3.5-flash_thinking",
-        chapter_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
+        composer_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -2032,14 +2092,14 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, thinking, schema=True",
+        notes="Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, thinking (enabled=true), schema=True",
         disable_composer=False
     ),
     "60m_step-3.7-flash_effort-medium": CandidateSpec(
         name="60m_step-3.7-flash_effort-medium_v1",
         profile="60m_step-3.7-flash_effort-medium",
-        chapter_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
-        composer_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, extra_body={"thinking": {"type": "enabled"}}),
+        chapter_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
+        composer_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         length_control=LengthControlConfig(
             max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
         ),
@@ -2048,7 +2108,7 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         ),
         use_json_schema=True,
         json_schema_name="summary_response",
-        notes="Auto-generated: stepfun/step-3.7-flash chapter+composer, 30m, notthinking, schema=False",
+        notes="Auto-generated: stepfun/step-3.7-flash chapter+composer, 60m, effort-medium, schema=False",
         disable_composer=False
     )
 

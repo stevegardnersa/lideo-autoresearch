@@ -1,5 +1,7 @@
 # Summary: Legacy Thinking/Plain Variants → New Reasoning Format + "None" Option
 
+**Status:** Implemented — includes mandatory-reasoning model enforcement (phantom `_notthinking` profiles removed)
+
 ## Mapping answer (1:1)
 
 | Legacy signal | New native format | 1:1 |
@@ -14,27 +16,27 @@ Not 1:1 — decisions: `DEFAULT_THINKING_EFFORT="high"` + `migrate_legacy_thinki
 
 ## Scope
 
-`data/candidates.json` is the source of truth (92 profiles; `candidate_spec.py` generated). 78 legacy profiles to migrate: 40 `_thinking`, 36 `_notthinking`, 2 plain muse-glimmer `_notthinking` (empty config — force `enabled:false` to match name). 5 families missing a none variant: gpt-5.6-luna (30m/60m), nemotron-3.5-lightning 30m, step-3.7-flash (30m/60m) → add 5 `_notthinking` profiles (97 total; 8 stay hidden).
+`data/candidates.json` is the source of truth (**95 profiles**; `candidate_spec.py` generated). All 78 legacy `extra_body.thinking.*` carriers migrated to native `reasoning` (0 remain); 41 `_notthinking` profiles. **Mandatory-reasoning model** `stepfun/step-3.7-flash` (probe `none_style="mandatory"`, efforts `["medium"]`): its provider rejects `reasoning.enabled=false` AND still reasons on a plain request, so the two phantom `step-3.7-flash_notthinking` profiles were **removed** — the family keeps `_effort-medium` only. 8 profiles stay hidden.
 
 ## Requirements
 
-- **R1** Migrate all 78 legacy profiles to native format, profile keys unchanged (resume-safe).
-- **R2** Canonical none = `reasoning={"enabled": false}`: `_build_stage_config` emits it for `effort=="none"` (today emits nothing); probe the enabled-false form, record `none_style` fallback.
-- **R3** Add 5 `_notthinking` profiles; invariant: every (time×model) family has exactly one none variant.
-- **R4** Normalisation consistency: collapse `reasoning={"effort":"none"}` → `enabled:false` in `reasoning_request_params` + handler; handler emits `reasoning.enabled` only when `thinking is not None`; cf_client stops defaulting plain payloads to `thinking=False` (today CF forces reasoning-off where direct path leaves it unset).
-- **R5** Regenerate `candidate_spec.py` (Profile Literal + 5 keys, `extra_body=None`, reasoning verbatim).
-- **R6** cf-client-smoke → 9 checks (add effort-none dict collapse + plain → no reasoning field); new `tests/test_reasoning_migration.py` (offline invariants, naming, normalisation table).
+- **R1** Migrate all legacy profiles to native format, profile keys unchanged (resume-safe).
+- **R2** Canonical none = `reasoning={"enabled": false}`: `_build_stage_config` emits it for `effort=="none"` (today emits nothing); probe the enabled-false form, record `none_style` = `"enabled_false"` / `"mandatory"` / `None`.
+- **R3** Add `_notthinking` profiles for families lacking one **except mandatory-reasoning models**; invariant: every (time×model) family minus `step-3.7-flash` has exactly one none variant. Tooling refuses `effort="none"` on mandatory models (raises, never defaults); phantom step profiles removed.
+- **R4** Normalisation consistency: collapse `reasoning={"effort":"none"}` → `enabled:false` in `reasoning_request_params` + handler; handler emits `reasoning.enabled` only when `thinking is not None`; cf_client stops defaulting plain payloads to `thinking=False`. **Mandatory guard:** disable intent on a registered mandatory model raises `ValueError` (`assert_disabling_reasoning_allowed`) on the direct path, `build_openrouter_request`, and CF client — never silently sends a default-effort request.
+- **R5** Regenerate `candidate_spec.py`: `py_literal()` fixes JSON bool/null → Python literals; emits `MANDATORY_REASONING_MODELS` frozenset from capabilities and registers it via `register_mandatory_reasoning_models`.
+- **R6** cf-client-smoke → **10 checks** (add effort-none dict collapse, plain → no reasoning field, mandatory-disable raises); new `tests/test_reasoning_migration.py` (offline invariants, naming, normalisation table, mandatory guards).
 
 ## Files touched
 
-`tools/add_candidate.py` (builder + probe + `--one-to-one` migrate mode), `data/candidates.json`, `core/reasoning.py`, `core/cf_client.py`, `cloud_function/handler.py`, `candidate_spec.py` (regenerated), `cloud_function/cf_client_smoke.py`, `tests/test_reasoning_migration.py`, `.notes/serverless-summarizer.md`, docstring in `core/reasoning.py`.
+`tools/add_candidate.py` (builder + probe + `one_to_one` migrate mode + mandatory refusal), `data/candidates.json`, `core/reasoning.py` (+ mandatory registry/guard), `core/cf_client.py`, `cloud_function/handler.py`, `candidate_spec.py` (regenerated), `cloud_function/cf_client_smoke.py`, `tests/test_reasoning_migration.py`, `tools/gen_profile_literal.py`, `.notes/serverless-summarizer.md`, docstring in `core/reasoning.py`.
 
 ## Edge cases
 
-Resume compat via stable keys; hidden luna effort-low/high/xhigh/max stay hidden; provider rejection of `enabled:false` → probe fallback `none_style="plain"` with manifest note; none-effort keeps unscaled max_tokens (8192); `effort_style_label("none")=="notthinking"` preserves agent/dashboard `_thinking`/`_notthinking` filters; judge path unaffected.
+Resume compat via stable keys; hidden luna effort-low/high/xhigh/max stay hidden; **mandatory reasoning (step) fails loudly everywhere** — probe refuses, tooling raises, request builders raise; none-effort keeps unscaled max_tokens (8192); `effort_style_label("none")=="notthinking"` preserves agent/dashboard `_thinking`/`_notthinking` filters; judge path unaffected.
 
 ## Acceptance
 
-No `extra_body.thinking` anywhere; 97 profiles / 43 families all with notthinking; `make test` + `make cf-client-smoke` (9 checks) green; probe shows enabled-false accepted (or documented fallback).
+No `extra_body.thinking` anywhere; 95 profiles / 43 families, `_notthinking` for all but the two mandatory step families; `make test` + `make cf-client-smoke` (**10 checks**) green; probe records `enabled_false` for luna/nemotron and `mandatory` for step; migration tests pass offline.
 
 Out of scope: adding `_thinking` variants to families lacking them; effort-tier upgrade renames (opt-in `--upgrade-efforts`); litellm gateway; dashboard/batch tool changes.

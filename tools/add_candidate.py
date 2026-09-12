@@ -15,7 +15,9 @@ Creates one profile per supported effort. ``effort=none`` maps to the legacy
 collide with the legacy ``_thinking`` names.
 
 Migrates an existing model's legacy ``_thinking``/``_notthinking`` profiles to
-new-style reasoning configs in place with ``--migrate-legacy-thinking``.
+native reasoning configs in place with ``--migrate-legacy-thinking`` (deterministic
+1:1, whole-file by default; ``--upgrade-efforts`` opts into the probe-based
+effort-tier upgrade).
 """
 
 from __future__ import annotations
@@ -116,11 +118,30 @@ def _probe_legacy_thinking(client, model: str, thinking: bool) -> bool:
         return False
 
 
+def _probe_plain(client, model: str) -> bool:
+    """Return True if the model accepts a plain request (no reasoning param)."""
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": SYS_PROMPT},
+            {"role": "user", "content": USER_PROMPT},
+        ],
+        "max_tokens": scaled_max_tokens(20, "none"),
+    }
+    try:
+        client.chat_completion(payload)
+        return True
+    except Exception as e:
+        print(f" [exception: {str(e)[:100]}]")
+        return False
+
+
 def _probe_effort(client, model: str, effort: str, style: str) -> bool:
     """Return True if the model accepts one reasoning-effort config style.
 
-    ``effort == "none"`` probes a plain request (no reasoning param) — the
-    highest-compatibility baseline every reachable model must pass.
+    ``effort == "none"`` probes the canonical disable form
+    ``reasoning={"enabled": false}`` (a ``_notthinking`` profile must mean
+    forced-off, not provider default).
     """
     payload = {
         "model": model,
@@ -130,11 +151,12 @@ def _probe_effort(client, model: str, effort: str, style: str) -> bool:
         ],
         "max_tokens": scaled_max_tokens(20, effort),
     }
-    if effort != "none":
-        if style == "reasoning":
-            payload["reasoning"] = {"effort": effort}
-        else:
-            payload["reasoning_effort"] = effort
+    if effort == "none":
+        payload["reasoning"] = {"enabled": False}
+    elif style == "reasoning":
+        payload["reasoning"] = {"effort": effort}
+    else:
+        payload["reasoning_effort"] = effort
     try:
         client.chat_completion(payload)
         return True
@@ -143,16 +165,38 @@ def _probe_effort(client, model: str, effort: str, style: str) -> bool:
         return False
 
 
-def _probe_efforts(client, model: str, style: str) -> List[str]:
+def _probe_efforts(client, model: str, style: str) -> Tuple[List[str], Optional[str]]:
+    """Probe all effort tiers, returning (accepted efforts, none_style).
+
+    ``none_style`` is ``"enabled_false"`` when the canonical
+    ``reasoning={"enabled": false}`` form is accepted (a real ``_notthinking``
+    profile is possible), ``"mandatory"`` when the model rejects the disabled
+    form but accepts a plain request — meaning reasoning cannot be turned off,
+    so ``"none"`` is **not** added to the accepted efforts and no
+    ``_notthinking`` profile may be created — and ``None`` when neither the
+    disabled form nor a plain request is accepted.
+    """
     ok: List[str] = []
+    none_style: Optional[str] = None
     for effort in REASONING_EFFORTS:
         print(f"    effort '{effort}' ({style})...", end=" ", flush=True)
-        if _probe_effort(client, model, effort, style=style):
+        if effort == "none":
+            if _probe_effort(client, model, effort, style=style):
+                ok.append(effort)
+                none_style = "enabled_false"
+                print("ok (enabled_false)")
+            elif _probe_plain(client, model):
+                none_style = "mandatory"
+                print("plain ok but reasoning is MANDATORY (enabled=false rejected); no _notthinking")
+            else:
+                none_style = None
+                print("unsupported")
+        elif _probe_effort(client, model, effort, style=style):
             ok.append(effort)
             print("ok")
         else:
             print("unsupported")
-    return ok
+    return ok, none_style
 
 
 def probe_effort_capabilities(model: str, *, probe_legacy: bool = False) -> Dict[str, Any]:
@@ -168,16 +212,17 @@ def probe_effort_capabilities(model: str, *, probe_legacy: bool = False) -> Dict
     # top-level "reasoning_effort" scalar if every structured probe is rejected.
     style = "reasoning"
     print(f"  Probing effort tiers ({style}):")
-    efforts = _probe_efforts(client, model, style)
+    efforts, none_style = _probe_efforts(client, model, style)
     if not efforts:
         style = "reasoning_effort"
         print(f"  Structured param rejected; probing effort tiers ({style}):")
-        efforts = _probe_efforts(client, model, style)
+        efforts, none_style = _probe_efforts(client, model, style)
 
     caps: Dict[str, Any] = {
         "schema": schema_ok,
         "efforts": efforts,
         "effort_style": style if efforts else None,
+        "none_style": none_style,
         "thinking_param": None,
         "support_note": None,
     }
@@ -272,6 +317,7 @@ def _build_stage_config(
     style: str = "reasoning",
     role: str = "chapter",
     legacy: bool = False,
+    none_style: Optional[str] = None,
 ) -> Dict[str, Any]:
     cfg = _stage_base(role)
     cfg["model"] = model
@@ -281,11 +327,19 @@ def _build_stage_config(
         cfg["extra_body"] = {"thinking": {"type": "disabled" if effort == "none" else "enabled"}}
     else:
         cfg["max_tokens"] = scaled_max_tokens(8192, effort)
-        if effort != "none":
-            if style == "reasoning":
-                cfg["reasoning"] = {"effort": effort}
-            else:
-                cfg["reasoning_effort"] = effort
+        if effort == "none":
+            if none_style in ("plain", "mandatory"):
+                raise ValueError(
+                    f"Model {model} cannot disable reasoning (none_style={none_style!r}): "
+                    "a _notthinking profile is impossible — the provider rejects "
+                    "reasoning.enabled=false and a plain request still reasons at "
+                    "default effort. Use an effort-tier profile instead."
+                )
+            cfg["reasoning"] = {"enabled": False}
+        elif style == "reasoning":
+            cfg["reasoning"] = {"effort": effort}
+        else:
+            cfg["reasoning_effort"] = effort
     return cfg
 
 
@@ -297,9 +351,10 @@ def _build_composer_config(
     *,
     style: str = "reasoning",
     legacy: bool = False,
+    none_style: Optional[str] = None,
 ) -> Dict[str, Any]:
     return _build_stage_config(
-        model, effort, schema_ok, provider, style=style, role="composer", legacy=legacy
+        model, effort, schema_ok, provider, style=style, role="composer", legacy=legacy, none_style=none_style
     )
 
 
@@ -312,15 +367,18 @@ def _build_profile(
     *,
     style: str = "reasoning",
     legacy: bool = False,
+    none_style: Optional[str] = None,
 ) -> Dict[str, Any]:
     slug = _slug(model)
     full_profile = profile_name_for(time_budget, slug, effort)
     mode = "legacy-thinking" if legacy and effort != "none" else ("legacy-notthinking" if legacy else effort_style_label(effort))
+    if effort == "none" and none_style in ("plain", "mandatory"):
+        mode = "notthinking (effort=none, plain)"
     return {
         "name": f"{full_profile}_v1",
         "profile": full_profile,
-        "chapter_stage": _build_stage_config(model, effort, schema_ok, provider, style=style, role="chapter", legacy=legacy),
-        "composer_stage": _build_stage_config(model, effort, schema_ok, provider, style=style, role="composer", legacy=legacy),
+        "chapter_stage": _build_stage_config(model, effort, schema_ok, provider, style=style, role="chapter", legacy=legacy, none_style=none_style),
+        "composer_stage": _build_stage_config(model, effort, schema_ok, provider, style=style, role="composer", legacy=legacy, none_style=none_style),
         "composer_mode": "summaries_only",
         "length_control": {
             "max_passes": 5,
@@ -357,6 +415,22 @@ def _resolve_efforts(caps: Dict[str, Any], requested: Optional[List[str]]) -> Li
             r = r.strip().lower()
             if r in supported:
                 chosen.append(r)
+            elif r == "none":
+                # Disabling reasoning must never silently degrade to another
+                # effort: that would create a phantom _notthinking profile that
+                # reasons at default (or higher) effort.
+                none_style = caps.get("none_style")
+                if none_style in ("plain", "mandatory"):
+                    raise ValueError(
+                        f"Model {caps.get('model', 'model')} cannot disable reasoning "
+                        f"(none_style={none_style!r}): refusing to create a _notthinking "
+                        "profile. The provider rejects reasoning.enabled=false and a plain "
+                        "request still reasons at default effort."
+                    )
+                raise ValueError(
+                    f"Effort 'none' is unsupported by {caps.get('model', 'model')} "
+                    f"(supported: {supported or 'none'}). Cannot create a _notthinking profile."
+                )
             else:
                 fallback = resolve_effort(r, supported)
                 print(f"  Warning: effort '{r}' unsupported by {caps.get('model', 'model')}; using '{fallback}'")
@@ -407,6 +481,11 @@ def add_candidates(
 
     chosen = _resolve_efforts(caps, efforts)
     print(f"  Resolved {len(chosen)} effort(s): {', '.join(chosen)}")
+    if caps.get("none_style") in ("plain", "mandatory"):
+        print(
+            f"  Note: reasoning is MANDATORY for {model} (none_style={caps.get('none_style')!r}). "
+            "No _notthinking profile is created: disabling reasoning is impossible for this model."
+        )
 
     created: List[str] = []
     for tb in time_budgets:
@@ -418,6 +497,7 @@ def add_candidates(
                 time_budget=tb,
                 provider=provider,
                 style=caps.get("effort_style", "reasoning"),
+                none_style=caps.get("none_style"),
             )
             created.append(p["profile"])
             print(f"\n  → Will create profile: {p['profile']}  (effort={effort})")
@@ -460,6 +540,7 @@ def add_candidates(
                 time_budget=profile_name.split("_")[0],
                 provider=provider,
                 style=caps.get("effort_style", "reasoning"),
+                none_style=caps.get("none_style"),
             )
             data["profiles"][profile_name] = profile_data
             added.append(profile_name)
@@ -489,24 +570,175 @@ def add_candidates(
     return added
 
 
+def _rewrite_legacy_profile(profile: Dict[str, Any], reasoning: Optional[Dict[str, Any]], model: str) -> None:
+    """Mutate a profile's stages in place to native reasoning config.
+
+    Drops ``extra_body`` (legacy thinking wrapper), sets the given
+    ``reasoning`` dict on both stages, and updates ``notes``. ``reasoning=None``
+    emits a plain stage (no reasoning config) — used when the model cannot
+    disable reasoning (``none_style="mandatory"``); callers should raise instead.
+    All other fields (schema, provider, hidden, budget allocator, …) are
+    preserved. ``model`` is the full model id used in the notes line.
+    """
+    for key in ("chapter_stage", "composer_stage"):
+        stage = profile.get(key)
+        if not isinstance(stage, dict):
+            continue
+        stage.pop("extra_body", None)
+        stage.pop("reasoning_effort", None)
+        if reasoning is None:
+            stage.pop("reasoning", None)
+        else:
+            stage["reasoning"] = reasoning
+    tb = profile.get("profile", "30m").split("_", 1)[0]
+    if reasoning is None:
+        label = "notthinking (effort=none, plain)"
+    elif reasoning.get("enabled") is False:
+        label = "notthinking (effort=none)"
+    elif reasoning.get("enabled") is True:
+        label = "thinking (enabled=true)"
+    else:
+        label = f"effort-{reasoning.get('effort')}"
+    schema_ok = bool(profile.get("chapter_stage", {}).get("use_json_schema", True))
+    profile["notes"] = (
+        f"Auto-generated: {model} chapter+composer, {tb}, {label}, schema={schema_ok}"
+    )
+
+
+def _none_style_for(model: str, data: Dict[str, Any]) -> Optional[str]:
+    """Read the probe-confirmed none emission style for a model from capabilities."""
+    caps = (data.get("capabilities") or {}).get(model) or {}
+    return caps.get("none_style") or "enabled_false"
+
+
+def _legacy_native_reasoning(name: str, thinking_cfg: Any) -> Dict[str, Any]:
+    """Map a legacy profile name + thinking config to its native reasoning dict.
+
+    ``_effort-<name>`` profiles carry effort-scaled ``max_tokens`` and a stale
+    ``extra_body.thinking.enabled``; the name's effort tier is authoritative.
+    Otherwise ``_thinking``/``_notthinking`` map to ``reasoning.enabled``.
+    """
+    effort_match = re.match(r"^.*_effort-([a-z]+)$", name)
+    if effort_match:
+        return {"effort": effort_match.group(1)}
+    if thinking_cfg is not None:
+        return {"enabled": thinking_cfg.get("type") == "enabled"}
+    return {"enabled": name.endswith("_thinking")}
+
+
+def _family_missing_none(profiles: Dict[str, Any]) -> List[str]:
+    """Return family keys (``{tb}_{slug}``) that lack a ``_notthinking`` profile."""
+    families: Dict[str, List[str]] = {}
+    for key in profiles:
+        fam = key.rsplit("_", 1)[0]
+        families.setdefault(fam, []).append(key)
+    return sorted(fam for fam, keys in families.items() if not any(k.endswith("_notthinking") for k in keys))
+
+
 def migrate_legacy_thinking(
-    model: str,
+    model: Optional[str] = None,
     *,
     candidates_path: Path,
     time_budgets: Optional[List[str]] = None,
     provider: Optional[Dict[str, Any]] = None,
     dry_run: bool = False,
+    one_to_one: bool = True,
+    add_missing_none: bool = True,
     effort: str = DEFAULT_THINKING_EFFORT,
 ) -> List[str]:
-    """Rewrite a model's legacy ``_thinking``/``_notthinking`` profiles to
-    new-style reasoning configs in place."""
+    """Migrate legacy ``_thinking``/``_notthinking`` profiles to native reasoning.
+
+    ``one_to_one=True`` (default) is a deterministic, network-free transform:
+    profile keys are unchanged, ``_thinking`` maps to ``reasoning.enabled=true``
+    and ``_notthinking``/plain ``_notthinking`` to ``enabled=false``. When
+    ``model`` is None it runs over the whole file. ``add_missing_none`` also
+    adds a ``_notthinking`` sibling for every family that lacks one.
+
+    ``one_to_one=False`` keeps the old probe-based upgrade: it probes the model,
+    maps ``_thinking`` to an effort tier, and renames the profile (opt-in via
+    ``--upgrade-efforts``).
+    """
     if time_budgets is None:
         time_budgets = ["30m", "60m"]
 
-    slug = _slug(model)
     data = _load_candidates(candidates_path)
     profiles = data.get("profiles", {})
 
+    if one_to_one:
+        slug = _slug(model) if model else None
+        rewrites: List[str] = []
+        targets = []
+        for name in sorted(profiles):
+            if slug and not name.startswith(f"30m_{slug}") and not name.startswith(f"60m_{slug}"):
+                continue
+            ch = profiles[name].get("chapter_stage") or {}
+            thinking_cfg = (ch.get("extra_body") or {}).get("thinking") if isinstance(ch.get("extra_body"), dict) else None
+            if thinking_cfg is not None:
+                targets.append((name, thinking_cfg))
+            elif isinstance(ch.get("reasoning"), dict) or ch.get("reasoning_effort"):
+                continue  # already native, skip
+            elif name.endswith("_thinking") or name.endswith("_notthinking") or "_effort-" in name:
+                targets.append((name, None))
+            else:
+                continue  # already-native sibling of a different effort, no extra_body
+
+        for name, thinking_cfg in targets:
+            p = profiles[name]
+            full_model = (p.get("chapter_stage") or {}).get("model") or (model or f"unknown/{name}")
+            reasoning = _legacy_native_reasoning(name, thinking_cfg)
+            none_style = _none_style_for(full_model, data)
+            if reasoning == {"enabled": False} and none_style in ("plain", "mandatory"):
+                raise ValueError(
+                    f"Cannot rewrite {name}: model {full_model} cannot disable reasoning "
+                    f"(none_style={none_style!r}). The provider rejects "
+                    "reasoning.enabled=false and a plain request still reasons at default "
+                    "effort. Refusing to create/keep a phantom _notthinking profile; "
+                    "remove it instead."
+                )
+            _rewrite_legacy_profile(p, reasoning=reasoning, model=full_model)
+            rewrites.append(f"{name}->{p['notes']}")
+            print(f"  Rewrote: {name} (reasoning={reasoning})")
+
+        added: List[str] = []
+        if add_missing_none:
+            for fam in _family_missing_none(profiles):
+                tb, slug = fam.split("_", 1)
+                sibling = next((profiles[k] for k in profiles if k.startswith(f"{tb}_{slug}_")), None)
+                if sibling is None:
+                    continue
+                ch = sibling.get("chapter_stage") or {}
+                full_model = ch.get("model") or f"unknown/{slug}"
+                schema_ok = bool(ch.get("use_json_schema", True))
+                style = "reasoning" if isinstance(ch.get("reasoning"), dict) else "reasoning_effort"
+                p = _build_profile(
+                    full_model,
+                    effort="none",
+                    schema_ok=schema_ok,
+                    time_budget=tb,
+                    provider=provider,
+                    style=style,
+                    none_style=_none_style_for(full_model, data),
+                )
+                key = p["profile"]
+                profiles[key] = p
+                added.append(key)
+                print(f"  Added:   {key} ({'plain' if _none_style_for(full_model, data)=='plain' else 'reasoning.enabled=false'})")
+
+        if dry_run:
+            print(f"\n[dry-run] No changes written ({len(rewrites)} rewrites, {len(added)} additions).")
+            return rewrites + added
+
+        data["profiles"] = profiles
+        data["schema_version"] = SCHEMA_VERSION
+        _save_candidates(candidates_path, data)
+        print(f"\nWrote {len(rewrites)} rewritten + {len(added)} added profile(s) to {candidates_path}")
+        return rewrites + added
+
+    # ---- legacy probe-based upgrade path (--upgrade-efforts) ----
+    if model is None:
+        raise ValueError("--upgrade-efforts requires --model-full or --provider/--model")
+
+    slug = _slug(model)
     targets: List[str] = []
     for tb in time_budgets:
         for legacy_name, target_effort in (
@@ -526,7 +758,16 @@ def migrate_legacy_thinking(
 
     rewrites: List[str] = []
     for name, target_effort in targets:
-        resolved = resolve_effort(target_effort, caps.get("efforts") or ())
+        supported_efforts = caps.get("efforts") or ()
+        if target_effort == "none" and "none" not in supported_efforts:
+            none_style = caps.get("none_style")
+            raise ValueError(
+                f"Cannot migrate {name}: model {model} cannot disable reasoning "
+                f"(none_style={none_style!r}). The provider rejects "
+                "reasoning.enabled=false and a plain request still reasons. "
+                "Refusing to create a phantom _notthinking profile."
+            )
+        resolved = resolve_effort(target_effort, supported_efforts)
         if resolved != target_effort:
             print(f"  {name}: requested effort '{target_effort}' unsupported; using '{resolved}'")
         profiles[name] = _build_profile(
@@ -536,6 +777,7 @@ def migrate_legacy_thinking(
             time_budget=name.split("_")[0],
             provider=provider,
             style=caps.get("effort_style", "reasoning"),
+            none_style=caps.get("none_style"),
         )
         rewrites.append(f"{name}->{profiles[name]['notes']}")
         print(f"  Rewrote: {name} (effort={resolved}, style={caps.get('effort_style')})")
@@ -878,8 +1120,14 @@ def main() -> None:
     parser.add_argument("--probe-legacy", action="store_true",
                         help="Also probe the legacy extra_body thinking param and record it in capabilities")
     parser.add_argument("--migrate-legacy-thinking", action="store_true",
-                        help="Rewrite existing _thinking/_notthinking profiles for this model to "
-                             "new-style reasoning configs in place (probes the model, does not add profiles)")
+                        help="Rewrite legacy _thinking/_notthinking profiles to native reasoning "
+                             "configs (deterministic 1:1, no probing; whole file when --model omitted). "
+                             "Use --upgrade-efforts for the probe-based effort-tier migration.")
+    parser.add_argument("--upgrade-efforts", action="store_true",
+                        help="With --migrate-legacy-thinking: probe the model and migrate _thinking to "
+                             "an effort tier (renames the profile). Requires --model.")
+    parser.add_argument("--no-add-missing-none", action="store_true",
+                        help="With --migrate-legacy-thinking: do not add missing _notthinking profiles")
     args = parser.parse_args()
 
     if args.list:
@@ -909,9 +1157,9 @@ def main() -> None:
         return
 
     if args.migrate_legacy_thinking:
-        if not args.model_full and not (args.provider and args.model):
-            parser.error("--migrate-legacy-thinking requires --model-full or --provider/--model")
-        model = args.model_full or f"{args.provider}/{args.model}"
+        if args.upgrade_efforts and not args.model_full and not (args.provider and args.model):
+            parser.error("--upgrade-efforts requires --model-full or --provider/--model")
+        model = args.model_full or (f"{args.provider}/{args.model}" if args.provider and args.model else None)
         provider = None
         if args.provider_route:
             try:
@@ -924,6 +1172,8 @@ def main() -> None:
             time_budgets=args.time_budget,
             provider=provider,
             dry_run=args.dry_run,
+            one_to_one=not args.upgrade_efforts,
+            add_missing_none=not args.no_add_missing_none,
         )
         return
 

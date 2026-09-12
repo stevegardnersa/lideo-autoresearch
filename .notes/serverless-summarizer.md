@@ -67,11 +67,23 @@ Content-Type: application/json
 ```
 
 > **Reasoning control is OpenRouter-native.** When `reasoning` is supplied it is
-> forwarded verbatim. Else `reasoning_effort` becomes `{"reasoning": {"effort": ...}}`
+> forwarded verbatim (`{"effort": "none"}` collapses to `{"enabled": false}`).
+> Else `reasoning_effort` becomes `{"reasoning": {"effort": ...}}`
 > (or `{"enabled": false}` for `"none"`). Else the legacy `thinking` bool becomes
-> `{"reasoning": {"enabled": true|false}}`. The litellm-style
+> `{"reasoning": {"enabled": true|false}}`. A plain request (no reasoning
+> signal, no `thinking`) emits **no** `reasoning` field — provider default
+> applies. The litellm-style
 > `extra_body={"thinking": {...}}` wrapper is **never** emitted — OpenRouter
 > ignores it, which would silently leave reasoning at provider defaults.
+>
+> **Mandatory-reasoning models fail loudly.** Some endpoints (probe
+> `none_style="mandatory"`, currently `stepfun/step-3.7-flash`) reject
+> `reasoning={"enabled": false}` and still reason on a plain request, so a
+> `_notthinking` profile is impossible. The probe refuses to create one, the
+> generated `candidate_spec.MANDATORY_REASONING_MODELS` registers the model, and
+> the request builders (`reasoning_request_params`, `build_openrouter_request`,
+> and the Cloud Function client) raise a `ValueError` before any request is sent
+> when a disable is attempted — instead of silently running at default effort.
 
 ### Response
 
