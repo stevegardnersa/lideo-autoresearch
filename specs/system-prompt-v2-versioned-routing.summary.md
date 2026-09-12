@@ -34,6 +34,10 @@ Enables the disabled nav item. Slot assignment panel (per-stage `local`/`product
 
 `GET/POST /api/prompts`, `GET /api/prompts/options`, `GET/PUT/DELETE /api/prompts/:id`, `POST /api/prompts/slots`, `POST /api/prompts/:id/preview`, `POST /api/prompts/sync`. JSON, same-origin, atomic writes, `409 registry_changed` on stale slot writes, `409 version_in_use` on delete.
 
+## Explorer Controls filter (§21)
+
+Adds a **System prompt** toggle group to the explorer Controls sidebar, directly above the existing `Show` and `Reasoning` fields (`dashboard/index.html`). Buttons are built from the distinct `prompt_version` values present in loaded run manifests (plus an `unversioned` bucket), reusing the `Reasoning` toggle pattern (`judge-toggle` / `.jt-off`, `renderPromptVersionToggles`). Clicking hides those runs from the scatter, tables, and `filteredCount`; filters compose AND with search/run/judge/reasoning. Visibility persists via `promptVersionVisibility` in `scatter_explorer_state`. Registry-independent — works on historical runs. Legacy run sets (all empty version) render an empty field and unchanged plots.
+
 ## Evaluation
 
 Adds per-pass `latency_seconds` + `mean_latency_seconds`; keeps cost, `final_length_error_pct`, faithfulness/coverage. Brief's 0.88/0.80 thresholds exposed as optional `strict-v1` scoring profile; defaults stay 0.70/0.60 and gate 0.10. `results.tsv`/manifests gain `prompt_version` + fingerprint columns.

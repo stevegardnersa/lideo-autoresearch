@@ -575,3 +575,96 @@ Dashboard tests (existing harness):
 1. **`top_p`**: keep omitted (recommended; `temperature=0.1` is the length/accuracy lever) or expose per profile? — recommended omitted.
 2. **Latency source**: direct client wall-clock around `chat_completion` is the contract; if provider-reported latency is preferred, that is a follow-up that does not change this spec's fields.
 3. **CF deploy mechanism**: whether `Sync` should also trigger a deploy command in the same job or only stage the bundle. This spec stages only; deploy stays the existing manual/skill step.
+
+---
+
+## 21. Explorer Controls: system-prompt-version toggles
+
+Companion to §8. §8 is the *authoring/assignment* surface (Settings > Prompts). This section is the *analysis* surface: a toggle-button field in the **explorer Controls sidebar** (`dashboard/index.html`), sitting **above the existing `Show` field and therefore above `Reasoning`**, that filters the run scatter/plots by the system-prompt version each run used. It reuses the exact interaction model of the existing `Reasoning` toggles.
+
+### 21.1 Placement (markup contract)
+
+In `dashboard/index.html`, inside `<div class="controls">`, insert a new `.field` **between the `Fixed Y: 0–1` field (currently line 146–150) and the `Show` field (line 152–164)**, i.e. immediately above `Show` and `Reasoning`:
+
+```html
+<div class="field">
+  <label class="small">System prompt</label>
+  <div class="judge-toggles prompt-toggles" id="promptVersionToggles"></div>
+</div>
+```
+
+- Keep the `Show` and `Reasoning` fields and their relative order unchanged below it.
+- `id="promptVersionToggles"` is the only new DOM hook. `.prompt-toggles` reuses the existing `.judge-toggles`/`.reason-toggles` flex-wrap styling (no new CSS required; an optional `.prompt-toggles` rule may add `row-gap` consistent with `.reason-toggles`).
+
+### 21.2 Data source
+
+- `main.js` run loading maps each manifest to the run object. Add:
+  `prompt_version: manifest.prompt_version || ''` (the primary/chapter-stage version recorded per §7.3, §11.3).
+  Optional secondary field for detail only: `composer_prompt_version: manifest.composer_prompt_version || ''` (not used for toggling).
+- The explorer is **registry-independent**: it never reads `data/prompts/registry.json`. Toggles reflect only versions actually present in the loaded run artifacts, so it works for historical runs before/after the registry exists.
+
+### 21.3 Toggle rendering (`renderPromptVersionToggles()`)
+
+Mirror `renderReasonToggles()` (main.js):
+
+- Distinct present values = `[...new Set(runs.map(r => r.prompt_version || ''))]`. A run with no version is bucketed under the sentinel `''` and shown as **`unversioned`**.
+- If every present value is `''` (all historical runs), render nothing and keep the `unversioned` bucket implicitly visible — same early-return behavior as `renderReasonToggles` when `present.length === 0`. The field stays in the DOM but visually empty.
+- Ordering: versioned ids first, natural-sorted per stage (`chapter-p1 < chapter-p2 < chapter-p10`, then `composer-*`), then the `unversioned` bucket last. No dependency on registry `created_at`.
+- Each button:
+  - `type="button"`, class `judge-toggle`, `data-prompt-version="<value>"`, `aria-pressed="true|false"`.
+  - A `.jt-dot` colored by a stable hash of the version string via existing `getColor('prompt_version', value)`; define `PROMPT_VERSION_COLOR` for at least `chapter-p1` (`#6b7280`) and `chapter-p2` (`#10b981`) so the default seeded versions are visually distinct, falling back to hash for others. `unversioned` uses `#94a3b8`.
+  - Text label is the version id (or `unversioned`), so the control is never color-only.
+  - Visible state driven by `promptVersionVisibility[value] ?? true`; off state adds `.jt-off` and removes `.active` (identical classes to the reasoning toggles).
+  - Click: flip visibility, `renderChart()`, `persistState()`.
+- Re-render on every run reload (called from the same place as `renderReasonToggles()` in `loadRuns`).
+
+### 21.4 Filter semantics
+
+Extend `getFilteredRuns()` (main.js) with, after the existing reasoning filter:
+
+```js
+const hiddenPrompts = Object.keys(promptVersionVisibility)
+  .filter(k => promptVersionVisibility[k] === false)
+if (hiddenPrompts.length) {
+  filtered = filtered.filter(r => !hiddenPrompts.includes(r.prompt_version || ''))
+}
+```
+
+- Filters compose with **AND**: search, run/bucket filter, `Show` (judge type), `Reasoning`, and the new system-prompt filter all apply together.
+- `filteredCount` reflects the combined result; hiding all versions yields an empty chart (empty state), never an error.
+- Hidden versions do **not** affect the run-picker options or the Y/X dropdowns; they only filter plotted runs.
+- The filter also applies to the leaderboard/slice aggregation path that consumes `getFilteredRuns()` (main.js uses the same filtered set), so tables and plots stay consistent.
+
+### 21.5 State persistence
+
+- Add `let promptVersionVisibility = {}` alongside `reasoningVisibility`.
+- `persistState()` includes `promptVersionVisibility` in the serialized `scatter_explorer_state`; `restoreState()` reads `savedState.promptVersionVisibility ?? {}`. Unknown/stale keys are harmless (a key for a version no longer present simply never matches).
+- Because visibility defaults to `true` via `?? true`, a previously hidden version stays hidden across reloads exactly like reasoning.
+
+### 21.6 Interaction with run manifests
+
+- A run resumed across a prompt change (`prompt_version_changed_on_resume`, §13) is attributed to the **final** resolved version recorded in the manifest. The detail card may additionally show `composer_prompt_version` and the `prompt_fingerprint` (read-only, no toggle) when present.
+- The toggle value is the registry id only; fingerprint/source/registry_sha are **not** toggle dimensions (too noisy). They remain available via the detail card and run table.
+- `Cloud Function` inline-override runs (§6.3/§12) still record the effective `prompt_version`; if the id was unknown to the CF, the manifest carries the client id, so the toggle still groups them.
+
+### 21.7 Accessibility & responsive
+
+- Buttons are real `<button type="button">` with `aria-pressed`; toggling announces state changes.
+- `aria-label` on the group: `role="group" aria-label="Filter runs by system prompt version"`.
+- Text label present (never color-only); on narrow viewports the group wraps like `.reason-toggles`.
+- Keyboard: buttons are tab-focusable and respond to Enter/Space; visible focus ring from existing styles.
+
+### 21.8 Tests (extend the dashboard harness)
+
+17. Given manifests with `chapter-p1`, `chapter-p2`, and `''`, the Controls sidebar renders three toggles in natural order with `unversioned` last; each has `aria-pressed="true"`.
+18. Clicking `chapter-p1` off removes exactly those runs from the plotted/leaderboard set and adds `.jt-off`; `filteredCount` drops accordingly; clicking again restores them.
+19. All-off → empty chart state, no exception, `filteredCount` = 0.
+20. Visibility survives a reload via `persistState`/`restoreState`.
+21. Legacy run set (all `prompt_version === ''`) renders no buttons (field present, empty) and plots unchanged; combined filters (search + judge + reasoning + prompt) AND correctly.
+
+### 21.9 Acceptance (additions)
+
+- [ ] Controls sidebar shows a **System prompt** toggle group directly above `Show`/`Reasoning`, populated from run manifests (not the registry), with an `unversioned` bucket.
+- [ ] Toggling a version filters the scatter, tables, and `filteredCount`; composes with existing filters.
+- [ ] State persists across reloads; legacy runs render an empty field with unchanged output.
+- [ ] `make test` dashboard suite covers §21.8 cases 17–21.
