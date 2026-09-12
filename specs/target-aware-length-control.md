@@ -174,13 +174,13 @@ When `current_word_count is None` (in-flight resumed stages, any legacy caller),
    - `visible_max_tokens(353, effort="minimal", cap=9103) == 1102` (and `< 9103`).
    - `visible_max_tokens(353, effort="medium", cap=16384) == 1982` (and `< 16384`).
    - `visible_max_tokens(1288, effort="minimal", cap=9103) == 3429`.
-   - `visible_max_tokens(1288, effort="medium", cap=16384) == 6171` (≤ cap; inflated vs `effort="none"` == 991).
+   - `visible_max_tokens(1288, effort="medium", cap=16384) == 6171` (≤ cap; inflated vs `visible_max_tokens(353, effort="none", cap=16384) == 991`).
    - Monotonicity: `visible_max_tokens(t+1) >= visible_max_tokens(t)` for t in 100..2000.
    - Cap/floor: `visible_max_tokens(10_000, cap=16384) == 16384`; `visible_max_tokens(10, effort="none") == 512` (floor); `visible_max_tokens(10_000_000, cap=16384) == 16384`.
    - `effort=None` and `effort="none"` produce identical values (no inflation).
 2. **`build_openrouter_request` override:** `max_tokens` param replaces `stage.max_tokens`; omitted param keeps `stage.max_tokens` (byte-identical body otherwise).
 3. **Repair prompts carry the delta:**
-   - `render_repair_user(..., direction="less", current_word_count=2267)` with `target_words=1288` contains `"Current summary is 2267"` and `"Cut approximately 979"` (2267 − 1288×(1+0.08)=1391 → 2267−1391=876; assert the computed literal, not a hardcoded guess) and `"[1149, 1391]"`.
+   - `render_repair_user(..., direction="less", current_word_count=2267)` with `target_words=1288` contains `"Current summary is 2267"` and `"Cut approximately 876"` (`high = 1288 × 1.08 = 1391`; `2267 − 1391 = 876`) and `"[1149, 1391]"`.
    - `direction="more"` variant contains `"Add approximately"`.
    - `current_word_count=None` → the delta block is absent (output identical to the current implementation).
    - `render_composer_repair_user` behaves identically.

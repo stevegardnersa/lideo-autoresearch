@@ -18,6 +18,7 @@ x1.4, +200 overhead, /(1-effort_fraction), ceil, clamp. The §4.3 table in
 
 import dataclasses
 import json
+import re
 import sys
 import threading
 import time
@@ -38,6 +39,7 @@ from core.reasoning import (
 
 ROOT = Path(__file__).resolve().parent.parent
 PROFILE = "30m_gpt-5.6-luna_effort-minimal"
+LENGTH_CONTROL_SPEC = ROOT / "specs" / "target-aware-length-control.md"
 
 
 class FakeClient:
@@ -144,6 +146,83 @@ def test_visible_max_tokens_table_and_contract():
     assert visible_max_tokens(10, effort="none") == DEFAULT_MIN_OUTPUT_TOKENS == 512
     assert visible_max_tokens(0, effort="none") >= DEFAULT_MIN_OUTPUT_TOKENS
     print("test_visible_max_tokens_table_and_contract: OK")
+
+
+_SPEC_CALL_RE = re.compile(
+    r'visible_max_tokens\(\s*(?P<args>[^()]*?)\s*\)\s*==\s*(?P<expected>\d+)'
+)
+
+
+def _eval_spec_call(args: str) -> int:
+    """Evaluate one ``visible_max_tokens(...)`` call written in the spec table."""
+    target = None
+    effort = None
+    cap = None
+    for part in args.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        if "=" in part:
+            key, value = (piece.strip() for piece in part.split("=", 1))
+            value = value.strip().strip('"').strip("'")
+            if key == "effort":
+                effort = value
+            elif key == "cap":
+                cap = int(value)
+            else:
+                raise AssertionError(f"unexpected visible_max_tokens kwarg in spec: {key!r}")
+        else:
+            target = int(part)
+    assert target is not None, f"visible_max_tokens call missing target: {args!r}"
+    kwargs = {}
+    if effort is not None:
+        kwargs["effort"] = effort
+    if cap is not None:
+        kwargs["cap"] = cap
+    return visible_max_tokens(target, **kwargs)
+
+
+def test_spec_4_3_table_matches_formula():
+    """§4.3's table must equal what the formula computes, so spec/runtime drift fails CI.
+
+    Parses every ``visible_max_tokens(...) == N`` in the §4.3 subsection and
+    evaluates each call through the real function. If the spec's numbers are
+    edited without the code (or vice versa), this fails.
+    """
+    text = LENGTH_CONTROL_SPEC.read_text(encoding="utf-8")
+    marker = "### 4.3"
+    assert marker in text, f"spec section {marker!r} not found in {LENGTH_CONTROL_SPEC}"
+    tail = text.split(marker, 1)[1]
+    next_heading = re.search(r"\n#{2,3} ", tail)
+    section = tail[: next_heading.start()] if next_heading else tail
+
+    matches = list(_SPEC_CALL_RE.finditer(section))
+    assert len(matches) >= 6, (
+        f"expected >=6 visible_max_tokens assertions in §4.3, found {len(matches)}: "
+        f"{[m.group(0) for m in matches]}"
+    )
+
+    checked = {}
+    for match in matches:
+        label = match.group(0)
+        expected = int(match.group("expected"))
+        actual = _eval_spec_call(match.group("args"))
+        assert actual == expected, f"spec §4.3 drift: `{label}` but formula gives {actual}"
+        checked[label] = actual
+
+    # The four effort/cap cases must remain present (not silently dropped on rewrite).
+    for target, effort, cap in (
+        (353, "minimal", 9103),
+        (353, "medium", 16384),
+        (1288, "minimal", 9103),
+        (1288, "medium", 16384),
+    ):
+        assert any(line.startswith(f"visible_max_tokens({target},") for line in checked), (
+            target,
+            effort,
+            cap,
+        )
+    print(f"test_spec_4_3_table_matches_formula: OK ({len(checked)} assertions)")
 
 
 def test_build_openrouter_request_override():
@@ -338,6 +417,7 @@ def test_stage_passes_carry_target_aware_cap_and_delta():
 def main():
     tests = [
         test_visible_max_tokens_table_and_contract,
+        test_spec_4_3_table_matches_formula,
         test_build_openrouter_request_override,
         test_render_repair_user_delta_block,
         test_render_composer_repair_user_delta_block,
