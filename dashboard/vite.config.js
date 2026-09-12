@@ -1099,6 +1099,19 @@ const SCRIPT_REGISTRY = [
     ],
   },
   {
+    id: 'sync_prompts',
+    group: 'candidates',
+    title: 'Sync prompt registry to Cloud Function',
+    description: 'Copy data/prompts/registry.json into cloud_function/prompts/registry.json and validate the production slots. Stages the bundle only; deploy separately.',
+    script: 'tools/sync_prompts.py',
+    runtimeClass: 'instant',
+    outputs: ['cloud_function/prompts/registry.json'],
+    args: [
+      arg('stage', 'Stage filter (report only)', { type: 'enum', choices: ['', 'chapter', 'composer'] }),
+      arg('dry-run', 'Dry run', { type: 'bool', default: false }),
+    ],
+  },
+  {
     id: 'run_candidate',
     group: 'run',
     title: 'Run candidate on a benchmark',
@@ -1117,6 +1130,9 @@ const SCRIPT_REGISTRY = [
       arg('run-id', 'Explicit run id', { type: 'text', pattern: '^[A-Za-z0-9_.\\-]*$', advanced: true }),
       arg('resume', 'Resume run id', { type: 'text', pattern: '^[A-Za-z0-9_.\\-]*$', advanced: true }),
       arg('wait-for-credits', 'Wait for credits on 402', { type: 'bool', default: false, advanced: true }),
+      arg('prompt-version', 'Prompt version', { type: 'text', pattern: '^[A-Za-z0-9_\\-]*$', advanced: true, hint: 'Force a prompt-registry version for this run (e.g. chapter-p2).' }),
+      arg('prompt-slot', 'Prompt slot', { type: 'enum', default: '', choices: ['', 'local', 'production'], advanced: true }),
+      arg('allow-prompt-override', 'Allow CF prompt override', { type: 'bool', default: false, advanced: true }),
       arg('notes', 'Notes', { type: 'text', advanced: true, max: 500 }),
     ],
     presets: [
@@ -2089,6 +2105,81 @@ function readBodyCapped(req, limit) {
   })
 }
 
+// ── Prompts API (prompt-version registry) ───────────────────────
+async function handlePromptsApi(req, res, ctx) {
+  const pathOnly = stripQuery(req.url)
+  if (pathOnly !== '/api/prompts' && !pathOnly.startsWith('/api/prompts/')) return false
+
+  const runner = ctx.pythonRunner || ((args, stdin) => runPythonAsync(args, stdin, ctx.repoRoot))
+  const call = async (command) => {
+    const r = await runner(['tools/prompts_api.py'], JSON.stringify(command))
+    let parsed = null
+    try { parsed = JSON.parse(r.stdout || '') } catch { parsed = null }
+    return parsed
+  }
+  const send = (result, fallbackStatus = 200) => {
+    if (!result) {
+      sendJson(res, 500, { ok: false, error: 'prompts api returned no JSON' })
+      return
+    }
+    const status = result.ok ? fallbackStatus : (result.code || 400)
+    sendJson(res, status, result)
+  }
+  const match = pathOnly.match(/^\/api\/prompts(?:\/([^/]+))?(?:\/(preview|sync))?$/)
+  const id = match && match[1]
+  const sub = match && match[2]
+
+  try {
+    if (req.method === 'GET' && pathOnly === '/api/prompts') {
+      const q = new URL(req.url, 'http://localhost').searchParams
+      send(await call({ op: 'list', stage: q.get('stage') || '' }))
+      return true
+    }
+    if (req.method === 'GET' && pathOnly === '/api/prompts/options') {
+      send(await call({ op: 'options' }))
+      return true
+    }
+    if (req.method === 'POST' && pathOnly === '/api/prompts/slots') {
+      const body = await readBody(req)
+      send(await call({ op: 'set_slot', ...body }))
+      return true
+    }
+    if (req.method === 'POST' && pathOnly === '/api/prompts/sync') {
+      await readBody(req)
+      send(await call({ op: 'sync' }))
+      return true
+    }
+    if (req.method === 'GET' && id && !sub) {
+      send(await call({ op: 'get', id }))
+      return true
+    }
+    if (req.method === 'POST' && pathOnly === '/api/prompts') {
+      const body = await readBody(req)
+      send(await call({ op: 'create', ...body }), 201)
+      return true
+    }
+    if (req.method === 'PUT' && id && !sub) {
+      const body = await readBody(req)
+      send(await call({ op: 'update', id, body }))
+      return true
+    }
+    if (req.method === 'DELETE' && id && !sub) {
+      send(await call({ op: 'delete', id }))
+      return true
+    }
+    if (req.method === 'POST' && id && sub === 'preview') {
+      const body = await readBody(req)
+      send(await call({ op: 'preview', id, ...body }))
+      return true
+    }
+    sendJson(res, 404, { ok: false, error: 'unknown prompts route' })
+    return true
+  } catch (e) {
+    sendJson(res, 400, { ok: false, error: e.message })
+    return true
+  }
+}
+
 function scanRequestHandler(ctx) {
   let jobManager
   const getJobs = () => {
@@ -2102,6 +2193,11 @@ function scanRequestHandler(ctx) {
     return jobManager
   }
   return (req, res, next) => {
+    if (req.url.startsWith('/api/prompts')) {
+      handlePromptsApi(req, res, ctx).then(done => { if (!done) next() }).catch(() => next())
+      return
+    }
+
     if (req.url.startsWith('/api/models') || req.url.startsWith('/api/models/probe')) {
       handleModelsApi(req, res, ctx, getJobs).then(done => { if (!done) next() })
       return

@@ -11,7 +11,7 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 import functions_framework
-from cloud_function.handler import build_response, run_summarize
+from cloud_function.handler import PromptVersionError, build_response, run_summarize
 
 
 def _json_error(status: int, message: str) -> tuple:
@@ -36,9 +36,10 @@ def summarize(request):
     missing = [f for f in required if not body.get(f)]
     summary_md = str(body.get("summary_md") or "").strip()
     if not summary_md:
-        for f in ("system_prompt", "user_prompt"):
-            if not body.get(f):
-                missing.append(f)
+        # system_prompt is optional: the Cloud Function can resolve it from its
+        # bundled prompt registry (production default) or a prompt_version.
+        if not body.get("user_prompt"):
+            missing.append("user_prompt")
     if missing:
         return _json_error(400, f"Missing required fields: {', '.join(missing)}")
 
@@ -57,6 +58,15 @@ def summarize(request):
         result = run_summarize(body)
         payload = json.dumps(result, ensure_ascii=False, default=str)
         return (payload, 200, {"Content-Type": "application/json; charset=utf-8"})
+    except PromptVersionError as exc:
+        body_payload: Dict[str, Any] = {"success": False, "error": exc.error, "message": str(exc)}
+        if exc.allowed:
+            body_payload["allowed"] = exc.allowed
+        return (
+            json.dumps(body_payload, ensure_ascii=False),
+            exc.status_code,
+            {"Content-Type": "application/json; charset=utf-8"},
+        )
     except Exception as exc:
         tb = traceback.format_exc()
         print(f"Unhandled error: {tb}", flush=True)

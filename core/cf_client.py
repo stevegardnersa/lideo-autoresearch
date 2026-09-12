@@ -378,6 +378,7 @@ class CloudFunctionClient:
         target_words: int = 0,
         thinking: Optional[bool] = None,
         use_json_schema: Optional[bool] = None,
+        prompt_meta: Optional[Mapping[str, Any]] = None,
     ) -> GenerationResult:
         body: Dict[str, Any] = {}
         summary_md = str(summary_md or "").strip()
@@ -434,6 +435,14 @@ class CloudFunctionClient:
             assert_disabling_reasoning_allowed(body.get("model") or "")
         body["use_json_schema"] = bool(True if use_json_schema is None else use_json_schema)
         body["judge_source_char_limit"] = int(judge_source_char_limit)
+        if prompt_meta:
+            stage = str(prompt_meta.get("stage") or "")
+            body["prompt_stage"] = "composer" if stage == "composer" else "chapter"
+            if prompt_meta.get("version"):
+                body["prompt_version"] = str(prompt_meta.get("version"))
+            if prompt_meta.get("fingerprint"):
+                body["prompt_fingerprint"] = str(prompt_meta.get("fingerprint"))
+            body["allow_prompt_override"] = bool(prompt_meta.get("allow_override"))
         if judge_model:
             body["judge_model"] = str(judge_model)
         if rubric is not None:

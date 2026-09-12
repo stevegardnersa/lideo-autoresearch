@@ -15,6 +15,7 @@ The only file autoresearch should edit is ``candidate_spec.py``.
 from __future__ import annotations
 
 import argparse
+import copy
 import csv
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, as_completed, wait as futures_wait
 from contextlib import contextmanager
@@ -47,6 +48,7 @@ from core.openrouter_client import (
     UsageRecord,
 )
 from core.reasoning import DEFAULT_MAX_TOKEN_CAP, effort_enables_thinking, manifest_effort_label, stage_reasoning_effort, visible_max_tokens
+from core import prompt_registry
 from core.versioning import (
     build_prompt_hashes,
     build_run_id,
@@ -179,6 +181,7 @@ class StageRun:
     generation_cost: float
     uncached_generation_cost: float
     raw_responses: Tuple[Mapping[str, Any], ...]
+    pass_latency_seconds: Tuple[float, ...] = ()
 
 
 SLICE_FIELDS: Tuple[str, ...] = (
@@ -316,6 +319,7 @@ def serialize_stage_run(stage_run: StageRun) -> Dict[str, Any]:
         "generation_cost": float(stage_run.generation_cost),
         "uncached_generation_cost": float(stage_run.uncached_generation_cost),
         "raw_responses": _json_safe(list(stage_run.raw_responses)),
+        "pass_latency_seconds": [float(v) for v in (stage_run.pass_latency_seconds or ())],
     }
 
 
@@ -327,6 +331,7 @@ def deserialize_stage_run(payload: Mapping[str, Any]) -> StageRun:
         generation_cost=float(payload.get("generation_cost") or 0.0),
         uncached_generation_cost=float(payload.get("uncached_generation_cost") or 0.0),
         raw_responses=tuple(payload.get("raw_responses") or []),
+        pass_latency_seconds=tuple(float(v) for v in (payload.get("pass_latency_seconds") or [])),
     )
 
 
@@ -571,6 +576,36 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-samples", type=int, default=0)
     parser.add_argument("--mock", action="store_true", help="Use a deterministic mock summarizer instead of OpenRouter")
     parser.add_argument(
+        "--prompt-version",
+        default=os.getenv("PROMPT_VERSION", ""),
+        help="Force a prompt-registry version for this run (applies to both stages unless "
+        "--prompt-stage is set). Defaults to the PROMPT_VERSION env var.",
+    )
+    parser.add_argument(
+        "--prompt-stage",
+        default="both",
+        choices=["both", "chapter", "composer"],
+        help="Which stage the --prompt-version override applies to (default: both).",
+    )
+    parser.add_argument(
+        "--prompt-slot",
+        default=os.getenv("PROMPT_SLOT", ""),
+        choices=["", "local", "production"],
+        help="Prompt-registry slot to resolve when no explicit version is given. Defaults to "
+        "'local' (or 'production' in Cloud Function transport mode).",
+    )
+    parser.add_argument(
+        "--allow-prompt-override",
+        action="store_true",
+        help="Forward allow_prompt_override=true to the Cloud Function, enabling inline prompt "
+        "experiments not present in the function's bundled registry.",
+    )
+    parser.add_argument(
+        "--prompt-registry",
+        default=os.getenv("PROMPT_REGISTRY_PATH", ""),
+        help="Path to the prompt registry JSON (defaults to data/prompts/registry.json).",
+    )
+    parser.add_argument(
         "--function-url",
         default=os.getenv("FUNCTION_URL", ""),
         help="Cloud Function URL. When non-empty, run in Cloud Function transport mode "
@@ -766,6 +801,116 @@ def _is_cloud_function(client) -> bool:
     return isinstance(client, CloudFunctionClient)
 
 
+# ── Prompt-version routing ──────────────────────────────────────────────
+# Process-global prompt selection, read by run_length_controlled_stage when it
+# attaches `_prompt_meta` to a request. Runs are sequential per process and the
+# value is read-only during a run, so no lock is required.
+_PROMPT_CONTEXT: Dict[str, Any] = {"chapter": {}, "composer": {}, "allow_override": False, "registry_sha": ""}
+# Wall-clock latency (seconds) of every generation pass in the current run.
+_LATENCY_ACCUMULATOR: List[float] = []
+
+
+def set_prompt_context(*, chapter: Mapping[str, Any], composer: Mapping[str, Any], allow_override: bool, registry_sha: str) -> None:
+    _PROMPT_CONTEXT["chapter"] = dict(chapter)
+    _PROMPT_CONTEXT["composer"] = dict(composer)
+    _PROMPT_CONTEXT["allow_override"] = bool(allow_override)
+    _PROMPT_CONTEXT["registry_sha"] = str(registry_sha or "")
+
+
+def _prompt_meta_for(stage_kind: str) -> Optional[Dict[str, Any]]:
+    meta = dict(_PROMPT_CONTEXT.get(stage_kind) or {})
+    if not meta.get("has_overlay") and not _PROMPT_CONTEXT.get("allow_override"):
+        return None
+    if not meta:
+        return None
+    meta["allow_override"] = bool(_PROMPT_CONTEXT.get("allow_override"))
+    return meta
+
+
+def _merge_prompt_meta(request: Mapping[str, Any], stage_kind: str) -> Dict[str, Any]:
+    meta = _prompt_meta_for(stage_kind)
+    merged = dict(request)
+    if meta is not None:
+        merged["_prompt_meta"] = meta
+    return merged
+
+
+def _effective_slot(args: argparse.Namespace, client) -> str:
+    configured = str(getattr(args, "prompt_slot", "") or "").strip()
+    if configured:
+        return configured
+    return "production" if _is_cloud_function(client) else "local"
+
+
+def _resolve_prompt_versions(args: argparse.Namespace, spec, candidate_module, client) -> Dict[str, Any]:
+    """Resolve per-stage prompt versions and apply overlays to ``spec``.
+
+    Fails fast (before any API spend) on an unknown explicit version id.
+    """
+    registry_arg = str(getattr(args, "prompt_registry", "") or "").strip()
+    registry_file = Path(registry_arg) if registry_arg else None
+    registry = prompt_registry.load_registry(registry_file)
+    registry_sha = str(registry.get("registry_sha") or "")
+
+    slot = _effective_slot(args, client)
+    stage_override = str(getattr(args, "prompt_stage", "both") or "both")
+    explicit = str(getattr(args, "prompt_version", "") or "").strip()
+
+    selection: Dict[str, Any] = {}
+    explicit_version = prompt_registry.get_version(explicit, registry_file) if explicit else None
+    if explicit and explicit_version is None:
+        known = ", ".join(v["id"] for v in prompt_registry.list_versions(None, registry_file)) or "(none)"
+        raise SystemExit(
+            f"Unknown prompt version {explicit!r} (registry {_display_registry_path(registry_file)}). "
+            f"Known versions: {known}"
+        )
+    for stage_kind in ("chapter", "composer"):
+        requested = ""
+        if explicit:
+            if stage_override == "both":
+                # A version id belongs to one stage; apply it to that stage and
+                # leave the other stage on its slot default.
+                requested = explicit if explicit_version.get("stage") == stage_kind else ""
+            elif stage_override == stage_kind:
+                requested = explicit
+        try:
+            version_id = prompt_registry.resolve_version_id(
+                stage=stage_kind, prompt_version=requested or None, slot=slot, path=registry_file
+            )
+        except prompt_registry.UnknownVersionError as exc:
+            allowed = ", ".join(exc.allowed) or "(none)"
+            raise SystemExit(
+                f"Unknown prompt version {requested!r} for stage {stage_kind!r} "
+                f"(registry {_display_registry_path(registry_file)}). Known versions: {allowed}"
+            )
+        stage_obj = getattr(spec, f"{stage_kind}_stage", None)
+        components = prompt_registry.apply_overlay(
+            spec, stage_kind=stage_kind, prompt_version=version_id, path=registry_file
+        )
+        version = prompt_registry.get_version(version_id, registry_file) if version_id else None
+        has_overlay = bool(version and (version.get("components") or {}))
+        render = getattr(candidate_module, f"render_{stage_kind}_system")
+        system_text = render(spec)
+        selection[stage_kind] = {
+            "version": version_id or "",
+            "slot": slot,
+            "has_overlay": has_overlay,
+            "fingerprint": prompt_registry.fingerprint(system_text),
+            "components": components,
+        }
+    selection["registry_sha"] = registry_sha
+    selection["slot"] = slot
+    return selection
+
+
+def _display_registry_path(registry_file: Optional[Path]) -> str:
+    path = prompt_registry.registry_path(registry_file)
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
 def render_composer_repair_user(
     candidate_module,
     spec,
@@ -804,6 +949,11 @@ def render_composer_repair_user(
                 f"(range {low}-{high}). Add approximately {max(0, low - current_word_count)} words so "
                 f"the final markdown lands inside [{low}, {high}]. Count the visible words of your output "
                 "before finishing and adjust if needed."
+            )
+        if (spec.composer_stage.prompt_components or {}).get("length_policy"):
+            target_sentences = max(1, int(round(max(1, target_words) / 18)))
+            numeric_delta += (
+                f" The sentence budget is {target_sentences}; adjust sentence count as well as word count."
             )
     blocks = [
         "Revise the whole-book summary to hit the target length more accurately.",
@@ -891,21 +1041,24 @@ def invoke_generation(
             usage=usage,
             raw_response={"mock": True},
         )
+    prompt_meta = request_body.get("_prompt_meta") if isinstance(request_body, Mapping) else None
+    clean_request = {k: v for k, v in request_body.items() if k != "_prompt_meta"} if isinstance(request_body, Mapping) else request_body
     if _is_cloud_function(client):
-        use_json = bool(request_body.get("response_format")) if isinstance(request_body, dict) else True
+        use_json = bool(clean_request.get("response_format")) if isinstance(clean_request, dict) else True
         with cf_concurrency_slot():
             return client.chat_completion(
-                request_body,
+                clean_request,
                 source_md=mock_source_md,
                 score=False,
                 target_words=0,
                 use_json_schema=use_json,
+                prompt_meta=prompt_meta,
             )
     try:
-        return client.chat_completion(request_body)
+        return client.chat_completion(clean_request)
     except (OpenRouterAPIError, OpenRouterHTTPError) as e:
         if isinstance(e, OpenRouterHTTPError):
-            model_in_request = request_body.get("model", "unknown") if isinstance(request_body, dict) else "unknown"
+            model_in_request = clean_request.get("model", "unknown") if isinstance(clean_request, dict) else "unknown"
             print(f"OpenRouter HTTP error: status_code={e.status_code}, path={e.path}, model={model_in_request}")
             if e.error_payload:
                 error_info = e.error_payload.get('error', {})
@@ -953,6 +1106,7 @@ def run_length_controlled_stage(
     summary_md = str(restored.get("summary_md") or "").strip()
     first_pass_summary_md = str(restored.get("first_pass_summary_md") or "").strip()
     total_truncation_retries = int(restored.get("truncation_retries") or 0)
+    pass_latencies: List[float] = [float(v) for v in (restored.get("pass_latency_seconds") or [])]
 
     # Best-pass selection: among all passes executed (including passes restored
     # from a checkpoint), track the one whose visible word count is closest to
@@ -993,6 +1147,7 @@ def run_length_controlled_stage(
                 "uncached_generation_cost": total_uncached_cost,
                 "truncation_retries": total_truncation_retries,
                 "raw_responses": _json_safe(list(responses)),
+                "pass_latency_seconds": [float(v) for v in pass_latencies],
             }
         )
 
@@ -1014,6 +1169,14 @@ def run_length_controlled_stage(
                 effort=stage_reasoning_effort(stage_config),
                 cap=int(stage_config.max_tokens or DEFAULT_MAX_TOKEN_CAP),
             )
+            # Reconciliation with the pipeline brief's truncation floor: a short
+            # sentence budget must not starve the JSON payload. Never exceeds the
+            # profile budget.
+            t_max_floor = max(1, int(round(attempt_target * 1.35 * 1.15)))
+            effective_max_tokens = min(
+                int(stage_config.max_tokens or DEFAULT_MAX_TOKEN_CAP),
+                max(effective_max_tokens, t_max_floor),
+            )
             request = build_openrouter_request(
                 stage=stage_config,
                 system_prompt=system_prompt,
@@ -1022,6 +1185,8 @@ def run_length_controlled_stage(
                 use_json_schema=use_json_schema,
                 max_tokens=effective_max_tokens,
             )
+            request = _merge_prompt_meta(request, stage_kind)
+            pass_started = time.perf_counter()
             result = invoke_generation(
                 client,
                 request,
@@ -1029,6 +1194,8 @@ def run_length_controlled_stage(
                 target_words=attempt_target,
                 current_summary_md=current_for_mock,
             )
+            pass_latencies.append(time.perf_counter() - pass_started)
+            _LATENCY_ACCUMULATOR.append(pass_latencies[-1])
             responses.append(_json_safe(dict(result.raw_response)))
             total_cost += result.usage.generation_cost
             total_uncached_cost += result.usage.uncached_generation_cost or result.usage.generation_cost
@@ -1111,6 +1278,7 @@ def run_length_controlled_stage(
         generation_cost=total_cost,
         uncached_generation_cost=total_uncached_cost,
         raw_responses=tuple(responses),
+        pass_latency_seconds=tuple(pass_latencies),
     )
 
 
@@ -2089,15 +2257,18 @@ def append_results_tsv(
         "use_json_schema\treasoning_effort\tthinking\tmean_quality\tmean_utility\tmean_faithfulness\tmean_concept_coverage\tmean_final_length_error_pct\t"
         "mean_first_pass_length_error_pct\tmean_passes_used\tmean_uncached_generation_cost\tmean_generation_cost\t"
         "hard_fail_rate\tworst_genre_macro\tworst_genre_macro_utility\tworst_genre_macro_quality\t"
-        "genre_macro_spread_utility\tn_genre_macros\trun_artifact\tcatalog_snapshot\tprice_snapshot\tnotes\ttransport\n"
+        "genre_macro_spread_utility\tn_genre_macros\trun_artifact\tcatalog_snapshot\tprice_snapshot\tnotes\ttransport\t"
+        "prompt_version\tprompt_fingerprint\n"
     )
     if not path.exists() or path.read_text(encoding="utf-8") == "":
         path.write_text(header, encoding="utf-8")
-    elif "transport" not in (path.read_text(encoding="utf-8").split("\n", 1)[0].split("\t")):
+    else:
         existing = path.read_text(encoding="utf-8")
-        parts = existing.split("\n", 1)
-        migrated = header + (parts[1] if len(parts) > 1 else "")
-        path.write_text(migrated, encoding="utf-8")
+        header_line = existing.split("\n", 1)[0]
+        if header_line.strip() != header.strip():
+            parts = existing.split("\n", 1)
+            migrated = header + (parts[1] if len(parts) > 1 else "")
+            path.write_text(migrated, encoding="utf-8")
 
     row = [
         str(run_manifest.get("created_at_utc", "")),
@@ -2138,6 +2309,8 @@ def append_results_tsv(
         str(run_manifest.get("price_snapshot", "")),
         notes,
         str(run_manifest.get("generation_transport", "")),
+        str(run_manifest.get("prompt_version", "")),
+        str(run_manifest.get("prompt_fingerprint", "")),
     ]
     with path.open("a", encoding="utf-8") as handle:
         handle.write("\t".join(row) + "\n")
@@ -2324,8 +2497,16 @@ def _run_single(
         args.run_id = inherited_run_id
     spec_path = resolve_path(args.spec)
     candidate_module = load_module_from_path("candidate_spec_runtime", spec_path)
-    spec = candidate_module.get_candidate(args.profile)
+    spec = copy.deepcopy(candidate_module.get_candidate(args.profile))
     client = make_client(args)
+    prompt_selection = _resolve_prompt_versions(args, spec, candidate_module, client)
+    _LATENCY_ACCUMULATOR.clear()
+    set_prompt_context(
+        chapter=prompt_selection.get("chapter") or {},
+        composer=prompt_selection.get("composer") or {},
+        allow_override=bool(getattr(args, "allow_prompt_override", False)),
+        registry_sha=str(prompt_selection.get("registry_sha") or ""),
+    )
     if _is_cloud_function(client) and args.chapter_concurrency and args.chapter_concurrency > 1:
         set_cf_concurrency(args.chapter_concurrency)
     else:
@@ -2408,7 +2589,14 @@ def _run_single(
                 f"Run artifacts already exist for {run_id!r}. Use --resume {run_id!r} or choose a different --run-id."
             )
 
-        prompt_hashes = build_prompt_hashes(candidate_module, spec)
+        prompt_hashes = build_prompt_hashes(
+            candidate_module,
+            spec,
+            prompt_version=str((prompt_selection.get("chapter") or {}).get("version") or ""),
+            prompt_fingerprint=str((prompt_selection.get("chapter") or {}).get("fingerprint") or ""),
+            prompt_source="registry" if (prompt_selection.get("chapter") or {}).get("has_overlay") else "request",
+            prompt_registry_sha=str(prompt_selection.get("registry_sha") or ""),
+        )
         judge_version_resolved = (
             f"{benchmark_manifest.get('judge_version', 'judge-v1')}::{args.judge_model}"
             if args.judge_model
@@ -2465,6 +2653,18 @@ def _run_single(
         print(f"Run ID: {run_id}")
 
     run_manifest = dict(state.get("run_manifest") or run_manifest)
+    chapter_prompt = prompt_selection.get("chapter") or {}
+    composer_prompt = prompt_selection.get("composer") or {}
+    previous_chapter_version = str(run_manifest.get("prompt_version") or "")
+    run_manifest["prompt_version"] = str(chapter_prompt.get("version") or "")
+    run_manifest["composer_prompt_version"] = str(composer_prompt.get("version") or "")
+    run_manifest["prompt_fingerprint"] = str(chapter_prompt.get("fingerprint") or "")
+    run_manifest["prompt_source"] = "registry" if chapter_prompt.get("has_overlay") else "request"
+    run_manifest["prompt_registry_sha"] = str(prompt_selection.get("registry_sha") or "")
+    run_manifest["prompt_slot"] = str(prompt_selection.get("slot") or "")
+    run_manifest["prompt_selection"] = _json_safe(prompt_selection)
+    if args.resume and previous_chapter_version and previous_chapter_version != run_manifest["prompt_version"]:
+        run_manifest["prompt_version_changed_on_resume"] = True
     if _is_cloud_function(client):
         run_manifest["generation_transport"] = "cloud_function"
         run_manifest["function_url"] = client.function_url
@@ -2848,6 +3048,22 @@ def _run_single(
     run_manifest["resume_count"] = len(resume_events)
     run_manifest["scoring_mode"] = scoring_mode
     run_manifest["scoring_gate_key"] = gate_key
+    mean_latency_seconds = _mean(_LATENCY_ACCUMULATOR) if _LATENCY_ACCUMULATOR else 0.0
+    run_manifest["mean_latency_seconds"] = mean_latency_seconds
+    run_manifest["n_latency_samples"] = len(_LATENCY_ACCUMULATOR)
+    if _is_cloud_function(client):
+        cf_meta = getattr(client, "last_meta", {}) or {}
+        if cf_meta:
+            try:
+                prompt_registry.write_cf_report({
+                    "prompt_registry_sha": str(cf_meta.get("prompt_registry_sha") or ""),
+                    "prompt_version": str(cf_meta.get("prompt_version") or ""),
+                    "prompt_fingerprint": str(cf_meta.get("prompt_fingerprint") or ""),
+                    "prompt_source": str(cf_meta.get("prompt_source") or ""),
+                    "run_id": run_id,
+                })
+            except OSError:
+                pass
     if resume_events:
         run_manifest["resume_events_utc"] = resume_events
     if failed_items:
@@ -2886,6 +3102,9 @@ def _run_single(
         "mean_passes_used": dataset_score.mean_passes_used,
         "mean_uncached_cost": dataset_score.mean_uncached_cost,
         "mean_generation_cost": mean_generation_cost,
+        "mean_latency_seconds": mean_latency_seconds,
+        "prompt_version": run_manifest.get("prompt_version", ""),
+        "prompt_fingerprint": run_manifest.get("prompt_fingerprint", ""),
         "worst_genre_macro": worst_genre_macro.get("slice_value", ""),
         "worst_genre_macro_utility": float(worst_genre_macro.get("mean_utility", 0.0) or 0.0),
         "genre_macro_spread_utility": float(dataset_payload.get("genre_macro_spread_utility", 0.0) or 0.0),

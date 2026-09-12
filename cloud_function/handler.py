@@ -9,6 +9,7 @@ from typing import Any, Dict, Mapping, Optional
 
 from core.judge import judge_summary_absolute
 from core.openrouter_client import GenerationResult, OpenRouterClient
+from core import prompt_registry
 from scoring import (
     DEFAULT_SCORING_CONFIG,
     Rubric,
@@ -19,6 +20,95 @@ from scoring import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
+CF_REGISTRY_PATH = Path(__file__).resolve().parent / "prompts" / "registry.json"
+
+
+class PromptVersionError(RuntimeError):
+    """Raised when a request names a prompt version the CF cannot resolve."""
+
+    def __init__(self, message: str, *, error: str = "unknown_prompt_version",
+                 status_code: int = 422, allowed: Optional[list] = None):
+        super().__init__(message)
+        self.error = error
+        self.status_code = status_code
+        self.allowed = list(allowed or [])
+
+
+def _load_cf_registry() -> Dict[str, Any]:
+    path = os.environ.get("PROMPT_REGISTRY_PATH", "").strip()
+    registry_file = Path(path) if path else CF_REGISTRY_PATH
+    return prompt_registry.load_registry(registry_file, seed=False)
+
+
+def _resolve_prompt(body: Mapping[str, Any], registry: Mapping[str, Any]):
+    """Resolve the system prompt for a request (spec §7.2). Returns (text, meta)."""
+    stage = str(body.get("prompt_stage") or "chapter").strip() or "chapter"
+    if stage not in ("chapter", "composer"):
+        raise PromptVersionError(f"Unknown prompt_stage: {stage!r}", error="invalid_prompt_stage", status_code=400)
+
+    incoming = str(body.get("system_prompt") or "").strip()
+    override_text = str(body.get("system_prompt_override") or "").strip()
+    allow = bool(body.get("allow_prompt_override", False))
+    version_id = str(body.get("prompt_version") or "").strip()
+    client_fp = str(body.get("prompt_fingerprint") or "").strip()
+    registry_sha = str(registry.get("registry_sha") or "")
+    versions = list(registry.get("versions") or [])
+
+    def _meta(source: str, text: str, vid: str, warning: str = "") -> Dict[str, str]:
+        return {
+            "prompt_registry_sha": registry_sha,
+            "prompt_version": vid,
+            "prompt_fingerprint": prompt_registry.fingerprint(text) if text else "",
+            "prompt_source": source,
+            "prompt_warning": warning,
+        }
+
+    # 1. Explicit inline override.
+    if override_text and allow:
+        return override_text, _meta("inline_override", override_text, version_id)
+
+    if version_id:
+        version = next((v for v in versions if v.get("id") == version_id), None)
+        # 2. Known version in the bundled registry.
+        if version is not None:
+            text, fp = prompt_registry.version_text(version)
+            if not text:
+                text = incoming
+                fp = prompt_registry.fingerprint(text) if text else ""
+            warning = "fingerprint_mismatch" if (client_fp and fp and client_fp != fp) else ""
+            meta = _meta("registry", text, version_id, warning)
+            meta["prompt_fingerprint"] = fp
+            return text, meta
+        # 3. Unknown version: inline override if permitted, else 422.
+        if allow and incoming:
+            meta = _meta("inline_override", incoming, version_id, "unknown_version")
+            return incoming, meta
+        allowed = [v.get("id") for v in versions if v.get("stage") == stage]
+        raise PromptVersionError(
+            f"unknown_prompt_version: {version_id!r}",
+            error="unknown_prompt_version",
+            status_code=422,
+            allowed=allowed,
+        )
+
+    # 4. No version: incoming prompt, else the bundled production default.
+    if incoming:
+        return incoming, _meta("request", incoming, "")
+
+    production_id = (((registry.get("slots") or {}).get(stage) or {}).get("production"))
+    production = next((v for v in versions if v.get("id") == production_id), None)
+    if production is not None:
+        text, fp = prompt_registry.version_text(production)
+        if text:
+            meta = _meta("production_default", text, str(production_id))
+            meta["prompt_fingerprint"] = fp
+            return text, meta
+
+    raise PromptVersionError(
+        "No system prompt available for request",
+        error="missing_system_prompt",
+        status_code=422,
+    )
 
 
 def _build_openrouter_payload(
@@ -224,12 +314,22 @@ def _deployed_at_utc() -> str:
         return datetime.now(timezone.utc).isoformat()
 
 
-def _meta_block() -> Dict[str, str]:
-    return {
+def _meta_block(prompt_meta: Optional[Mapping[str, str]] = None, registry: Optional[Mapping[str, Any]] = None) -> Dict[str, str]:
+    meta = {
         "scoring_version": _scoring_version(),
         "handler_version": _handler_version(),
         "deployed_at_utc": _deployed_at_utc(),
     }
+    if registry is not None:
+        meta["prompt_registry_sha"] = str(registry.get("registry_sha") or "")
+    if prompt_meta:
+        meta.update({
+            "prompt_version": str(prompt_meta.get("prompt_version") or ""),
+            "prompt_fingerprint": str(prompt_meta.get("prompt_fingerprint") or ""),
+            "prompt_source": str(prompt_meta.get("prompt_source") or ""),
+            "prompt_warning": str(prompt_meta.get("prompt_warning") or ""),
+        })
+    return meta
 
 
 def _judge_scores_dict(judge_result) -> Dict[str, Any]:
@@ -268,6 +368,11 @@ def run_summarize(body: Dict[str, Any]) -> Dict[str, Any]:
     client = _build_client(api_key=api_key, base_url=base_url)
 
     judge_only = bool(summary_md_input)
+
+    registry = _load_cf_registry()
+    prompt_meta: Optional[Dict[str, str]] = None
+    if not judge_only:
+        system_prompt, prompt_meta = _resolve_prompt(body, registry)
 
     if judge_only:
         summary_md = summary_md_input
@@ -364,7 +469,7 @@ def run_summarize(body: Dict[str, Any]) -> Dict[str, Any]:
         result["judge_scores"] = judge_scores
     if judge_error is not None:
         result["judge_error"] = judge_error
-    result["meta"] = _meta_block()
+    result["meta"] = _meta_block(prompt_meta, registry)
 
     return result
 

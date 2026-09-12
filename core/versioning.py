@@ -158,13 +158,27 @@ def save_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def build_prompt_hashes(candidate_module, spec) -> Dict[str, str]:
+def build_prompt_hashes(
+    candidate_module,
+    spec,
+    *,
+    prompt_version: str = "",
+    prompt_fingerprint: str = "",
+    prompt_source: str = "",
+    prompt_registry_sha: str = "",
+) -> Dict[str, str]:
     hashes: Dict[str, str] = {
         "candidate_dict_sha256": sha256_json(spec.to_dict()),
         "chapter_stage_sha256": sha256_json(asdict(spec.chapter_stage)),
         "composer_stage_sha256": sha256_json(asdict(spec.composer_stage)),
         "length_control_sha256": sha256_json(asdict(spec.length_control)),
         "budget_allocator_sha256": sha256_json(asdict(spec.budget_allocator)),
+        # Prompt-version attribution is kept OUT of candidate_dict_sha256 so
+        # existing profile hashes remain stable.
+        "prompt_version": str(prompt_version or ""),
+        "prompt_fingerprint": str(prompt_fingerprint or ""),
+        "prompt_source": str(prompt_source or ""),
+        "prompt_registry_sha": str(prompt_registry_sha or ""),
     }
 
     if hasattr(candidate_module, "render_chapter_system"):

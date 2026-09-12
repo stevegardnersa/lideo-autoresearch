@@ -64,7 +64,7 @@ const MODAL_TEMPLATE = `
       <nav class="settings-nav">
         <button class="settings-nav-item active" data-section="models">Models</button>
         <button class="settings-nav-item" data-section="run">Run data</button>
-        <button class="settings-nav-item" data-section="upcoming" disabled title="Coming soon">Prompts</button>
+        <button class="settings-nav-item" data-section="prompts">Prompts</button>
         <button class="settings-nav-item" data-section="upcoming" disabled title="Coming soon">Judges</button>
       </nav>
       <div class="settings-pane">
@@ -82,6 +82,18 @@ const MODAL_TEMPLATE = `
         </section>
         <section class="settings-section" id="settingsUpcomingSection">
           <div class="placeholder-text">This settings page is coming soon.</div>
+        </section>
+        <section class="settings-section" id="settingsPromptsSection">
+          <div class="runs-head">
+            <div>
+              <div class="settings-section-title">Prompts</div>
+              <div class="settings-section-sub">Versioned system prompts. Test locally or against the Cloud Function without changing what production serves.</div>
+            </div>
+          </div>
+          <div class="run-banner cm-hidden" id="promptsBanner" role="status"></div>
+          <div class="prompts-panel" id="promptsPanel">
+            <div class="placeholder-text">Loading prompts...</div>
+          </div>
         </section>
         <section class="settings-section" id="settingsRunSection">
           <div class="runs-head">
@@ -1620,6 +1632,7 @@ function activateSection(section) {
   })
   if (section === 'models') loadModels()
   else if (section === 'run') initRunData()
+  else if (section === 'prompts') loadPrompts()
 }
 
 function handleVariantMenuClick(e) {
@@ -2510,6 +2523,291 @@ async function initRunData() {
   }
 }
 
+// ── Prompts section (prompt-version registry) ──────────────────
+const PROMPTS_STATE = { data: null, options: null }
+
+function setPromptsBanner(msg, kind = '') {
+  const el = document.getElementById('promptsBanner')
+  if (!el) return
+  if (!msg) { el.classList.add('cm-hidden'); el.textContent = ''; return }
+  el.classList.remove('cm-hidden')
+  el.textContent = msg
+  el.dataset.kind = kind
+}
+
+function _promptVersionOptions(versions, stage) {
+  return versions
+    .filter(v => v.stage === stage)
+    .map(v => `<option value="${esc(v.id)}">${esc(v.id)} — ${esc(v.label || '')}</option>`)
+    .join('')
+}
+
+function _driftBadge(status) {
+  if (!status) return '<span class="drift-badge" role="status">Never reported</span>'
+  if (status.never_reported) return '<span class="drift-badge" role="status">Never reported</span>'
+  if (status.in_sync) return '<span class="drift-badge drift-in-sync" role="status">&#10003; In sync</span>'
+  const when = status.reported_at ? ` (${esc(String(status.reported_at).slice(0, 16))})` : ''
+  return `<span class="drift-badge drift-stale" role="status">&#9888; Not deployed — CF reports ${esc(status.reported_id || '?')}${when}</span>`
+}
+
+function renderPrompts(data) {
+  const panel = document.getElementById('promptsPanel')
+  if (!panel) return
+  const versions = data.versions || []
+  const slots = data.slots || {}
+  const statusByStage = {}
+  for (const row of data.production_status || []) statusByStage[row.stage] = row
+
+  const slotRows = ['chapter', 'composer'].map(stage => {
+    const stageSlots = slots[stage] || {}
+    return `
+      <tr>
+        <td>${esc(stage)}</td>
+        <td><label class="cm-visually-hidden" for="promptLocal_${esc(stage)}">local</label>
+          <select id="promptLocal_${esc(stage)}" data-stage="${esc(stage)}" data-slot="local">
+            <option value="">(none)</option>${_promptVersionOptions(versions, stage)}
+          </select></td>
+        <td><label class="cm-visually-hidden" for="promptProd_${esc(stage)}">production</label>
+          <select id="promptProd_${esc(stage)}" data-stage="${esc(stage)}" data-slot="production">
+            <option value="">(none)</option>${_promptVersionOptions(versions, stage)}
+          </select></td>
+        <td><button class="mini-btn" data-action="save-slot" data-stage="${esc(stage)}" disabled>Save</button></td>
+        <td>${_driftBadge(statusByStage[stage])}</td>
+      </tr>`
+  }).join('')
+
+  const versionRows = versions.map(v => {
+    const assigned = []
+    for (const stage of Object.keys(slots)) {
+      for (const slot of Object.keys(slots[stage] || {})) {
+        if (slots[stage][slot] === v.id) assigned.push(`${stage}.${slot}`)
+      }
+    }
+    const lp = (v.components && v.components.length_policy) || '–'
+    return `
+      <tr>
+        <td>${esc(v.id)}</td>
+        <td>${esc(v.label || '')}</td>
+        <td>${esc(v.stage)}</td>
+        <td>${esc(lp)}</td>
+        <td><span title="${esc(v.system_prompt_fingerprint || '')}">${esc((v.system_prompt_fingerprint || '').slice(0, 8))}</span></td>
+        <td>${esc(assigned.join(', ') || '–')}</td>
+        <td>${esc(fmtDate(v.created_at))}</td>
+        <td class="prompt-row-actions">
+          <button class="mini-btn" data-action="preview" data-id="${esc(v.id)}">Preview</button>
+          <button class="mini-btn" data-action="set-local" data-id="${esc(v.id)}">Set local</button>
+          <button class="mini-btn" data-action="set-production" data-id="${esc(v.id)}">Set production</button>
+          <button class="mini-btn" data-action="clone" data-id="${esc(v.id)}">Clone</button>
+          <button class="mini-btn" data-action="smoke" data-id="${esc(v.id)}">Smoke test</button>
+          <button class="mini-btn" data-action="delete" data-id="${esc(v.id)}" ${assigned.length ? 'disabled title="Assigned to a slot"' : ''}>Delete</button>
+        </td>
+      </tr>`
+  }).join('')
+
+  panel.innerHTML = `
+    <div class="prompt-block">
+      <div class="settings-section-title">Slots</div>
+      <table class="prompt-table">
+        <caption class="cm-visually-hidden">Prompt version slots per stage</caption>
+        <thead><tr><th>Stage</th><th>local</th><th>production</th><th></th><th>Cloud Function drift</th></tr></thead>
+        <tbody>${slotRows}</tbody>
+      </table>
+      <div class="prompt-actions">
+        <button class="mini-btn" data-action="sync">Sync / Promote to Cloud Function</button>
+        <label class="small"><input type="checkbox" id="promptSmokeCf" /> Smoke tests use Cloud Function</label>
+      </div>
+    </div>
+    <div class="prompt-block">
+      <div class="settings-section-title">Versions</div>
+      <table class="prompt-table">
+        <caption class="cm-visually-hidden">Prompt registry versions</caption>
+        <thead><tr><th>id</th><th>label</th><th>stage</th><th>length_policy</th><th>fingerprint</th><th>slots</th><th>created</th><th>actions</th></tr></thead>
+        <tbody>${versionRows || '<tr><td colspan="8" class="placeholder-text">No versions.</td></tr>'}</tbody>
+      </table>
+    </div>
+    <div class="prompt-block">
+      <div class="settings-section-title">New version</div>
+      <div class="prompt-create">
+        <label class="small">Stage
+          <select id="promptNewStage"><option value="chapter">chapter</option><option value="composer">composer</option></select>
+        </label>
+        <label class="small">Label <input type="text" id="promptNewLabel" placeholder="v3 experiment" /></label>
+        <div id="promptNewComponents" class="prompt-components"></div>
+        <label class="small">Template override (optional) <textarea id="promptNewTemplate" rows="3" placeholder="Leave blank to render from components"></textarea></label>
+        <button class="mini-btn" data-action="create">Create version</button>
+      </div>
+    </div>
+    <div class="prompt-block">
+      <div class="settings-section-title">Preview</div>
+      <pre id="promptPreview" class="prompt-preview">Select Preview on a version.</pre>
+      <button class="mini-btn" data-action="copy-preview">Copy system prompt</button>
+    </div>`
+
+  // Restore current slot selections.
+  for (const stage of ['chapter', 'composer']) {
+    const local = document.getElementById(`promptLocal_${stage}`)
+    const prod = document.getElementById(`promptProd_${stage}`)
+    if (local) local.value = (slots[stage] || {}).local || ''
+    if (prod) prod.value = (slots[stage] || {}).production || ''
+    const row = local ? local.closest('tr') : null
+    const save = row ? row.querySelector('[data-action="save-slot"]') : null
+    const markDirty = () => { if (save) save.disabled = false }
+    if (local) local.addEventListener('change', markDirty)
+    if (prod) prod.addEventListener('change', markDirty)
+  }
+  renderPromptComponentEditor()
+  const stageSel = document.getElementById('promptNewStage')
+  if (stageSel) stageSel.addEventListener('change', renderPromptComponentEditor)
+}
+
+function renderPromptComponentEditor() {
+  const stage = (document.getElementById('promptNewStage') || {}).value || 'chapter'
+  const dims = (PROMPTS_STATE.options || {}).dimensions || {}
+  const keys = ((PROMPTS_STATE.options || {}).stage_keys || {})[stage] || Object.keys(dims)
+  const container = document.getElementById('promptNewComponents')
+  if (!container) return
+  container.innerHTML = keys.map(key => `
+    <label class="small">${esc(key)}
+      <select data-component="${esc(key)}"><option value="">(inherit)</option>
+        ${(dims[key] || []).map(id => `<option value="${esc(id)}">${esc(id)}</option>`).join('')}
+      </select>
+    </label>`).join('')
+}
+
+async function loadPrompts() {
+  const panel = document.getElementById('promptsPanel')
+  if (!panel) return
+  panel.innerHTML = '<div class="placeholder-text">Loading prompts...</div>'
+  try {
+    if (!PROMPTS_STATE.options) {
+      PROMPTS_STATE.options = await api('/api/prompts/options')
+    }
+    const data = await api('/api/prompts')
+    PROMPTS_STATE.data = data
+    renderPrompts(data)
+    setPromptsBanner('')
+  } catch (e) {
+    panel.innerHTML = `<div class="placeholder-text">Failed to load prompts: ${esc(e.message)}
+      <button class="mini-btn" id="promptsRetry">Retry</button></div>`
+    const btn = document.getElementById('promptsRetry')
+    if (btn) btn.addEventListener('click', loadPrompts)
+  }
+}
+
+async function savePromptSlot(stage) {
+  const data = PROMPTS_STATE.data || {}
+  const local = document.getElementById(`promptLocal_${stage}`).value
+  const prod = document.getElementById(`promptProd_${stage}`).value
+  const expected = data.registry_sha || ''
+  await api('/api/prompts/slots', { method: 'POST', body: JSON.stringify({ stage, slot: 'local', version_id: local, expected_sha: expected }) })
+  await api('/api/prompts/slots', { method: 'POST', body: JSON.stringify({ stage, slot: 'production', version_id: prod }) })
+  setPromptsBanner(`Saved ${stage} slots.`)
+  await loadPrompts()
+}
+
+async function createPromptVersion() {
+  const stage = document.getElementById('promptNewStage').value
+  const label = document.getElementById('promptNewLabel').value.trim()
+  const components = {}
+  document.querySelectorAll('#promptNewComponents select').forEach(sel => {
+    if (sel.value) components[sel.dataset.component] = sel.value
+  })
+  const template = document.getElementById('promptNewTemplate').value.trim()
+  await api('/api/prompts', { method: 'POST', body: JSON.stringify({ stage, label, components, template: template || undefined }) })
+  setPromptsBanner(`Created ${stage} version.`)
+  await loadPrompts()
+}
+
+async function previewPromptVersion(id) {
+  const out = document.getElementById('promptPreview')
+  try {
+    const res = await api(`/api/prompts/${encodeURIComponent(id)}/preview`, { method: 'POST', body: JSON.stringify({ target_words: 1200 }) })
+    PROMPTS_STATE.previewText = res.system_prompt
+    out.textContent = `fingerprint: ${res.fingerprint}\n\n${res.system_prompt}`
+  } catch (e) {
+    out.textContent = `Preview failed: ${e.message}`
+  }
+}
+
+async function clonePromptVersion(id) {
+  const data = PROMPTS_STATE.data || {}
+  const src = (data.versions || []).find(v => v.id === id)
+  if (!src) return
+  const label = window.prompt('Label for the new version:', `${src.label} (copy)`)
+  if (!label) return
+  await api('/api/prompts', { method: 'POST', body: JSON.stringify({ stage: src.stage, label, components: src.components || {} }) })
+  await loadPrompts()
+}
+
+async function deletePromptVersion(id) {
+  if (!window.confirm(`Delete prompt version ${id}? This cannot be undone.`)) return
+  try {
+    await api(`/api/prompts/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    await loadPrompts()
+  } catch (e) {
+    setPromptsBanner(`Delete failed: ${e.message}`)
+  }
+}
+
+async function syncPrompts() {
+  try {
+    const res = await api('/api/prompts/sync', { method: 'POST', body: JSON.stringify({}) })
+    setPromptsBanner(`Synced registry ${res.registry_sha ? res.registry_sha.slice(0, 8) : ''} to the Cloud Function bundle. Redeploy to take effect.`)
+  } catch (e) {
+    setPromptsBanner(`Sync failed: ${e.message}`)
+  }
+}
+
+async function runPromptSmokeTest(id) {
+  const useCf = !!(document.getElementById('promptSmokeCf') || {}).checked
+  const args = {
+    bench: 'chapter_fast',
+    profile: 'all',
+    time: 'all',
+    'max-samples': 4,
+    mock: !useCf,
+    'prompt-version': id,
+    'prompt-stage': 'both',
+    'write-results': false,
+  }
+  if (useCf) args['allow-prompt-override'] = true
+  try {
+    await api('/api/jobs', { method: 'POST', body: JSON.stringify({ toolId: 'run_candidate', args }) })
+    setPromptsBanner(`Smoke test started for ${id}. See Run data for progress.`)
+  } catch (e) {
+    setPromptsBanner(`Smoke test failed to start: ${e.message}`)
+  }
+}
+
+function bindPromptsPanel() {
+  const panel = document.getElementById('promptsPanel')
+  if (!panel || panel.dataset.bound) return
+  panel.dataset.bound = '1'
+  panel.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]')
+    if (!btn) return
+    const action = btn.dataset.action
+    const id = btn.dataset.id
+    try {
+      if (action === 'save-slot') { savePromptSlot(btn.dataset.stage).catch(err => setPromptsBanner(err.message)) }
+      else if (action === 'preview') { previewPromptVersion(id) }
+      else if (action === 'set-local') { api('/api/prompts/slots', { method: 'POST', body: JSON.stringify({ stage: (PROMPTS_STATE.data.versions.find(v => v.id === id) || {}).stage, slot: 'local', version_id: id, expected_sha: PROMPTS_STATE.data.registry_sha }) }).then(loadPrompts).catch(err => setPromptsBanner(err.message)) }
+      else if (action === 'set-production') { api('/api/prompts/slots', { method: 'POST', body: JSON.stringify({ stage: (PROMPTS_STATE.data.versions.find(v => v.id === id) || {}).stage, slot: 'production', version_id: id, expected_sha: PROMPTS_STATE.data.registry_sha }) }).then(() => { setPromptsBanner(`Production now points at ${id} — run Sync/Promote to deploy it to the Cloud Function.`); return loadPrompts() }).catch(err => setPromptsBanner(err.message)) }
+      else if (action === 'clone') { clonePromptVersion(id) }
+      else if (action === 'delete') { deletePromptVersion(id) }
+      else if (action === 'create') { createPromptVersion().catch(err => setPromptsBanner(err.message)) }
+      else if (action === 'sync') { syncPrompts() }
+      else if (action === 'copy-preview') { if (PROMPTS_STATE.previewText) navigator.clipboard.writeText(PROMPTS_STATE.previewText) }
+    } catch (err) {
+      setPromptsBanner(err.message)
+    }
+  })
+  panel.addEventListener('click', (e) => {
+    const smoke = e.target.closest('[data-action="smoke"]')
+    if (smoke) runPromptSmokeTest(smoke.dataset.id)
+  })
+}
+
 function stopRunPolling() {
   if (RUN_STATE.pollTimer) {
     clearInterval(RUN_STATE.pollTimer)
@@ -2529,6 +2827,7 @@ function initSettings() {
   document.body.appendChild(wrap)
   wireGearButtons()
   bindModal()
+  bindPromptsPanel()
 }
 
 if (typeof document !== 'undefined') {

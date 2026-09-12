@@ -12,6 +12,8 @@ test:
 	$(PYTHON) tests/test_scoring_gates.py
 	$(PYTHON) tests/test_length_control.py
 	$(PYTHON) tests/test_reasoning_migration.py
+	$(PYTHON) tests/test_prompt_registry.py
+	$(PYTHON) tests/test_cf_prompt_version.py
 
 bench:
 	$(PYTHON) tools/build_bench.py --books-root $(BOOKS_ROOT) --bench-dir $(BENCH_DIR) --dev-books 10 --gate-books 4 --holdout-books 4 --seed 42

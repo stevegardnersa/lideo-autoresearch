@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import copy
 from dataclasses import asdict
 from datetime import datetime, timezone
 import importlib.util
@@ -56,6 +57,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from candidate_spec import CandidateSpec, get_candidate, render_chapter_system, render_chapter_user
+from core import prompt_registry
 from core.openrouter_client import OpenRouterClient
 from scoring import (
     DEFAULT_SCORING_CONFIG,
@@ -181,6 +183,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-samples", type=int, default=0, help="Limit samples processed")
     parser.add_argument("--resume", default="", help="Resume a previous run ID")
     parser.add_argument("--run-id", default="", help="Explicit run ID for state management")
+    parser.add_argument("--prompt-version", default=os.getenv("PROMPT_VERSION", ""), help="Force a prompt-registry version")
+    parser.add_argument("--prompt-stage", default="both", choices=["both", "chapter", "composer"])
+    parser.add_argument("--prompt-slot", default=os.getenv("PROMPT_SLOT", ""), choices=["", "local", "production"])
+    parser.add_argument("--prompt-registry", default=os.getenv("PROMPT_REGISTRY_PATH", ""))
+    parser.add_argument("--allow-prompt-override", action="store_true", help="Forward allow_prompt_override to the Cloud Function")
     return parser.parse_args()
 
 
@@ -219,6 +226,9 @@ def _cf_payload(
     rubric: Optional[Rubric],
     api_key: str = "",
     base_url: str = "",
+    prompt_version: str = "",
+    prompt_fingerprint: str = "",
+    allow_prompt_override: bool = False,
 ) -> Dict[str, Any]:
     payload: Dict[str, Any] = {
         "source_md": source_md,
@@ -237,6 +247,12 @@ def _cf_payload(
         payload["base_url"] = base_url
     if rubric is not None:
         payload["rubric"] = asdict(rubric)
+    if prompt_version:
+        payload["prompt_version"] = prompt_version
+        payload["prompt_stage"] = "chapter"
+        if prompt_fingerprint:
+            payload["prompt_fingerprint"] = prompt_fingerprint
+        payload["allow_prompt_override"] = bool(allow_prompt_override)
     return payload
 
 
@@ -376,7 +392,28 @@ async def run_batch(args: argparse.Namespace) -> None:
     sys.modules["candidate_spec_runtime"] = candidate_module
     _spec_loader.loader.exec_module(candidate_module)
 
-    spec: CandidateSpec = candidate_module.get_candidate(args.profile)
+    spec: CandidateSpec = copy.deepcopy(candidate_module.get_candidate(args.profile))
+
+    registry_file = Path(args.prompt_registry) if args.prompt_registry else None
+    prompt_slot = args.prompt_slot or ("production" if args.function_url else "local")
+    explicit = str(args.prompt_version or "").strip()
+    explicit_version = prompt_registry.get_version(explicit, registry_file) if explicit else None
+    if explicit and explicit_version is None:
+        known = ", ".join(v["id"] for v in prompt_registry.list_versions(None, registry_file)) or "(none)"
+        raise SystemExit(f"Unknown prompt version {explicit!r}. Known versions: {known}")
+    chapter_requested = explicit if (explicit_version and explicit_version.get("stage") == "chapter") else ""
+    try:
+        chapter_version = prompt_registry.resolve_version_id(
+            stage="chapter", prompt_version=chapter_requested or None, slot=prompt_slot, path=registry_file
+        )
+    except prompt_registry.UnknownVersionError as exc:
+        raise SystemExit(f"Unknown chapter prompt version. Known: {', '.join(exc.allowed) or '(none)'}")
+    prompt_registry.apply_overlay(spec, stage_kind="chapter", prompt_version=chapter_version, path=registry_file)
+    chapter_prompt_meta = {
+        "version": chapter_version or "",
+        "fingerprint": prompt_registry.fingerprint(render_chapter_system(spec)),
+        "allow_override": bool(args.allow_prompt_override),
+    }
 
     run_id = args.resume.strip() or args.run_id.strip() or f"batch_{bench_name}_{spec.profile}_{utc_now_ts()}"
     state_path = runs_dir / f"{run_id}.state.json"
@@ -532,6 +569,9 @@ async def run_batch(args: argparse.Namespace) -> None:
                         rubric=rubric,
                         api_key=args.api_key,
                         base_url=args.base_url,
+                        prompt_version=chapter_prompt_meta["version"],
+                        prompt_fingerprint=chapter_prompt_meta["fingerprint"],
+                        allow_prompt_override=chapter_prompt_meta["allow_override"],
                     )
                     async with httpx.AsyncClient() as hc:
                         resp_json = await _call_cf(hc, args.function_url, payload, args.function_timeout, cf_auth)

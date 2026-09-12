@@ -255,6 +255,30 @@ ANTI_FLUFF_POLICIES: Dict[str, str] = {
 }
 
 
+LENGTH_POLICIES: Dict[str, str] = {
+    "explicit_budget_first": (
+        "Plan the entire summary against the stated word and sentence budgets before writing a "
+        "single sentence. The request gives an exact target word count, an acceptable range, and a "
+        "sentence budget. Obey the word range. Treat the sentence budget as the structural limit: "
+        "never write more sentences than the budget. Before finishing, count your visible words and "
+        "sentences and trim or expand to land inside the stated range."
+    ),
+    "outline_then_fill": (
+        "Before writing, size each section so its words sum to the stated budget, then fill them in "
+        "order while keeping a running word count."
+    ),
+    "verbatim_target_echo": (
+        "Immediately before writing, restate the numeric target and the remaining word budget, then "
+        "write to it."
+    ),
+    "sentence_budget_strict": (
+        "You will be given an exact sentence budget S. Write EXACTLY S sentences total. Do not "
+        "exceed this sentence count under any circumstance. Prefer the target word count; the "
+        "sentence count is the hard constraint."
+    ),
+}
+
+
 COMPOSER_SYSTEM_STYLES: Dict[str, str] = {
     "dedupe_synthesizer": (
         "You synthesize chapter summaries into a faithful whole-book summary. Remove cross-chapter "
@@ -498,20 +522,46 @@ def _component_text(components: Dict[str, str], lookup_tables: Dict[str, Dict[st
     return "\n".join(parts)
 
 
-def render_chapter_system(spec: CandidateSpec) -> str:
-    stage = spec.chapter_stage
-    return _component_text(
-        stage.prompt_components,
-        {
-            "system_style": CHAPTER_SYSTEM_STYLES,
-            "detail_policy": DETAIL_POLICIES,
-            "qualifier_policy": QUALIFIER_POLICIES,
-            "structure_policy": STRUCTURE_POLICIES,
-            "example_policy": EXAMPLE_POLICIES,
-            "terminology_policy": TERMINOLOGY_POLICIES,
-            "anti_fluff_policy": ANTI_FLUFF_POLICIES,
-        },
-    )
+# Standard nonfiction sentence length used to derive the sentence budget S_target
+# from a visible-word target (see system-prompt-v2 spec §3.2).
+SENTENCE_WORDS = 18
+
+
+def sentence_budget(target_words: int) -> int:
+    return max(1, int(round(max(1, target_words) / SENTENCE_WORDS)))
+
+
+def chapter_component_tables() -> Dict[str, Dict[str, str]]:
+    return {
+        "system_style": CHAPTER_SYSTEM_STYLES,
+        "detail_policy": DETAIL_POLICIES,
+        "qualifier_policy": QUALIFIER_POLICIES,
+        "structure_policy": STRUCTURE_POLICIES,
+        "example_policy": EXAMPLE_POLICIES,
+        "terminology_policy": TERMINOLOGY_POLICIES,
+        "anti_fluff_policy": ANTI_FLUFF_POLICIES,
+        "length_policy": LENGTH_POLICIES,
+    }
+
+
+def composer_component_tables() -> Dict[str, Dict[str, str]]:
+    return {
+        "system_style": COMPOSER_SYSTEM_STYLES,
+        "synthesis_policy": COMPOSER_STRATEGIES,
+        "detail_policy": DETAIL_POLICIES,
+        "qualifier_policy": QUALIFIER_POLICIES,
+        "structure_policy": STRUCTURE_POLICIES,
+        "terminology_policy": TERMINOLOGY_POLICIES,
+        "anti_fluff_policy": ANTI_FLUFF_POLICIES,
+        "length_policy": LENGTH_POLICIES,
+    }
+
+
+def render_chapter_system(spec: Optional[CandidateSpec] = None, *, components: Optional[Dict[str, str]] = None) -> str:
+    if components is None:
+        components = (spec.chapter_stage.prompt_components if spec is not None else {}) or {}
+    return _component_text(components, chapter_component_tables())
+
 
 
 def render_chapter_user(
@@ -526,6 +576,18 @@ def render_chapter_user(
 ) -> str:
     stage = spec.chapter_stage
     low, high = visible_word_range(target_words, spec.length_control.tolerance_pct)
+    if stage.prompt_components.get("length_policy"):
+        s_target = sentence_budget(target_words)
+        target_block = (
+            f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
+            f"Target sentences: {s_target}\n(about {SENTENCE_WORDS} words each). "
+            f"Try to land inside the word range on the first pass; do not exceed {s_target} sentences."
+        )
+    else:
+        target_block = (
+            f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
+            "Try to land inside the range on the first pass."
+        )
     blocks = [
         "Write a faithful chapter summary.",
         _context_block(
@@ -535,10 +597,7 @@ def render_chapter_user(
             toc_md=toc_md,
             book_metadata=book_metadata,
         ),
-        (
-            f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
-            "Try to land inside the range on the first pass."
-        ),
+        target_block,
         FORMAT_INSTRUCTIONS[stage.format_mode],
         (
             "Required behavior:\n"
@@ -591,6 +650,11 @@ def render_repair_user(
                 f"the final markdown lands inside [{low}, {high}]. Count the visible words of your output "
                 "before finishing and adjust if needed."
             )
+        if spec.chapter_stage.prompt_components.get("length_policy"):
+            numeric_delta += (
+                f" The sentence budget is {sentence_budget(target_words)}; adjust sentence count as well "
+                "as word count."
+            )
     return "\n\n".join(
         block
         for block in [
@@ -612,20 +676,11 @@ def render_repair_user(
     )
 
 
-def render_composer_system(spec: CandidateSpec) -> str:
-    stage = spec.composer_stage
-    return _component_text(
-        stage.prompt_components,
-        {
-            "system_style": COMPOSER_SYSTEM_STYLES,
-            "synthesis_policy": COMPOSER_STRATEGIES,
-            "detail_policy": DETAIL_POLICIES,
-            "qualifier_policy": QUALIFIER_POLICIES,
-            "structure_policy": STRUCTURE_POLICIES,
-            "terminology_policy": TERMINOLOGY_POLICIES,
-            "anti_fluff_policy": ANTI_FLUFF_POLICIES,
-        },
-    )
+def render_composer_system(spec: Optional[CandidateSpec] = None, *, components: Optional[Dict[str, str]] = None) -> str:
+    if components is None:
+        components = (spec.composer_stage.prompt_components if spec is not None else {}) or {}
+    return _component_text(components, composer_component_tables())
+
 
 
 def render_composer_user(
@@ -640,6 +695,18 @@ def render_composer_user(
 ) -> str:
     stage = spec.composer_stage
     low, high = visible_word_range(target_words, spec.length_control.tolerance_pct)
+    if stage.prompt_components.get("length_policy"):
+        s_target = sentence_budget(target_words)
+        target_block = (
+            f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
+            f"Target sentences: {s_target}\n(about {SENTENCE_WORDS} words each). "
+            "Remove cross-chapter redundancy and keep the result dense."
+        )
+    else:
+        target_block = (
+            f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
+            "Remove cross-chapter redundancy and keep the result dense."
+        )
     blocks = [
         "Compose a faithful whole-book summary from the provided chapter summaries.",
         _context_block(
@@ -649,10 +716,7 @@ def render_composer_user(
             toc_md=toc_md,
             book_metadata=book_metadata,
         ),
-        (
-            f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
-            "Remove cross-chapter redundancy and keep the result dense."
-        ),
+        target_block,
         FORMAT_INSTRUCTIONS[stage.format_mode],
         (
             "Required behavior:\n"

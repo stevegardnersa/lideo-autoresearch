@@ -894,3 +894,90 @@
 
 /* explorer header gear sits inline with controls */
 .controls-wrap > .settings-gear-btn { margin-right: 8px; }
+/* ── Prompts section ─────────────────────────────────────────── */
+.cm-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.prompt-block {
+  margin-bottom: 20px;
+}
+
+.prompt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.prompt-table th,
+.prompt-table td {
+  text-align: left;
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  vertical-align: middle;
+}
+
+.prompt-table select {
+  max-width: 160px;
+}
+
+.prompt-row-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.prompt-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.prompt-components {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.prompt-create {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prompt-preview {
+  white-space: pre-wrap;
+  max-height: 320px;
+  overflow: auto;
+  background: rgba(15, 23, 42, 0.5);
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.drift-badge {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.drift-badge.drift-in-sync {
+  color: #10b981;
+}
+
+.drift-badge.drift-stale {
+  color: #f59e0b;
+}
+
+.prompt-toggles {
+  row-gap: 6px;
+}

@@ -1,5 +1,11 @@
 import './style.css'
 import './settings.js'
+import {
+  promptVersionColor,
+  promptVersionLabel,
+  presentPromptVersions,
+  applyPromptFilter,
+} from './promptFilters.js'
 
 const COLOR_MAP = {
   'deepseek/deepseek-v4-pro': '#f97316',
@@ -84,6 +90,7 @@ let selectedJudgeType = ''
 let runFilter = '__bucket:30m'
 let judgeVisibility = { deterministic: true, LLM: true }
 let reasoningVisibility = {}
+let promptVersionVisibility = {}
 let explicitFieldChanges = { xField: false, yField: false, sizeField: false, colorField: false, labelField: false }
 
 function loadPersistedState() {
@@ -122,6 +129,7 @@ function persistState() {
     fixedYRange,
     judgeVisibility,
     reasoningVisibility,
+    promptVersionVisibility,
     activeFilters
   })
 }
@@ -205,6 +213,9 @@ async function loadRuns(doRender = true) {
           is_llm_judged: isLlmJudged,
           judge_type: isLlmJudged ? `LLM:${judgeModelSlug}` : 'deterministic',
           reasoning: reasonOfProfile(manifest.profile, manifest.reasoning_effort, manifest.thinking_enabled),
+          prompt_version: manifest.prompt_version || '',
+          composer_prompt_version: manifest.composer_prompt_version || '',
+          prompt_fingerprint: manifest.prompt_fingerprint || '',
           n_samples: score.n_samples || 0,
           hard_fail_rate: score.hard_fail_rate ?? 0,
           mean_quality: score.mean_quality ?? 0,
@@ -239,6 +250,7 @@ async function loadRuns(doRender = true) {
     populateRunSelect()
     populateSelects()
     renderReasonToggles()
+    renderPromptVersionToggles()
     if (doRender) renderChart()
   } catch (e) {
     console.error('Failed to load runs:', e)
@@ -364,6 +376,39 @@ function renderReasonToggles() {
   })
 }
 
+function renderPromptVersionToggles() {
+  const container = document.getElementById('promptVersionToggles')
+  if (!container) return
+  container.innerHTML = ''
+  const present = presentPromptVersions(runs)
+  if (present.length === 0 || present.every(v => v === '')) return
+  present.forEach(value => {
+    const btn = document.createElement('button')
+    btn.type = 'button'
+    btn.className = 'judge-toggle active'
+    btn.dataset.promptVersion = value
+    const dot = document.createElement('span')
+    dot.className = 'jt-dot'
+    dot.style.background = promptVersionColor(value)
+    btn.appendChild(dot)
+    btn.appendChild(document.createTextNode(` ${promptVersionLabel(value)}`))
+    const isActive = promptVersionVisibility[value] ?? true
+    btn.classList.toggle('jt-off', !isActive)
+    btn.classList.toggle('active', isActive)
+    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false')
+    btn.addEventListener('click', () => {
+      const isCurrentlyEnabled = !btn.classList.contains('jt-off')
+      btn.classList.toggle('jt-off', isCurrentlyEnabled)
+      btn.classList.toggle('active', !isCurrentlyEnabled)
+      btn.setAttribute('aria-pressed', isCurrentlyEnabled ? 'false' : 'true')
+      promptVersionVisibility[value] = !isCurrentlyEnabled
+      renderChart()
+      persistState()
+    })
+    container.appendChild(btn)
+  })
+}
+
 function getFilteredRuns() {
   let filtered = [...runs]
 
@@ -404,6 +449,11 @@ function getFilteredRuns() {
   const hiddenReasons = Object.keys(reasoningVisibility).filter(k => reasoningVisibility[k] === false)
   if (hiddenReasons.length) {
     filtered = filtered.filter(r => !hiddenReasons.includes(r.reasoning))
+  }
+
+  const hiddenPrompts = Object.keys(promptVersionVisibility).filter(k => promptVersionVisibility[k] === false)
+  if (hiddenPrompts.length) {
+    filtered = applyPromptFilter(filtered, promptVersionVisibility)
   }
 
   return filtered
@@ -756,6 +806,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fixedYRange = savedState.fixedYRange ?? false
     judgeVisibility = savedState.judgeVisibility ?? { deterministic: true, LLM: true }
     reasoningVisibility = savedState.reasoningVisibility ?? {}
+    promptVersionVisibility = savedState.promptVersionVisibility ?? {}
     activeFilters = savedState.activeFilters || {}
     explicitFieldChanges = { xField: false, yField: false, sizeField: false, colorField: false, labelField: false }
 
