@@ -234,7 +234,7 @@ const MODAL_TEMPLATE = `
 
 const EFFORT_ORDER = ['thinking', 'none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max']
 const EFFORT_LABEL = { thinking: 'think', none: 'off' }
-const CANONIC_EFFORTS = new Set(['thinking', 'none'])
+const CANONIC_EFFORTS = new Set(['thinking'])
 const BUDGETS = ['30m', '60m']
 const EFFORT_FRACTION = { none: 0, minimal: 0.1, low: 0.2, medium: 0.5, high: 0.8, xhigh: 0.95, max: 0.95 }
 

@@ -452,7 +452,7 @@ test('edit dialog reflects existing profiles as checked rows', async () => {
 
   assert.match(postRenderInfo().title, /Edit deepseek\/deepseek-v4-flash/)
   const rows = els.rows()
-  assert.equal(rows.length, 14, 'canonic cells with no existing profile are hidden (16 - 2)')
+  assert.equal(rows.length, 15, 'only absent canonic (thinking) cells are hidden; none renders as editable (16 - 1)')
   const checkedCells = rows
     .filter(r => r.querySelector('.vc-check').checked)
     .map(r => `${r.dataset.tb}_${r.dataset.effort}`)
@@ -603,7 +603,9 @@ test('edit save builds PUT payload with locked-row removal and tier creation', a
   assert.equal(putCall.body.new_model, 'deepseek/deepseek-v4-flash')
   const removed = putCall.body.edits.find(e => e.key === '30m_deepseek-v4-flash_thinking')
   assert.equal(removed.keep, false)
-  assert.ok(!putCall.body.edits.find(e => e.key === '60m_deepseek-v4-flash_notthinking'), 'kept locked baseline emits no edit')
+  const keptNone = putCall.body.edits.find(e => e.key === '60m_deepseek-v4-flash_notthinking')
+  assert.ok(keptNone && keptNone.keep === true, 'editable none profile emits keep:true edit')
+  assert.ok(keptNone && keptNone.hidden === false, 'editable none profile stays visible')
   const created = putCall.body.create.find(e => e.time_budget === '60m' && e.effort === 'medium')
   assert.ok(created && created.temperature === 0.66, 'create carries temp')
   assert.ok(els.dialog.classList.contains('cm-hidden'), 'dialog closed after save')
@@ -619,13 +621,15 @@ test('locked canonic rows and hidden cells render correctly', async () => {
 
   const rows = els.rows()
   assert.ok(!rows.some(r => r.dataset.tb === '60m' && r.dataset.effort === 'thinking'), 'absent 60m thinking hidden')
-  assert.ok(!rows.some(r => r.dataset.tb === '30m' && r.dataset.effort === 'none'), 'absent 30m none hidden')
+  const none30 = rows.find(r => r.dataset.tb === '30m' && r.dataset.effort === 'none')
+  assert.ok(none30, 'absent 30m none renders as an editable (not-created) row')
+  assert.equal(none30.dataset.existing, '0', '30m none row is not-created')
 
   const locked = rows.filter(r => r.dataset.locked === '1')
   assert.deepEqual(
     locked.map(r => `${r.dataset.tb}_${r.dataset.effort}`).sort(),
-    ['30m_thinking', '60m_none'],
-    'present canonic profiles are the locked rows',
+    ['30m_thinking'],
+    'only the thinking baseline is locked; none is editable',
   )
   for (const r of locked) {
     const check = r.querySelector('.vc-check')
