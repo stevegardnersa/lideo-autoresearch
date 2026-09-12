@@ -226,6 +226,9 @@ test('GET /api/models indexes models with run aggregation', async () => {
     assert.equal(deepseek.best_quality_llm, 0.902)
     assert.equal(deepseek.profiles.length, 3)
     assert.ok(deepseek.profiles.every(pf => pf.status === 'tested'))
+    assert.ok(deepseek.profiles.every(pf => pf.runsDir === 'alpha'), 'runsDir points at the runs subdir holding the profile data')
+    assert.equal(deepseek.profiles.find(pf => pf.slug === '30m_deepseek-v4-flash_notthinking').judged, true, 'LLM-judged profile flagged judged')
+    assert.equal(deepseek.profiles.find(pf => pf.slug === '30m_deepseek-v4-flash_thinking').judged, false, 'deterministic-only profile not flagged judged')
 
     const qwen = body.models.find(m => m.model === 'qwen/qwen3.6-plus')
     assert.ok(qwen)
@@ -256,6 +259,7 @@ test('GET /api/models flags untested 60m profiles as pending', async () => {
     const cs60 = deepseek.profiles.find(pf => pf.slug === '60m_deepseek-v4-flash_thinking')
     assert.equal(cs60.time_budget, '60m')
     assert.equal(cs60.status, 'tested')
+    assert.equal(cs60.runsDir, 'alpha')
     const qwen = body.models.find(m => m.model === 'qwen/qwen3.6-plus')
     assert.equal(qwen.profiles[0].status, 'tested')
   } finally {
