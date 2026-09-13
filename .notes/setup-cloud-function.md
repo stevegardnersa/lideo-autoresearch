@@ -364,7 +364,43 @@ print(f'Cost: \${resp.json()[\"usage\"][\"generation_cost\"]:.6f}')
 "
 ```
 
-### 8d. View logs
+### 8d. Durable auth for automated runs (`AUTH_MODE=sa_key`)
+
+`gcloud auth print-identity-token` needs an interactive login and expires hourly,
+which breaks unattended runs. Instead create a dedicated service account, grant
+it invoker on the function, and let the pipeline mint its own ID token from the
+key (no `gcloud` in the hot path). `cf_client` uses the `google-auth` package
+when it is installed and otherwise falls back to signing the JWT with the
+`openssl` CLI, so no Python dependency is strictly required.
+
+```bash
+PROJECT_ID=lideo-387b7
+SA=model-manager-invoker@$PROJECT_ID.iam.gserviceaccount.com
+
+gcloud iam service-accounts create model-manager-invoker \
+  --display-name "Model Manager CF Invoker" --project $PROJECT_ID
+
+gcloud functions add-invoker-policy-binding summarize \
+  --region us-central1 --project $PROJECT_ID --member "serviceAccount:$SA"
+
+mkdir -p secrets
+gcloud iam service-accounts keys create secrets/cf-invoker-key.json \
+  --iam-account $SA --project $PROJECT_ID
+```
+
+Wire it up in `.env` (the audience defaults to `FUNCTION_URL`):
+
+```bash
+FUNCTION_URL=https://summarize-q2dzk4wjva-uc.a.run.app
+AUTH_MODE=sa_key
+GCP_SA_KEY_FILE=secrets/cf-invoker-key.json
+# CF_IDENTITY_AUDIENCE=$FUNCTION_URL    # optional override
+```
+
+`secrets/` is gitignored (never commit keys). IAM policy changes can take ~1 min
+to propagate; a first request may 403 until then.
+
+### 8e. View logs
 
 ```bash
 gcloud functions logs read summarize \

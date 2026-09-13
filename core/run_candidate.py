@@ -46,6 +46,7 @@ from core.openrouter_client import (
     OpenRouterInsufficientCreditsError,
     UsageRecord,
 )
+from core.cf_client import CloudFunctionAuthError
 from core.reasoning import DEFAULT_MAX_TOKEN_CAP, effort_enables_thinking, manifest_effort_label, stage_reasoning_effort, visible_max_tokens
 from core.versioning import (
     build_prompt_hashes,
@@ -275,6 +276,29 @@ def print_model_unavailable_banner(
     print("  " + resume_command_hint(bench_name=bench_name, profile=profile, run_id=run_id, args=args))
     print("=" * 72)
     print()
+
+
+def print_cf_auth_error_banner(
+    exc: BaseException,
+    *,
+    bench_name: str,
+    profile: str,
+    run_id: str,
+    args: argparse.Namespace,
+) -> None:
+    print()
+    print("=" * 72)
+    print("CLOUD FUNCTION AUTH FAILED")
+    print("The OIDC identity token could not be minted, so no requests were sent and")
+    print("nothing was billed. Re-authenticate, then resume this run with:")
+    print()
+    print("  gcloud auth login")
+    print("  " + resume_command_hint(bench_name=bench_name, profile=profile, run_id=run_id, args=args))
+    print()
+    print("Or run with AUTH_MODE=env and GCP_IDENTITY_TOKEN set (CI/service credentials).")
+    print("=" * 72)
+    print()
+    print(f"details: {exc}", file=sys.stderr)
 
 
 def sample_key_from_item(item: Mapping[str, Any], *, bench_name: str) -> str:
@@ -579,9 +603,22 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--auth-mode",
         default=os.getenv("AUTH_MODE", "auto"),
-        choices=["auto", "oidc", "env", "none"],
+        choices=["auto", "oidc", "env", "sa_key", "none"],
         help="Cloud Function auth mode. auto resolves to 'none' for http (local dev) and "
-        "'oidc' for https. Defaults to the AUTH_MODE env var.",
+        "'oidc' for https. 'sa_key' mints a self-signed OIDC ID token from a service-account "
+        "JSON key (GCP_SA_KEY_FILE), no gcloud needed. Defaults to the AUTH_MODE env var.",
+    )
+    parser.add_argument(
+        "--sa-key-file",
+        default=os.getenv("GCP_SA_KEY_FILE", ""),
+        help="Path to a service-account JSON key for AUTH_MODE=sa_key. "
+        "Defaults to the GCP_SA_KEY_FILE env var.",
+    )
+    parser.add_argument(
+        "--identity-audience",
+        default=os.getenv("CF_IDENTITY_AUDIENCE", ""),
+        help="Audience for the minted ID token (AUTH_MODE=sa_key). Defaults to "
+        "CF_IDENTITY_AUDIENCE, else the Function URL.",
     )
     parser.add_argument(
         "--function-timeout",
@@ -746,6 +783,8 @@ def make_client(args: argparse.Namespace) -> Optional[OpenRouterClient]:
             function_url=function_url,
             auth_mode=args.auth_mode,
             timeout=args.function_timeout,
+            sa_key_file=args.sa_key_file,
+            identity_audience=args.identity_audience,
         )
     return OpenRouterClient.from_env(
         api_key_env=args.api_key_env,
@@ -2330,6 +2369,37 @@ def _run_single(
         set_cf_concurrency(args.chapter_concurrency)
     else:
         set_cf_concurrency(None)
+    if _is_cloud_function(client):
+        _concurrency = int(args.chapter_concurrency or 1)
+        if _concurrency > 1:
+            print(
+                f"Cloud Function chapter concurrency: {_concurrency} "
+                f"(chapters dispatched in parallel)."
+            )
+        else:
+            print(
+                "WARN: Cloud Function transport is active but chapter concurrency is 1; "
+                "chapters will run sequentially. Pass --chapter-concurrency N or set "
+                "CF_CHAPTER_CONCURRENCY=N (>1) to parallelize.",
+                file=sys.stderr,
+            )
+        try:
+            auth_headers = getattr(client, "auth_headers", None)
+            if callable(auth_headers):
+                auth_headers()
+        except CloudFunctionAuthError as exc:
+            print()
+            print("=" * 72)
+            print("CLOUD FUNCTION AUTH FAILED")
+            print("Could not obtain an OIDC identity token; no requests were sent and")
+            print("nothing was billed. Re-authenticate, then retry:")
+            print()
+            print("  gcloud auth login")
+            print()
+            print("Or run with AUTH_MODE=env and GCP_IDENTITY_TOKEN set (CI/service credentials).")
+            print("=" * 72)
+            print(f"details: {exc}", file=sys.stderr)
+            raise SystemExit(4)
 
     bench_name = Path(args.bench).stem if str(args.bench).endswith(".jsonl") else args.bench
     bench_path = resolve_path(args.bench) if str(args.bench).endswith(".jsonl") else (ROOT / "bench" / f"{args.bench}.jsonl")
@@ -2469,6 +2539,7 @@ def _run_single(
         run_manifest["generation_transport"] = "cloud_function"
         run_manifest["function_url"] = client.function_url
         run_manifest["auth_mode"] = client.auth_mode
+        run_manifest["chapter_concurrency"] = int(args.chapter_concurrency or 1)
     elif args.mock:
         run_manifest["generation_transport"] = "mock"
     else:
@@ -2554,6 +2625,12 @@ def _run_single(
         except ModelUnavailableError as exc:
             with state_lock:
                 state["status"] = "paused_model_unavailable"
+                state["latest_error"] = error_to_dict(exc)
+                save_run_state(state_path, state)
+            raise
+        except CloudFunctionAuthError as exc:
+            with state_lock:
+                state["status"] = "paused_auth_error"
                 state["latest_error"] = error_to_dict(exc)
                 save_run_state(state_path, state)
             raise
@@ -2651,7 +2728,7 @@ def _run_single(
                         _index, item = in_flight.pop(future, (None, None))
                         try:
                             item_error = future.result()
-                        except (OpenRouterInsufficientCreditsError, ModelUnavailableError) as exc:
+                        except (OpenRouterInsufficientCreditsError, ModelUnavailableError, CloudFunctionAuthError) as exc:
                             abort_exc = exc
                             item_error = None
                         if item_error is not None and item is not None:
@@ -2667,6 +2744,15 @@ def _run_single(
                 for future in list(in_flight.keys()):
                     future.cancel()
                 executor.shutdown(wait=True)
+
+                if isinstance(abort_exc, CloudFunctionAuthError):
+                    state["status"] = "paused_auth_error"
+                    state["latest_error"] = error_to_dict(abort_exc)
+                    save_run_state(state_path, state)
+                    print_cf_auth_error_banner(
+                        abort_exc, bench_name=bench_name, profile=spec.profile, run_id=run_id, args=args
+                    )
+                    raise SystemExit(4)
 
                 if isinstance(abort_exc, ModelUnavailableError):
                     state["status"] = "paused_model_unavailable"
@@ -2808,6 +2894,14 @@ def _run_single(
                     exc, bench_name=bench_name, profile=spec.profile, run_id=run_id, args=args
                 )
                 raise SystemExit(3)
+            except CloudFunctionAuthError as exc:
+                state["status"] = "paused_auth_error"
+                state["latest_error"] = error_to_dict(exc)
+                save_run_state(state_path, state)
+                print_cf_auth_error_banner(
+                    exc, bench_name=bench_name, profile=spec.profile, run_id=run_id, args=args
+                )
+                raise SystemExit(4)
             except Exception as exc:
                 state["status"] = "failed"
                 state["latest_error"] = error_to_dict(exc)

@@ -33,3 +33,8 @@ Thumbs.db
 artifacts/
 dashboard/pnpm-lock.yaml
 .hermes/
+
+# Cloud Function service-account keys (never commit)
+secrets/
+*.sa.json
+*service-account*.json

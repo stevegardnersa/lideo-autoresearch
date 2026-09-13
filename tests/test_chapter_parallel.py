@@ -11,6 +11,10 @@ Covers:
     each item, recovering on resume, and pausing on insufficient credits
   * ModelUnavailableError detection/backoff at the CF client, the runner banner,
     and a run pausing (not failing items) when the gateway has no deployment
+  * CloudFunctionAuthError (expired OIDC token) failing fast at preflight and
+    pausing (exit 4, not failing every item) if it surfaces mid-run
+  * sa_key auth: audience resolution, google-auth minting, and the stdlib
+    openssl fallback used when google-auth is not installed
 """
 
 import dataclasses
@@ -22,8 +26,10 @@ import tempfile
 import threading
 import time
 import urllib.error
+import urllib.parse
 from pathlib import Path
 from typing import Optional
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -69,6 +75,8 @@ class FakeCloudFunctionClient:
         fail_exception_factory=None,
         model_unavailable: bool = False,
         model_unavailable_model: str = "gpt-5.6-luna",
+        preflight_auth_error: bool = False,
+        chat_auth_error: bool = False,
     ):
         self.delay = delay
         self.summary_words = summary_words
@@ -78,6 +86,8 @@ class FakeCloudFunctionClient:
         self.fail_exception_factory = fail_exception_factory
         self.model_unavailable = model_unavailable
         self.model_unavailable_model = model_unavailable_model
+        self.preflight_auth_error = preflight_auth_error
+        self.chat_auth_error = chat_auth_error
         self.calls = 0
         self.in_flight = 0
         self.max_in_flight = 0
@@ -86,6 +96,11 @@ class FakeCloudFunctionClient:
         self.auth_mode = "none"
         self.last_meta = {}
         self.scoring_version_mismatch = False
+
+    def auth_headers(self, *, force_refresh: bool = False):
+        if self.preflight_auth_error:
+            raise cf_client.CloudFunctionAuthError("gcloud auth print-identity-token failed (exit 1)")
+        return {}
 
     def _should_fail_source(self, source_md: str) -> bool:
         if self.fail_source_exact is not None and source_md == self.fail_source_exact:
@@ -107,6 +122,10 @@ class FakeCloudFunctionClient:
                     "http://localhost/fake-cf",
                     f"Internal error: no healthy deployments for model group {self.model_unavailable_model}",
                     model=self.model_unavailable_model,
+                )
+            if self.chat_auth_error:
+                raise cf_client.CloudFunctionAuthError(
+                    "gcloud auth print-identity-token failed (exit 1): reauth required"
                 )
             source_md = str(kwargs.get("source_md") or "")
             if self._should_fail_source(source_md):
@@ -394,6 +413,8 @@ def test_run_candidate_parallelizes_chapter_bench_items():
         assert state["completed_count"] == 4, state["completed_count"]
         assert state["current_items"] == {}, state["current_items"]
         assert state["current_item"] is None
+        assert state["run_manifest"]["generation_transport"] == "cloud_function"
+        assert state["run_manifest"]["chapter_concurrency"] == 3, state["run_manifest"]
         assert 2 <= client.max_in_flight <= 3, client.max_in_flight
         sample_rows = [json.loads(line) for line in (run_dir / "parallel-smoke.samples.jsonl").read_text().splitlines() if line.strip()]
         assert len(sample_rows) == 4, len(sample_rows)
@@ -505,6 +526,7 @@ def test_run_candidate_sequential_when_concurrency_one():
         assert state["status"] == "finished", state["status"]
         assert state["completed_count"] == 4, state["completed_count"]
         assert client.max_in_flight == 1, client.max_in_flight
+        assert state["run_manifest"]["chapter_concurrency"] == 1, state["run_manifest"]
     print("test_run_candidate_sequential_when_concurrency_one: OK")
 
 
@@ -816,6 +838,340 @@ def test_run_candidate_pauses_on_model_unavailable():
     print("test_run_candidate_pauses_on_model_unavailable: OK")
 
 
+def test_cf_auth_provider_raises_typed_error():
+    """env-mode auth with no token must raise CloudFunctionAuthError (typed)."""
+    provider = cf_client.AuthTokenProvider(auth_mode="env", env_var="TEST_MISSING_IDENTITY_TOKEN")
+    try:
+        provider.get_token()
+        raise AssertionError("expected CloudFunctionAuthError")
+    except cf_client.CloudFunctionAuthError as exc:
+        assert cf_client.is_auth_error(exc)
+    print("test_cf_auth_provider_raises_typed_error: OK")
+
+
+def _with_env(values):
+    """Context manager setting os.environ keys, restoring prior values."""
+    import os
+
+    @contextlib.contextmanager
+    def _cm():
+        saved = {}
+        for key, val in values.items():
+            saved[key] = os.environ.get(key)
+            if val is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = val
+        try:
+            yield
+        finally:
+            for key, prior in saved.items():
+                if prior is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = prior
+
+    return _cm()
+
+
+def test_sa_key_provider_requires_key_file():
+    """AUTH_MODE=sa_key with no GCP_SA_KEY_FILE must be a typed auth error."""
+    provider = cf_client.AuthTokenProvider(auth_mode="sa_key", sa_key_file="")
+    with _with_env({"GCP_IDENTITY_TOKEN": None}):
+        try:
+            provider.get_token()
+            raise AssertionError("expected CloudFunctionAuthError for missing key file")
+        except cf_client.CloudFunctionAuthError as exc:
+            assert "GCP_SA_KEY_FILE" in str(exc), str(exc)
+    missing = cf_client.AuthTokenProvider(auth_mode="sa_key", sa_key_file="/no/such/key.json")
+    with _with_env({"GCP_IDENTITY_TOKEN": None}):
+        try:
+            missing.get_token()
+            raise AssertionError("expected CloudFunctionAuthError for absent key path")
+        except cf_client.CloudFunctionAuthError as exc:
+            assert "/no/such/key.json" in str(exc), str(exc)
+    print("test_sa_key_provider_requires_key_file: OK")
+
+
+def test_sa_key_provider_audience_resolution():
+    """Audience precedence: explicit > CF_IDENTITY_AUDIENCE > FUNCTION_URL."""
+    with _with_env({"CF_IDENTITY_AUDIENCE": None, "FUNCTION_URL": "https://fn.example"}):
+        p = cf_client.AuthTokenProvider(auth_mode="sa_key", sa_key_file="k.json")
+        assert p._resolve_audience() == "https://fn.example"
+        explicit = cf_client.AuthTokenProvider(
+            auth_mode="sa_key", sa_key_file="k.json", audience="https://explicit.example"
+        )
+        assert explicit._resolve_audience() == "https://explicit.example"
+    with _with_env({"CF_IDENTITY_AUDIENCE": "https://aud.example", "FUNCTION_URL": "https://fn.example"}):
+        p = cf_client.AuthTokenProvider(auth_mode="sa_key", sa_key_file="k.json")
+        assert p._resolve_audience() == "https://aud.example"
+    with _with_env({"CF_IDENTITY_AUDIENCE": None, "FUNCTION_URL": None}):
+        p = cf_client.AuthTokenProvider(auth_mode="sa_key", sa_key_file="k.json")
+        try:
+            p._resolve_audience()
+            raise AssertionError("expected CloudFunctionAuthError when no audience is set")
+        except cf_client.CloudFunctionAuthError as exc:
+            assert "audience" in str(exc).lower()
+    print("test_sa_key_provider_audience_resolution: OK")
+
+
+def test_sa_key_provider_mints_token_with_fake_google_auth():
+    """sa_key mints an ID token via google-auth, passing the resolved audience."""
+    import os
+    import types
+
+    record = {}
+
+    class _FakeCreds:
+        def __init__(self, token):
+            self.token = token
+
+        @classmethod
+        def from_service_account_file(cls, filename, target_audience=None, **kwargs):
+            record["filename"] = filename
+            record["audience"] = target_audience
+            return cls("fake-id-token")
+
+        def refresh(self, request):
+            record["request"] = request
+
+    fake_sa = types.ModuleType("google.oauth2.service_account")
+    fake_sa.IDTokenCredentials = _FakeCreds
+    fake_oauth2 = types.ModuleType("google.oauth2")
+    fake_oauth2.service_account = fake_sa
+    fake_google = types.ModuleType("google")
+    fake_google.oauth2 = fake_oauth2
+
+    saved = {name: sys.modules.get(name) for name in
+             ("google", "google.oauth2", "google.oauth2.service_account")}
+    sys.modules["google"] = fake_google
+    sys.modules["google.oauth2"] = fake_oauth2
+    sys.modules["google.oauth2.service_account"] = fake_sa
+    try:
+        with tempfile.TemporaryDirectory() as tmp_name:
+            key_path = Path(tmp_name) / "key.json"
+            key_path.write_text("{}")
+            with _with_env({"GCP_IDENTITY_TOKEN": None, "CF_IDENTITY_AUDIENCE": None}):
+                provider = cf_client.AuthTokenProvider(
+                    auth_mode="sa_key",
+                    sa_key_file=str(key_path),
+                    audience="https://aud.example",
+                )
+                token = provider.get_token()
+            assert token == "fake-id-token", token
+            assert record["filename"] == str(key_path), record
+            assert record["audience"] == "https://aud.example", record
+            assert callable(record["request"]), "refresh must receive a transport"
+            assert provider.get_token() == "fake-id-token", "token must be cached"
+    finally:
+        for name, prior in saved.items():
+            if prior is None:
+                sys.modules.pop(name, None)
+            else:
+                sys.modules[name] = prior
+        os.environ.pop("TEST_MISSING_IDENTITY_TOKEN", None)
+    print("test_sa_key_provider_mints_token_with_fake_google_auth: OK")
+
+
+def test_cloud_function_client_sa_key_defaults_from_env():
+    """CloudFunctionClient reads GCP_SA_KEY_FILE and defaults audience to the URL."""
+    with _with_env({"GCP_SA_KEY_FILE": "secrets/from-env.json"}):
+        client = cf_client.CloudFunctionClient(
+            function_url="https://fn.example", auth_mode="sa_key"
+        )
+        assert client.auth_mode == "sa_key"
+        assert client._auth.sa_key_file == "secrets/from-env.json", client._auth.sa_key_file
+        assert client._auth.audience == "https://fn.example", client._auth.audience
+    print("test_cloud_function_client_sa_key_defaults_from_env: OK")
+
+
+def _b64url_decode(segment):
+    import base64
+
+    segment += "=" * (-len(segment) % 4)
+    return json.loads(base64.urlsafe_b64decode(segment))
+
+
+def test_sa_key_stdlib_fallback_mints_id_token():
+    """Without google-auth, sa_key signs a JWT via openssl and exchanges it."""
+    captured = {}
+
+    class _FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def read(self):
+            return json.dumps({"id_token": "stdlib-id-token"}).encode("utf-8")
+
+    def _fake_urlopen(request, timeout=None):
+        captured["url"] = request.full_url
+        captured["body"] = request.data
+        return _FakeResponse()
+
+    with tempfile.TemporaryDirectory() as tmp_name:
+        key_path = Path(tmp_name) / "key.json"
+        key_path.write_text(
+            json.dumps(
+                {
+                    "client_email": "sa@example.iam.gserviceaccount.com",
+                    "private_key": "-----BEGIN PRIVATE KEY-----\nFAKE\n-----END PRIVATE KEY-----\n",
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                }
+            )
+        )
+        provider = cf_client.AuthTokenProvider(
+            auth_mode="sa_key", sa_key_file=str(key_path), audience="https://aud.example"
+        )
+        with mock.patch.object(
+            cf_client, "_sign_jwt_openssl", return_value="FAKESIG"
+        ) as signer, mock.patch.object(
+            cf_client.urllib.request, "urlopen", side_effect=_fake_urlopen
+        ):
+            token = provider._mint_sa_key_token_stdlib(str(key_path), "https://aud.example")
+
+    assert token == "stdlib-id-token", token
+    assert signer.called, "openssl signer must be used on the fallback path"
+    assert captured["url"] == "https://oauth2.googleapis.com/token", captured
+    body = urllib.parse.parse_qs(captured["body"].decode("utf-8"))
+    assert body["grant_type"] == ["urn:ietf:params:oauth:grant-type:jwt-bearer"], body
+    assertion = body["assertion"][0]
+    assert assertion.endswith(".FAKESIG"), assertion
+    header_b64, payload_b64, _ = assertion.split(".")
+    assert _b64url_decode(header_b64)["alg"] == "RS256"
+    claims = _b64url_decode(payload_b64)
+    assert claims["iss"] == "sa@example.iam.gserviceaccount.com", claims
+    assert claims["aud"] == "https://oauth2.googleapis.com/token", claims
+    assert claims["target_audience"] == "https://aud.example", claims
+    print("test_sa_key_stdlib_fallback_mints_id_token: OK")
+
+
+def test_make_client_wires_sa_key_options():
+    """rc.make_client forwards --auth-mode sa_key and key/audience to the client."""
+    import types
+
+    args = types.SimpleNamespace(
+        mock=False,
+        function_url="https://fn.example",
+        auth_mode="sa_key",
+        function_timeout=600,
+        sa_key_file="secrets/k.json",
+        identity_audience="https://aud.example",
+    )
+    client = rc.make_client(args)
+    assert isinstance(client, cf_client.CloudFunctionClient), client
+    assert client.auth_mode == "sa_key", client.auth_mode
+    assert client._auth.sa_key_file == "secrets/k.json", client._auth.sa_key_file
+    assert client._auth.audience == "https://aud.example", client._auth.audience
+    print("test_make_client_wires_sa_key_options: OK")
+
+
+def test_sa_key_stdlib_openssl_missing_raises_typed():
+    """A missing openssl CLI is a typed auth error, not a raw OSError."""
+    with mock.patch.object(cf_client.subprocess, "run", side_effect=FileNotFoundError()):
+        try:
+            cf_client._sign_jwt_openssl(
+                b"signing-input",
+                "-----BEGIN PRIVATE KEY-----\nFAKE\n-----END PRIVATE KEY-----\n",
+            )
+            raise AssertionError("expected CloudFunctionAuthError")
+        except cf_client.CloudFunctionAuthError as exc:
+            assert "openssl" in str(exc).lower(), str(exc)
+    print("test_sa_key_stdlib_openssl_missing_raises_typed: OK")
+
+
+def test_sa_key_falls_back_without_google_auth():
+    """When google-auth is not importable, sa_key routes to the stdlib minter."""
+    sentinel = {}
+    saved = {name: sys.modules.get(name) for name in
+             ("google", "google.oauth2", "google.oauth2.service_account")}
+    sys.modules["google"] = None
+
+    def _fake_stdlib(self, key_path, audience):
+        sentinel["key_path"] = key_path
+        sentinel["audience"] = audience
+        return "fallback-token"
+
+    try:
+        with tempfile.TemporaryDirectory() as tmp_name:
+            key_path = Path(tmp_name) / "key.json"
+            key_path.write_text("{}")
+            provider = cf_client.AuthTokenProvider(
+                auth_mode="sa_key", sa_key_file=str(key_path), audience="https://aud.example"
+            )
+            with mock.patch.object(
+                cf_client.AuthTokenProvider, "_mint_sa_key_token_stdlib", _fake_stdlib
+            ):
+                token = provider.get_token()
+    finally:
+        for name, prior in saved.items():
+            if prior is None:
+                sys.modules.pop(name, None)
+            else:
+                sys.modules[name] = prior
+
+    assert token == "fallback-token", token
+    assert sentinel["audience"] == "https://aud.example", sentinel
+    print("test_sa_key_falls_back_without_google_auth: OK")
+
+
+def test_run_candidate_fails_fast_on_cf_auth_error():
+    """A mint failure at preflight aborts before any work, no artifact, exit 4."""
+    with tempfile.TemporaryDirectory() as tmp_name:
+        tmp = Path(tmp_name)
+        manifest = load_benchmark_manifest(ROOT / "benchmark_version.json")
+        client = FakeCloudFunctionClient(preflight_auth_error=True)
+        install_fake_cf(client)
+        try:
+            args = build_run_args(tmp, run_id="auth-preflight-smoke", concurrency=3)
+            buffer = io.StringIO()
+            try:
+                with contextlib.redirect_stdout(buffer):
+                    rc._run_single(args, manifest, ROOT / "candidate_spec.py", inherited_run_id=None)
+                raise AssertionError("expected SystemExit(4) on auth failure")
+            except SystemExit as exit_signal:
+                assert exit_signal.code == 4, exit_signal.code
+        finally:
+            uninstall_fake_cf()
+        assert client.calls == 0, "no requests should be sent when auth fails"
+        run_dir = tmp / "runs" / run_dir_for(manifest)
+        assert not (run_dir / "auth-preflight-smoke.json").exists(), "no artifact on auth failure"
+        assert "CLOUD FUNCTION AUTH FAILED" in buffer.getvalue()
+        assert "gcloud auth login" in buffer.getvalue()
+    print("test_run_candidate_fails_fast_on_cf_auth_error: OK")
+
+
+def test_run_candidate_pauses_on_cf_auth_error_midrun():
+    """Auth failure after preflight must pause the run, not fail every item."""
+    with tempfile.TemporaryDirectory() as tmp_name:
+        tmp = Path(tmp_name)
+        manifest = load_benchmark_manifest(ROOT / "benchmark_version.json")
+        client = FakeCloudFunctionClient(chat_auth_error=True)
+        install_fake_cf(client)
+        try:
+            args = build_run_args(tmp, run_id="auth-midrun-smoke", concurrency=2)
+            buffer = io.StringIO()
+            try:
+                with contextlib.redirect_stdout(buffer):
+                    rc._run_single(args, manifest, ROOT / "candidate_spec.py", inherited_run_id=None)
+                raise AssertionError("expected SystemExit(4) on mid-run auth failure")
+            except SystemExit as exit_signal:
+                assert exit_signal.code == 4, exit_signal.code
+        finally:
+            uninstall_fake_cf()
+
+        run_dir = tmp / "runs" / run_dir_for(manifest)
+        state = json.loads((run_dir / "auth-midrun-smoke.state.json").read_text())
+        assert state["status"] == "paused_auth_error", state["status"]
+        assert state["latest_error"]["type"] == "CloudFunctionAuthError", state["latest_error"]
+        assert state["failed_items"] == {}, "auth failure must not be recorded as item failures"
+        assert not (run_dir / "auth-midrun-smoke.json").exists(), "no artifact while paused"
+        assert "CLOUD FUNCTION AUTH FAILED" in buffer.getvalue()
+    print("test_run_candidate_pauses_on_cf_auth_error_midrun: OK")
+
+
 def main():
     tests = [
         test_cf_concurrency_slot_caps_inflight,
@@ -833,6 +1189,17 @@ def main():
         test_cf_client_model_unavailable_recovers_on_retry,
         test_model_unavailable_banner_names_model_and_resume_command,
         test_run_candidate_pauses_on_model_unavailable,
+        test_cf_auth_provider_raises_typed_error,
+        test_sa_key_provider_requires_key_file,
+        test_sa_key_provider_audience_resolution,
+        test_sa_key_provider_mints_token_with_fake_google_auth,
+        test_cloud_function_client_sa_key_defaults_from_env,
+        test_make_client_wires_sa_key_options,
+        test_sa_key_stdlib_fallback_mints_id_token,
+        test_sa_key_stdlib_openssl_missing_raises_typed,
+        test_sa_key_falls_back_without_google_auth,
+        test_run_candidate_fails_fast_on_cf_auth_error,
+        test_run_candidate_pauses_on_cf_auth_error_midrun,
     ]
     for test in tests:
         test()

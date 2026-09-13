@@ -1,0 +1,505 @@
+{
+  "run_manifest": {
+    "run_id": "20260913t084438z__booksum-v4__chapter_fast-v3__30m_glm-5.3-flas__30m_glm-5.3-flash_effort-minimal_v1",
+    "created_at_utc": "2026-09-13T08:44:38.777587+00:00",
+    "benchmark_manifest_path": "benchmark_version.json",
+    "benchmark_version": "booksum-v4",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v2",
+    "judge_version_resolved": "judge-absolute-v1::openai/gpt-5.4-mini",
+    "profile": "30m_glm-5.3-flash_effort-minimal",
+    "bench": "chapter_fast-v3",
+    "bench_path": "bench/chapter_fast-v3.jsonl",
+    "data_dir": "data/books",
+    "candidate_name": "30m_glm-5.3-flash_effort-minimal_v1",
+    "candidate_spec_path": "candidate_spec.py",
+    "candidate_spec_sha256": "ab4e1992af170d8456ce0aab65079c17cd98b8f4449f160dd6ead0be6ed316ee",
+    "chapter_model": "z-ai/glm-5.3-flash",
+    "composer_model": "z-ai/glm-5.3-flash",
+    "judge_model": "openai/gpt-5.4-mini",
+    "use_json_schema": true,
+    "thinking_enabled": true,
+    "reasoning_effort": "effort-minimal",
+    "chapter_provider": null,
+    "composer_provider": null,
+    "prompt_hashes": {
+      "candidate_dict_sha256": "0d567b6de0e52808ad4bcb9dba1b94960b987d28871b1f242d1f567c3c83750c",
+      "chapter_stage_sha256": "a7520b89be128e088a4ab5362823bc7846e03cf2dd4c82279076e9fca3c529d3",
+      "composer_stage_sha256": "6081c53be1f4e6f05c5ad635601ef2d1be8e3f32af40b107349454962906918c",
+      "length_control_sha256": "22c6e5997e11a9561348c6bb84d5e2e08dedf7ec0aa7de7d434abb0f3ce72e09",
+      "budget_allocator_sha256": "3737d8daf7be7690d5deaa82ec7cf6718dc30f991ffa80439c8a8ba342a691dd",
+      "chapter_system_prompt_sha256": "2906d9c5015f7f2119361da0251930f92f6cfa699028740d40b5e31357e5fe91",
+      "composer_system_prompt_sha256": "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+      "render_chapter_user_sha256": "efebadeb9ca47c9ebdc7bd107e1ef76b086635dade60a6051370cc4ee74e0bf8",
+      "render_repair_user_sha256": "cb1725ba8433e8a756f7e50ecef42a234c9d2957d6d0564d96705e4be6b22e53",
+      "render_composer_user_sha256": "370c328ba735e5be1b12df015820a6ac93ad59acd9350b7d97f213d0158b1043",
+      "build_openrouter_request_sha256": "3e4f6a38cd388fdba397e438e3297d11351ce0ea956eb876b3e629c2e2a212b7",
+      "allocate_chapter_targets_sha256": "bc58f7a11792df9029b057221640f5420efb6a82a7caf32651b83179c4f5a610"
+    },
+    "catalog_snapshot": "",
+    "price_snapshot": "",
+    "hypothesis": "",
+    "notes": "",
+    "generation_transport": "cloud_function",
+    "function_url": "https://summarize-q2dzk4wjva-uc.a.run.app",
+    "auth_mode": "sa_key",
+    "chapter_concurrency": 4,
+    "cloud_function_meta": {
+      "scoring_version": "3af66486b27d11ddef60d90d2cc5fb101115a9d51a2c4e2502a6883195d3b873",
+      "handler_version": "f12eb629cd1ecfcc36261ba294195e30e99ad3f1bf849b2cb7f3f361efbf6eda",
+      "deployed_at_utc": "1980-01-01T00:00:01+00:00"
+    },
+    "resume_count": 0,
+    "scoring_mode": "deterministic",
+    "scoring_gate_key": "30m_deterministic",
+    "mean_generation_cost": 0.013246685,
+    "mean_llm_judge_cost": 0.00248053125,
+    "mean_llm_judge_uncached": 0.00248053125,
+    "mean_total_cost": 0.01572721625
+  },
+  "benchmark_manifest": {
+    "benchmark_version": "booksum-v4",
+    "benchmark_label": "nonfiction-book-summary-genre-aware",
+    "created_at_utc": "2026-04-30T00:00:00Z",
+    "corpus_version": "corpus-2026-04-19",
+    "rubric_version": "rubrics-v1",
+    "scoring_version": "scoring-v2",
+    "judge_version": "judge-absolute-v1",
+    "split_seed": 42,
+    "words_per_minute": 200,
+    "notes": "v4: per-profile scoring gates - 30m profiles use min_faithfulness=0.50, min_concept_coverage=0.15. v3 used uniform 0.70/0.60 gates for all profiles. Judge-less (deterministic) runs use the *_deterministic gates with min_faithfulness/min_concept_coverage=null (semantic gates disabled) because deterministic proxies are not calibrated to judged thresholds; objective length/passes/malformed gates still apply.",
+    "scoring_gates": {
+      "default": {
+        "min_faithfulness": 0.7,
+        "min_concept_coverage": 0.6,
+        "max_final_length_error_pct": null,
+        "max_passes": null
+      },
+      "30m": {
+        "min_faithfulness": 0.5,
+        "min_concept_coverage": 0.15,
+        "max_final_length_error_pct": null,
+        "max_passes": null
+      },
+      "60m": {
+        "min_faithfulness": 0.6,
+        "min_concept_coverage": 0.5,
+        "max_final_length_error_pct": null,
+        "max_passes": null
+      },
+      "default_deterministic": {
+        "min_faithfulness": null,
+        "min_concept_coverage": null,
+        "max_final_length_error_pct": null,
+        "max_passes": null
+      },
+      "30m_deterministic": {
+        "min_faithfulness": null,
+        "min_concept_coverage": null,
+        "max_final_length_error_pct": null,
+        "max_passes": null
+      },
+      "60m_deterministic": {
+        "min_faithfulness": null,
+        "min_concept_coverage": null,
+        "max_final_length_error_pct": null,
+        "max_passes": null
+      }
+    }
+  },
+  "dataset_score": {
+    "n_samples": 8,
+    "hard_fail_rate": 1.0,
+    "mean_quality": 0.4894356417887725,
+    "mean_utility": 0.44910551910127255,
+    "mean_faithfulness": 0.42875,
+    "mean_concept_coverage": 0.48875,
+    "mean_final_length_error_pct": 0.43127454210336497,
+    "mean_first_pass_length_error_pct": 0.4389764331651042,
+    "mean_passes_used": 5,
+    "mean_uncached_cost": 0.0152809375,
+    "mean_llm_judge_cost": 0.00248053125,
+    "mean_total_cost": 0.01572721625,
+    "by_group_quality": {
+      "everything-is-f-cked-manson-2019": 0.4636925671550901,
+      "getting-things-done-allen-2015": 0.2534,
+      "do-hard-things-magness-2022": 0.42475,
+      "atomic-habits-clear-2018": 0.8159000000000001
+    },
+    "by_group_utility": {
+      "everything-is-f-cked-manson-2019": 0.4234322714050901,
+      "getting-things-done-allen-2015": 0.212864305,
+      "do-hard-things-magness-2022": 0.384406428,
+      "atomic-habits-clear-2018": 0.775719072
+    },
+    "sample_scores": [
+      {
+        "sample_id": "everything-is-f-cked-manson-2019:004",
+        "quality": 0.6914289566236813,
+        "utility": 0.6510660756236812
+      },
+      {
+        "sample_id": "getting-things-done-allen-2015:013",
+        "quality": 0.2534,
+        "utility": 0.212864305
+      },
+      {
+        "sample_id": "everything-is-f-cked-manson-2019:009",
+        "quality": 0.21148944723618093,
+        "utility": 0.17127952523618092
+      },
+      {
+        "sample_id": "everything-is-f-cked-manson-2019:001",
+        "quality": 0.4996,
+        "utility": 0.459389787
+      },
+      {
+        "sample_id": "do-hard-things-magness-2022:004",
+        "quality": 0.29090000000000005,
+        "utility": 0.25075769900000006
+      },
+      {
+        "sample_id": "atomic-habits-clear-2018:005",
+        "quality": 0.8159000000000001,
+        "utility": 0.775719072
+      },
+      {
+        "sample_id": "everything-is-f-cked-manson-2019:006",
+        "quality": 0.4522518647604981,
+        "utility": 0.41199369776049816
+      },
+      {
+        "sample_id": "do-hard-things-magness-2022:003",
+        "quality": 0.5586,
+        "utility": 0.5180551569999999
+      }
+    ]
+  },
+  "sample_scores": [
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:004",
+      "malformed": false,
+      "faithfulness": 0.56,
+      "concept_coverage": 0.95,
+      "qualifier_preservation": 0.73,
+      "no_fluff": 0.62,
+      "structure_quality": 0.88
+    },
+    {
+      "sample_id": "getting-things-done-allen-2015:013",
+      "malformed": false,
+      "faithfulness": 0.18,
+      "concept_coverage": 0.0,
+      "qualifier_preservation": 0.05,
+      "no_fluff": 0.82,
+      "structure_quality": 0.74
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:009",
+      "malformed": false,
+      "faithfulness": 0.12,
+      "concept_coverage": 0.03,
+      "qualifier_preservation": 0.05,
+      "no_fluff": 0.78,
+      "structure_quality": 0.2
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:001",
+      "malformed": false,
+      "faithfulness": 0.42,
+      "concept_coverage": 0.78,
+      "qualifier_preservation": 0.46,
+      "no_fluff": 0.52,
+      "structure_quality": 0.74
+    },
+    {
+      "sample_id": "do-hard-things-magness-2022:004",
+      "malformed": false,
+      "faithfulness": 0.18,
+      "concept_coverage": 0.12,
+      "qualifier_preservation": 0.14,
+      "no_fluff": 0.52,
+      "structure_quality": 0.68
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:005",
+      "malformed": false,
+      "faithfulness": 0.98,
+      "concept_coverage": 0.99,
+      "qualifier_preservation": 0.96,
+      "no_fluff": 0.82,
+      "structure_quality": 0.93
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:006",
+      "malformed": false,
+      "faithfulness": 0.52,
+      "concept_coverage": 0.12,
+      "qualifier_preservation": 0.08,
+      "no_fluff": 0.38,
+      "structure_quality": 0.78
+    },
+    {
+      "sample_id": "do-hard-things-magness-2022:003",
+      "malformed": false,
+      "faithfulness": 0.47,
+      "concept_coverage": 0.92,
+      "qualifier_preservation": 0.61,
+      "no_fluff": 0.48,
+      "structure_quality": 0.81
+    }
+  ],
+  "samples": [
+    {
+      "sample_id": "do-hard-things-magness-2022:003",
+      "level": "chapter",
+      "group_id": "do-hard-things-magness-2022",
+      "target_words": 1023,
+      "summary_visible_words": 1370,
+      "passes_used": 5,
+      "generation_cost": 0.0247743,
+      "uncached_generation_cost": 0.02724215
+    },
+    {
+      "sample_id": "getting-things-done-allen-2015:013",
+      "level": "chapter",
+      "group_id": "getting-things-done-allen-2015",
+      "target_words": 1288,
+      "summary_visible_words": 2234,
+      "passes_used": 5,
+      "generation_cost": 0.02383563,
+      "uncached_generation_cost": 0.02678475
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:004",
+      "level": "chapter",
+      "group_id": "everything-is-f-cked-manson-2019",
+      "target_words": 1706,
+      "summary_visible_words": 1978,
+      "passes_used": 5,
+      "generation_cost": 0.01676165,
+      "uncached_generation_cost": 0.01814405
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:006",
+      "level": "chapter",
+      "group_id": "everything-is-f-cked-manson-2019",
+      "target_words": 1314,
+      "summary_visible_words": 1448,
+      "passes_used": 5,
+      "generation_cost": 0.006344420000000001,
+      "uncached_generation_cost": 0.012908349999999999
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:009",
+      "level": "chapter",
+      "group_id": "everything-is-f-cked-manson-2019",
+      "target_words": 995,
+      "summary_visible_words": 1238,
+      "passes_used": 5,
+      "generation_cost": 0.00939018,
+      "uncached_generation_cost": 0.010496100000000001
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:001",
+      "level": "chapter",
+      "group_id": "everything-is-f-cked-manson-2019",
+      "target_words": 990,
+      "summary_visible_words": 1239,
+      "passes_used": 5,
+      "generation_cost": 0.01051065,
+      "uncached_generation_cost": 0.01051065
+    },
+    {
+      "sample_id": "do-hard-things-magness-2022:004",
+      "level": "chapter",
+      "group_id": "do-hard-things-magness-2022",
+      "target_words": 360,
+      "summary_visible_words": 430,
+      "passes_used": 5,
+      "generation_cost": 0.00625489,
+      "uncached_generation_cost": 0.00711505
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:005",
+      "level": "chapter",
+      "group_id": "atomic-habits-clear-2018",
+      "target_words": 353,
+      "summary_visible_words": 856,
+      "passes_used": 5,
+      "generation_cost": 0.00810176,
+      "uncached_generation_cost": 0.0090464
+    }
+  ],
+  "traces": [
+    {
+      "sample_id": "do-hard-things-magness-2022:003",
+      "book_id": "do-hard-things-magness-2022",
+      "chapter_id": "003",
+      "target_words": 1023,
+      "output_words": 1370,
+      "passes_used": 5,
+      "generation_cost": 0.0247743,
+      "uncached_generation_cost": 0.02724215,
+      "judge_rationale": "",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "performance_and_resilience",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "getting-things-done-allen-2015:013",
+      "book_id": "getting-things-done-allen-2015",
+      "chapter_id": "013",
+      "target_words": 1288,
+      "output_words": 2234,
+      "passes_used": 5,
+      "generation_cost": 0.02383563,
+      "uncached_generation_cost": 0.02678475,
+      "judge_rationale": "",
+      "genre_macro": "business_economics_productivity",
+      "genre_micro": "productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "low",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:004",
+      "book_id": "everything-is-f-cked-manson-2019",
+      "chapter_id": "004",
+      "target_words": 1706,
+      "output_words": 1978,
+      "passes_used": 5,
+      "generation_cost": 0.01676165,
+      "uncached_generation_cost": 0.01814405,
+      "judge_rationale": "",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "philosophy_and_psychology",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:006",
+      "book_id": "everything-is-f-cked-manson-2019",
+      "chapter_id": "006",
+      "target_words": 1314,
+      "output_words": 1448,
+      "passes_used": 5,
+      "generation_cost": 0.006344420000000001,
+      "uncached_generation_cost": 0.012908349999999999,
+      "judge_rationale": "",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "philosophy_and_psychology",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:009",
+      "book_id": "everything-is-f-cked-manson-2019",
+      "chapter_id": "009",
+      "target_words": 995,
+      "output_words": 1238,
+      "passes_used": 5,
+      "generation_cost": 0.00939018,
+      "uncached_generation_cost": 0.010496100000000001,
+      "judge_rationale": "",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "philosophy_and_psychology",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "everything-is-f-cked-manson-2019:001",
+      "book_id": "everything-is-f-cked-manson-2019",
+      "chapter_id": "001",
+      "target_words": 990,
+      "output_words": 1239,
+      "passes_used": 5,
+      "generation_cost": 0.01051065,
+      "uncached_generation_cost": 0.01051065,
+      "judge_rationale": "",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "philosophy_and_psychology",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "analytical",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "do-hard-things-magness-2022:004",
+      "book_id": "do-hard-things-magness-2022",
+      "chapter_id": "004",
+      "target_words": 360,
+      "output_words": 430,
+      "passes_used": 5,
+      "generation_cost": 0.00625489,
+      "uncached_generation_cost": 0.00711505,
+      "judge_rationale": "",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "performance_and_resilience",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    },
+    {
+      "sample_id": "atomic-habits-clear-2018:005",
+      "book_id": "atomic-habits-clear-2018",
+      "chapter_id": "005",
+      "target_words": 353,
+      "output_words": 856,
+      "passes_used": 5,
+      "generation_cost": 0.00810176,
+      "uncached_generation_cost": 0.0090464,
+      "judge_rationale": "",
+      "genre_macro": "psychology_health_self_development",
+      "genre_micro": "habits_and_productivity",
+      "narrative_vs_expository": "expository",
+      "prescriptive_vs_analytical": "prescriptive",
+      "quantitative_density": "high",
+      "chapter_length_profile": "mixed",
+      "benchmark_pool": "balanced"
+    }
+  ],
+  "scoring_gates_override": {
+    "weights": {
+      "faithfulness": 0.33,
+      "concept_coverage": 0.2,
+      "qualifier_preservation": 0.1,
+      "no_fluff": 0.1,
+      "readability_band": 0.07,
+      "structure_quality": 0.05,
+      "final_length_accuracy": 0.1,
+      "first_pass_accuracy": 0.05
+    },
+    "gates": {
+      "max_final_length_error_pct": 0.1,
+      "max_passes": 5,
+      "min_faithfulness": null,
+      "min_concept_coverage": null
+    },
+    "penalties": {
+      "cost_penalty_per_cost_unit": 0.02,
+      "extra_pass_penalty": 0.01
+    },
+    "target_tolerance_pct": 0.05,
+    "zero_accuracy_at_error_pct": 0.25
+  }
+}
