@@ -13,7 +13,8 @@ Usage:
     python -m autoresearch.agent [--model MODEL] [--budget 30m|60m]
         [--thinking thinking|notthinking] [--stage chapter|composer]
         [--mode hill_climb|grid_search|auto]
-        [--function-url FUNC_URL] [--auth-mode auto|oidc|env|none]
+        [--function-url FUNC_URL] [--auth-mode auto|oidc|env|sa_key|none]
+        [--chapter-concurrency N]
 
 If no flags given, operates on all models with notes. When --function-url is
 set, every evaluation subprocess routes LLM calls through the Cloud Function
@@ -352,8 +353,19 @@ def main():
     parser.add_argument(
         "--auth-mode",
         default=os.getenv("AUTH_MODE", "auto"),
-        choices=["auto", "oidc", "env", "none"],
-        help="Cloud Function auth mode (auto: none for http, oidc for https).",
+        choices=["auto", "oidc", "env", "sa_key", "none"],
+        help="Cloud Function auth mode (auto: none for http, oidc for https; "
+        "sa_key mints an ID token from GCP_SA_KEY_FILE without gcloud).",
+    )
+    parser.add_argument(
+        "--sa-key-file",
+        default=os.getenv("GCP_SA_KEY_FILE", ""),
+        help="Service-account JSON key for AUTH_MODE=sa_key.",
+    )
+    parser.add_argument(
+        "--identity-audience",
+        default=os.getenv("CF_IDENTITY_AUDIENCE", ""),
+        help="Audience for minted ID tokens (AUTH_MODE=sa_key).",
     )
     parser.add_argument(
         "--function-timeout",
@@ -361,13 +373,29 @@ def main():
         default=int(os.getenv("CF_TIMEOUT", "600")),
         help="HTTP timeout in seconds for Cloud Function calls.",
     )
+    parser.add_argument(
+        "--chapter-concurrency",
+        type=int,
+        default=int(os.getenv("CF_CHAPTER_CONCURRENCY", "1")),
+        help="Chapters to generate in parallel via the Cloud Function (>1 enables "
+        "parallel chapter dispatch in evaluation subprocesses). Defaults to the "
+        "CF_CHAPTER_CONCURRENCY env var or 1.",
+    )
     args = parser.parse_args()
 
     if args.function_url:
         os.environ["FUNCTION_URL"] = args.function_url
         os.environ["AUTH_MODE"] = args.auth_mode
         os.environ["CF_TIMEOUT"] = str(args.function_timeout)
-        print(f"Cloud Function mode: {args.function_url} (auth={args.auth_mode})")
+        os.environ["CF_CHAPTER_CONCURRENCY"] = str(args.chapter_concurrency)
+        if args.sa_key_file:
+            os.environ["GCP_SA_KEY_FILE"] = args.sa_key_file
+        if args.identity_audience:
+            os.environ["CF_IDENTITY_AUDIENCE"] = args.identity_audience
+        print(
+            f"Cloud Function mode: {args.function_url} (auth={args.auth_mode}, "
+            f"chapter_concurrency={args.chapter_concurrency})"
+        )
 
     if not os.path.exists(NOTES_FILE):
         print(f"No notes file found at {NOTES_FILE}. Add notes first.", file=sys.stderr)

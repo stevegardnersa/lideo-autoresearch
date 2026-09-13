@@ -1,3 +1,7 @@
 # The core scaffold uses only the Python standard library.
 # Install nothing for the basic workflow.
 functions-framework==3.*
+
+# Optional: only for Cloud Function transport with AUTH_MODE=sa_key. When it is
+# absent, cf_client falls back to stdlib JWT signing via the openssl CLI.
+# google-auth>=2.0

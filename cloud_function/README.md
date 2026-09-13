@@ -341,8 +341,10 @@ from core.cf_client import CloudFunctionClient
 
 client = CloudFunctionClient(
     function_url="https://us-central1-PROJECT.cloudfunctions.net/summarize",
-    auth_mode="auto",        # auto | oidc | env | none
+    auth_mode="auto",        # auto | oidc | env | sa_key | none
     timeout=600,
+    # sa_key_file="secrets/cf-invoker-key.json",  # AUTH_MODE=sa_key
+    # identity_audience="https://us-central1-PROJECT.cloudfunctions.net/summarize",
 )
 result = client.chat_completion(
     {"model": model, "messages": [{"role": "system", "content": system_prompt},
@@ -356,8 +358,25 @@ judge_scores, rationale = parse_cf_judge_scores(result.raw_response)  # if judge
 
 `auth_mode=oidc` (the default over https) resolves the bearer token from
 `GCP_IDENTITY_TOKEN` or `gcloud auth print-identity-token`, caches it, and
-refreshes it with a 300s expiry skew. `auth_mode=none` is for the local
-`functions-framework` server on `http://localhost:8080`.
+refreshes it with a 300s expiry skew. `auth_mode=sa_key` mints a self-signed
+OIDC ID token from a service-account JSON key (`GCP_SA_KEY_FILE`) targeting
+`CF_IDENTITY_AUDIENCE` (defaults to the Function URL); it never shells out to
+`gcloud`. It uses the optional `google-auth` package when installed and
+otherwise signs the JWT with the `openssl` CLI, so no Python dependency is
+strictly required. `auth_mode=none` is for the local `functions-framework`
+server on `http://localhost:8080`.
+
+The service account needs `roles/run.invoker` on the underlying Cloud Run
+service:
+
+```bash
+gcloud iam service-accounts create model-manager-invoker --project PROJECT
+gcloud functions add-invoker-policy-binding summarize \
+  --region us-central1 --project PROJECT \
+  --member "serviceAccount:model-manager-invoker@PROJECT.iam.gserviceaccount.com"
+gcloud iam service-accounts keys create secrets/cf-invoker-key.json \
+  --iam-account model-manager-invoker@PROJECT.iam.gserviceaccount.com
+```
 
 ### Python — via `requests`
 

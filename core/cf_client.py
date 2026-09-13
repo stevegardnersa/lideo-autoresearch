@@ -7,7 +7,9 @@ route every chapter-summary LLM generation through the Cloud Function instead of
 calling the provider directly from the local machine.
 
 The local machine never holds the provider API key in this mode — only an OIDC
-identity token for the Function's ``--no-allow-unauthenticated`` layer.
+identity token for the Function's ``--no-allow-unauthenticated`` layer. Tokens
+come from ``gcloud`` (interactive), a static env var (CI), or a service-account
+key (``AUTH_MODE=sa_key``, non-interactive), see :class:`AuthTokenProvider`.
 """
 
 from __future__ import annotations
@@ -18,6 +20,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import tempfile
 import threading
 import time
 import urllib.error
@@ -65,10 +68,115 @@ MODEL_UNAVAILABLE_MARKERS = (
 MODEL_UNAVAILABLE_BACKOFF = (15.0, 30.0, 60.0, 120.0)
 DEFAULT_MODEL_UNAVAILABLE_RETRIES = len(MODEL_UNAVAILABLE_BACKOFF)
 
+# Google OAuth 2.0 token endpoint (assertion audience for the ID-token grant).
+_GOOGLE_OAUTH2_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
+
 
 def _is_model_unavailable(message: str) -> bool:
     lowered = str(message or "").lower()
     return any(marker in lowered for marker in MODEL_UNAVAILABLE_MARKERS)
+
+
+class CloudFunctionAuthError(OpenRouterAPIError):
+    """Client-wide Cloud Function auth failure (expired/invalid OIDC token).
+
+    Distinct from per-request failures: a run cannot make progress until the
+    operator re-authenticates, so callers should pause rather than mark every
+    sample as failed.
+    """
+
+
+def is_auth_error(exc: BaseException) -> bool:
+    """True when ``exc`` is a Cloud Function auth failure needing re-auth."""
+    return isinstance(exc, CloudFunctionAuthError)
+
+
+class _UrllibHttpResponse:
+    """Adapter exposing the ``google.auth`` transport Response surface."""
+
+    def __init__(self, status: int, headers: Mapping[str, str], data: bytes) -> None:
+        self._status = int(status)
+        self._headers = {str(k).lower(): v for k, v in dict(headers).items()}
+        self._data = data
+
+    @property
+    def status(self) -> int:
+        return self._status
+
+    @property
+    def headers(self) -> Mapping[str, str]:
+        return self._headers
+
+    @property
+    def data(self) -> bytes:
+        return self._data
+
+
+class _UrllibRequest:
+    """Stdlib (urllib) adapter for ``google.auth``'s ``Request`` interface.
+
+    The bundled ``google.auth.transport._http_client`` transport only supports
+    http, and ``requests``/``urllib3`` are not dependencies of this repo, so we
+    provide an https-capable transport using only the standard library.
+    """
+
+    def __call__(
+        self,
+        url: str,
+        method: str = "GET",
+        body: Optional[bytes] = None,
+        headers: Optional[Mapping[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs: Any,
+    ) -> _UrllibHttpResponse:
+        request = urllib.request.Request(
+            url, data=body, headers=dict(headers or {}), method=method
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=timeout or 30) as response:
+                return _UrllibHttpResponse(
+                    response.status, response.headers, response.read()
+                )
+        except urllib.error.HTTPError as exc:
+            return _UrllibHttpResponse(exc.code, exc.headers, exc.read())
+
+
+def _b64url(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
+
+
+def _sign_jwt_openssl(signing_input: bytes, private_key_pem: str) -> str:
+    """RS256-sign ``signing_input`` with ``private_key_pem`` via the openssl CLI.
+
+    Returns the base64url-encoded (unpadded) signature. Used only when
+    ``google-auth`` is not installed, so ``AUTH_MODE=sa_key`` stays usable on a
+    stdlib-only interpreter.
+    """
+    handle, key_path = tempfile.mkstemp(prefix="cf-sa-key-", suffix=".pem")
+    try:
+        with os.fdopen(handle, "w", encoding="utf-8") as key_file:
+            key_file.write(private_key_pem)
+        os.chmod(key_path, 0o600)
+        proc = subprocess.run(
+            ["openssl", "dgst", "-sha256", "-sign", key_path],
+            input=signing_input,
+            capture_output=True,
+            timeout=30,
+        )
+        if proc.returncode != 0:
+            detail = proc.stderr.decode("utf-8", errors="replace")[:300]
+            raise CloudFunctionAuthError(f"openssl JWT signing failed: {detail}")
+        return _b64url(proc.stdout)
+    except FileNotFoundError as exc:
+        raise CloudFunctionAuthError(
+            "AUTH_MODE=sa_key needs either the 'google-auth' package "
+            "(pip install google-auth) or the openssl CLI."
+        ) from exc
+    finally:
+        try:
+            os.unlink(key_path)
+        except OSError:
+            pass
 
 
 def _local_scoring_sha() -> str:
@@ -122,7 +230,14 @@ class AuthTokenProvider:
     - ``oidc``: source order — ``GCP_IDENTITY_TOKEN`` env (CI), else
       ``gcloud auth print-identity-token`` subprocess. Cached with a 300s
       expiry skew decoded from the JWT ``exp`` claim.
+    - ``sa_key``: mint a self-signed OIDC ID token from a service-account
+      JSON key (``GCP_SA_KEY_FILE``) targeting ``audience``. Does not shell
+      out to ``gcloud`` and works non-interactively (CI, no user creds).
     - ``none``: no token (local ``functions-framework`` dev server).
+
+    Every minted token is cached with a 300s expiry skew decoded from the JWT
+    ``exp`` claim, so :meth:`get_token` re-mints automatically as it nears
+    expiry.
     """
 
     def __init__(
@@ -131,10 +246,14 @@ class AuthTokenProvider:
         auth_mode: str = "oidc",
         env_var: str = "GCP_IDENTITY_TOKEN",
         gcloud_timeout: int = 60,
+        sa_key_file: str = "",
+        audience: str = "",
     ) -> None:
         self.auth_mode = auth_mode
         self.env_var = env_var
         self.gcloud_timeout = int(gcloud_timeout)
+        self.sa_key_file = str(sa_key_file or "").strip()
+        self.audience = str(audience or "").strip()
         self._token = ""
         self._expires_at = 0.0
         self._lock = threading.Lock()
@@ -159,10 +278,14 @@ class AuthTokenProvider:
         env_token = os.environ.get(self.env_var, "").strip()
         if self.auth_mode == "env":
             if not env_token:
-                raise OpenRouterAPIError(
+                raise CloudFunctionAuthError(
                     f"Auth mode 'env' requires the {self.env_var} environment variable to be set."
                 )
             return env_token
+        if self.auth_mode == "sa_key":
+            if env_token:
+                return env_token
+            return self._fetch_sa_key_token()
         if env_token:
             return env_token
         try:
@@ -173,20 +296,133 @@ class AuthTokenProvider:
                 timeout=self.gcloud_timeout,
             )
         except FileNotFoundError:
-            raise OpenRouterAPIError(
+            raise CloudFunctionAuthError(
                 "gcloud CLI not found. Install the Google Cloud SDK or set "
                 f"{self.env_var} and use AUTH_MODE=env."
             )
         except subprocess.TimeoutExpired:
-            raise OpenRouterAPIError("gcloud auth print-identity-token timed out.")
+            raise CloudFunctionAuthError("gcloud auth print-identity-token timed out.")
         if proc.returncode != 0:
-            raise OpenRouterAPIError(
+            raise CloudFunctionAuthError(
                 f"gcloud auth print-identity-token failed (exit {proc.returncode}): "
                 f"{proc.stderr.strip()[:500]}"
             )
         token = proc.stdout.strip()
         if not token:
-            raise OpenRouterAPIError("gcloud auth print-identity-token returned an empty token.")
+            raise CloudFunctionAuthError("gcloud auth print-identity-token returned an empty token.")
+        return token
+
+    def _resolve_audience(self) -> str:
+        audience = (
+            self.audience
+            or os.environ.get("CF_IDENTITY_AUDIENCE", "").strip()
+            or os.environ.get("FUNCTION_URL", "").strip()
+        )
+        if not audience:
+            raise CloudFunctionAuthError(
+                "Auth mode 'sa_key' needs an audience for the ID token: set "
+                "CF_IDENTITY_AUDIENCE or FUNCTION_URL (or pass identity_audience)."
+            )
+        return audience
+
+    def _fetch_sa_key_token(self) -> str:
+        if not self.sa_key_file:
+            raise CloudFunctionAuthError(
+                "Auth mode 'sa_key' requires a service-account key path in "
+                "GCP_SA_KEY_FILE."
+            )
+        key_path = os.path.expanduser(self.sa_key_file)
+        if not os.path.isabs(key_path):
+            key_path = str(ROOT / key_path)
+        if not os.path.isfile(key_path):
+            raise CloudFunctionAuthError(
+                f"Service-account key not found: {key_path} (GCP_SA_KEY_FILE)."
+            )
+        audience = self._resolve_audience()
+        try:
+            from google.oauth2 import service_account
+        except ImportError:
+            return self._mint_sa_key_token_stdlib(key_path, audience)
+        try:
+            credentials = service_account.IDTokenCredentials.from_service_account_file(
+                key_path, target_audience=audience
+            )
+            credentials.refresh(_UrllibRequest())
+        except CloudFunctionAuthError:
+            raise
+        except Exception as exc:
+            raise CloudFunctionAuthError(
+                f"Failed to mint ID token from {key_path} for audience {audience!r}: {exc}"
+            ) from exc
+        token = str(getattr(credentials, "token", "") or "").strip()
+        if not token:
+            raise CloudFunctionAuthError(
+                f"Service-account key {key_path} produced an empty ID token."
+            )
+        return token
+
+    def _mint_sa_key_token_stdlib(self, key_path: str, audience: str) -> str:
+        """Mint an ID token without google-auth: sign a JWT with openssl.
+
+        Mirrors ``google.oauth2.service_account.IDTokenCredentials``: build an
+        RS256 JWT authorization-grant assertion and exchange it for a
+        Google-issued ID token at the key's ``token_uri``.
+        """
+        try:
+            with open(key_path, "r", encoding="utf-8") as handle:
+                info = json.load(handle)
+        except (OSError, ValueError) as exc:
+            raise CloudFunctionAuthError(
+                f"Could not read service-account key {key_path}: {exc}"
+            ) from exc
+        email = str(info.get("client_email") or "").strip()
+        private_key = str(info.get("private_key") or "").strip()
+        token_uri = str(info.get("token_uri") or "").strip() or _GOOGLE_OAUTH2_TOKEN_ENDPOINT
+        if not email or not private_key:
+            raise CloudFunctionAuthError(
+                f"Service-account key {key_path} is missing client_email/private_key."
+            )
+        now = int(time.time())
+        header = {"alg": "RS256", "typ": "JWT"}
+        payload = {
+            "iat": now,
+            "exp": now + 3600,
+            "iss": email,
+            "aud": token_uri,
+            "target_audience": audience,
+        }
+        signing_input = ".".join(
+            (
+                _b64url(json.dumps(header, separators=(",", ":")).encode("utf-8")),
+                _b64url(json.dumps(payload, separators=(",", ":")).encode("utf-8")),
+            )
+        )
+        assertion = f"{signing_input}.{_sign_jwt_openssl(signing_input.encode('utf-8'), private_key)}"
+        body = urllib.parse.urlencode(
+            {
+                "assertion": assertion,
+                "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+            }
+        ).encode("utf-8")
+        request = urllib.request.Request(
+            token_uri,
+            data=body,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                data = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")[:500]
+            raise CloudFunctionAuthError(
+                f"ID token exchange failed ({exc.code}) for {email}: {detail}"
+            ) from exc
+        token = str((data or {}).get("id_token") or "").strip()
+        if not token:
+            raise CloudFunctionAuthError(
+                f"ID token exchange for {email} returned no id_token."
+            )
         return token
 
     @staticmethod
@@ -216,6 +452,8 @@ class CloudFunctionClient:
         max_retries: int = 3,
         model_unavailable_retries: int = DEFAULT_MODEL_UNAVAILABLE_RETRIES,
         api_key: str = "",
+        sa_key_file: str = "",
+        identity_audience: str = "",
     ) -> None:
         self.function_url = str(function_url).rstrip("/")
         if not self.function_url.startswith("http"):
@@ -229,7 +467,7 @@ class CloudFunctionClient:
         resolved = str(auth_mode or "auto").strip().lower()
         if resolved == "auto":
             resolved = "none" if scheme != "https" else "oidc"
-        if resolved not in {"oidc", "env", "none"}:
+        if resolved not in {"oidc", "env", "sa_key", "none"}:
             raise ValueError(f"Invalid auth_mode: {auth_mode!r}")
         if resolved == "none" and scheme == "https":
             print(
@@ -237,7 +475,11 @@ class CloudFunctionClient:
                 "unauthenticated requests will receive 403 unless deployed with --allow-unauthenticated."
             )
         self.auth_mode = resolved
-        self._auth = AuthTokenProvider(auth_mode=resolved)
+        self._auth = AuthTokenProvider(
+            auth_mode=resolved,
+            sa_key_file=sa_key_file or os.environ.get("GCP_SA_KEY_FILE", ""),
+            audience=identity_audience or self.function_url,
+        )
         self.last_meta: Dict[str, Any] = {}
         self.scoring_version_mismatch = False
 
@@ -291,7 +533,7 @@ class CloudFunctionClient:
                 if (
                     exc.code in (401, 403)
                     and not self.api_key
-                    and self.auth_mode == "oidc"
+                    and self.auth_mode in {"oidc", "sa_key"}
                     and not auth_refreshed
                 ):
                     auth_refreshed = True
