@@ -199,6 +199,19 @@ CHAPTER_SYSTEM_STYLES: Dict[str, str] = {
         "CRITICAL: Include the source's specific examples, names, and quotes - do not replace "
         "them with generic alternatives."
     ),
+    "plain_readable": (
+        "You write faithful nonfiction summaries at an approachable reading level. "
+        "Precision must survive, but the prose must be plain. "
+        "SENTENCE RULE: A sentence is one idea. Split any sentence with more than one clause "
+        "joined by and/but/so/because/while or by commas into separate sentences. "
+        "Target an average of 14 to 16 words per sentence. "
+        "WORD RULE: Prefer short, common words (use, get, keep, make) over longer formal ones "
+        "(utilize, obtain, maintain, facilitate). When a technical term is required, keep the "
+        "term but follow it with a short plain gloss. "
+        "FIDELITY: Keep the author's concepts, mechanisms, examples, names, numbers, quotes, "
+        "and caveats. Compression and simplification of STYLE, not of content. "
+        "Never invent facts the source does not state."
+    ),
 }
 
 
@@ -297,6 +310,16 @@ LENGTH_POLICIES: Dict[str, str] = {
         "You will be given an exact sentence budget S. Write EXACTLY S sentences total. Do not "
         "exceed this sentence count under any circumstance. Prefer the target word count; the "
         "sentence count is the hard constraint."
+    ),
+    "sentence_split_hard": (
+        "Sentence mechanics are a hard constraint, as strict as the word budget. The request gives "
+        "a sentence budget S computed at the target words-per-sentence. Write close to S sentences, "
+        "and never average more than the target words per sentence. Split every sentence that joins "
+        "two or more independent clauses with and/but/so/because/while or a comma. A sentence is one "
+        "idea: subject + verb + one clause. If a sentence exceeds the target length, cut it at the "
+        "next clause boundary and start a new sentence. Do the same split when a sentence reaches "
+        "three comma-separated parts. The result must read naturally as short, plain, complete "
+        "sentences, not truncated fragments."
     ),
 }
 
@@ -584,9 +607,27 @@ def _component_text(components: Dict[str, str], lookup_tables: Dict[str, Dict[st
 # from a visible-word target (see system-prompt-v2 spec §3.2).
 SENTENCE_WORDS = 18
 
+# Prompt-component key that overrides the per-sentence word budget (defaults to
+# SENTENCE_WORDS when absent). E.g. {"target_sentence_words": "14"} forces a
+# tighter sentence budget, which lowers average sentence length and the
+# Flesch-Kincaid reading grade of the output.
+TARGET_SENTENCE_WORDS_KEY = "target_sentence_words"
 
-def sentence_budget(target_words: int) -> int:
-    return max(1, int(round(max(1, target_words) / SENTENCE_WORDS)))
+
+def _words_per_sentence(stage: Any) -> int:
+    raw = str(((getattr(stage, "prompt_components", None) or {}).get(TARGET_SENTENCE_WORDS_KEY) or "")).strip()
+    if not raw:
+        return SENTENCE_WORDS
+    try:
+        value = int(raw)
+    except ValueError:
+        return SENTENCE_WORDS
+    return value if value >= 3 else SENTENCE_WORDS
+
+
+def sentence_budget(target_words: int, *, words_per_sentence: Optional[int] = None) -> int:
+    wps = words_per_sentence if words_per_sentence is not None else SENTENCE_WORDS
+    return max(1, int(round(max(1, target_words) / wps)))
 
 
 def chapter_component_tables() -> Dict[str, Dict[str, str]]:
@@ -624,6 +665,7 @@ COMPONENT_HELP: Dict[str, str] = {
     "terminology_policy": "Whether to keep the source's own terms verbatim or add glosses and plain-language explanations for jargon.",
     "anti_fluff_policy": "How aggressively to strip filler, hedging, rhetorical framing, and repetition that adds no information.",
     "length_policy": "How the word/sentence budget is communicated to the model: explicit first-pass budget, outline-then-fill, or a strict sentence target.",
+    "target_sentence_words": "Integer override for the assumed words-per-sentence used to derive the sentence budget (default 18). Lower values force shorter sentences and a lower reading grade.",
     "synthesis_policy": "Composer-only: whether to lead with the thesis then frameworks, or build a progressive argument that accumulates across chapters.",
 }
 
@@ -690,15 +732,16 @@ def render_chapter_user(
 ) -> str:
     stage = spec.chapter_stage
     low, high = visible_word_range(target_words, spec.length_control.tolerance_pct)
+    wps = _words_per_sentence(stage)
     if stage.prompt_components.get("length_policy"):
-        s_target = sentence_budget(target_words)
+        s_target = sentence_budget(target_words, words_per_sentence=wps)
         target_block = (
             f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
-            f"Target sentences: {s_target}\n(about {SENTENCE_WORDS} words each). "
+            f"Target sentences: {s_target}\n(about {wps} words each). "
             f"Try to land inside the word range on the first pass; do not exceed {s_target} sentences."
         )
     else:
-        s_target = sentence_budget(target_words)
+        s_target = sentence_budget(target_words, words_per_sentence=wps)
         target_block = (
             f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
             "Try to land inside the range on the first pass."
@@ -788,7 +831,7 @@ def render_repair_user(
             )
         if spec.chapter_stage.prompt_components.get("length_policy"):
             numeric_delta += (
-                f" The sentence budget is {sentence_budget(target_words)}; adjust sentence count as well "
+                f" The sentence budget is {sentence_budget(target_words, words_per_sentence=_words_per_sentence(spec.chapter_stage))}; adjust sentence count as well "
                 "as word count."
             )
         if direction == "less" and lc.repair_sentence_delete:
@@ -845,11 +888,12 @@ def render_composer_user(
 ) -> str:
     stage = spec.composer_stage
     low, high = visible_word_range(target_words, spec.length_control.tolerance_pct)
-    s_target = sentence_budget(target_words)
+    wps = _words_per_sentence(stage)
+    s_target = sentence_budget(target_words, words_per_sentence=wps)
     if stage.prompt_components.get("length_policy"):
         target_block = (
             f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
-            f"Target sentences: {s_target}\n(about {SENTENCE_WORDS} words each). "
+            f"Target sentences: {s_target}\n(about {wps} words each). "
             "Remove cross-chapter redundancy and keep the result dense."
         )
     else:
