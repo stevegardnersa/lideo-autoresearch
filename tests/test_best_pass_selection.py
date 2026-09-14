@@ -21,9 +21,38 @@ def summary_with_words(n: int) -> str:
     return "word " * n
 
 
-def make_spec(max_passes: int, tolerance_pct: float = 0.05, max_truncation_retries: Optional[int] = None):
+def make_spec(
+    max_passes: int,
+    tolerance_pct: float = 0.05,
+    max_truncation_retries: Optional[int] = None,
+    *,
+    repair_target_mode: str = "target",
+    repair_sentence_delete: bool = False,
+    repair_min_reduction_pct: float = 0.0,
+    early_stop_patience: int = 0,
+    early_stop_epsilon: int = 0,
+    stop_on_direction_flip: bool = False,
+    accept_within_hard_tolerance: bool = False,
+    hard_tolerance_pct: float = 0.10,
+):
+    """Build a spec with the length-control knobs explicitly pinned.
+
+    Defaults here disable the newer early-stop / hard-tolerance / low-target
+    behaviors so best-pass-selection tests exercise the legacy fixed-pass
+    loop. Individual tests opt into the new knobs."""
     base = candidate_spec.PROFILE_CANDIDATES["30m_deepseek-v4-flash_notthinking"]
-    kwargs = dict(max_passes=max_passes, tolerance_pct=tolerance_pct)
+    kwargs = dict(
+        max_passes=max_passes,
+        tolerance_pct=tolerance_pct,
+        hard_tolerance_pct=hard_tolerance_pct,
+        repair_target_mode=repair_target_mode,
+        repair_sentence_delete=repair_sentence_delete,
+        repair_min_reduction_pct=repair_min_reduction_pct,
+        early_stop_patience=early_stop_patience,
+        early_stop_epsilon=early_stop_epsilon,
+        stop_on_direction_flip=stop_on_direction_flip,
+        accept_within_hard_tolerance=accept_within_hard_tolerance,
+    )
     if max_truncation_retries is not None:
         kwargs["max_truncation_retries"] = max_truncation_retries
     return dataclasses.replace(
@@ -222,6 +251,59 @@ def test_distance_tie_keeps_earliest():
     print("test_distance_tie_keeps_earliest: OK")
 
 
+# ---- Early-stop / direction-flip / hard-tolerance acceptance -------------
+
+
+def test_early_stop_on_diminishing_returns():
+    """A repair pass that does not cut the error by >= epsilon stops the loop.
+
+    Pass 1 800w (dist 200); pass 2 700w (dist 300, worse). patience=1 -> stop
+    after pass 2 with the better pass 1 selected."""
+    spec = make_spec(max_passes=5, early_stop_patience=1, early_stop_epsilon=3)
+    client = ScriptedClient(result(800), result(700), result(600))
+    stage = run_stage(client=client, spec=spec, target_words=1000)
+    assert stage.passes_used == 2, stage.passes_used
+    assert len(client.calls) == 2
+    assert visible_word_count(stage.summary_md) == 800
+    print("test_early_stop_on_diminishing_returns: OK")
+
+
+def test_early_stop_resets_on_real_improvement():
+    """Improvement >= epsilon resets the stall counter; loop continues to budget."""
+    spec = make_spec(max_passes=3, early_stop_patience=1, early_stop_epsilon=3)
+    client = ScriptedClient(result(800), result(920), result(1300))
+    stage = run_stage(client=client, spec=spec, target_words=1000)
+    assert stage.passes_used == 3, stage.passes_used
+    assert len(client.calls) == 3
+    assert visible_word_count(stage.summary_md) == 920
+    print("test_early_stop_resets_on_real_improvement: OK")
+
+
+def test_stop_on_direction_flip():
+    """Pass 1 under target (more), pass 2 overshoots above target (less) -> flip
+    detected and the loop stops before oscillating."""
+    spec = make_spec(max_passes=5, stop_on_direction_flip=True)
+    client = ScriptedClient(result(800), result(1250), result(900))
+    stage = run_stage(client=client, spec=spec, target_words=1000)
+    assert stage.passes_used == 2, stage.passes_used
+    assert len(client.calls) == 2
+    assert visible_word_count(stage.summary_md) == 800
+    print("test_stop_on_direction_flip: OK")
+
+
+def test_accept_within_hard_tolerance():
+    """A pass outside the soft range but inside the hard range is accepted
+    immediately (no further passes generated/cost)."""
+    spec = make_spec(max_passes=5, tolerance_pct=0.05, hard_tolerance_pct=0.20,
+                     accept_within_hard_tolerance=True)
+    client = ScriptedClient(result(880), result(1000))
+    stage = run_stage(client=client, spec=spec, target_words=1000)
+    assert stage.passes_used == 1, stage.passes_used
+    assert len(client.calls) == 1, "hard-tolerance acceptance must skip repair"
+    assert visible_word_count(stage.summary_md) == 880
+    print("test_accept_within_hard_tolerance: OK")
+
+
 # ---- JSON recovery ladder (client) --------------------------------------
 
 
@@ -410,6 +492,10 @@ def main():
         test_resume_checkpoint_keeps_updating_best,
         test_single_pass_in_range_unchanged,
         test_distance_tie_keeps_earliest,
+        test_early_stop_on_diminishing_returns,
+        test_early_stop_resets_on_real_improvement,
+        test_stop_on_direction_flip,
+        test_accept_within_hard_tolerance,
         test_recover_json_ladder_exact_and_fenced,
         test_recover_json_ladder_escaped_control_chars,
         test_recover_json_ladder_truncate_obj,

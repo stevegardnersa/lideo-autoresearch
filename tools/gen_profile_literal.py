@@ -114,7 +114,17 @@ def build_candidates_dict(profiles: dict) -> str:
         lines.append(f'            max_passes={lc.get("max_passes", 5)}, '
                      f'tolerance_pct={lc.get("tolerance_pct", 0.05)}, '
                      f'hard_tolerance_pct={lc.get("hard_tolerance_pct", 0.10)}, '
-                     f'repair_strategy="{lc.get("repair_strategy", "edit_existing")}"')
+                     f'repair_strategy="{lc.get("repair_strategy", "edit_existing")}",')
+        lines.append(f'            repair_more_prompt_id="{lc.get("repair_more_prompt_id", "expand_missing_detail")}", '
+                     f'repair_less_prompt_id="{lc.get("repair_less_prompt_id", "shrink_dedup_first")}", '
+                     f'max_truncation_retries={lc.get("max_truncation_retries", 1)},')
+        lines.append(f'            repair_target_mode="{lc.get("repair_target_mode", "target")}", '
+                     f'repair_sentence_delete={py_literal(lc.get("repair_sentence_delete", False))}, '
+                     f'repair_min_reduction_pct={lc.get("repair_min_reduction_pct", 0.0)},')
+        lines.append(f'            early_stop_patience={lc.get("early_stop_patience", 0)}, '
+                     f'early_stop_epsilon={lc.get("early_stop_epsilon", 0)}, '
+                     f'stop_on_direction_flip={py_literal(lc.get("stop_on_direction_flip", False))}, '
+                     f'accept_within_hard_tolerance={py_literal(lc.get("accept_within_hard_tolerance", False))}')
         lines.append(f'        ),')
         lines.append(f'        budget_allocator=BudgetAllocatorConfig(')
         lines.append(f'            words_per_minute={ba.get("words_per_minute", 200)}, '

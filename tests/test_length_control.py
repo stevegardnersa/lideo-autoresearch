@@ -18,6 +18,7 @@ x1.4, +200 overhead, /(1-effort_fraction), ceil, clamp. The §4.3 table in
 
 import dataclasses
 import json
+import math
 import re
 import sys
 import threading
@@ -273,10 +274,13 @@ def test_render_repair_user_delta_block():
         current_word_count=2267,
     )
     assert "Current summary is 2267 visible words" in less_prompt, less_prompt
-    cut = max(0, 2267 - high)
-    assert f"Cut approximately {cut} words" in less_prompt, less_prompt
-    assert f"[{low}, {high}]" in less_prompt, less_prompt
+    # repair_target_mode == "low": aim at the low edge, never below-window.
+    cut = max(2267 - low, math.ceil(2267 * spec.length_control.repair_min_reduction_pct))
+    assert f"Delete at least {cut} words" in less_prompt, less_prompt
+    assert f"land at or below {low}" in less_prompt, less_prompt
+    assert "strictly shorter than 2267 visible words" in less_prompt
     assert "Count the visible words of your output before finishing" in less_prompt
+    assert "Prefer deleting whole sentences" in less_prompt
 
     # direction="more": current 900 (under), add = low - 900.
     more_prompt = candidate_spec.render_repair_user(
@@ -300,7 +304,7 @@ def test_render_repair_user_delta_block():
         direction="less",
     )
     assert "Current summary is" not in legacy
-    assert "Cut approximately" not in legacy
+    assert "Delete at least" not in legacy
     assert "Target visible words: 1288." in legacy
     print("test_render_repair_user_delta_block: OK")
 
@@ -324,8 +328,11 @@ def test_render_composer_repair_user_delta_block():
         current_word_count=2267,
     )
     assert "Current summary is 2267 visible words" in less_prompt
-    assert f"Cut approximately {max(0, 2267 - high)} words" in less_prompt
-    assert f"[{low}, {high}]" in less_prompt
+    cut = max(2267 - low, math.ceil(2267 * spec.length_control.repair_min_reduction_pct))
+    assert f"Delete at least {cut} words" in less_prompt
+    assert f"land at or below {low}" in less_prompt
+    assert "strictly shorter than 2267 visible words" in less_prompt
+    assert "Prefer deleting whole sentences" in less_prompt
 
     more_prompt = rc.render_composer_repair_user(
         candidate_spec,
@@ -407,7 +414,9 @@ def test_stage_passes_carry_target_aware_cap_and_delta():
     low, high = candidate_spec.visible_word_range(target, spec.length_control.tolerance_pct)
     repair_prompt = request_log[1]["user_prompt"]
     assert "Current summary is 500 visible words" in repair_prompt, repair_prompt
-    assert f"Cut approximately {500 - high} words" in repair_prompt, repair_prompt
+    cut = max(500 - low, math.ceil(500 * spec.length_control.repair_min_reduction_pct))
+    assert f"Delete at least {cut} words" in repair_prompt, repair_prompt
+    assert f"land at or below {low}" in repair_prompt, repair_prompt
     # Final stage run used the in-range summary.
     assert rc.visible_word_count(stage_run.summary_md) == 350
     assert stage_run.passes_used == 2

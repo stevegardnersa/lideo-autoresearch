@@ -23,6 +23,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -1014,14 +1015,24 @@ def render_composer_repair_user(
     else:
         policy = repair_less_policies.get(spec.length_control.repair_less_prompt_id, "Shorten by removing repetition.")
     format_instructions = getattr(candidate_module, "FORMAT_INSTRUCTIONS", {})[spec.composer_stage.format_mode]
+    lc = spec.length_control
     numeric_delta = ""
     if current_word_count is not None:
         if direction == "less":
+            ceiling = low if lc.repair_target_mode == "low" else high
+            gap = max(0, current_word_count - ceiling)
+            min_cut = math.ceil(current_word_count * lc.repair_min_reduction_pct) if lc.repair_min_reduction_pct > 0 else 0
+            cut = max(gap, min_cut)
+            landing = (
+                f"land at or below {low}" if lc.repair_target_mode == "low"
+                else f"land inside [{low}, {high}]"
+            )
             numeric_delta = (
                 f"Current summary is {current_word_count} visible words; target is {target_words} "
-                f"(range {low}-{high}). Cut approximately {max(0, current_word_count - high)} words so "
-                f"the final markdown lands inside [{low}, {high}]. Count the visible words of your output "
-                "before finishing and adjust if needed."
+                f"(range {low}-{high}). Delete at least {cut} words so the final markdown does {landing}. "
+                f"Your output MUST be strictly shorter than {current_word_count} visible words; a revision "
+                "that is not shorter is rejected. Count the visible words of your output before finishing "
+                "and delete more if needed."
             )
         else:
             numeric_delta = (
@@ -1034,6 +1045,11 @@ def render_composer_repair_user(
             target_sentences = max(1, int(round(max(1, target_words) / 18)))
             numeric_delta += (
                 f" The sentence budget is {target_sentences}; adjust sentence count as well as word count."
+            )
+        if direction == "less" and lc.repair_sentence_delete:
+            numeric_delta += (
+                " Prefer deleting whole sentences, lowest-value first, over rewording; do not add new "
+                "sentences."
             )
     blocks = [
         "Revise the whole-book summary to hit the target length more accurately.",
@@ -1308,12 +1324,30 @@ def run_length_controlled_stage(
         update_best(summary_md)
         emit_checkpoint()
 
-    while passes_used < spec.length_control.max_passes:
+    lc = spec.length_control
+    hard_low, hard_high = getattr(candidate_module, "visible_word_range")(target_words, lc.hard_tolerance_pct)
+    last_words: Optional[int] = None
+    last_direction: Optional[str] = None
+    stalled_passes = 0
+    while passes_used < lc.max_passes:
         words = visible_word_count(summary_md)
         if low <= words <= high:
             break
+        if lc.accept_within_hard_tolerance and hard_low <= words <= hard_high:
+            break
         direction = "more" if words < low else "less"
-        if spec.length_control.repair_strategy == "regenerate_from_source":
+        # Direction flip: we overshot past the target into the other repair mode.
+        if lc.stop_on_direction_flip and last_direction is not None and direction != last_direction:
+            break
+        # Diminishing returns: the last pass barely (or did not) reduce error.
+        if last_words is not None and lc.early_stop_patience > 0:
+            if abs(words - target_words) <= abs(last_words - target_words) - lc.early_stop_epsilon:
+                stalled_passes = 0
+            else:
+                stalled_passes += 1
+                if stalled_passes >= lc.early_stop_patience:
+                    break
+        if lc.repair_strategy == "regenerate_from_source":
             repair_user_prompt = initial_user_prompt
             current_for_mock = ""
         else:
@@ -1349,6 +1383,8 @@ def run_length_controlled_stage(
         if not first_pass_summary_md:
             first_pass_summary_md = summary_md
         update_best(summary_md)
+        last_words = words
+        last_direction = direction
         emit_checkpoint()
 
     return StageRun(

@@ -21,6 +21,7 @@ policy, and chapter budget allocation.
 
 from __future__ import annotations
 
+import math
 from dataclasses import asdict, dataclass, field
 from typing import Dict, List, Literal, Optional, Sequence, Tuple
 
@@ -114,6 +115,20 @@ class LengthControlConfig:
     repair_more_prompt_id: str = "expand_missing_detail"
     repair_less_prompt_id: str = "shrink_dedup_first"
     max_truncation_retries: int = 1
+    # Repair targeting: "target" aims at the target word count, "low" aims at the
+    # low edge of the accepted range so model under-editing still lands in range.
+    repair_target_mode: str = "target"
+    # Delete whole sentences (lowest-value first) instead of only rewording.
+    repair_sentence_delete: bool = False
+    # Demand a proportional cut so the model does not make a token 1-word edit.
+    repair_min_reduction_pct: float = 0.0
+    # Stop after this many passes with no improvement >= early_stop_epsilon words.
+    early_stop_patience: int = 0
+    early_stop_epsilon: int = 0
+    # Stop when the repair direction flips (over -> under or vice versa).
+    stop_on_direction_flip: bool = False
+    # Accept a pass outside the soft range if inside hard_tolerance_pct.
+    accept_within_hard_tolerance: bool = False
 
 
 @dataclass
@@ -330,6 +345,14 @@ REPAIR_LESS_POLICIES: Dict[str, str] = {
     "shrink_merge_sections": (
         "The summary is too long. Merge overlapping sections, compress repeated definitions, and keep "
         "only the most explanatory examples."
+    ),
+    "shrink_sentence_delete": (
+        "The summary is too long. DELETE whole sentences, lowest-value first, until it is at or below "
+        "the low end of the acceptable range. Work in this order: (1) full sentences that only restate "
+        "a point already made, (2) sentences that set up or frame rather than inform, (3) sentences "
+        "whose example is decorative, then (4) any remaining sentence you can compress without losing a "
+        "distinct concept, mechanism, or caveat. Remove sentence by sentence; do not merely reword. A "
+        "revision that is not strictly shorter than the current summary is rejected."
     ),
 }
 
@@ -737,14 +760,24 @@ def render_repair_user(
         else REPAIR_LESS_POLICIES[spec.length_control.repair_less_prompt_id]
     )
     low, high = visible_word_range(target_words, spec.length_control.tolerance_pct)
+    lc = spec.length_control
     numeric_delta = ""
     if current_word_count is not None:
         if direction == "less":
+            ceiling = low if lc.repair_target_mode == "low" else high
+            gap = max(0, current_word_count - ceiling)
+            min_cut = math.ceil(current_word_count * lc.repair_min_reduction_pct) if lc.repair_min_reduction_pct > 0 else 0
+            cut = max(gap, min_cut)
+            landing = (
+                f"land at or below {low}" if lc.repair_target_mode == "low"
+                else f"land inside [{low}, {high}]"
+            )
             numeric_delta = (
                 f"Current summary is {current_word_count} visible words; target is {target_words} "
-                f"(range {low}-{high}). Cut approximately {max(0, current_word_count - high)} words so "
-                f"the final markdown lands inside [{low}, {high}]. Count the visible words of your output "
-                "before finishing and adjust if needed."
+                f"(range {low}-{high}). Delete at least {cut} words so the final markdown does {landing}. "
+                f"Your output MUST be strictly shorter than {current_word_count} visible words; a revision "
+                "that is not shorter is rejected. Count the visible words of your output before finishing "
+                "and delete more if needed."
             )
         else:
             numeric_delta = (
@@ -757,6 +790,11 @@ def render_repair_user(
             numeric_delta += (
                 f" The sentence budget is {sentence_budget(target_words)}; adjust sentence count as well "
                 "as word count."
+            )
+        if direction == "less" and lc.repair_sentence_delete:
+            numeric_delta += (
+                " Prefer deleting whole sentences, lowest-value first, over rewording; do not add new "
+                "sentences."
             )
     return "\n\n".join(
         block
@@ -913,7 +951,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -929,7 +970,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -945,7 +989,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -961,7 +1008,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -977,7 +1027,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -993,7 +1046,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1009,7 +1065,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1025,7 +1084,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1041,7 +1103,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1057,7 +1122,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1073,7 +1141,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="google/gemini-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="google/gemini-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1089,7 +1160,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="google/gemini-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="google/gemini-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1105,7 +1179,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
         composer_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1121,7 +1198,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1137,7 +1217,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1153,7 +1236,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1169,7 +1255,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1185,7 +1274,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1201,7 +1293,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-5.6-luna", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-5.6-luna", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1217,7 +1312,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-5.6-luna", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-5.6-luna", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1233,7 +1331,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-5.6-luna", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-5.6-luna", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1249,7 +1350,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1265,7 +1369,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1281,7 +1388,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1297,7 +1407,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1313,7 +1426,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1329,7 +1445,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1345,7 +1464,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1361,7 +1483,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1377,7 +1502,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1393,7 +1521,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1409,7 +1540,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="meta/muse-glimmer-30b", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         composer_stage=StageConfig(model="meta/muse-glimmer-30b", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1425,7 +1559,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="meta/muse-glimmer-30b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="meta/muse-glimmer-30b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1441,7 +1578,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1457,7 +1597,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1473,7 +1616,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         composer_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1489,7 +1635,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
         composer_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1505,7 +1654,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="nvidia/nemotron-3.5-lightning", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1521,7 +1673,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1537,7 +1692,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1553,7 +1711,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1569,7 +1730,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1585,7 +1749,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="qwen/qwen3.7-max", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="qwen/qwen3.7-max", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1601,7 +1768,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="qwen/qwen3.7-max", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="qwen/qwen3.7-max", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1617,7 +1787,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1633,7 +1806,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1649,7 +1825,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         composer_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1665,7 +1844,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1681,7 +1863,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="deepseek/deepseek-v4-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1697,7 +1882,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1713,7 +1901,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="deepseek/deepseek-v4-pro", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1729,7 +1920,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1745,7 +1939,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="google/gemini-3-flash-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1761,7 +1958,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1777,7 +1977,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="google/gemini-3.1-flash-lite-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1793,7 +1996,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1809,7 +2015,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="google/gemini-3.1-pro-preview", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1825,7 +2034,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="z-ai/glm-5.3-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1841,7 +2053,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1857,7 +2072,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-5.4-mini", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1873,7 +2091,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1889,7 +2110,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-5.4-nano", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1905,7 +2129,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-5.6-luna", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-5.6-luna", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1921,7 +2148,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-5.6-luna", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-5.6-luna", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1937,7 +2167,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-5.6-luna", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-5.6-luna", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1953,7 +2186,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1969,7 +2205,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="openai/gpt-oss-120b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -1985,7 +2224,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2001,7 +2243,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="x-ai/grok-4.3", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2017,7 +2262,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2033,7 +2281,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="xiaomi/mimo-v2-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2049,7 +2300,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2065,7 +2319,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="minimax/minimax-m2.5", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2081,7 +2338,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2097,7 +2357,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="minimax/minimax-m2.7", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2113,7 +2376,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="meta/muse-glimmer-30b", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         composer_stage=StageConfig(model="meta/muse-glimmer-30b", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2129,7 +2395,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="meta/muse-glimmer-30b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="meta/muse-glimmer-30b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2145,7 +2414,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2161,7 +2433,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="nvidia/nemotron-3-super-120b-a12b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2177,7 +2452,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2193,7 +2471,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="qwen/qwen3.6-35b-a3b", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2209,7 +2490,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2225,7 +2509,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="qwen/qwen3.6-plus", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2241,7 +2528,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         composer_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2257,7 +2547,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         composer_stage=StageConfig(model="stepfun/step-3.5-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": True}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
@@ -2273,7 +2566,10 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         chapter_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         composer_stage=StageConfig(model="stepfun/step-3.7-flash", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
         length_control=LengthControlConfig(
-            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.15, repair_strategy="edit_existing"
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
         ),
         budget_allocator=BudgetAllocatorConfig(
             words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
