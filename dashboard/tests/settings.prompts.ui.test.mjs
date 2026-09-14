@@ -13,12 +13,27 @@ const OPTIONS = {
     chapter: ['system_style', 'detail_policy', 'length_policy'],
     composer: ['system_style', 'length_policy'],
   },
+  placeholders: {
+    chapter: { system: ['book_title', 'components'], user: ['book_title', 'target_words', 'source_md'] },
+    composer: { system: ['book_title', 'components'], user: ['book_title', 'chapter_summaries'] },
+  },
+  component_text: {
+    chapter: { system_style: { dense_faithful: 'DENSE LIBRARY TEXT' }, detail_policy: {}, length_policy: {} },
+    composer: { system_style: {}, length_policy: {} },
+  },
+  models: ['deepseek/deepseek-v4-flash'],
+  dimension_help: {
+    system_style: 'Overall voice and identity of the summarizer.',
+    detail_policy: 'How much explanatory depth to keep.',
+    length_policy: 'How the word/sentence budget is communicated.',
+  },
+  profiles_by_model: { 'deepseek/deepseek-v4-flash': ['30m_deepseek-v4-flash_thinking'] },
 }
 
 const VERSIONS = [
-  { id: 'chapter-p1', stage: 'chapter', label: 'v1 baseline (profile defaults)', components: {}, system_prompt_fingerprint: '2906d9c5015f7f21', created_at: '2026-09-12T00:00:00Z' },
-  { id: 'chapter-p2', stage: 'chapter', label: 'v2 target-aware (default)', components: { length_policy: 'explicit_budget_first' }, system_prompt_fingerprint: 'ce79c4d35f92de9a', created_at: '2026-09-12T00:00:00Z' },
-  { id: 'composer-p1', stage: 'composer', label: 'v1 baseline (profile defaults)', components: {}, system_prompt_fingerprint: '95516b89af43c275', created_at: '2026-09-12T00:00:00Z' },
+  { id: 'chapter-p1', stage: 'chapter', label: 'v1 baseline (profile defaults)', scope: { kind: 'general' }, components: {}, system_prompt_fingerprint: '2906d9c5015f7f21', created_at: '2026-09-12T00:00:00Z' },
+  { id: 'chapter-p2', stage: 'chapter', label: 'v2 target-aware (default)', scope: { kind: 'general' }, components: { length_policy: 'explicit_budget_first' }, system_prompt_fingerprint: 'ce79c4d35f92de9a', created_at: '2026-09-12T00:00:00Z' },
+  { id: 'composer-p1', stage: 'composer', label: 'v1 baseline (profile defaults)', scope: { kind: 'general' }, components: {}, system_prompt_fingerprint: '95516b89af43c275', created_at: '2026-09-12T00:00:00Z' },
 ]
 
 function json(payload, status = 200) {
@@ -31,25 +46,45 @@ function json(payload, status = 200) {
 }
 
 function makeHarness() {
-  const state = { calls: [], listStatus: 200 }
+  const state = { calls: [], listStatus: 200, lastCreate: null, lastRevise: null, lastSlot: null, promptCalls: 0 }
   const dom = new JSDOM(`<!doctype html><html><head></head><body>
     <div class="page-header"><div class="header-right"><button data-settings-toggle>gear</button></div></div>
   </body></html>`, { url: 'http://localhost/' })
   const { window } = dom
+  window.confirm = () => true
   window.fetch = async (url, opts = {}) => {
     const method = opts.method || 'GET'
     state.calls.push({ url, method, body: opts.body ? JSON.parse(opts.body) : undefined })
     if (url === '/api/prompts/options') return json(OPTIONS)
+    if (url === '/api/prompts/preview-draft' && method === 'POST') {
+      return json({ ok: true, system_prompt: 'SYS PREVIEW', user_prompt: 'USER PREVIEW', fingerprint: 'fp-1', warnings: [], placeholders: { system: [], user: [] } })
+    }
+    if (url === '/api/prompts' && method === 'POST') {
+      state.lastCreate = state.calls[state.calls.length - 1].body
+      return json({ ok: true, version: { id: 'chapter-p9', stage: 'chapter', label: 'new' } }, 201)
+    }
+    if (/\/api\/prompts\/[^/]+\/revise$/.test(url) && method === 'POST') {
+      state.lastRevise = state.calls[state.calls.length - 1].body
+      return json({ ok: true, version: { id: 'chapter-p10', stage: 'chapter', label: 'edited' } }, 201)
+    }
+    if (url === '/api/prompts/slots' && method === 'POST') {
+      state.lastSlot = state.calls[state.calls.length - 1].body
+      return json({ ok: true, slots: {} })
+    }
     if (url === '/api/prompts' && method === 'GET') {
       if (state.listStatus !== 200) return json({ ok: false, error: 'boom' }, state.listStatus)
       return json({
         ok: true,
         registry_sha: 'sha-1',
         versions: VERSIONS,
-        slots: { chapter: { local: 'chapter-p1', production: 'chapter-p1' }, composer: { local: 'composer-p1', production: 'composer-p1' } },
+        models: OPTIONS.models,
+        slots: {
+          chapter: { general: { local: 'chapter-p1', production: 'chapter-p1' }, models: {} },
+          composer: { general: { local: 'composer-p1', production: 'composer-p1' }, models: {} },
+        },
         production_status: [
-          { stage: 'chapter', selected_id: 'chapter-p1', reported_id: '', reported_fingerprint: '', reported_at: '', in_sync: false, never_reported: true },
-          { stage: 'composer', selected_id: 'composer-p1', reported_id: '', reported_fingerprint: '', reported_at: '', in_sync: false, never_reported: true },
+          { stage: 'chapter', model: '', selected_id: 'chapter-p1', reported_id: '', reported_fingerprint: '', reported_at: '', in_sync: false, never_reported: true },
+          { stage: 'composer', model: '', selected_id: 'composer-p1', reported_id: '', reported_fingerprint: '', reported_at: '', in_sync: false, never_reported: true },
         ],
       })
     }
@@ -127,4 +162,168 @@ test('Prompts section shows an error with Retry when the API fails', async () =>
   const panel = h.doc.getElementById('promptsPanel')
   assert.match(panel.textContent, /Failed to load prompts/)
   assert.ok(h.doc.getElementById('promptsRetry'))
+})
+
+const flush = async () => { await new Promise(r => setImmediate(r)); await new Promise(r => setImmediate(r)) }
+const wait = (ms) => new Promise(r => setTimeout(r, ms))
+
+function setValue(doc, id, value) {
+  const el = doc.getElementById(id)
+  el.value = value
+  el.dispatchEvent(new h.window.Event('input', { bubbles: true }))
+  el.dispatchEvent(new h.window.Event('change', { bubbles: true }))
+}
+
+test('+ New version opens the dialog and previews a server-rendered draft', async () => {
+  await openPrompts()
+  const btn = h.doc.querySelector('[data-action="new-version"]')
+  assert.ok(btn, '+ New version button exists')
+  h.click(btn)
+  await flush()
+  await wait(450)
+  const overlay = h.doc.getElementById('promptVersionOverlay')
+  assert.equal(overlay.classList.contains('cm-hidden'), false)
+  assert.equal(h.doc.getElementById('pvSystemPreview').textContent, 'SYS PREVIEW')
+  assert.equal(h.doc.getElementById('pvUserPreview').textContent, 'USER PREVIEW')
+  setValue(h.doc, 'pvLabel', 'my experiment')
+  await flush()
+  h.click(h.doc.getElementById('pvSave'))
+  await flush()
+  assert.ok(h.state.lastCreate, 'create called')
+  assert.equal(h.state.lastCreate.label, 'my experiment')
+  assert.equal(overlay.classList.contains('cm-hidden'), true)
+  assert.match(h.doc.getElementById('promptsBanner').textContent, /Created chapter-p9/)
+})
+
+test('Edit is copy-on-write and locks the stage', async () => {
+  await openPrompts()
+  h.click(h.doc.querySelector('[data-action="edit"][data-id="chapter-p2"]'))
+  await flush()
+  await wait(450)
+  assert.equal(h.doc.getElementById('pvStage').disabled, true)
+  assert.equal(h.doc.getElementById('pvLabel').value, 'v2 target-aware (default)')
+  h.click(h.doc.getElementById('pvSave'))
+  await flush()
+  assert.ok(h.state.lastRevise, 'revise called')
+  assert.equal(h.state.lastRevise.label, 'v2 target-aware (default)')
+  assert.equal(h.state.lastCreate, null, 'create not used for an edit')
+})
+
+test('Clone opens the dialog without window.prompt', async () => {
+  let prompted = false
+  h.window.prompt = () => { prompted = true; return 'x' }
+  await openPrompts()
+  h.click(h.doc.querySelector('[data-action="clone"][data-id="chapter-p2"]'))
+  await flush()
+  assert.equal(prompted, false)
+  assert.equal(h.doc.getElementById('promptVersionOverlay').classList.contains('cm-hidden'), false)
+  assert.match(h.doc.getElementById('pvLabel').value, /\(copy\)/)
+})
+
+test('specific-model scope posts a scoped version', async () => {
+  await openPrompts()
+  h.click(h.doc.querySelector('[data-action="new-version"]'))
+  await flush()
+  await wait(450)
+  const kind = h.doc.getElementById('pvScopeKind')
+  kind.value = 'model'
+  kind.dispatchEvent(new h.window.Event('change', { bubbles: true }))
+  await flush()
+  assert.equal(h.doc.getElementById('pvScopeExtra').classList.contains('cm-hidden'), false)
+  assert.ok(h.doc.querySelector('#pvScopeModel option[value="deepseek/deepseek-v4-flash"]'))
+  h.doc.getElementById('pvScopeModel').value = 'deepseek/deepseek-v4-flash'
+  setValue(h.doc, 'pvLabel', 'flash tuned')
+  h.click(h.doc.getElementById('pvSave'))
+  await flush()
+  assert.deepEqual(h.state.lastCreate.scope, { kind: 'model', model: 'deepseek/deepseek-v4-flash' })
+})
+
+test('client validation blocks a chapter user template without source_md', async () => {
+  await openPrompts()
+  h.click(h.doc.querySelector('[data-action="new-version"]'))
+  await flush()
+  await wait(450)
+  setValue(h.doc, 'pvLabel', 'bad template')
+  setValue(h.doc, 'pvUserTemplate', '{{book_title}} only')
+  await flush()
+  h.click(h.doc.getElementById('pvSave'))
+  await flush()
+  assert.equal(h.state.lastCreate, null)
+  const err = h.doc.getElementById('pvUserTemplateError')
+  assert.equal(err.classList.contains('cm-hidden'), false)
+  assert.match(err.textContent, /source_md/)
+})
+
+test('Esc closes the version dialog but keeps settings open', async () => {
+  h.click(h.doc.querySelector('[data-settings-toggle]'))
+  await flush()
+  assert.equal(h.doc.getElementById('settingsOverlay').classList.contains('cm-hidden'), false)
+  await openPrompts()
+  h.click(h.doc.querySelector('[data-action="new-version"]'))
+  await flush()
+  const overlay = h.doc.getElementById('promptVersionOverlay')
+  assert.equal(overlay.classList.contains('cm-hidden'), false)
+  h.doc.dispatchEvent(new h.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+  await flush()
+  assert.equal(overlay.classList.contains('cm-hidden'), true)
+  assert.equal(h.doc.getElementById('settingsOverlay').classList.contains('cm-hidden'), false)
+})
+
+test('component dimensions render help tooltips', async () => {
+  await openPrompts()
+  h.click(h.doc.querySelector('[data-action="new-version"]'))
+  await flush()
+  await wait(450)
+  const field = h.doc.querySelector('#pvComponents .field[data-dim="system_style"]')
+  assert.ok(field, 'system_style field rendered')
+  const help = field.querySelector('.prompt-help')
+  assert.ok(help, 'help icon rendered')
+  assert.equal(help.getAttribute('title'), 'Overall voice and identity of the summarizer.')
+  assert.match(help.getAttribute('aria-label'), /voice and identity/)
+  const detail = h.doc.querySelector('#pvComponents .field[data-dim="detail_policy"] .prompt-help')
+  assert.equal(detail.getAttribute('title'), 'How much explanatory depth to keep.')
+})
+
+test('closing an untouched version dialog does not prompt to discard', async () => {
+  let confirmCalls = 0
+  h.window.confirm = () => { confirmCalls += 1; return true }
+  await openPrompts()
+  h.click(h.doc.querySelector('[data-action="new-version"]'))
+  await flush()
+  await wait(450)
+  h.click(h.doc.getElementById('pvCancel'))
+  await flush()
+  assert.equal(confirmCalls, 0, 'no discard confirm when nothing changed')
+  assert.equal(h.doc.getElementById('promptVersionOverlay').classList.contains('cm-hidden'), true)
+})
+
+test('closing an edited version dialog prompts to discard', async () => {
+  let confirmCalls = 0
+  h.window.confirm = () => { confirmCalls += 1; return true }
+  await openPrompts()
+  h.click(h.doc.querySelector('[data-action="new-version"]'))
+  await flush()
+  await wait(450)
+  setValue(h.doc, 'pvLabel', 'changed this')
+  await flush()
+  h.click(h.doc.getElementById('pvCancel'))
+  await flush()
+  assert.equal(confirmCalls, 1, 'discard confirm shown once a field changed')
+})
+
+test('reverting a field back to its original value does not prompt to discard', async () => {
+  let confirmCalls = 0
+  h.window.confirm = () => { confirmCalls += 1; return true }
+  await openPrompts()
+  h.click(h.doc.querySelector('[data-action="new-version"]'))
+  await flush()
+  await wait(450)
+  const original = h.doc.getElementById('pvLabel').value
+  setValue(h.doc, 'pvLabel', 'temporary edit')
+  await flush()
+  setValue(h.doc, 'pvLabel', original)
+  await flush()
+  h.click(h.doc.getElementById('pvCancel'))
+  await flush()
+  assert.equal(confirmCalls, 0, 'no discard confirm after reverting the only change')
 })

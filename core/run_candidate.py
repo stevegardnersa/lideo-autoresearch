@@ -888,6 +888,28 @@ def _effective_slot(args: argparse.Namespace, client) -> str:
     return "production" if _is_cloud_function(client) else "local"
 
 
+def _prompt_source_label(selection: Optional[Mapping[str, Any]]) -> str:
+    source = str((selection or {}).get("source") or "")
+    if source in ("registry_model", "registry_general"):
+        return "registry"
+    if source in ("override", "permutation"):
+        return source
+    return "request"
+
+
+def _permutation_override(profile: str, stage: str) -> Dict[str, str]:
+    if not profile:
+        return {}
+    try:
+        from autoresearch.permutation_store import get_prompt_override
+    except Exception:
+        return {}
+    try:
+        return dict(get_prompt_override(profile, stage) or {})
+    except Exception:
+        return {}
+
+
 def _resolve_prompt_versions(args: argparse.Namespace, spec, candidate_module, client) -> Dict[str, Any]:
     """Resolve per-stage prompt versions and apply overlays to ``spec``.
 
@@ -919,27 +941,39 @@ def _resolve_prompt_versions(args: argparse.Namespace, spec, candidate_module, c
                 requested = explicit if explicit_version.get("stage") == stage_kind else ""
             elif stage_override == stage_kind:
                 requested = explicit
-        try:
-            version_id = prompt_registry.resolve_version_id(
-                stage=stage_kind, prompt_version=requested or None, slot=slot, path=registry_file
-            )
-        except prompt_registry.UnknownVersionError as exc:
-            allowed = ", ".join(exc.allowed) or "(none)"
-            raise SystemExit(
-                f"Unknown prompt version {requested!r} for stage {stage_kind!r} "
-                f"(registry {_display_registry_path(registry_file)}). Known versions: {allowed}"
-            )
         stage_obj = getattr(spec, f"{stage_kind}_stage", None)
+        model = str(getattr(stage_obj, "model", "") or "")
+        profile = str(getattr(spec, "profile", "") or "")
+        if not requested and _permutation_override(profile, stage_kind):
+            version_id, source = None, "permutation"
+        else:
+            try:
+                version_id, source = prompt_registry.resolve_version(
+                    stage=stage_kind, prompt_version=requested or None, slot=slot,
+                    model=model or None, profile=profile or None, path=registry_file,
+                )
+            except prompt_registry.UnknownVersionError as exc:
+                allowed = ", ".join(exc.allowed) or "(none)"
+                raise SystemExit(
+                    f"Unknown prompt version {requested!r} for stage {stage_kind!r} "
+                    f"(registry {_display_registry_path(registry_file)}). Known versions: {allowed}"
+                )
         components = prompt_registry.apply_overlay(
             spec, stage_kind=stage_kind, prompt_version=version_id, path=registry_file
         )
         version = prompt_registry.get_version(version_id, registry_file) if version_id else None
-        has_overlay = bool(version and (version.get("components") or {}))
+        has_overlay = bool(version and (
+            version.get("components") or version.get("component_text")
+            or version.get("system_template") or version.get("user_template")
+        ))
         render = getattr(candidate_module, f"render_{stage_kind}_system")
         system_text = render(spec)
         selection[stage_kind] = {
             "version": version_id or "",
             "slot": slot,
+            "source": source,
+            "model": model,
+            "profile": profile,
             "has_overlay": has_overlay,
             "fingerprint": prompt_registry.fingerprint(system_text),
             "components": components,
@@ -2707,7 +2741,7 @@ def _run_single(
             spec,
             prompt_version=str((prompt_selection.get("chapter") or {}).get("version") or ""),
             prompt_fingerprint=str((prompt_selection.get("chapter") or {}).get("fingerprint") or ""),
-            prompt_source="registry" if (prompt_selection.get("chapter") or {}).get("has_overlay") else "request",
+            prompt_source=_prompt_source_label(prompt_selection.get("chapter")),
             prompt_registry_sha=str(prompt_selection.get("registry_sha") or ""),
         )
         judge_version_resolved = (
@@ -2772,7 +2806,7 @@ def _run_single(
     run_manifest["prompt_version"] = str(chapter_prompt.get("version") or "")
     run_manifest["composer_prompt_version"] = str(composer_prompt.get("version") or "")
     run_manifest["prompt_fingerprint"] = str(chapter_prompt.get("fingerprint") or "")
-    run_manifest["prompt_source"] = "registry" if chapter_prompt.get("has_overlay") else "request"
+    run_manifest["prompt_source"] = _prompt_source_label(chapter_prompt)
     run_manifest["prompt_registry_sha"] = str(prompt_selection.get("registry_sha") or "")
     run_manifest["prompt_slot"] = str(prompt_selection.get("slot") or "")
     run_manifest["prompt_selection"] = _json_safe(prompt_selection)
@@ -3209,6 +3243,7 @@ def _run_single(
                     "prompt_version": str(cf_meta.get("prompt_version") or ""),
                     "prompt_fingerprint": str(cf_meta.get("prompt_fingerprint") or ""),
                     "prompt_source": str(cf_meta.get("prompt_source") or ""),
+                    "prompt_model": str(spec.chapter_stage.model or ""),
                     "run_id": run_id,
                 })
             except OSError:

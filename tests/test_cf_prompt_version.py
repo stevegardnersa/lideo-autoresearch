@@ -48,7 +48,6 @@ def _install(registry_path: Path):
     handler._build_client = lambda **kwargs: fake  # type: ignore[assignment]
     return fake
 
-
 def _base_body(**overrides):
     body = {
         "source_md": "source text",
@@ -159,6 +158,65 @@ def test_production_default():
     print("test_production_default: OK")
 
 
+# 15 — model-scoped production default resolves from the bundled registry
+def test_scoped_production_default():
+    path = _temp_registry()
+    model = "deepseek/deepseek-v4-flash"
+    scoped = pr.create_version(
+        stage="chapter", label="flash tuned", components={},
+        system_template="FLASH SYS {{components}}", scope={"kind": "model", "model": model}, path=path,
+    )
+    pr.set_slot(stage="chapter", slot="production", version_id=scoped["id"], model=model, path=path)
+    fake = _install(path)
+    try:
+        body = _base_body()
+        body.pop("system_prompt")
+        body["model"] = model
+        result = handler.run_summarize(body)
+        scoped_text = fake.system_text()
+        other = _base_body()
+        other.pop("system_prompt")
+        other["model"] = "openai/gpt-5.6-luna"
+        result_other = handler.run_summarize(other)
+    finally:
+        _restore()
+    assert result["meta"]["prompt_version"] == scoped["id"]
+    assert result["meta"]["prompt_source"] == "production_default"
+    assert "FLASH SYS" in scoped_text
+    assert result_other["meta"]["prompt_version"] == "chapter-p1"
+    print("test_scoped_production_default: OK")
+
+
+# 16 — sync-shaped bundle round-trips scoped versions + nested slots
+def test_sync_round_trip_copies_scoped_versions():
+    path = _temp_registry()
+    model = "deepseek/deepseek-v4-flash"
+    scoped = pr.create_version(
+        stage="chapter", label="flash tuned", components={},
+        scope={"kind": "model", "model": model}, path=path,
+    )
+    pr.set_slot(stage="chapter", slot="production", version_id=scoped["id"], model=model, path=path)
+    import json
+
+    registry = pr.load_registry(path)
+    bundle = Path(path).parent / "cf_bundle_registry.json"
+    bundle.write_text(json.dumps(registry, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    os.environ["PROMPT_REGISTRY_PATH"] = str(bundle)
+    try:
+        loaded = json.loads(bundle.read_text(encoding="utf-8"))
+        ids = {v["id"] for v in loaded["versions"]}
+        assert scoped["id"] in ids
+        assert loaded["slots"]["chapter"]["models"][model]["production"] == scoped["id"]
+        resolved = handler._resolve_prompt(
+            {"model": model, "prompt_stage": "chapter"},
+            pr.load_registry(bundle, seed=False),
+        )
+        assert resolved[1]["prompt_version"] == scoped["id"]
+    finally:
+        _restore()
+    print("test_sync_round_trip_copies_scoped_versions: OK")
+
+
 def main():
     tests = [
         test_known_version,
@@ -167,6 +225,8 @@ def main():
         test_legacy_request,
         test_fingerprint_mismatch,
         test_production_default,
+        test_scoped_production_default,
+        test_sync_round_trip_copies_scoped_versions,
     ]
     for test in tests:
         test()

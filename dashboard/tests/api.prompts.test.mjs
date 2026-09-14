@@ -50,7 +50,8 @@ test('GET /api/prompts returns registry shape with production status', async () 
     assert.ok(body.registry_sha)
     const ids = body.versions.map(v => v.id).sort()
     assert.deepEqual(ids, ['chapter-p1', 'chapter-p2', 'composer-p1'])
-    assert.deepEqual(body.slots.chapter, { local: 'chapter-p1', production: 'chapter-p1' })
+    assert.deepEqual(body.slots.chapter.general, { local: 'chapter-p1', production: 'chapter-p1' })
+    assert.deepEqual(body.slots.chapter.models, {})
     assert.equal(body.production_status.length, 2)
     assert.equal(body.production_status[0].never_reported, true)
   } finally {
@@ -79,17 +80,17 @@ test('slot save round-trips and stale writes are rejected', async () => {
       body: { stage: 'chapter', slot: 'local', version_id: 'chapter-p2', expected_sha: list.body.registry_sha },
     })
     assert.equal(save.status, 200)
-    assert.equal(save.body.slots.chapter.local, 'chapter-p2')
+    assert.equal(save.body.slots.chapter.general.local, 'chapter-p2')
 
     const after = await call(base, '/api/prompts')
-    assert.equal(after.body.slots.chapter.local, 'chapter-p2')
+    assert.equal(after.body.slots.chapter.general.local, 'chapter-p2')
 
     const stale = await call(base, '/api/prompts/slots', {
       method: 'POST',
       body: { stage: 'chapter', slot: 'local', version_id: 'chapter-p1', expected_sha: list.body.registry_sha },
     })
     assert.equal(stale.status, 409)
-    assert.equal(stale.body.error.includes('Registry changed'), true)
+    assert.equal(stale.body.error, 'registry_changed')
   } finally {
     await closeServer(server)
   }

@@ -225,6 +225,78 @@ const MODAL_TEMPLATE = `
   </div>
 </div>
 
+<div class="settings-overlay cm-hidden" id="promptVersionOverlay">
+  <div class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="pvTitle">
+    <header class="settings-modal-header">
+      <div class="settings-modal-title" id="pvTitle">New version</div>
+      <button class="settings-close" id="pvClose" aria-label="Close version dialog">&times;</button>
+    </header>
+    <div class="prompt-dialog-body">
+      <div class="prompt-dialog-col">
+        <div class="field">
+          <label for="pvStage">Stage</label>
+          <select id="pvStage"><option value="chapter">chapter</option><option value="composer">composer</option></select>
+          <div class="prompt-field-error cm-hidden" id="pvStageError"></div>
+        </div>
+        <div class="field">
+          <label for="pvLabel">Label</label>
+          <input id="pvLabel" type="text" maxlength="120" placeholder="v3 experiment" />
+          <div class="prompt-field-error cm-hidden" id="pvLabelError"></div>
+        </div>
+        <div class="field">
+          <label for="pvScopeKind">Scope</label>
+          <select id="pvScopeKind"><option value="general">General</option><option value="model">Specific model</option></select>
+          <div class="cm-hidden" id="pvScopeExtra">
+            <label for="pvScopeModel" class="cm-visually-hidden">Model</label>
+            <select id="pvScopeModel"></select>
+            <label for="pvScopeProfiles" class="cm-visually-hidden">Profiles</label>
+            <select id="pvScopeProfiles" multiple size="4" aria-label="Profiles (optional)"></select>
+            <div class="field-hint">Leave profiles empty to apply to the whole model.</div>
+          </div>
+          <div class="prompt-field-error cm-hidden" id="pvScopeError"></div>
+        </div>
+        <div class="field">
+          <label>Components</label>
+          <div id="pvComponents" class="prompt-components"></div>
+        </div>
+        <div class="field">
+          <label for="pvSystemTemplate">System template <span class="field-optional">optional</span></label>
+          <textarea id="pvSystemTemplate" rows="4" spellcheck="false" placeholder="Leave blank to render from components"></textarea>
+          <div class="field-hint">Supports {{placeholder}} variables. Use {{components}} to inline the component selection.</div>
+          <div class="prompt-field-error cm-hidden" id="pvSystemTemplateError"></div>
+        </div>
+        <div class="field">
+          <label for="pvUserTemplate">User template <span class="field-optional">optional</span></label>
+          <textarea id="pvUserTemplate" rows="4" spellcheck="false" placeholder="Leave blank to use the built-in user prompt"></textarea>
+          <div class="prompt-field-error cm-hidden" id="pvUserTemplateError"></div>
+        </div>
+        <div class="dlg-notice cm-hidden" id="pvNotice"></div>
+        <div class="dlg-error cm-hidden" id="pvError"></div>
+      </div>
+      <div class="prompt-dialog-col is-preview">
+        <div class="settings-section-title">Preview</div>
+        <div class="prompt-preview-panes">
+          <div>
+            <div class="prompt-preview-meta">System prompt</div>
+            <pre class="prompt-preview-pane" id="pvSystemPreview" role="region" aria-label="System prompt preview">Rendering…</pre>
+          </div>
+          <div>
+            <div class="prompt-preview-meta">User prompt</div>
+            <pre class="prompt-preview-pane" id="pvUserPreview" role="region" aria-label="User prompt preview">Rendering…</pre>
+          </div>
+        </div>
+        <div class="prompt-preview-meta" id="pvPreviewMeta"></div>
+        <div class="prompt-placeholder-legend" id="pvLegend"></div>
+        <div class="prompt-field-error cm-hidden" id="pvWarnings"></div>
+      </div>
+    </div>
+    <footer class="dialog-footer">
+      <button class="dlg-btn dlg-btn-ghost" id="pvCancel">Cancel</button>
+      <button class="dlg-btn dlg-btn-primary" id="pvSave">Create version</button>
+    </footer>
+  </div>
+</div>
+
 <div class="settings-overlay cm-hidden" id="confirmDeleteOverlay">
   <div class="settings-dialog confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirmDeleteTitle">
     <header class="settings-modal-header">
@@ -1660,6 +1732,7 @@ function handleVariantMenuClick(e) {
 function closeProfileMenusIfOutside(e) {
   if (e.target.closest && e.target.closest('.vc-opt')) return
   closeProfileMenus()
+  closePromptMenus()
 }
 
 function bindModal() {
@@ -1758,6 +1831,8 @@ function bindModal() {
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return
+    const pvO = document.getElementById('promptVersionOverlay')
+    if (pvO && !pvO.classList.contains('cm-hidden')) { closePromptVersionDialog(); return }
     const confirmO = document.getElementById('confirmDeleteOverlay')
     if (confirmO && !confirmO.classList.contains('cm-hidden')) { cancelConfirmDelete(); return }
     if (!dialogOverlay.classList.contains('cm-hidden')) closeDialog()
@@ -2524,7 +2599,15 @@ async function initRunData() {
 }
 
 // ── Prompts section (prompt-version registry) ──────────────────
-const PROMPTS_STATE = { data: null, options: null }
+const PROMPTS_STATE = {
+  data: null,
+  options: null,
+  pv: null,
+  pvPreviewTimer: null,
+  pvAbort: null,
+  filter: 'all',
+  slotScope: 'general',
+}
 
 function setPromptsBanner(msg, kind = '') {
   const el = document.getElementById('promptsBanner')
@@ -2550,128 +2633,225 @@ function _driftBadge(status) {
   return `<span class="drift-badge drift-stale" role="status">&#9888; Not deployed — CF reports ${esc(status.reported_id || '?')}${when}</span>`
 }
 
+function _stageSlots(data, stage) {
+  const s = (data.slots || {})[stage] || {}
+  if (s.general || s.models) {
+    return {
+      general: s.general || { local: null, production: null },
+      models: s.models || {},
+    }
+  }
+  return {
+    general: { local: s.local || null, production: s.production || null },
+    models: {},
+  }
+}
+
+function _scopeOf(v) {
+  return (v && v.scope) || { kind: 'general' }
+}
+
+function _scopeBadge(v, modelSet) {
+  const scope = _scopeOf(v)
+  const profiles = (scope.profiles || [])
+  if (scope.kind !== 'model') return '<span class="scope-badge is-general" role="status">General</span>'
+  const known = modelSet ? modelSet.has(scope.model) : true
+  const cls = known ? 'scope-badge' : 'scope-badge is-warn'
+  const title = known ? '' : ' title="model not registered"'
+  const suffix = profiles.length ? ` &middot; ${profiles.map(esc).join(', ')}` : ''
+  return `<span class="${cls}" role="status"${title}>${esc(scope.model)}${suffix}</span>`
+}
+
+function _modelSet() {
+  const models = (PROMPTS_STATE.data || {}).models || (PROMPTS_STATE.options || {}).models || []
+  return new Set(models)
+}
+
+const PROMPT_MENU_ITEMS = [
+  ['preview', 'Preview'],
+  ['edit', 'Edit'],
+  ['set-local', 'Set local'],
+  ['set-production', 'Set production'],
+  ['clone', 'Clone'],
+  ['smoke', 'Smoke test'],
+]
+
+function _promptRowMenu(v, assigned, setModel) {
+  const locked = assigned.length > 0
+  const items = PROMPT_MENU_ITEMS.map(([action, label]) => {
+    const aria = action === 'set-local' || action === 'set-production' || action === 'clone'
+      ? ` aria-label="${esc(label)} ${esc(v.id)}"` : ''
+    return `<button type="button" class="vc-opt-item" data-action="${action}" data-id="${esc(v.id)}" data-model="${esc(setModel)}" role="menuitem"${aria}>${label}</button>`
+  }).join('')
+  return `<button type="button" class="vc-opt-btn" data-id="${esc(v.id)}" aria-haspopup="menu" aria-expanded="false" aria-label="Options for ${esc(v.id)}" title="Version options">\u22EF</button>
+    <div class="vc-opt-menu cm-hidden" role="menu">
+      ${items}
+      <button type="button" class="vc-opt-item vc-opt-remove" data-action="delete" data-id="${esc(v.id)}" role="menuitem"${locked ? ' disabled title="Assigned to a slot"' : ''}>Delete</button>
+    </div>`
+}
+
+function closePromptMenus() {
+  document.querySelectorAll('#promptsPanel .vc-opt-btn').forEach(b => b.setAttribute('aria-expanded', 'false'))
+  document.querySelectorAll('#promptsPanel .vc-opt-menu').forEach(m => m.classList.add('cm-hidden'))
+}
+
 function renderPrompts(data) {
   const panel = document.getElementById('promptsPanel')
   if (!panel) return
   const versions = data.versions || []
-  const slots = data.slots || {}
-  const statusByStage = {}
-  for (const row of data.production_status || []) statusByStage[row.stage] = row
+  const models = data.models || (PROMPTS_STATE.options || {}).models || []
+  const modelSet = new Set(models)
+  PROMPTS_STATE.data = data
+  const activeScope = PROMPTS_STATE.slotScope || 'general'
 
   const slotRows = ['chapter', 'composer'].map(stage => {
-    const stageSlots = slots[stage] || {}
+    const stageSlots = _stageSlots(data, stage)
+    const scopeSlots = activeScope === 'general'
+      ? stageSlots.general
+      : (stageSlots.models[activeScope] || { local: null, production: null })
+    const status = (data.production_status || []).find(
+      r => r.stage === stage && (r.model || '') === (activeScope === 'general' ? '' : activeScope)
+    )
+    const scopedVersions = versions.filter(v => {
+      const scope = _scopeOf(v)
+      return activeScope === 'general' ? scope.kind === 'general' : (scope.kind === 'general' || scope.model === activeScope)
+    })
+    const noneLabel = activeScope === 'general' ? '(use baseline)' : '(inherit general)'
     return `
       <tr>
         <td>${esc(stage)}</td>
         <td><label class="cm-visually-hidden" for="promptLocal_${esc(stage)}">local</label>
           <select id="promptLocal_${esc(stage)}" data-stage="${esc(stage)}" data-slot="local">
-            <option value="">(none)</option>${_promptVersionOptions(versions, stage)}
+            <option value="">${noneLabel}</option>${_promptVersionOptions(scopedVersions, stage)}
           </select></td>
         <td><label class="cm-visually-hidden" for="promptProd_${esc(stage)}">production</label>
           <select id="promptProd_${esc(stage)}" data-stage="${esc(stage)}" data-slot="production">
-            <option value="">(none)</option>${_promptVersionOptions(versions, stage)}
+            <option value="">${noneLabel}</option>${_promptVersionOptions(scopedVersions, stage)}
           </select></td>
-        <td><button class="mini-btn" data-action="save-slot" data-stage="${esc(stage)}" disabled>Save</button></td>
-        <td>${_driftBadge(statusByStage[stage])}</td>
+        <td><button class="mini-btn" data-action="save-slot" data-stage="${esc(stage)}" data-model="${esc(activeScope === 'general' ? '' : activeScope)}" disabled>Save</button></td>
+        <td>${_driftBadge(status)}</td>
       </tr>`
   }).join('')
 
-  const versionRows = versions.map(v => {
+  const filter = PROMPTS_STATE.filter
+  const filtered = versions.filter(v => {
+    const scope = _scopeOf(v)
+    if (filter === 'all') return true
+    if (filter === 'general') return scope.kind === 'general'
+    return scope.model === filter
+  })
+
+  const versionRows = filtered.map(v => {
     const assigned = []
-    for (const stage of Object.keys(slots)) {
-      for (const slot of Object.keys(slots[stage] || {})) {
-        if (slots[stage][slot] === v.id) assigned.push(`${stage}.${slot}`)
+    for (const stage of Object.keys(data.slots || {})) {
+      const s = _stageSlots(data, stage)
+      for (const slot of ['local', 'production']) {
+        if (s.general[slot] === v.id) assigned.push(`${stage}.general.${slot}`)
+      }
+      for (const [model, slots] of Object.entries(s.models)) {
+        for (const slot of ['local', 'production']) {
+          if ((slots || {})[slot] === v.id) assigned.push(`${stage}.${model}.${slot}`)
+        }
       }
     }
     const lp = (v.components && v.components.length_policy) || '–'
+    const scope = _scopeOf(v)
+    const setModel = scope.kind === 'model' ? scope.model : ''
     return `
       <tr>
         <td>${esc(v.id)}</td>
         <td>${esc(v.label || '')}</td>
         <td>${esc(v.stage)}</td>
+        <td>${_scopeBadge(v, modelSet)}</td>
         <td>${esc(lp)}</td>
         <td><span title="${esc(v.system_prompt_fingerprint || '')}">${esc((v.system_prompt_fingerprint || '').slice(0, 8))}</span></td>
         <td>${esc(assigned.join(', ') || '–')}</td>
         <td>${esc(fmtDate(v.created_at))}</td>
-        <td class="prompt-row-actions">
-          <button class="mini-btn" data-action="preview" data-id="${esc(v.id)}">Preview</button>
-          <button class="mini-btn" data-action="set-local" data-id="${esc(v.id)}">Set local</button>
-          <button class="mini-btn" data-action="set-production" data-id="${esc(v.id)}">Set production</button>
-          <button class="mini-btn" data-action="clone" data-id="${esc(v.id)}">Clone</button>
-          <button class="mini-btn" data-action="smoke" data-id="${esc(v.id)}">Smoke test</button>
-          <button class="mini-btn" data-action="delete" data-id="${esc(v.id)}" ${assigned.length ? 'disabled title="Assigned to a slot"' : ''}>Delete</button>
-        </td>
+        <td class="vc-opt">${_promptRowMenu(v, assigned, setModel)}</td>
       </tr>`
   }).join('')
 
+  const scopeOptions = [
+    `<option value="general"${activeScope === 'general' ? ' selected' : ''}>General</option>`,
+    ...models.map(m => `<option value="${esc(m)}"${activeScope === m ? ' selected' : ''}>${esc(m)}</option>`),
+  ].join('')
+
+  const filterOptions = [
+    ['all', 'All'], ['general', 'General'], ...models.map(m => [m, m]),
+  ].map(([val, label]) => `<option value="${esc(val)}"${filter === val ? ' selected' : ''}>${esc(label)}</option>`).join('')
+
   panel.innerHTML = `
     <div class="prompt-block">
-      <div class="settings-section-title">Slots</div>
-      <table class="prompt-table">
-        <caption class="cm-visually-hidden">Prompt version slots per stage</caption>
-        <thead><tr><th>Stage</th><th>local</th><th>production</th><th></th><th>Cloud Function drift</th></tr></thead>
-        <tbody>${slotRows}</tbody>
-      </table>
+      <div class="prompt-head-row">
+        <div class="settings-section-title">Slots</div>
+        <div class="prompt-head-actions">
+          <label class="small" for="promptSlotScope">Scope
+            <select id="promptSlotScope">${scopeOptions}</select>
+          </label>
+        </div>
+      </div>
+      <div class="prompt-table-wrap">
+        <table class="prompt-table">
+          <caption class="cm-visually-hidden">Prompt version slots per stage</caption>
+          <thead><tr><th>Stage</th><th>local</th><th>production</th><th></th><th>Cloud Function drift</th></tr></thead>
+          <tbody>${slotRows}</tbody>
+        </table>
+      </div>
       <div class="prompt-actions">
         <button class="mini-btn" data-action="sync">Sync / Promote to Cloud Function</button>
         <label class="small"><input type="checkbox" id="promptSmokeCf" /> Smoke tests use Cloud Function</label>
       </div>
     </div>
     <div class="prompt-block">
-      <div class="settings-section-title">Versions</div>
-      <table class="prompt-table">
-        <caption class="cm-visually-hidden">Prompt registry versions</caption>
-        <thead><tr><th>id</th><th>label</th><th>stage</th><th>length_policy</th><th>fingerprint</th><th>slots</th><th>created</th><th>actions</th></tr></thead>
-        <tbody>${versionRows || '<tr><td colspan="8" class="placeholder-text">No versions.</td></tr>'}</tbody>
-      </table>
-    </div>
-    <div class="prompt-block">
-      <div class="settings-section-title">New version</div>
-      <div class="prompt-create">
-        <label class="small">Stage
-          <select id="promptNewStage"><option value="chapter">chapter</option><option value="composer">composer</option></select>
-        </label>
-        <label class="small">Label <input type="text" id="promptNewLabel" placeholder="v3 experiment" /></label>
-        <div id="promptNewComponents" class="prompt-components"></div>
-        <label class="small">Template override (optional) <textarea id="promptNewTemplate" rows="3" placeholder="Leave blank to render from components"></textarea></label>
-        <button class="mini-btn" data-action="create">Create version</button>
+      <div class="prompt-head-row">
+        <div class="settings-section-title">Versions</div>
+        <div class="prompt-head-actions">
+          <label class="small" for="promptScopeFilter">Filter
+            <select id="promptScopeFilter">${filterOptions}</select>
+          </label>
+          <button class="model-add-btn" data-action="new-version">+ New version</button>
+        </div>
+      </div>
+      <div class="prompt-table-wrap is-menu-safe">
+        <table class="prompt-table">
+          <caption class="cm-visually-hidden">Prompt registry versions</caption>
+          <thead><tr><th>id</th><th>label</th><th>stage</th><th>scope</th><th>length_policy</th><th>fingerprint</th><th>slots</th><th>created</th><th>actions</th></tr></thead>
+          <tbody>${versionRows || '<tr><td colspan="9" class="placeholder-text">No versions in this scope. <button class="mini-btn" data-action="new-version">+ New version</button></td></tr>'}</tbody>
+        </table>
       </div>
     </div>
     <div class="prompt-block">
       <div class="settings-section-title">Preview</div>
       <pre id="promptPreview" class="prompt-preview">Select Preview on a version.</pre>
+      <pre id="promptPreviewUser" class="prompt-preview cm-hidden"></pre>
       <button class="mini-btn" data-action="copy-preview">Copy system prompt</button>
     </div>`
 
-  // Restore current slot selections.
   for (const stage of ['chapter', 'composer']) {
+    const stageSlots = _stageSlots(data, stage)
+    const scopeSlots = activeScope === 'general'
+      ? stageSlots.general
+      : (stageSlots.models[activeScope] || { local: null, production: null })
     const local = document.getElementById(`promptLocal_${stage}`)
     const prod = document.getElementById(`promptProd_${stage}`)
-    if (local) local.value = (slots[stage] || {}).local || ''
-    if (prod) prod.value = (slots[stage] || {}).production || ''
+    if (local) local.value = scopeSlots.local || ''
+    if (prod) prod.value = scopeSlots.production || ''
     const row = local ? local.closest('tr') : null
     const save = row ? row.querySelector('[data-action="save-slot"]') : null
     const markDirty = () => { if (save) save.disabled = false }
     if (local) local.addEventListener('change', markDirty)
     if (prod) prod.addEventListener('change', markDirty)
   }
-  renderPromptComponentEditor()
-  const stageSel = document.getElementById('promptNewStage')
-  if (stageSel) stageSel.addEventListener('change', renderPromptComponentEditor)
-}
-
-function renderPromptComponentEditor() {
-  const stage = (document.getElementById('promptNewStage') || {}).value || 'chapter'
-  const dims = (PROMPTS_STATE.options || {}).dimensions || {}
-  const keys = ((PROMPTS_STATE.options || {}).stage_keys || {})[stage] || Object.keys(dims)
-  const container = document.getElementById('promptNewComponents')
-  if (!container) return
-  container.innerHTML = keys.map(key => `
-    <label class="small">${esc(key)}
-      <select data-component="${esc(key)}"><option value="">(inherit)</option>
-        ${(dims[key] || []).map(id => `<option value="${esc(id)}">${esc(id)}</option>`).join('')}
-      </select>
-    </label>`).join('')
+  const scopeSel = document.getElementById('promptSlotScope')
+  if (scopeSel) scopeSel.addEventListener('change', () => {
+    PROMPTS_STATE.slotScope = scopeSel.value
+    renderPrompts(PROMPTS_STATE.data)
+  })
+  const filterSel = document.getElementById('promptScopeFilter')
+  if (filterSel) filterSel.addEventListener('change', () => {
+    PROMPTS_STATE.filter = filterSel.value
+    renderPrompts(PROMPTS_STATE.data)
+  })
 }
 
 async function loadPrompts() {
@@ -2694,49 +2874,361 @@ async function loadPrompts() {
   }
 }
 
-async function savePromptSlot(stage) {
+async function savePromptSlot(stage, model) {
   const data = PROMPTS_STATE.data || {}
   const local = document.getElementById(`promptLocal_${stage}`).value
   const prod = document.getElementById(`promptProd_${stage}`).value
   const expected = data.registry_sha || ''
-  await api('/api/prompts/slots', { method: 'POST', body: JSON.stringify({ stage, slot: 'local', version_id: local, expected_sha: expected }) })
-  await api('/api/prompts/slots', { method: 'POST', body: JSON.stringify({ stage, slot: 'production', version_id: prod }) })
-  setPromptsBanner(`Saved ${stage} slots.`)
+  const body = { stage, version_id: local, expected_sha: expected }
+  if (model) body.model = model
+  await api('/api/prompts/slots', { method: 'POST', body: JSON.stringify({ ...body, slot: 'local' }) })
+  await api('/api/prompts/slots', { method: 'POST', body: JSON.stringify({ ...body, slot: 'production', version_id: prod }) })
+  setPromptsBanner(`Saved ${model ? model + ' ' : ''}${stage} slots.`)
   await loadPrompts()
 }
 
-async function createPromptVersion() {
-  const stage = document.getElementById('promptNewStage').value
-  const label = document.getElementById('promptNewLabel').value.trim()
+// ── version create/edit dialog ─────────────────────────────────
+
+function _pvModels() {
+  const opts = PROMPTS_STATE.options || {}
+  return opts.models || (PROMPTS_STATE.data || {}).models || []
+}
+
+function _pvProfilesByModel() {
+  return (PROMPTS_STATE.options || {}).profiles_by_model || {}
+}
+
+function _pvLibText(stage, dim, id) {
+  const lib = ((PROMPTS_STATE.options || {}).component_text || {})[stage] || {}
+  return (lib[dim] && lib[dim][id]) || ''
+}
+
+function pvRenderScope() {
+  const kind = document.getElementById('pvScopeKind').value
+  document.getElementById('pvScopeExtra').classList.toggle('cm-hidden', kind !== 'model')
+  const pv = PROMPTS_STATE.pv || {}
+  const sel = document.getElementById('pvScopeModel')
+  const current = (pv.scope && pv.scope.model) || sel.value || ''
+  sel.innerHTML = _pvModels().map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('')
+  if (current) sel.value = current
+  pvRenderProfiles()
+}
+
+function pvRenderProfiles() {
+  const model = document.getElementById('pvScopeModel').value
+  const pv = PROMPTS_STATE.pv || {}
+  const selected = new Set((pv.scope && pv.scope.profiles) || [])
+  const sel = document.getElementById('pvScopeProfiles')
+  sel.innerHTML = (_pvProfilesByModel()[model] || [])
+    .map(p => `<option value="${esc(p)}"${selected.has(p) ? ' selected' : ''}>${esc(p)}</option>`)
+    .join('')
+}
+
+function pvRenderComponents() {
+  const stage = document.getElementById('pvStage').value
+  const opts = PROMPTS_STATE.options || {}
+  const dims = opts.dimensions || {}
+  const help = opts.dimension_help || {}
+  const keys = (opts.stage_keys || {})[stage] || Object.keys(dims)
+  const pv = PROMPTS_STATE.pv || {}
+  const components = (pv.components && pv.stage === stage) ? pv.components : (pv.components || {})
+  const componentText = (pv.component_text && pv.stage === stage) ? pv.component_text : (pv.component_text || {})
+  const container = document.getElementById('pvComponents')
+  container.innerHTML = keys.map(key => {
+    const selectedId = components[key] || ''
+    const override = componentText[key] || ''
+    const libText = selectedId ? _pvLibText(stage, key, selectedId) : ''
+    const tip = help[key] || ''
+    const tipAttr = tip ? ` title="${esc(tip)}"` : ''
+    const info = tip
+      ? `<span class="prompt-help" role="img" aria-label="${esc(tip)}" tabindex="0"${tipAttr}>?</span>`
+      : ''
+    return `<div class="field" data-dim="${esc(key)}">
+      <label for="pvComp_${esc(key)}"${tipAttr}>${esc(key)}${info}</label>
+      <select id="pvComp_${esc(key)}" data-component="${esc(key)}"${tipAttr}><option value="">(inherit)</option>
+        ${(dims[key] || []).map(id => `<option value="${esc(id)}"${selectedId === id ? ' selected' : ''}>${esc(id)}</option>`).join('')}
+      </select>
+      <details class="prompt-inline-editor">
+        <summary>Edit text</summary>
+        <textarea data-component-text="${esc(key)}" rows="3" spellcheck="false" placeholder="${esc(libText).slice(0, 120)}">${esc(override)}</textarea>
+        <div class="field-hint">Override the component text for this version. Blank keeps the library text.</div>
+      </details>
+    </div>`
+  }).join('')
+}
+
+function pvCollect() {
+  const stage = document.getElementById('pvStage').value
   const components = {}
-  document.querySelectorAll('#promptNewComponents select').forEach(sel => {
+  document.querySelectorAll('#pvComponents select[data-component]').forEach(sel => {
     if (sel.value) components[sel.dataset.component] = sel.value
   })
-  const template = document.getElementById('promptNewTemplate').value.trim()
-  await api('/api/prompts', { method: 'POST', body: JSON.stringify({ stage, label, components, template: template || undefined }) })
-  setPromptsBanner(`Created ${stage} version.`)
-  await loadPrompts()
+  const componentText = {}
+  document.querySelectorAll('#pvComponents textarea[data-component-text]').forEach(t => {
+    if (t.value.trim()) componentText[t.dataset.componentText] = t.value
+  })
+  const kind = document.getElementById('pvScopeKind').value
+  let scope = { kind: 'general' }
+  if (kind === 'model') {
+    scope = { kind: 'model', model: document.getElementById('pvScopeModel').value }
+    const profiles = [...document.getElementById('pvScopeProfiles').selectedOptions].map(o => o.value)
+    if (profiles.length) scope.profiles = profiles
+  }
+  return {
+    stage,
+    label: document.getElementById('pvLabel').value.trim(),
+    components,
+    component_text: componentText,
+    system_template: document.getElementById('pvSystemTemplate').value,
+    user_template: document.getElementById('pvUserTemplate').value,
+    scope,
+  }
+}
+
+function pvClientValidate(draft) {
+  const errors = {}
+  if (!draft.label) errors.label = 'Label is required'
+  else if (draft.label.length > 120) errors.label = 'Label must be 120 characters or fewer'
+  if (draft.scope.kind === 'model' && !draft.scope.model) errors.scope = 'Choose a model'
+  const userT = draft.user_template.trim()
+  if (userT) {
+    const required = draft.stage === 'chapter' ? 'source_md' : 'chapter_summaries'
+    if (!new RegExp(`\\{\\{\\s*${required}\\s*\\}\\}`).test(userT)) {
+      errors.user_template = `Template must contain {{${required}}}`
+    }
+  }
+  return errors
+}
+
+function pvClearErrors() {
+  const map = { label: 'pvLabelError', scope: 'pvScopeError', system_template: 'pvSystemTemplateError', user_template: 'pvUserTemplateError' }
+  for (const [field, id] of Object.entries(map)) {
+    const el = document.getElementById(id)
+    if (el) { el.textContent = ''; el.classList.add('cm-hidden') }
+  }
+  document.querySelectorAll('#pvComponents select, #pvLabel, #pvScopeModel, #pvSystemTemplate, #pvUserTemplate')
+    .forEach(el => el.classList.remove('field-invalid'))
+}
+
+function pvApplyErrors(errors) {
+  pvClearErrors()
+  const map = { label: 'pvLabelError', scope: 'pvScopeError', system_template: 'pvSystemTemplateError', user_template: 'pvUserTemplateError' }
+  let firstInvalid = null
+  for (const [field, message] of Object.entries(errors || {})) {
+    const id = map[field]
+    const el = id ? document.getElementById(id) : null
+    if (el) { el.textContent = message; el.classList.remove('cm-hidden') }
+    const inputId = field === 'label' ? 'pvLabel' : field === 'scope' ? 'pvScopeModel' : `pv${field === 'system_template' ? 'SystemTemplate' : 'UserTemplate'}`
+    const input = document.getElementById(inputId)
+    if (input) { input.classList.add('field-invalid'); firstInvalid = firstInvalid || input }
+  }
+  if (firstInvalid) firstInvalid.focus()
+}
+
+function pvSnapshot() {
+  try { return JSON.stringify(pvCollect()) } catch { return '' }
+}
+
+function pvSchedulePreview() {
+  const pv = PROMPTS_STATE.pv
+  if (!pv) return
+  pv.dirty = typeof pv.baseline === 'string' && pvSnapshot() !== pv.baseline
+  if (PROMPTS_STATE.pvPreviewTimer) clearTimeout(PROMPTS_STATE.pvPreviewTimer)
+  document.getElementById('pvSystemPreview').textContent = 'Rendering…'
+  PROMPTS_STATE.pvPreviewTimer = setTimeout(pvPreview, 400)
+}
+
+async function pvPreview() {
+  const pv = PROMPTS_STATE.pv
+  if (!pv) return
+  const draft = pvCollect()
+  const errors = pvClientValidate(draft)
+  if (Object.keys(errors).length) { pvApplyErrors(errors); return }
+  pvApplyErrors({})
+  const meta = document.getElementById('pvPreviewMeta')
+  const legend = document.getElementById('pvLegend')
+  const warnEl = document.getElementById('pvWarnings')
+  const notice = document.getElementById('pvNotice')
+  if (PROMPTS_STATE.pvAbort) { try { PROMPTS_STATE.pvAbort.abort() } catch { /* noop */ } }
+  const controller = new AbortController()
+  PROMPTS_STATE.pvAbort = controller
+  try {
+    const res = await fetch('/api/prompts/preview-draft', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        stage: draft.stage,
+        components: draft.components,
+        component_text: draft.component_text,
+        system_template: draft.system_template,
+        user_template: draft.user_template,
+        target_words: 1200,
+      }),
+      signal: controller.signal,
+    })
+    const body = await res.json()
+    if (!res.ok || body.ok === false) {
+      const fe = (body && body.fieldErrors) || {}
+      if (Object.keys(fe).length) { pvApplyErrors(fe); return }
+      throw new Error((body && body.error) || `HTTP ${res.status}`)
+    }
+    document.getElementById('pvSystemPreview').textContent = body.system_prompt || ''
+    document.getElementById('pvUserPreview').textContent = body.user_prompt || ''
+    meta.textContent = `fingerprint: ${body.fingerprint || ''}`
+    const ph = body.placeholders || {}
+    legend.textContent = `System variables: ${(ph.system || []).join(', ') || '(none)'} · User variables: ${(ph.user || []).join(', ') || '(none)'}`
+    const warnings = body.warnings || []
+    warnEl.textContent = warnings.join(' · ')
+    warnEl.classList.toggle('cm-hidden', !warnings.length)
+    notice.classList.add('cm-hidden')
+    pv.transportError = false
+    pv.previewOk = true
+    setPvSaveState()
+  } catch (e) {
+    if (e && e.name === 'AbortError') return
+    document.getElementById('pvSystemPreview').textContent = `Preview failed: ${e.message}`
+    pv.transportError = true
+    pv.previewOk = false
+    setPvSaveState()
+  }
+}
+
+function setPvSaveState() {
+  const pv = PROMPTS_STATE.pv
+  const btn = document.getElementById('pvSave')
+  if (!pv || !btn) return
+  const draft = pv.busy ? null : pvCollect()
+  const clientErrors = draft ? pvClientValidate(draft) : {}
+  const blocked = pv.busy || Object.keys(clientErrors).length > 0 || pv.transportError
+  btn.disabled = blocked
+  if (!pv.busy) btn.textContent = pv.mode === 'edit' ? 'Save as new version' : 'Create version'
+}
+
+async function pvSave() {
+  const pv = PROMPTS_STATE.pv
+  if (!pv || pv.busy) return
+  const draft = pvCollect()
+  const errors = pvClientValidate(draft)
+  if (Object.keys(errors).length) { pvApplyErrors(errors); return }
+  pv.busy = true
+  const btn = document.getElementById('pvSave')
+  btn.textContent = 'Saving…'
+  btn.disabled = true
+  const errEl = document.getElementById('pvError')
+  errEl.classList.add('cm-hidden')
+  try {
+    let res
+    if (pv.mode === 'edit') {
+      res = await api(`/api/prompts/${encodeURIComponent(pv.sourceId)}/revise`, { method: 'POST', body: JSON.stringify(draft) })
+    } else {
+      res = await api('/api/prompts', { method: 'POST', body: JSON.stringify(draft) })
+    }
+    pv.dirty = false
+    const newId = res.version && res.version.id
+    const derivedFrom = pv.sourceId
+    const wasEdit = pv.mode === 'edit'
+    hidePromptVersionDialog()
+    await loadPrompts()
+    if (wasEdit) setPromptsBanner(`Created ${newId} (derived from ${derivedFrom}).`)
+    else setPromptsBanner(`Created ${newId}.`)
+  } catch (e) {
+    const detail = e.detail || {}
+    if (detail.fieldErrors) pvApplyErrors(detail.fieldErrors)
+    if (detail.code === 409) {
+      setPromptsBanner('Registry changed elsewhere — reloading.')
+      try { await loadPrompts() } catch { /* noop */ }
+    } else {
+      errEl.textContent = e.message
+      errEl.classList.remove('cm-hidden')
+    }
+    pv.busy = false
+    setPvSaveState()
+  }
+}
+
+async function openPromptVersionDialog(opts) {
+  const source = opts.source || null
+  if (!source && opts.mode !== 'create') {
+    setPromptsBanner('Version not found — reloading prompts.')
+    await loadPrompts()
+    return
+  }
+  if (!PROMPTS_STATE.options) {
+    try { PROMPTS_STATE.options = await api('/api/prompts/options') } catch { PROMPTS_STATE.options = {} }
+  }
+  const versions = (PROMPTS_STATE.data || {}).versions || []
+  PROMPTS_STATE.pv = {
+    mode: opts.mode || 'create',
+    sourceId: source ? source.id : '',
+    stage: source ? source.stage : 'chapter',
+    components: source ? { ...(source.components || {}) } : {},
+    component_text: source ? { ...(source.component_text || {}) } : {},
+    scope: source ? { ...(source.scope || { kind: 'general' }) } : { kind: 'general' },
+    dirty: false,
+    busy: false,
+    transportError: false,
+    previewOk: false,
+  }
+  const pv = PROMPTS_STATE.pv
+  document.getElementById('pvTitle').textContent = opts.mode === 'edit'
+    ? `Edit ${source.id}`
+    : opts.mode === 'clone' ? `Clone ${source.id}` : 'New version'
+  const stageSel = document.getElementById('pvStage')
+  stageSel.value = pv.stage
+  stageSel.disabled = opts.mode === 'edit' || opts.mode === 'clone'
+  document.getElementById('pvLabel').value = opts.mode === 'edit'
+    ? (source.label || '')
+    : opts.mode === 'clone' ? `${source.label || source.id} (copy)` : `v${versions.length + 1} experiment`
+  document.getElementById('pvSystemTemplate').value = source ? (source.system_template || '') : ''
+  document.getElementById('pvUserTemplate').value = source ? (source.user_template || '') : ''
+  document.getElementById('pvScopeKind').value = pv.scope.kind || 'general'
+  pvRenderScope()
+  pvRenderComponents()
+  pvClearErrors()
+  document.getElementById('pvError').classList.add('cm-hidden')
+  document.getElementById('pvNotice').classList.add('cm-hidden')
+  document.getElementById('promptVersionOverlay').classList.remove('cm-hidden')
+  const settings = document.getElementById('settingsOverlay')
+  if (settings) settings.setAttribute('aria-hidden', 'true')
+  document.getElementById('pvLabel').focus()
+  setPvSaveState()
+  pv.baseline = pvSnapshot()
+  pv.dirty = false
+  pvSchedulePreview()
+}
+
+function hidePromptVersionDialog() {
+  document.getElementById('promptVersionOverlay').classList.add('cm-hidden')
+  const settings = document.getElementById('settingsOverlay')
+  if (settings) settings.removeAttribute('aria-hidden')
+  if (PROMPTS_STATE.pvPreviewTimer) { clearTimeout(PROMPTS_STATE.pvPreviewTimer); PROMPTS_STATE.pvPreviewTimer = null }
+  if (PROMPTS_STATE.pvAbort) { try { PROMPTS_STATE.pvAbort.abort() } catch { /* noop */ } PROMPTS_STATE.pvAbort = null }
+  PROMPTS_STATE.pv = null
+}
+
+function closePromptVersionDialog(force = false) {
+  const pv = PROMPTS_STATE.pv
+  if (!pv) { hidePromptVersionDialog(); return }
+  if (pv.busy) return
+  if (!force && pv.dirty && !window.confirm('Discard unsaved changes to this version?')) return
+  pv.dirty = false
+  hidePromptVersionDialog()
 }
 
 async function previewPromptVersion(id) {
   const out = document.getElementById('promptPreview')
+  const outUser = document.getElementById('promptPreviewUser')
   try {
     const res = await api(`/api/prompts/${encodeURIComponent(id)}/preview`, { method: 'POST', body: JSON.stringify({ target_words: 1200 }) })
     PROMPTS_STATE.previewText = res.system_prompt
     out.textContent = `fingerprint: ${res.fingerprint}\n\n${res.system_prompt}`
+    if (outUser) {
+      outUser.textContent = res.user_prompt || ''
+      outUser.classList.toggle('cm-hidden', !res.user_prompt)
+    }
   } catch (e) {
     out.textContent = `Preview failed: ${e.message}`
   }
-}
-
-async function clonePromptVersion(id) {
-  const data = PROMPTS_STATE.data || {}
-  const src = (data.versions || []).find(v => v.id === id)
-  if (!src) return
-  const label = window.prompt('Label for the new version:', `${src.label} (copy)`)
-  if (!label) return
-  await api('/api/prompts', { method: 'POST', body: JSON.stringify({ stage: src.stage, label, components: src.components || {} }) })
-  await loadPrompts()
 }
 
 async function deletePromptVersion(id) {
@@ -2752,7 +3244,8 @@ async function deletePromptVersion(id) {
 async function syncPrompts() {
   try {
     const res = await api('/api/prompts/sync', { method: 'POST', body: JSON.stringify({}) })
-    setPromptsBanner(`Synced registry ${res.registry_sha ? res.registry_sha.slice(0, 8) : ''} to the Cloud Function bundle. Redeploy to take effect.`)
+    const scoped = res.scoped_versions ? ` (${res.scoped_versions} scoped)` : ''
+    setPromptsBanner(`Synced registry ${res.registry_sha ? res.registry_sha.slice(0, 8) : ''}${scoped} to the Cloud Function bundle. Redeploy to take effect.`)
   } catch (e) {
     setPromptsBanner(`Sync failed: ${e.message}`)
   }
@@ -2779,33 +3272,85 @@ async function runPromptSmokeTest(id) {
   }
 }
 
+function _findVersion(id) {
+  return ((PROMPTS_STATE.data || {}).versions || []).find(v => v.id === id) || null
+}
+
+function runPromptAction(action, id, model, stage) {
+  try {
+    if (action === 'save-slot') { savePromptSlot(stage, model).catch(err => setPromptsBanner(err.message)) }
+    else if (action === 'preview') { previewPromptVersion(id) }
+    else if (action === 'edit') { openPromptVersionDialog({ mode: 'edit', source: _findVersion(id) }).catch(err => setPromptsBanner(err.message)) }
+    else if (action === 'new-version') { openPromptVersionDialog({ mode: 'create' }).catch(err => setPromptsBanner(err.message)) }
+    else if (action === 'set-local') { api('/api/prompts/slots', { method: 'POST', body: JSON.stringify({ stage: (_findVersion(id) || {}).stage, slot: 'local', version_id: id, model: model || undefined, expected_sha: PROMPTS_STATE.data.registry_sha }) }).then(loadPrompts).catch(err => setPromptsBanner(err.message)) }
+    else if (action === 'set-production') { api('/api/prompts/slots', { method: 'POST', body: JSON.stringify({ stage: (_findVersion(id) || {}).stage, slot: 'production', version_id: id, model: model || undefined, expected_sha: PROMPTS_STATE.data.registry_sha }) }).then(() => { setPromptsBanner(`Production now points at ${id} — run Sync/Promote to deploy it to the Cloud Function.`); return loadPrompts() }).catch(err => setPromptsBanner(err.message)) }
+    else if (action === 'clone') { openPromptVersionDialog({ mode: 'clone', source: _findVersion(id) }).catch(err => setPromptsBanner(err.message)) }
+    else if (action === 'delete') { deletePromptVersion(id) }
+    else if (action === 'smoke') { runPromptSmokeTest(id) }
+    else if (action === 'sync') { syncPrompts() }
+    else if (action === 'copy-preview') { if (PROMPTS_STATE.previewText) navigator.clipboard.writeText(PROMPTS_STATE.previewText) }
+  } catch (err) {
+    setPromptsBanner(err.message)
+  }
+}
+
 function bindPromptsPanel() {
   const panel = document.getElementById('promptsPanel')
   if (!panel || panel.dataset.bound) return
   panel.dataset.bound = '1'
   panel.addEventListener('click', (e) => {
+    const optBtn = e.target.closest('.vc-opt-btn')
+    if (optBtn) {
+      e.stopPropagation()
+      const menuEl = optBtn.closest('.vc-opt').querySelector('.vc-opt-menu')
+      const open = !menuEl.classList.contains('cm-hidden')
+      closeProfileMenus()
+      closePromptMenus()
+      if (!open) {
+        menuEl.classList.remove('cm-hidden')
+        optBtn.setAttribute('aria-expanded', 'true')
+      }
+      return
+    }
+    const item = e.target.closest('.vc-opt-item')
+    if (item) {
+      e.stopPropagation()
+      closePromptMenus()
+      if (item.disabled) return
+      runPromptAction(item.dataset.action, item.dataset.id, item.dataset.model, item.dataset.stage)
+      return
+    }
     const btn = e.target.closest('[data-action]')
     if (!btn) return
-    const action = btn.dataset.action
-    const id = btn.dataset.id
-    try {
-      if (action === 'save-slot') { savePromptSlot(btn.dataset.stage).catch(err => setPromptsBanner(err.message)) }
-      else if (action === 'preview') { previewPromptVersion(id) }
-      else if (action === 'set-local') { api('/api/prompts/slots', { method: 'POST', body: JSON.stringify({ stage: (PROMPTS_STATE.data.versions.find(v => v.id === id) || {}).stage, slot: 'local', version_id: id, expected_sha: PROMPTS_STATE.data.registry_sha }) }).then(loadPrompts).catch(err => setPromptsBanner(err.message)) }
-      else if (action === 'set-production') { api('/api/prompts/slots', { method: 'POST', body: JSON.stringify({ stage: (PROMPTS_STATE.data.versions.find(v => v.id === id) || {}).stage, slot: 'production', version_id: id, expected_sha: PROMPTS_STATE.data.registry_sha }) }).then(() => { setPromptsBanner(`Production now points at ${id} — run Sync/Promote to deploy it to the Cloud Function.`); return loadPrompts() }).catch(err => setPromptsBanner(err.message)) }
-      else if (action === 'clone') { clonePromptVersion(id) }
-      else if (action === 'delete') { deletePromptVersion(id) }
-      else if (action === 'create') { createPromptVersion().catch(err => setPromptsBanner(err.message)) }
-      else if (action === 'sync') { syncPrompts() }
-      else if (action === 'copy-preview') { if (PROMPTS_STATE.previewText) navigator.clipboard.writeText(PROMPTS_STATE.previewText) }
-    } catch (err) {
-      setPromptsBanner(err.message)
+    runPromptAction(btn.dataset.action, btn.dataset.id, btn.dataset.model, btn.dataset.stage)
+  })
+}
+
+function bindPromptVersionDialog() {
+  const overlay = document.getElementById('promptVersionOverlay')
+  if (!overlay) return
+  document.getElementById('pvClose').addEventListener('click', () => closePromptVersionDialog())
+  document.getElementById('pvCancel').addEventListener('click', () => closePromptVersionDialog())
+  document.getElementById('pvSave').addEventListener('click', () => pvSave())
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closePromptVersionDialog() })
+  document.getElementById('pvStage').addEventListener('change', () => { const pv = PROMPTS_STATE.pv; if (pv) { pv.stage = document.getElementById('pvStage').value; pvRenderComponents() } pvSchedulePreview() })
+  document.getElementById('pvScopeKind').addEventListener('change', () => { pvRenderScope(); pvSchedulePreview() })
+  document.getElementById('pvScopeModel').addEventListener('change', () => { pvRenderProfiles(); pvSchedulePreview() })
+  document.getElementById('pvScopeProfiles').addEventListener('change', () => pvSchedulePreview())
+  document.getElementById('pvComponents').addEventListener('change', (e) => {
+    if (e.target.matches('select[data-component]')) {
+      const dim = e.target.dataset.component
+      const details = e.target.closest('.field')
+      const ta = details ? details.querySelector('textarea[data-component-text]') : null
+      const stage = document.getElementById('pvStage').value
+      if (ta) ta.placeholder = _pvLibText(stage, dim, e.target.value).slice(0, 120)
     }
+    pvSchedulePreview()
   })
-  panel.addEventListener('click', (e) => {
-    const smoke = e.target.closest('[data-action="smoke"]')
-    if (smoke) runPromptSmokeTest(smoke.dataset.id)
-  })
+  document.getElementById('pvComponents').addEventListener('input', () => pvSchedulePreview())
+  for (const id of ['pvLabel', 'pvSystemTemplate', 'pvUserTemplate']) {
+    document.getElementById(id).addEventListener('input', () => { pvSchedulePreview(); setPvSaveState() })
+  }
 }
 
 function stopRunPolling() {
@@ -2828,6 +3373,7 @@ function initSettings() {
   wireGearButtons()
   bindModal()
   bindPromptsPanel()
+  bindPromptVersionDialog()
 }
 
 if (typeof document !== 'undefined') {

@@ -1132,6 +1132,7 @@ const SCRIPT_REGISTRY = [
       arg('resume', 'Resume run id', { type: 'text', pattern: '^[A-Za-z0-9_.\\-]*$', advanced: true }),
       arg('wait-for-credits', 'Wait for credits on 402', { type: 'bool', default: false, advanced: true }),
       arg('prompt-version', 'Prompt version', { type: 'text', pattern: '^[A-Za-z0-9_\\-]*$', advanced: true, hint: 'Force a prompt-registry version for this run (e.g. chapter-p2).' }),
+      arg('prompt-stage', 'Prompt stage for the override', { type: 'enum', default: 'both', choices: ['both', 'chapter', 'composer'], advanced: true, hint: 'Which stage --prompt-version applies to. Only used with a prompt version.' }),
       arg('prompt-slot', 'Prompt slot', { type: 'enum', default: '', choices: ['', 'local', 'production'], advanced: true }),
       arg('allow-prompt-override', 'Allow CF prompt override', { type: 'bool', default: false, advanced: true }),
       arg('notes', 'Notes', { type: 'text', advanced: true, max: 500 }),
@@ -2126,14 +2127,14 @@ async function handlePromptsApi(req, res, ctx) {
     const status = result.ok ? fallbackStatus : (result.code || 400)
     sendJson(res, status, result)
   }
-  const match = pathOnly.match(/^\/api\/prompts(?:\/([^/]+))?(?:\/(preview|sync))?$/)
+  const match = pathOnly.match(/^\/api\/prompts(?:\/([^/]+))?(?:\/(preview-draft|preview|revise|sync))?$/)
   const id = match && match[1]
   const sub = match && match[2]
 
   try {
     if (req.method === 'GET' && pathOnly === '/api/prompts') {
       const q = new URL(req.url, 'http://localhost').searchParams
-      send(await call({ op: 'list', stage: q.get('stage') || '' }))
+      send(await call({ op: 'list', stage: q.get('stage') || '', model: q.get('model') || '' }))
       return true
     }
     if (req.method === 'GET' && pathOnly === '/api/prompts/options') {
@@ -2148,6 +2149,16 @@ async function handlePromptsApi(req, res, ctx) {
     if (req.method === 'POST' && pathOnly === '/api/prompts/sync') {
       await readBody(req)
       send(await call({ op: 'sync' }))
+      return true
+    }
+    if (req.method === 'POST' && pathOnly === '/api/prompts/preview-draft') {
+      const body = await readBody(req)
+      send(await call({ op: 'preview_draft', ...body }))
+      return true
+    }
+    if (req.method === 'POST' && pathOnly === '/api/prompts/resolve') {
+      const body = await readBody(req)
+      send(await call({ op: 'resolve', ...body }))
       return true
     }
     if (req.method === 'GET' && id && !sub) {
@@ -2171,6 +2182,11 @@ async function handlePromptsApi(req, res, ctx) {
     if (req.method === 'POST' && id && sub === 'preview') {
       const body = await readBody(req)
       send(await call({ op: 'preview', id, ...body }))
+      return true
+    }
+    if (req.method === 'POST' && id && sub === 'revise') {
+      const body = await readBody(req)
+      send(await call({ op: 'revise', id, ...body }), 201)
       return true
     }
     sendJson(res, 404, { ok: false, error: 'unknown prompts route' })

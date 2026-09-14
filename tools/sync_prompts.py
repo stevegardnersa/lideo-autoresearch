@@ -46,9 +46,13 @@ def main() -> int:
     registry = prompt_registry.load_registry(source_path, seed=True)
 
     slots = registry.get("slots") or {}
+
+    def general_prod(stage: str):
+        return ((slots.get(stage) or {}).get("general") or {}).get("production")
+
     errors = []
     for stage in prompt_registry.STAGES:
-        prod = (slots.get(stage) or {}).get("production")
+        prod = general_prod(stage)
         if not prod:
             errors.append(f"{stage}: no production slot assigned")
             continue
@@ -69,8 +73,11 @@ def main() -> int:
     print(f"bundle: {BUNDLE_PATH}")
     print(f"registry_sha: {registry.get('registry_sha', '')}")
     for stage in prompt_registry.STAGES:
-        prod = (slots.get(stage) or {}).get("production")
+        prod = general_prod(stage)
         print(f"  {stage}.production = {prod}")
+        for model, model_slots in (((slots.get(stage) or {}).get("models")) or {}).items():
+            if (model_slots or {}).get("production"):
+                print(f"  {stage}.{model}.production = {model_slots.get('production')}")
     for label, ids in (("added", added), ("removed", removed), ("changed", changed)):
         for vid in ids:
             print(f"  {label}: {vid} {old.get(vid, '')} -> {new.get(vid, '')}")

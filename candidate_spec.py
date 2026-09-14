@@ -71,6 +71,11 @@ except ImportError:  # pragma: no cover - hosts without core on sys.path
     reasoning_request_params = None
     register_mandatory_reasoning_models = None
 
+try:
+    from core import prompt_template as _prompt_template
+except ImportError:  # pragma: no cover - hosts without core on sys.path
+    _prompt_template = None
+
 
 # Models whose providers reject ``reasoning={"enabled": false}`` and still reason
 # on a plain request. A ``_notthinking`` profile is impossible for them; the
@@ -95,6 +100,9 @@ class StageConfig:
     reasoning: Optional[Dict[str, Any]] = None
     reasoning_effort: Optional[str] = None
     extra_body: Optional[Dict[str, Any]] = None
+    system_template: Optional[str] = None
+    user_template: Optional[str] = None
+    component_text: Dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -336,6 +344,28 @@ FORMAT_INSTRUCTIONS: Dict[FormatMode, str] = {
     "prose": "Return markdown only. Use compact prose paragraphs and minimal headings.",
 }
 
+CHAPTER_REQUIRED_BEHAVIOR = (
+    "Required behavior:\n"
+    "- preserve the chapter's core concepts, explanatory logic, and caveats\n"
+    "- preserve specific examples, names, numbers, and quotes from the source verbatim\n"
+    "- NEVER substitute your own knowledge or generic examples for the source's specific content\n"
+    "- if the source discusses a specific case study (e.g., a company, historical event, "
+    "research finding), include that specific case study in the summary\n"
+    "- include the source's specific data points, statistics, and quantifiable claims\n"
+    "- prioritize information over rhetoric\n"
+    "- include examples only when they help explain a concept\n"
+    "- do not mention the instructions, target length, or what was omitted\n"
+    "- do not add information that is not supported by the source"
+)
+
+COMPOSER_REQUIRED_BEHAVIOR = (
+    "Required behavior:\n"
+    "- preserve the book's main thesis, frameworks, mechanisms, and caveats\n"
+    "- synthesize repeated ideas across chapters instead of repeating them\n"
+    "- keep the final result coherent as a standalone whole-book summary\n"
+    "- do not mention the instructions, target length, or chapter-by-chapter omissions"
+)
+
 
 def final_book_target_words(
     total_book_visible_words: int,
@@ -512,9 +542,15 @@ def _context_block(
     return "\n\n".join(blocks)
 
 
-def _component_text(components: Dict[str, str], lookup_tables: Dict[str, Dict[str, str]]) -> str:
+def _component_text(components: Dict[str, str], lookup_tables: Dict[str, Dict[str, str]],
+                    component_text: Optional[Dict[str, str]] = None) -> str:
     parts: List[str] = []
+    overrides = component_text or {}
     for key, table in lookup_tables.items():
+        override = overrides.get(key)
+        if isinstance(override, str) and override.strip():
+            parts.append(override)
+            continue
         component_id = components.get(key)
         if component_id:
             parts.append(table[component_id])
@@ -556,10 +592,66 @@ def composer_component_tables() -> Dict[str, Dict[str, str]]:
     }
 
 
+COMPONENT_HELP: Dict[str, str] = {
+    "system_style": "Overall voice and identity of the summarizer: how dense, faithful, and explanatory the writing should feel. Sets the framing every other component builds on.",
+    "detail_policy": "How much explanatory depth to keep per concept (definitions, mechanisms, causal reasoning, examples) within the target word budget.",
+    "qualifier_policy": "How strictly to preserve scope conditions, caveats, uncertainty, and limits so a qualified claim is never overstated as absolute.",
+    "structure_policy": "How the summary is organized: heading-following sections, a few thematic clusters, or dense bullets.",
+    "example_policy": "How many source examples to carry over and whether anecdotes are kept or dropped as non-essential.",
+    "terminology_policy": "Whether to keep the source's own terms verbatim or add glosses and plain-language explanations for jargon.",
+    "anti_fluff_policy": "How aggressively to strip filler, hedging, rhetorical framing, and repetition that adds no information.",
+    "length_policy": "How the word/sentence budget is communicated to the model: explicit first-pass budget, outline-then-fill, or a strict sentence target.",
+    "synthesis_policy": "Composer-only: whether to lead with the thesis then frameworks, or build a progressive argument that accumulates across chapters.",
+}
+
+CHAPTER_COMPONENT_KEYS: Tuple[str, ...] = (
+    "system_style", "detail_policy", "qualifier_policy", "structure_policy",
+    "example_policy", "terminology_policy", "anti_fluff_policy", "length_policy",
+)
+
+COMPOSER_COMPONENT_KEYS: Tuple[str, ...] = (
+    "system_style", "synthesis_policy", "detail_policy", "qualifier_policy",
+    "structure_policy", "terminology_policy", "anti_fluff_policy", "length_policy",
+)
+
+
+def component_help() -> Dict[str, str]:
+    """Human-readable tooltip text for each prompt component dimension."""
+    return dict(COMPONENT_HELP)
+
+
+def _render_system_values(composed: str) -> Dict[str, str]:
+    return {
+        "components": composed,
+        "book_title": "",
+        "chapter_title": "",
+        "toc_md": "",
+        "book_metadata": "",
+    }
+
+
+def _substitute_system_text(text: str) -> str:
+    if _prompt_template is None or not text or "{{" not in text:
+        return text
+    try:
+        return _prompt_template.render(text, _render_system_values(text))
+    except _prompt_template.TemplateError:
+        return text
+
+
 def render_chapter_system(spec: Optional[CandidateSpec] = None, *, components: Optional[Dict[str, str]] = None) -> str:
+    stage = getattr(spec, "chapter_stage", None) if spec is not None else None
     if components is None:
-        components = (spec.chapter_stage.prompt_components if spec is not None else {}) or {}
-    return _component_text(components, chapter_component_tables())
+        components = (stage.prompt_components if stage is not None else {}) or {}
+    composed = _component_text(components, chapter_component_tables(), getattr(stage, "component_text", None))
+    composed = _substitute_system_text(composed)
+    template = (getattr(stage, "system_template", None) or "") if stage is not None else ""
+    if template.strip() and _prompt_template is not None:
+        try:
+            return _prompt_template.render(template, _render_system_values(composed))
+        except _prompt_template.TemplateError:
+            return composed
+    return composed
 
 
 
@@ -583,34 +675,46 @@ def render_chapter_user(
             f"Try to land inside the word range on the first pass; do not exceed {s_target} sentences."
         )
     else:
+        s_target = sentence_budget(target_words)
         target_block = (
             f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
             "Try to land inside the range on the first pass."
         )
+    context = _context_block(
+        context_mode=stage.context_mode,
+        book_title=book_title,
+        chapter_title=chapter_title,
+        toc_md=toc_md,
+        book_metadata=book_metadata,
+    )
+    format_instructions = FORMAT_INSTRUCTIONS[stage.format_mode]
+    required_behavior = CHAPTER_REQUIRED_BEHAVIOR
+    template = getattr(stage, "user_template", None) or ""
+    if template.strip() and _prompt_template is not None:
+        values = {
+            "book_title": book_title,
+            "chapter_title": chapter_title,
+            "toc_md": toc_md,
+            "book_metadata": book_metadata,
+            "target_words": target_words,
+            "low": low,
+            "high": high,
+            "s_target": s_target,
+            "source_md": source_md.strip(),
+            "context_block": context,
+            "format_instructions": format_instructions,
+            "required_behavior": required_behavior,
+        }
+        try:
+            return _prompt_template.render(template, values)
+        except _prompt_template.TemplateError:
+            pass
     blocks = [
         "Write a faithful chapter summary.",
-        _context_block(
-            context_mode=stage.context_mode,
-            book_title=book_title,
-            chapter_title=chapter_title,
-            toc_md=toc_md,
-            book_metadata=book_metadata,
-        ),
+        context,
         target_block,
-        FORMAT_INSTRUCTIONS[stage.format_mode],
-        (
-            "Required behavior:\n"
-            "- preserve the chapter's core concepts, explanatory logic, and caveats\n"
-            "- preserve specific examples, names, numbers, and quotes from the source verbatim\n"
-            "- NEVER substitute your own knowledge or generic examples for the source's specific content\n"
-            "- if the source discusses a specific case study (e.g., a company, historical event, "
-            "research finding), include that specific case study in the summary\n"
-            "- include the source's specific data points, statistics, and quantifiable claims\n"
-            "- prioritize information over rhetoric\n"
-            "- include examples only when they help explain a concept\n"
-            "- do not mention the instructions, target length, or what was omitted\n"
-            "- do not add information that is not supported by the source"
-        ),
+        format_instructions,
+        required_behavior,
         "Source chapter markdown:\n" + source_md.strip(),
     ]
     return "\n\n".join(block for block in blocks if block)
@@ -676,9 +780,18 @@ def render_repair_user(
 
 
 def render_composer_system(spec: Optional[CandidateSpec] = None, *, components: Optional[Dict[str, str]] = None) -> str:
+    stage = getattr(spec, "composer_stage", None) if spec is not None else None
     if components is None:
-        components = (spec.composer_stage.prompt_components if spec is not None else {}) or {}
-    return _component_text(components, composer_component_tables())
+        components = (stage.prompt_components if stage is not None else {}) or {}
+    composed = _component_text(components, composer_component_tables(), getattr(stage, "component_text", None))
+    composed = _substitute_system_text(composed)
+    template = (getattr(stage, "system_template", None) or "") if stage is not None else ""
+    if template.strip() and _prompt_template is not None:
+        try:
+            return _prompt_template.render(template, _render_system_values(composed))
+        except _prompt_template.TemplateError:
+            return composed
+    return composed
 
 
 
@@ -694,8 +807,8 @@ def render_composer_user(
 ) -> str:
     stage = spec.composer_stage
     low, high = visible_word_range(target_words, spec.length_control.tolerance_pct)
+    s_target = sentence_budget(target_words)
     if stage.prompt_components.get("length_policy"):
-        s_target = sentence_budget(target_words)
         target_block = (
             f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
             f"Target sentences: {s_target}\n(about {SENTENCE_WORDS} words each). "
@@ -706,24 +819,36 @@ def render_composer_user(
             f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
             "Remove cross-chapter redundancy and keep the result dense."
         )
+    context = _context_block(
+        context_mode=stage.context_mode,
+        book_title=book_title,
+        chapter_title="",
+        toc_md=toc_md,
+        book_metadata=book_metadata,
+    )
+    format_instructions = FORMAT_INSTRUCTIONS[stage.format_mode]
+    required_behavior = COMPOSER_REQUIRED_BEHAVIOR
+    template = getattr(stage, "user_template", None) or ""
+    if template.strip() and _prompt_template is not None:
+        values = {
+            "book_title": book_title,
+            "chapter_summaries": chapter_summaries_md.strip(),
+            "target_words": target_words,
+            "low": low,
+            "high": high,
+            "s_target": s_target,
+            "format_instructions": format_instructions,
+        }
+        try:
+            return _prompt_template.render(template, values)
+        except _prompt_template.TemplateError:
+            pass
     blocks = [
         "Compose a faithful whole-book summary from the provided chapter summaries.",
-        _context_block(
-            context_mode=stage.context_mode,
-            book_title=book_title,
-            chapter_title="",
-            toc_md=toc_md,
-            book_metadata=book_metadata,
-        ),
+        context,
         target_block,
-        FORMAT_INSTRUCTIONS[stage.format_mode],
-        (
-            "Required behavior:\n"
-            "- preserve the book's main thesis, frameworks, mechanisms, and caveats\n"
-            "- synthesize repeated ideas across chapters instead of repeating them\n"
-            "- keep the final result coherent as a standalone whole-book summary\n"
-            "- do not mention the instructions, target length, or chapter-by-chapter omissions"
-        ),
+        format_instructions,
+        required_behavior,
         "Chapter summaries:\n" + chapter_summaries_md.strip(),
     ]
     if spec.composer_mode in {"hybrid_retrieve", "source_aware"} and retrieved_source_excerpts.strip():

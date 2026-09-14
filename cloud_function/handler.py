@@ -95,7 +95,13 @@ def _resolve_prompt(body: Mapping[str, Any], registry: Mapping[str, Any]):
     if incoming:
         return incoming, _meta("request", incoming, "")
 
-    production_id = (((registry.get("slots") or {}).get(stage) or {}).get("production"))
+    stage_slots = (registry.get("slots") or {}).get(stage) or {}
+    model = str(body.get("model") or "").strip()
+    production_id = None
+    if model:
+        production_id = ((stage_slots.get("models") or {}).get(model) or {}).get("production")
+    if not production_id:
+        production_id = (stage_slots.get("general") or {}).get("production")
     production = next((v for v in versions if v.get("id") == production_id), None)
     if production is not None:
         text, fp = prompt_registry.version_text(production)

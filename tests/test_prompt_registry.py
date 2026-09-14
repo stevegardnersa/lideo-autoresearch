@@ -35,8 +35,9 @@ def test_seeding():
     registry = pr.load_registry(path)
     ids = [v["id"] for v in registry["versions"]]
     assert ids == ["chapter-p1", "chapter-p2", "composer-p1"], ids
-    assert registry["slots"]["chapter"] == {"local": "chapter-p1", "production": "chapter-p1"}
-    assert registry["slots"]["composer"] == {"local": "composer-p1", "production": "composer-p1"}
+    assert registry["slots"]["chapter"]["general"] == {"local": "chapter-p1", "production": "chapter-p1"}
+    assert registry["slots"]["chapter"]["models"] == {}
+    assert registry["slots"]["composer"]["general"] == {"local": "composer-p1", "production": "composer-p1"}
     p2 = pr.get_version("chapter-p2", path)
     assert p2 is not None
     assert p2["components"].get("length_policy") == "explicit_budget_first"
@@ -220,6 +221,165 @@ def test_latency_fields():
     print("test_latency_fields: OK")
 
 
+def _spec_with_version(version_id, path):
+    spec = dataclasses.replace(candidate_spec.PROFILE_CANDIDATES[PROFILE])
+    stage_kind = str((pr.get_version(version_id, path) or {}).get("stage") or "chapter")
+    stage_obj = getattr(spec, f"{stage_kind}_stage")
+    setattr(spec, f"{stage_kind}_stage", dataclasses.replace(stage_obj, prompt_components=dict(stage_obj.prompt_components)))
+    pr.apply_overlay(spec, stage_kind=stage_kind, prompt_version=version_id, path=path)
+    return spec
+
+
+def test_component_text_override():
+    path = _tmp_registry()
+    pr.load_registry(path)
+    version = pr.create_version(
+        stage="chapter", label="custom text",
+        components={"system_style": "dense_faithful"},
+        component_text={"system_style": "CUSTOM STYLE FOR {{book_title}}"},
+        path=path,
+    )
+    spec = _spec_with_version(version["id"], path)
+    rendered = candidate_spec.render_chapter_system(spec)
+    assert rendered.startswith("CUSTOM STYLE FOR")
+    assert "{{book_title}}" not in rendered
+    assert "CUSTOM STYLE FOR" in rendered
+    print("test_component_text_override: OK")
+
+
+def test_system_and_user_templates():
+    path = _tmp_registry()
+    pr.load_registry(path)
+    version = pr.create_version(
+        stage="chapter", label="templated",
+        components={"length_policy": "explicit_budget_first"},
+        system_template="SYS {{components}} END",
+        user_template="Book {{book_title}} | {{target_words}} {{low}}-{{high}} | {{source_md}}",
+        path=path,
+    )
+    assert version["system_template"] == "SYS {{components}} END"
+    assert version["user_template"].startswith("Book")
+    assert version["user_template_fingerprint"]
+    spec = _spec_with_version(version["id"], path)
+    system = candidate_spec.render_chapter_system(spec)
+    assert system.startswith("SYS ") and system.endswith(" END")
+    user = candidate_spec.render_chapter_user(spec, source_md="SRC", target_words=900, book_title="B")
+    assert user == "Book B | 900 828-972 | SRC"
+    print("test_system_and_user_templates: OK")
+
+
+def test_byte_identical_baseline():
+    """Seeded versions must render byte-identically after the template changes."""
+    expected = {
+        "chapter-p1": (
+            "2906d9c5015f7f2119361da0251930f92f6cfa699028740d40b5e31357e5fe91",
+            "535fe199de0639ba472a7e4601d417a186e23e800c288d76d7ae5e1b5cfa0cf2",
+        ),
+        "chapter-p2": (
+            "ce79c4d35f92de9a1f7dadd70ce4d26141a45cbe306d7f05ee47da2fed0eca40",
+            "3f3b408caf126ad9e9040dc11d0a76bf7bd865732d795a1be719c5b206e74fa4",
+        ),
+        "composer-p1": (
+            "95516b89af43c2752730793b3a21986b09fd7a87a7f09899ba037c53805e13b1",
+            "65bcd6f3338459a7770b6950e48f9a3664a0a62a6a000b1cb8e55d90bc0be73b",
+        ),
+    }
+    path = _tmp_registry()
+    pr.load_registry(path)
+    for vid, (sys_sha, usr_sha) in expected.items():
+        version = pr.get_version(vid, path)
+        spec = _spec_with_version(vid, path)
+        system = candidate_spec.render_chapter_system(spec) if version["stage"] == "chapter" \
+            else candidate_spec.render_composer_system(spec)
+        user = candidate_spec.render_chapter_user(spec, source_md="src", target_words=1200, book_title="B") \
+            if version["stage"] == "chapter" \
+            else candidate_spec.render_composer_user(spec, chapter_summaries_md="cs", target_words=1200, book_title="B")
+        assert pr.sha256_text(system) == sys_sha, vid
+        assert pr.sha256_text(user) == usr_sha, vid
+    print("test_byte_identical_baseline: OK")
+
+
+def test_legacy_template_alias_and_normalization():
+    import json
+
+    path = _tmp_registry()
+    legacy = {
+        "schema_version": 1,
+        "versions": [{
+            "id": "chapter-p1", "stage": "chapter", "label": "legacy",
+            "components": {"length_policy": "explicit_budget_first"},
+            "template": "LEGACY TEMPLATE", "system_prompt_fingerprint": "abc",
+        }],
+        "slots": {"chapter": {"local": "chapter-p1", "production": "chapter-p1"}, "composer": {"local": None, "production": None}},
+    }
+    path.write_text(json.dumps(legacy), encoding="utf-8")
+    registry = pr.load_registry(path)
+    version = registry["versions"][0]
+    assert version["scope"] == {"kind": "general"}
+    assert version["component_text"] == {}
+    assert registry["slots"]["chapter"]["general"]["local"] == "chapter-p1"
+    assert registry["slots"]["chapter"]["models"] == {}
+    text, fp = pr.version_text(version)
+    assert text == "LEGACY TEMPLATE"
+    assert fp == pr.fingerprint("LEGACY TEMPLATE")
+    print("test_legacy_template_alias_and_normalization: OK")
+
+
+def test_revise_copy_on_write():
+    path = _tmp_registry()
+    pr.load_registry(path)
+    source = pr.get_version("chapter-p2", path)
+    revised = pr.revise_version(
+        "chapter-p2",
+        label="edited",
+        component_text={"system_style": "EDITED {{book_title}}"},
+        scope={"kind": "general"},
+        path=path,
+    )
+    assert revised["id"] != "chapter-p2"
+    assert revised["derived_from"] == "chapter-p2"
+    assert revised["component_text"]["system_style"].startswith("EDITED")
+    still = pr.get_version("chapter-p2", path)
+    assert still["component_text"] == {}
+    assert still["label"] == source["label"]
+    print("test_revise_copy_on_write: OK")
+
+
+def test_scope_validation_and_slots():
+    import tools.prompts_api as api
+
+    path = _tmp_registry()
+    pr.load_registry(path)
+    model = "deepseek/deepseek-v4-flash"
+    scoped = pr.create_version(
+        stage="chapter", label="flash", components={},
+        scope={"kind": "model", "model": model}, path=path,
+    )
+    assert scoped["scope"] == {"kind": "model", "model": model}
+    # Model-scoped version cannot be assigned to the general slot.
+    try:
+        pr.set_slot(stage="chapter", slot="local", version_id=scoped["id"], path=path)
+    except pr.ScopeMismatchError:
+        pass
+    else:
+        raise AssertionError("expected ScopeMismatchError")
+    # General version may pin to a model slot.
+    pr.set_slot(stage="chapter", slot="local", version_id="chapter-p1", model=model, path=path)
+    assert pr.get_slot(stage="chapter", slot="local", model=model, path=path) == "chapter-p1"
+    # Unknown model/profile are rejected by the API layer.
+    bad = api.handle({"op": "create", "stage": "chapter", "label": "x", "scope": {"kind": "model", "model": "nope/nope"}})
+    assert bad["ok"] is False and bad["error"] == "unknown_model"
+    bad2 = api.handle({"op": "create", "stage": "chapter", "label": "x",
+                       "scope": {"kind": "model", "model": model, "profiles": ["nope"]}})
+    assert bad2["ok"] is False and bad2["error"] == "unknown_profile"
+    # Resolution precedence: model slot then general fallback.
+    vid, source = pr.resolve_version(stage="chapter", slot="local", model=model, path=path)
+    assert (vid, source) == ("chapter-p1", "registry_model")
+    vid2, source2 = pr.resolve_version(stage="chapter", slot="production", model=model, path=path)
+    assert source2 == "registry_general"
+    print("test_scope_validation_and_slots: OK")
+
+
 def main():
     tests = [
         test_seeding,
@@ -230,6 +390,12 @@ def main():
         test_v2_prompt_content,
         test_effective_cap_reconciliation,
         test_latency_fields,
+        test_component_text_override,
+        test_system_and_user_templates,
+        test_byte_identical_baseline,
+        test_legacy_template_alias_and_normalization,
+        test_revise_copy_on_write,
+        test_scope_validation_and_slots,
     ]
     for test in tests:
         test()
