@@ -20,6 +20,8 @@ Version record gains: `component_text` (per-dimension text override; falls back 
 
 Versions carry `scope: {kind: general|model, model?, profiles?}`. Slots nested by scope (`general` + `models[model_id]`), legacy flat slots normalized in memory. `set_slot` takes optional `model`; `scope_mismatch` blocks a model-specific version in the general slot (general versions may pin to a model slot). Resolution precedence, recorded as `prompt_source`: explicit override → permutation override (tuning) → registry model (profile-qualified beats model-wide) → registry general → built-in baseline. Resolution happens pre-dispatch (CF stateless); synced CF can resolve scoped ids from the bundled registry. Per-`(stage, model)` production drift in `production_status`.
 
+**Explorer toggles (dashboard/main.js + promptFilters.js).** The System-prompt toggle group is scope-aware: general versions keep one toggle each keyed `version:<id>`, and every model-scoped version collapses into a single aggregate `scope:model` toggle (label `model-specific · N`) that hides only model-scoped runs. **Legacy runs and preferences are v1**: an empty `prompt_version` normalizes to `chapter-p1` (`LEGACY_PROMPT_VERSION`) so pre-registry runs group with v1 instead of an `unversioned` bucket, and `migratePromptVisibility()` rewrites legacy bare/empty preference keys to `version:<normalized-id>`.
+
 ## APIs (new/changed)
 
 - `GET /api/prompts` adds `scope`, `model` drift, `effective` map, `?model=` filter.

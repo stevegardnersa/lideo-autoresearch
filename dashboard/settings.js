@@ -2878,13 +2878,33 @@ async function savePromptSlot(stage, model) {
   const data = PROMPTS_STATE.data || {}
   const local = document.getElementById(`promptLocal_${stage}`).value
   const prod = document.getElementById(`promptProd_${stage}`).value
-  const expected = data.registry_sha || ''
-  const body = { stage, version_id: local, expected_sha: expected }
-  if (model) body.model = model
-  await api('/api/prompts/slots', { method: 'POST', body: JSON.stringify({ ...body, slot: 'local' }) })
-  await api('/api/prompts/slots', { method: 'POST', body: JSON.stringify({ ...body, slot: 'production', version_id: prod }) })
-  setPromptsBanner(`Saved ${model ? model + ' ' : ''}${stage} slots.`)
+  const slots = _stageSlots(data, stage)
+  const current = model ? (slots.models[model] || { local: null, production: null }) : slots.general
+  const writes = []
+  if (local !== (current.local || '')) writes.push({ slot: 'local', version_id: local })
+  if (prod !== (current.production || '')) writes.push({ slot: 'production', version_id: prod })
+  if (!writes.length) {
+    setPromptsBanner(`No ${model ? model + ' ' : ''}${stage} slot changes.`)
+    return
+  }
+  let sha = data.registry_sha || ''
+  try {
+    for (const write of writes) {
+      const body = { stage, slot: write.slot, version_id: write.version_id, expected_sha: sha }
+      if (model) body.model = model
+      const res = await api('/api/prompts/slots', { method: 'POST', body: JSON.stringify(body) })
+      if (res && res.registry_sha) sha = res.registry_sha
+    }
+  } catch (e) {
+    if (e.detail && e.detail.error === 'registry_changed') {
+      await loadPrompts()
+      setPromptsBanner('Registry changed elsewhere — reloading. Reapply your selection.')
+      return
+    }
+    throw e
+  }
   await loadPrompts()
+  setPromptsBanner(`Saved ${model ? model + ' ' : ''}${stage} slots.`)
 }
 
 // ── version create/edit dialog ─────────────────────────────────

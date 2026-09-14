@@ -608,27 +608,23 @@ In `dashboard/index.html`, inside `<div class="controls">`, insert a new `.field
 
 Mirror `renderReasonToggles()` (main.js):
 
-- Distinct present values = `[...new Set(runs.map(r => r.prompt_version || ''))]`. A run with no version is bucketed under the sentinel `''` and shown as **`unversioned`**.
-- If every present value is `''` (all historical runs), render nothing and keep the `unversioned` bucket implicitly visible — same early-return behavior as `renderReasonToggles` when `present.length === 0`. The field stays in the DOM but visually empty.
-- Ordering: versioned ids first, natural-sorted per stage (`chapter-p1 < chapter-p2 < chapter-p10`, then `composer-*`), then the `unversioned` bucket last. No dependency on registry `created_at`.
+- Distinct present values = `[...new Set(runs.map(r => normalizePromptVersion(r.prompt_version)))]`. A run with no version is the **v1 baseline** (the profile defaults) and is treated as `chapter-p1`, not a separate `unversioned` bucket. `normalizePromptVersion('') === 'chapter-p1'` (`LEGACY_PROMPT_VERSION`).
+- If `present.length === 0` (no runs), render nothing — same early-return behavior as `renderReasonToggles`. A legacy-only run set (all `''`) renders the single `chapter-p1` toggle, since those runs really did use v1.
+- Ordering: natural-sorted ids (`chapter-p1 < chapter-p2 < chapter-p10`, then `composer-*`). No dependency on registry `created_at`.
 - Each button:
-  - `type="button"`, class `judge-toggle`, `data-prompt-version="<value>"`, `aria-pressed="true|false"`.
-  - A `.jt-dot` colored by a stable hash of the version string via existing `getColor('prompt_version', value)`; define `PROMPT_VERSION_COLOR` for at least `chapter-p1` (`#6b7280`) and `chapter-p2` (`#10b981`) so the default seeded versions are visually distinct, falling back to hash for others. `unversioned` uses `#94a3b8`.
-  - Text label is the version id (or `unversioned`), so the control is never color-only.
-  - Visible state driven by `promptVersionVisibility[value] ?? true`; off state adds `.jt-off` and removes `.active` (identical classes to the reasoning toggles).
+  - `type="button"`, class `judge-toggle`, `data-prompt-version="<key>"`, `aria-pressed="true|false"`.
+  - A `.jt-dot` colored by a stable hash of the (normalized) version string; define `PROMPT_VERSION_COLOR` for at least `chapter-p1` (`#6b7280`) and `chapter-p2` (`#10b981`) so the default seeded versions are visually distinct, falling back to hash for others. Legacy `''` resolves to the `chapter-p1` color.
+  - Text label is the normalized version id, so the control is never color-only and a legacy run reads as `chapter-p1`.
+  - Visible state driven by `promptVersionVisibility[key] ?? true`; off state adds `.jt-off` and removes `.active` (identical classes to the reasoning toggles).
   - Click: flip visibility, `renderChart()`, `persistState()`.
-- Re-render on every run reload (called from the same place as `renderReasonToggles()` in `loadRuns`).
+- Re-render on every run reload (called from the same place as `renderReasonToggles()` in `loadRuns`). Scope-aware grouping (model-scoped versions collapsing into one aggregate toggle) is specified in `specs/prompts-ui-model-scoped-editing.md`.
 
 ### 21.4 Filter semantics
 
-Extend `getFilteredRuns()` (main.js) with, after the existing reasoning filter:
+Visibility keys are the canonical `version:<normalized-id>` (plus `scope:model` for the aggregate model group, §`prompts-ui-model-scoped-editing`). Legacy keys — bare ids and the empty `''` key — normalize to v1 (`chapter-p1`), so a run recorded before the registry and its saved preference are filtered by the same toggle:
 
 ```js
-const hiddenPrompts = Object.keys(promptVersionVisibility)
-  .filter(k => promptVersionVisibility[k] === false)
-if (hiddenPrompts.length) {
-  filtered = filtered.filter(r => !hiddenPrompts.includes(r.prompt_version || ''))
-}
+filtered = applyPromptFilter(filtered, promptVersionVisibility, versionScope)
 ```
 
 - Filters compose with **AND**: search, run/bucket filter, `Show` (judge type), `Reasoning`, and the new system-prompt filter all apply together.
@@ -639,7 +635,7 @@ if (hiddenPrompts.length) {
 ### 21.5 State persistence
 
 - Add `let promptVersionVisibility = {}` alongside `reasoningVisibility`.
-- `persistState()` includes `promptVersionVisibility` in the serialized `scatter_explorer_state`; `restoreState()` reads `savedState.promptVersionVisibility ?? {}`. Unknown/stale keys are harmless (a key for a version no longer present simply never matches).
+- `persistState()` includes `promptVersionVisibility` in the serialized `scatter_explorer_state`; `restoreState()` reads it through `migratePromptVisibility(savedState.promptVersionVisibility)`, which rewrites legacy bare/empty keys to `version:<normalized-id>` (empty → `version:chapter-p1`). Unknown/stale keys are harmless (a key for a version no longer present simply never matches).
 - Because visibility defaults to `true` via `?? true`, a previously hidden version stays hidden across reloads exactly like reasoning.
 
 ### 21.6 Interaction with run manifests
@@ -657,15 +653,15 @@ if (hiddenPrompts.length) {
 
 ### 21.8 Tests (extend the dashboard harness)
 
-17. Given manifests with `chapter-p1`, `chapter-p2`, and `''`, the Controls sidebar renders three toggles in natural order with `unversioned` last; each has `aria-pressed="true"`.
-18. Clicking `chapter-p1` off removes exactly those runs from the plotted/leaderboard set and adds `.jt-off`; `filteredCount` drops accordingly; clicking again restores them.
+17. Given manifests with `chapter-p1`, `chapter-p2`, and `''`, the Controls sidebar renders **two** toggles (`chapter-p1`, `chapter-p2`) in natural order; the legacy `''` runs fold into `chapter-p1`. Each has `aria-pressed="true"`.
+18. Clicking `chapter-p1` off removes those runs **and** the legacy `''` runs from the plotted/leaderboard set and adds `.jt-off`; `filteredCount` drops accordingly; clicking again restores them.
 19. All-off → empty chart state, no exception, `filteredCount` = 0.
-20. Visibility survives a reload via `persistState`/`restoreState`.
-21. Legacy run set (all `prompt_version === ''`) renders no buttons (field present, empty) and plots unchanged; combined filters (search + judge + reasoning + prompt) AND correctly.
+20. Visibility survives a reload via `persistState`/`restoreState`; a legacy preference keyed by `''` (or a bare id) is migrated and still hides the v1 runs.
+21. Legacy run set (all `prompt_version === ''`) renders one `chapter-p1` toggle and plots unchanged; combined filters (search + judge + reasoning + prompt) AND correctly.
 
 ### 21.9 Acceptance (additions)
 
-- [ ] Controls sidebar shows a **System prompt** toggle group directly above `Show`/`Reasoning`, populated from run manifests (not the registry), with an `unversioned` bucket.
+- [ ] Controls sidebar shows a **System prompt** toggle group directly above `Show`/`Reasoning`, populated from run manifests (not the registry); legacy (empty) runs are treated as the **v1** baseline `chapter-p1`.
 - [ ] Toggling a version filters the scatter, tables, and `filteredCount`; composes with existing filters.
-- [ ] State persists across reloads; legacy runs render an empty field with unchanged output.
+- [ ] State persists across reloads; legacy preference keys migrate to v1; a legacy-only run set renders the v1 toggle with unchanged output.
 - [ ] `make test` dashboard suite covers §21.8 cases 17–21.

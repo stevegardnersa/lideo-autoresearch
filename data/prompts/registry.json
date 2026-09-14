@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "registry_sha": "4811e2ad3895b3d52e7b3cf7e345776258a9855ee9b5430f82b772dab9cfd2e3",
-  "updated_at": "2026-09-12T04:04:11.513873Z",
+  "registry_sha": "30792363179e6703921a85510ec730285fd4556edc3d0ffa34f8136624b040b0",
+  "updated_at": "2026-09-14T08:29:17.329426Z",
   "versions": [
     {
       "id": "chapter-p1",
@@ -14,7 +14,11 @@
       "created_at": "2026-09-12T04:04:11.513509Z",
       "created_by": "seed",
       "notes": "Baseline: profile components, no length policy.",
-      "immutable": true
+      "immutable": true,
+      "scope": {
+        "kind": "general"
+      },
+      "component_text": {}
     },
     {
       "id": "chapter-p2",
@@ -29,7 +33,11 @@
       "created_at": "2026-09-12T04:04:11.513767Z",
       "created_by": "seed",
       "notes": "Consolidates target-aware length control; static rules only.",
-      "immutable": true
+      "immutable": true,
+      "scope": {
+        "kind": "general"
+      },
+      "component_text": {}
     },
     {
       "id": "composer-p1",
@@ -42,17 +50,27 @@
       "created_at": "2026-09-12T04:04:11.513808Z",
       "created_by": "seed",
       "notes": "Baseline composer components.",
-      "immutable": true
+      "immutable": true,
+      "scope": {
+        "kind": "general"
+      },
+      "component_text": {}
     }
   ],
   "slots": {
     "chapter": {
-      "local": "chapter-p1",
-      "production": "chapter-p1"
+      "general": {
+        "local": "chapter-p2",
+        "production": "chapter-p1"
+      },
+      "models": {}
     },
     "composer": {
-      "local": "composer-p1",
-      "production": "composer-p1"
+      "general": {
+        "local": "composer-p1",
+        "production": "composer-p1"
+      },
+      "models": {}
     }
   }
 }

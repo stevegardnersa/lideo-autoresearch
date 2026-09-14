@@ -5,6 +5,12 @@ import {
   promptVersionLabel,
   presentPromptVersions,
   applyPromptFilter,
+  groupPromptVersions,
+  modelSpecificLabel,
+  versionVisibilityKey,
+  migratePromptVisibility,
+  normalizePromptVersion,
+  MODEL_SCOPE_KEY,
 } from './promptFilters.js'
 
 const COLOR_MAP = {
@@ -91,8 +97,13 @@ let runFilter = '__bucket:30m'
 let judgeVisibility = { deterministic: true, LLM: true }
 let reasoningVisibility = {}
 let promptVersionVisibility = {}
+let versionScope = {}
 let explicitFieldChanges = { xField: false, yField: false, sizeField: false, colorField: false, labelField: false }
 
+// Legacy saved state keyed the toggles by bare version id (and used '' for
+// pre-registry runs). Rewrite every entry to the canonical `version:<id>` key,
+// folding the empty legacy key into the v1 baseline, so old preferences keep
+// working and align with how legacy runs are grouped.
 function loadPersistedState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -113,7 +124,7 @@ function savePersistedState(state) {
 function persistState() {
   const currentSaved = loadPersistedState()
   savePersistedState({
-    version: 4,
+    version: 5,
     currentMode,
     selectedRunId,
     selectedJudgeType,
@@ -213,9 +224,10 @@ async function loadRuns(doRender = true) {
           is_llm_judged: isLlmJudged,
           judge_type: isLlmJudged ? `LLM:${judgeModelSlug}` : 'deterministic',
           reasoning: reasonOfProfile(manifest.profile, manifest.reasoning_effort, manifest.thinking_enabled),
-          prompt_version: manifest.prompt_version || '',
+          prompt_version: normalizePromptVersion(manifest.prompt_version),
           composer_prompt_version: manifest.composer_prompt_version || '',
           prompt_fingerprint: manifest.prompt_fingerprint || '',
+          prompt_source: (manifest.prompt_selection && manifest.prompt_selection.chapter && manifest.prompt_selection.chapter.source) || '',
           n_samples: score.n_samples || 0,
           hard_fail_rate: score.hard_fail_rate ?? 0,
           mean_quality: score.mean_quality ?? 0,
@@ -250,11 +262,39 @@ async function loadRuns(doRender = true) {
     populateRunSelect()
     populateSelects()
     renderReasonToggles()
+    await refreshVersionScope()
     renderPromptVersionToggles()
     if (doRender) renderChart()
   } catch (e) {
     console.error('Failed to load runs:', e)
   }
+}
+
+// Model-scoped prompt versions are grouped into one explorer toggle. Prefer the
+// registry's own scope map; fall back to each run's recorded prompt_source so
+// the grouping still works when the registry endpoint is unavailable.
+async function refreshVersionScope() {
+  const derived = {}
+  for (const run of runs) {
+    const value = run.prompt_version
+    if (!value) continue
+    if (derived[value] === undefined) derived[value] = 'general'
+    if (run.prompt_source === 'registry_model') derived[value] = 'model'
+  }
+  let fromRegistry = null
+  try {
+    const res = await fetch('/api/prompts')
+    if (res.ok) {
+      const data = await res.json()
+      fromRegistry = {}
+      for (const version of data.versions || []) {
+        fromRegistry[version.id] = (version.scope && version.scope.kind === 'model') ? 'model' : 'general'
+      }
+    }
+  } catch (e) {
+    console.warn('Prompt registry scope unavailable:', e.message)
+  }
+  versionScope = { ...derived, ...(fromRegistry || {}) }
 }
 
 function populateRunSelect() {
@@ -376,37 +416,55 @@ function renderReasonToggles() {
   })
 }
 
+function promptVersionToggle(key, label, color, title) {
+  const btn = document.createElement('button')
+  btn.type = 'button'
+  btn.className = 'judge-toggle active'
+  btn.dataset.promptVersion = key
+  if (title) btn.title = title
+  const dot = document.createElement('span')
+  dot.className = 'jt-dot'
+  dot.style.background = color
+  btn.appendChild(dot)
+  btn.appendChild(document.createTextNode(` ${label}`))
+  const isActive = promptVersionVisibility[key] ?? true
+  btn.classList.toggle('jt-off', !isActive)
+  btn.classList.toggle('active', isActive)
+  btn.setAttribute('aria-pressed', isActive ? 'true' : 'false')
+  btn.addEventListener('click', () => {
+    const isCurrentlyEnabled = !btn.classList.contains('jt-off')
+    btn.classList.toggle('jt-off', isCurrentlyEnabled)
+    btn.classList.toggle('active', !isCurrentlyEnabled)
+    btn.setAttribute('aria-pressed', isCurrentlyEnabled ? 'false' : 'true')
+    promptVersionVisibility[key] = !isCurrentlyEnabled
+    renderChart()
+    persistState()
+  })
+  return btn
+}
+
 function renderPromptVersionToggles() {
   const container = document.getElementById('promptVersionToggles')
   if (!container) return
   container.innerHTML = ''
   const present = presentPromptVersions(runs)
-  if (present.length === 0 || present.every(v => v === '')) return
-  present.forEach(value => {
-    const btn = document.createElement('button')
-    btn.type = 'button'
-    btn.className = 'judge-toggle active'
-    btn.dataset.promptVersion = value
-    const dot = document.createElement('span')
-    dot.className = 'jt-dot'
-    dot.style.background = promptVersionColor(value)
-    btn.appendChild(dot)
-    btn.appendChild(document.createTextNode(` ${promptVersionLabel(value)}`))
-    const isActive = promptVersionVisibility[value] ?? true
-    btn.classList.toggle('jt-off', !isActive)
-    btn.classList.toggle('active', isActive)
-    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false')
-    btn.addEventListener('click', () => {
-      const isCurrentlyEnabled = !btn.classList.contains('jt-off')
-      btn.classList.toggle('jt-off', isCurrentlyEnabled)
-      btn.classList.toggle('active', !isCurrentlyEnabled)
-      btn.setAttribute('aria-pressed', isCurrentlyEnabled ? 'false' : 'true')
-      promptVersionVisibility[value] = !isCurrentlyEnabled
-      renderChart()
-      persistState()
-    })
-    container.appendChild(btn)
+  if (present.length === 0) return
+  const { general, modelSpecificIds } = groupPromptVersions(present, versionScope)
+  general.forEach(value => {
+    container.appendChild(promptVersionToggle(
+      versionVisibilityKey(value),
+      promptVersionLabel(value),
+      promptVersionColor(value),
+    ))
   })
+  if (modelSpecificIds.length) {
+    container.appendChild(promptVersionToggle(
+      MODEL_SCOPE_KEY,
+      modelSpecificLabel(modelSpecificIds),
+      promptVersionColor('model-specific'),
+      modelSpecificIds.join(', '),
+    ))
+  }
 }
 
 function getFilteredRuns() {
@@ -451,9 +509,9 @@ function getFilteredRuns() {
     filtered = filtered.filter(r => !hiddenReasons.includes(r.reasoning))
   }
 
-  const hiddenPrompts = Object.keys(promptVersionVisibility).filter(k => promptVersionVisibility[k] === false)
-  if (hiddenPrompts.length) {
-    filtered = applyPromptFilter(filtered, promptVersionVisibility)
+  const hasHiddenPrompts = Object.keys(promptVersionVisibility).some(k => promptVersionVisibility[k] === false)
+  if (hasHiddenPrompts) {
+    filtered = applyPromptFilter(filtered, promptVersionVisibility, versionScope)
   }
 
   return filtered
@@ -806,7 +864,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fixedYRange = savedState.fixedYRange ?? false
     judgeVisibility = savedState.judgeVisibility ?? { deterministic: true, LLM: true }
     reasoningVisibility = savedState.reasoningVisibility ?? {}
-    promptVersionVisibility = savedState.promptVersionVisibility ?? {}
+    promptVersionVisibility = migratePromptVisibility(savedState.promptVersionVisibility)
     activeFilters = savedState.activeFilters || {}
     explicitFieldChanges = { xField: false, yField: false, sizeField: false, colorField: false, labelField: false }
 

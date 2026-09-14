@@ -46,7 +46,7 @@ function json(payload, status = 200) {
 }
 
 function makeHarness() {
-  const state = { calls: [], listStatus: 200, lastCreate: null, lastRevise: null, lastSlot: null, promptCalls: 0 }
+  const state = { calls: [], listStatus: 200, lastCreate: null, lastRevise: null, lastSlot: null, promptCalls: 0, slotSha: 'sha-1', slotWrites: 0 }
   const dom = new JSDOM(`<!doctype html><html><head></head><body>
     <div class="page-header"><div class="header-right"><button data-settings-toggle>gear</button></div></div>
   </body></html>`, { url: 'http://localhost/' })
@@ -68,8 +68,14 @@ function makeHarness() {
       return json({ ok: true, version: { id: 'chapter-p10', stage: 'chapter', label: 'edited' } }, 201)
     }
     if (url === '/api/prompts/slots' && method === 'POST') {
-      state.lastSlot = state.calls[state.calls.length - 1].body
-      return json({ ok: true, slots: {} })
+      const body = state.calls[state.calls.length - 1].body
+      state.lastSlot = body
+      if (state.slotSha && body.expected_sha && body.expected_sha !== state.slotSha) {
+        return json({ ok: false, error: 'registry_changed', code: 409, message: 'Registry changed since it was loaded; reload and retry.' }, 409)
+      }
+      state.slotWrites += 1
+      state.slotSha = `sha-${state.slotWrites + 1}`
+      return json({ ok: true, slots: {}, registry_sha: state.slotSha })
     }
     if (url === '/api/prompts' && method === 'GET') {
       if (state.listStatus !== 200) return json({ ok: false, error: 'boom' }, state.listStatus)
@@ -326,4 +332,44 @@ test('reverting a field back to its original value does not prompt to discard', 
   h.click(h.doc.getElementById('pvCancel'))
   await flush()
   assert.equal(confirmCalls, 0, 'no discard confirm after reverting the only change')
+})
+
+test('Save writes only the changed slot and reports saved', async () => {
+  await openPrompts()
+  setValue(h.doc, 'promptLocal_chapter', 'chapter-p2')
+  const save = h.doc.querySelector('[data-action="save-slot"][data-stage="chapter"]')
+  assert.ok(save)
+  assert.equal(save.disabled, false, 'Save enabled after a slot change')
+  h.click(save)
+  await flush()
+  const posts = h.state.calls.filter(c => c.url === '/api/prompts/slots' && c.method === 'POST')
+  assert.equal(posts.length, 1, 'only the changed local slot is written')
+  assert.equal(posts[0].body.slot, 'local')
+  assert.equal(posts[0].body.version_id, 'chapter-p2')
+  assert.equal(posts[0].body.expected_sha, 'sha-1')
+  assert.match(h.doc.getElementById('promptsBanner').textContent, /Saved chapter slots/)
+})
+
+test('Save of both slots threads the registry sha between writes', async () => {
+  await openPrompts()
+  setValue(h.doc, 'promptLocal_chapter', 'chapter-p2')
+  setValue(h.doc, 'promptProd_chapter', 'chapter-p2')
+  h.click(h.doc.querySelector('[data-action="save-slot"][data-stage="chapter"]'))
+  await flush()
+  const posts = h.state.calls.filter(c => c.url === '/api/prompts/slots' && c.method === 'POST')
+  assert.equal(posts.length, 2)
+  assert.deepEqual(posts.map(p => p.body.slot), ['local', 'production'])
+  assert.equal(posts[0].body.expected_sha, 'sha-1')
+  assert.equal(posts[1].body.expected_sha, 'sha-2', 'second write uses the sha returned by the first')
+  assert.match(h.doc.getElementById('promptsBanner').textContent, /Saved chapter slots/)
+})
+
+test('a stale registry sha surfaces a reload banner instead of a hard error', async () => {
+  await openPrompts()
+  h.state.slotSha = 'sha-99'
+  setValue(h.doc, 'promptLocal_chapter', 'chapter-p2')
+  h.click(h.doc.querySelector('[data-action="save-slot"][data-stage="chapter"]'))
+  await flush()
+  assert.match(h.doc.getElementById('promptsBanner').textContent, /Registry changed elsewhere/)
+  assert.match(h.doc.getElementById('promptsPanel').textContent, /chapter-p1/)
 })

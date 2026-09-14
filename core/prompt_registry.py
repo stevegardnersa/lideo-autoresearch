@@ -576,7 +576,7 @@ def set_slot(
         registry["slots"][stage].setdefault("general", {slot: None for slot in SLOTS})
         registry["slots"][stage]["general"][slot] = version_id or None
     save_registry(registry, path)
-    return registry["slots"]
+    return {"slots": registry["slots"], "registry_sha": compute_registry_sha(registry)}
 
 
 def seed_registry() -> Dict[str, Any]:

@@ -200,6 +200,7 @@ Slots become nested by scope while old files keep working:
 - On read, a legacy `slots[stage] = {local, production}` is normalized in memory to `{general:{...}, models:{}}`. Files are not rewritten until the next save.
 - `set_slot` accepts optional `model`; omitted/empty means the general scope. A model-scoped slot may only reference a version whose scope matches (general versions may be assigned to a model slot as an explicit pin; a model-specific version may **not** be assigned to the general slot — `400 scope_mismatch`).
 - `production_status[]` entries gain `model` (`null` for general); drift is computed per `(stage, model)` from CF `meta.prompt_version` + `meta.model`.
+- **Legacy runs and preferences are v1.** Runs stored before the registry existed carry `prompt_version: ''`; they used the v1 baseline prompt (the profile defaults), which is seeded as `chapter-p1`. The explorer normalizes the empty value to `chapter-p1` (`LEGACY_PROMPT_VERSION`) when building toggles and filtering, so legacy runs group with v1 instead of forming a separate `unversioned` bucket. Persisted `promptVersionVisibility` from before the scope-aware keys is migrated by `migratePromptVisibility()`: bare ids and the empty key are rewritten to `version:<normalized-id>` (empty → `version:chapter-p1`).
 
 ### 6.3 Resolution precedence (single source of truth)
 
@@ -270,7 +271,7 @@ All endpoints under `/api/prompts`, JSON, same-origin, atomic writes (`tempfile`
 | `POST` | `/api/prompts/:id/revise` | `{label?, components?, component_text?, system_template?, user_template?, scope?}` | `{ok, version}` 201 | New. Copy-on-write edit; `derived_from=:id`; scope defaults to source. |
 | `PUT` | `/api/prompts/:id` | `{label?, notes?}` | `{ok, version}` | Unchanged; 409 if content keys are present (use `/revise`). |
 | `DELETE` | `/api/prompts/:id` | — | `{ok}` | 409 `version_in_use` if assigned to any slot (general or model). |
-| `POST` | `/api/prompts/slots` | `{stage, slot, version_id, model?, expected_sha?}` | `{ok, slots}` | `model` omitted = general. 409 `registry_changed` on stale sha; 400 `scope_mismatch` / `unknown_model`. |
+| `POST` | `/api/prompts/slots` | `{stage, slot, version_id, model?, expected_sha?}` | `{ok, slots, registry_sha}` | `model` omitted = general. 409 `registry_changed` on stale sha; 400 `scope_mismatch` / `unknown_model`. Returns the post-write `registry_sha` so a multi-slot save can thread it through sequential writes. |
 | `POST` | `/api/prompts/:id/preview` | `{target_words, stage?, model?, slot?}` | `{ok, system_prompt, user_prompt, fingerprint}` | Now returns user prompt and can preview as resolved for a model. |
 | `POST` | `/api/prompts/resolve` | `{stage, model, profile?, slot?}` | `{ok, version_id, source, fingerprint}` | New. Debug/verification of §6.3 precedence. |
 | `POST` | `/api/prompts/sync` | `{stage?}` | `{ok, copied, production_version, registry_sha, scoped_versions}` | Copies all scoped versions + normalized slots into the CF bundle. |
@@ -340,7 +341,7 @@ Error codes: `unknown_prompt_version`, `unknown_placeholder`, `unknown_model`, `
 - `tests/test_prompt_registry.py` (extend) — `component_text` override precedence, `system_template`/`user_template` rendering, byte-identical baseline for no-override versions, fingerprint includes new fields, legacy `template` alias, copy-on-write `revise`, scope create/validate, unknown model/profile rejection, slot normalization for legacy files, `scope_mismatch`.
 - `tests/test_prompt_resolution.py` — §6.3 precedence matrix (override > permutation > registry model+profile > registry model > registry general > baseline); profile-qualified beats model-wide; unknown profile falls back; `resolve` endpoint shape.
 - `tests/test_cf_prompt_version.py` (extend) — scoped version resolution from the bundled registry, `prompt_source`/`prompt_warning` in `meta`, unknown scoped id → 422 (unless inline override), sync round-trip.
-- Dashboard tests (`dashboard/tests/`) — dialog open/reset/close, validation mapping from `fieldErrors`, busy guard, copy-on-write edit does not mutate source, scope filter, scope selector saves the right slot, drift per model.
+- Dashboard tests (`dashboard/tests/`) — dialog open/reset/close, validation mapping from `fieldErrors`, busy guard, copy-on-write edit does not mutate source, scope filter, scope selector saves the right slot, drift per model, and explorer toggles: legacy (empty) runs and legacy preference keys normalize to v1 (`chapter-p1`); the aggregate `scope:model` toggle hides only model-scoped runs.
 - Regression: seeded `chapter-p1`/`chapter-p2`/`composer-p1` render SHA unchanged (system and user) before/after.
 - All backend tests run offline with the mock generator; no API spend.
 

@@ -539,7 +539,7 @@ def handle(command: Dict[str, Any]) -> Dict[str, Any]:
             if model not in models:
                 return _fail(f"Unknown model: {model!r}", error="unknown_model", fieldErrors={"model": "Unknown model"})
         try:
-            slots = pr.set_slot(
+            result = pr.set_slot(
                 stage=str(command.get("stage") or ""),
                 slot=str(command.get("slot") or ""),
                 version_id=str(command.get("version_id") or ""),
@@ -555,7 +555,7 @@ def handle(command: Dict[str, Any]) -> Dict[str, Any]:
             return _fail(str(exc), code=404, allowed=exc.allowed)
         except pr.PromptRegistryError as exc:
             return _fail(str(exc), code=getattr(exc, "status_code", 400))
-        return {"ok": True, "slots": slots}
+        return {"ok": True, "slots": result["slots"], "registry_sha": result["registry_sha"]}
 
     if op == "preview":
         version = pr.get_version(str(command.get("id") or ""), path)
