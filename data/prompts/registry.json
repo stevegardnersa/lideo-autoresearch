@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "registry_sha": "e8468d15d97e3f2ab6793366c95254e2059df48fac6f211d8bb28f98a75ad882",
-  "updated_at": "2026-09-14T22:18:27.599204Z",
+  "registry_sha": "a6b754d3f084c83659be74b947f919e08d9542cc44fb7ae666300e34868c8ccc",
+  "updated_at": "2026-09-14T23:41:14.374587Z",
   "versions": [
     {
       "id": "chapter-p1",
@@ -57,9 +57,9 @@
       "component_text": {}
     },
     {
-      "id": "chapter-p6",
+      "id": "chapter-p3",
       "stage": "chapter",
-      "label": "v5.1 plain readable FK<10 words/sentence=13 (test)",
+      "label": "v3 plain readable FK<10 (shipped)",
       "scope": {
         "kind": "general"
       },
@@ -75,18 +75,18 @@
       "system_prompt_sha256": "f54cdca76c5e79132c62a46bc57b18063549a9a9dd583f6042e4befca4e97417",
       "system_prompt_fingerprint": "f54cdca76c5e7913",
       "user_template_fingerprint": "",
-      "created_at": "2026-09-14T22:08:13.429371Z",
-      "created_by": "operator-test",
-      "notes": "FK<10 test v3.1: tighten words/sentence 14->13 for margin. Derived from chapter-p5.",
+      "created_at": "2026-09-14T23:41:00.892496Z",
+      "created_by": "operator",
+      "notes": "Shipped FK<10 summary: plain_readable style + sentence_split_hard + words/sentence 13. Renamed from test chapter-p6.",
       "immutable": true,
-      "derived_from": "chapter-p5"
+      "derived_from": "chapter-p2"
     }
   ],
   "slots": {
     "chapter": {
       "general": {
-        "local": "chapter-p2",
-        "production": "chapter-p1"
+        "local": "chapter-p3",
+        "production": "chapter-p3"
       },
       "models": {}
     },
