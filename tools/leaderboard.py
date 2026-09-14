@@ -74,9 +74,21 @@ def resolve_artifact_path(value: str) -> Path:
     return path if path.is_absolute() else PROJECT_ROOT / path
 
 
-def filter_rows(rows: List[Dict[str, str]], args: argparse.Namespace) -> List[Dict[str, str]]:
+def disabled_run_ids() -> set:
+    """Base run ids currently soft-disabled via dashboard data/disabled_runs.json."""
+    registry = PROJECT_ROOT / "data" / "disabled_runs.json"
+    try:
+        data = json.loads(registry.read_text(encoding="utf-8"))
+        return set((data.get("disabled") or {}).keys())
+    except Exception:
+        return set()
+
+
+def filter_rows(rows: List[Dict[str, str]], args: argparse.Namespace, disabled_ids: set | None = None) -> List[Dict[str, str]]:
     filtered = []
     needle = args.model_contains.lower().strip()
+    if disabled_ids is None:
+        disabled_ids = disabled_run_ids()
     for row in rows:
         if args.profile and row.get("profile") != args.profile:
             continue
@@ -85,6 +97,8 @@ def filter_rows(rows: List[Dict[str, str]], args: argparse.Namespace) -> List[Di
         if args.benchmark_version and row.get("benchmark_version") != args.benchmark_version:
             continue
         if args.run_id and row.get("run_id") != args.run_id:
+            continue
+        if disabled_ids and row.get("run_id") in disabled_ids:
             continue
         if needle:
             haystack = " ".join(

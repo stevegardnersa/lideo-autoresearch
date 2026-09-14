@@ -129,6 +129,40 @@ function writeCandidates(candidatesPath, data) {
   writeFileSync(candidatesPath, JSON.stringify(data, null, 2) + '\n')
 }
 
+// ── Per-run disable registry ──────────────────────────────────
+
+function disabledRunsPath(dataDir) {
+  return join(dataDir, 'disabled_runs.json')
+}
+
+function readDisabledRuns(dataDir) {
+  try {
+    return JSON.parse(readFileSync(disabledRunsPath(dataDir), 'utf-8')).disabled || {}
+  } catch {
+    return {}
+  }
+}
+
+function writeDisabledRuns(dataDir, disabled) {
+  mkdirSync(dataDir, { recursive: true })
+  writeFileSync(disabledRunsPath(dataDir), JSON.stringify({ disabled }, null, 2) + '\n')
+}
+
+// Base run-id a run artifact file belongs to: the manifest run id stem with any
+// ``__llmj_<judge>`` variant suffix stripped (mirrors tools/add_candidate.py).
+function familyIdOfRunFile(name) {
+  let base = name
+  for (const ext of ['.samples.jsonl', '.state.json', '.json']) {
+    if (base.endsWith(ext)) {
+      base = base.slice(0, -ext.length)
+      break
+    }
+  }
+  const i = base.indexOf('__llmj_')
+  if (i >= 0) base = base.slice(0, i)
+  return base
+}
+
 function makeCtx(opts = {}) {
   const repoRoot = opts.repoRoot || REPO_ROOT
   return {
@@ -304,7 +338,7 @@ function serveStaticFile(rootDir, urlPath) {
 
 // ── Models API ─────────────────────────────────────────────────
 
-function collectRunStats(models, runsDir, hiddenKeys = null) {
+function collectRunStats(models, runsDir, hiddenKeys = null, disabledRunIds = null) {
   try {
     const dirs = readdirSync(runsDir, { withFileTypes: true })
     for (const dir of dirs) {
@@ -321,6 +355,8 @@ function collectRunStats(models, runsDir, hiddenKeys = null) {
         // Hidden variants keep their run files on disk but are excluded from the
         // aggregate stats (runs_count, best_quality, last_tested).
         if (hiddenKeys && rm.profile && hiddenKeys.has(rm.profile)) continue
+        // Disabled runs (per-run registry) are excluded from aggregate stats too.
+        if (disabledRunIds && disabledRunIds.has(familyIdOfRunFile(f))) continue
         const m = models[model]
         m.runs_count = (m.runs_count || 0) + 1
         const isLlm = !!(rm.judge_model && rm.judge_version_resolved && String(rm.judge_version_resolved).includes('judge-absolute-v1'))
@@ -409,7 +445,7 @@ function buildModelsIndex(ctx) {
       provider_route: (spec.chapter_stage && spec.chapter_stage.provider) ? JSON.stringify(spec.chapter_stage.provider) : '',
     })
   }
-  collectRunStats(models, ctx.runsDir, hiddenKeys)
+  collectRunStats(models, ctx.runsDir, hiddenKeys, new Set(Object.keys(readDisabledRuns(ctx.dataDir))))
   for (const m of Object.values(models)) {
     for (const p of m.profiles) {
       if (m._testedProfiles.has(p.slug)) p.status = 'tested'
@@ -422,6 +458,187 @@ function buildModelsIndex(ctx) {
     delete m._profileDirs
   }
   return Object.values(models).sort((a, b) => a.model.localeCompare(b.model))
+}
+
+// ── Runs API ──────────────────────────────────────────────────
+
+function collectRuns(ctx, { disabledOnly = false } = {}) {
+  const runs = []
+  const disabled = readDisabledRuns(ctx.dataDir)
+  try {
+    const dirs = readdirSync(ctx.runsDir, { withFileTypes: true })
+    for (const dir of dirs) {
+      if (!dir.isDirectory()) continue
+      const bench = dir.name
+      const benchDir = join(ctx.runsDir, bench)
+      let files
+      try {
+        files = readdirSync(benchDir).filter(f => f.endsWith('.json') && !f.endsWith('.state.json'))
+      } catch {
+        continue
+      }
+      for (const f of files) {
+        const file = `${bench}/${f}`
+        let rec
+        try {
+          rec = JSON.parse(readFileSync(join(benchDir, f), 'utf-8'))
+        } catch {
+          continue
+        }
+        const rm = rec.run_manifest || {}
+        const score = rec.dataset_score || {}
+        const ph = rm.prompt_hashes || {}
+        const familyId = familyIdOfRunFile(f)
+        const isDisabled = Object.prototype.hasOwnProperty.call(disabled, familyId)
+        if (disabledOnly && !isDisabled) continue
+        const isLlm = !!(rm.judge_model && rm.judge_version_resolved && String(rm.judge_version_resolved).includes('judge-absolute-v1'))
+        runs.push({
+          file,
+          bench,
+          run_id: rm.run_id || f.replace(/\.json$/, ''),
+          family_id: familyId,
+          profile: rm.profile || '',
+          chapter_model: rm.chapter_model || '',
+          judge_model: rm.judge_model || '',
+          judge_version_resolved: rm.judge_version_resolved || '',
+          prompt_version: rm.prompt_version || null,
+          composer_prompt_version: rm.composer_prompt_version || null,
+          composer_stage_ran: rm.composer_stage_ran === true,
+          prompt_hash_full: ph.chapter_stage_sha256 || null,
+          is_llm: isLlm,
+          created_at_utc: rm.created_at_utc || null,
+          disabled: isDisabled,
+          mean_quality: (typeof score.mean_quality === 'number') ? score.mean_quality : null,
+          mean_utility: (typeof score.mean_utility === 'number') ? score.mean_utility : null,
+          hard_fail_rate: (typeof score.hard_fail_rate === 'number') ? score.hard_fail_rate : null,
+          n_samples: score.n_samples || 0,
+        })
+      }
+    }
+  } catch {
+    // runs dir missing
+  }
+  const fam = new Map()
+  for (const r of runs) {
+    if (!fam.has(r.family_id)) fam.set(r.family_id, { judged: false, count: 0, composer: false })
+    const f = fam.get(r.family_id)
+    f.count += 1
+    if (r.is_llm) f.judged = true
+    if (r.composer_stage_ran) f.composer = true
+  }
+  for (const r of runs) {
+    const f = fam.get(r.family_id)
+    r.family_judged = f ? f.judged : false
+    r.family_file_count = f ? f.count : 1
+    r.family_has_composer = f ? f.composer : false
+  }
+  runs.sort((a, b) => `${a.bench}/${a.run_id}`.localeCompare(`${b.bench}/${b.run_id}`))
+  return { runs, disabled }
+}
+
+async function handleRunsApi(req, res, ctx, getJobs = () => null) {
+  const pathOnly = stripQuery(req.url)
+
+  if (req.method === 'GET' && pathOnly === '/api/runs') {
+    try {
+      const q = new URL(req.url, 'http://localhost').searchParams
+      const { runs, disabled } = collectRuns(ctx)
+      const model = (q.get('model') || '').trim()
+      const bench = (q.get('bench') || '').trim()
+      const profile = (q.get('profile') || '').trim()
+      const judge = q.get('judge') || ''
+      const disabledFilter = q.get('disabled') || 'hide'
+      let out = runs
+      if (model) out = out.filter(r => r.chapter_model === model)
+      if (bench) out = out.filter(r => r.bench === bench)
+      if (profile) out = out.filter(r => r.profile.includes(profile))
+      if (judge === 'llm') out = out.filter(r => r.is_llm)
+      if (judge === 'det') out = out.filter(r => !r.is_llm)
+      if (disabledFilter === 'hide') out = out.filter(r => !r.disabled)
+      if (disabledFilter === 'only') out = out.filter(r => r.disabled)
+      sendJson(res, 200, { ok: true, count: out.length, runs: out, totalDisabled: Object.keys(disabled).length })
+      return true
+    } catch (e) {
+      sendJson(res, 500, { ok: false, error: e.message })
+      return true
+    }
+  }
+
+  if (req.method === 'GET' && pathOnly === '/api/runs/disabled') {
+    try {
+      sendJson(res, 200, { ok: true, disabled: readDisabledRuns(ctx.dataDir) })
+      return true
+    } catch (e) {
+      sendJson(res, 500, { ok: false, error: e.message })
+      return true
+    }
+  }
+
+  if (req.method === 'POST' && (pathOnly === '/api/runs/disable' || pathOnly === '/api/runs/enable')) {
+    let body
+    try {
+      body = await readBody(req)
+    } catch (e) {
+      sendJson(res, 400, { ok: false, error: e.message })
+      return true
+    }
+    const runId = String(body.runId || body.family_id || '').trim()
+    if (!runId) {
+      sendJson(res, 400, { ok: false, error: 'runId is required' })
+      return true
+    }
+    const familyId = runId.includes('__llmj_') ? runId.split('__llmj_')[0] : runId
+    try {
+      const disabled = readDisabledRuns(ctx.dataDir)
+      if (pathOnly === '/api/runs/disable') {
+        disabled[familyId] = { disabled_at: new Date().toISOString(), reason: String(body.reason || '').slice(0, 200) || null }
+      } else {
+        delete disabled[familyId]
+      }
+      writeDisabledRuns(ctx.dataDir, disabled)
+      sendJson(res, 200, { ok: true, family_id: familyId, disabled: pathOnly === '/api/runs/disable' })
+      return true
+    } catch (e) {
+      sendJson(res, 500, { ok: false, error: e.message })
+      return true
+    }
+  }
+
+  if (req.method === 'POST' && pathOnly === '/api/runs/delete') {
+    let body
+    try {
+      body = await readBody(req)
+    } catch (e) {
+      sendJson(res, 400, { ok: false, error: e.message })
+      return true
+    }
+    const runId = String(body.runId || '').trim()
+    if (!runId) {
+      sendJson(res, 400, { ok: false, error: 'runId is required' })
+      return true
+    }
+    const familyId = runId.includes('__llmj_') ? runId.split('__llmj_')[0] : runId
+    try {
+      const before = readDisabledRuns(ctx.dataDir)
+      const r = await ctx.pythonRunner(['tools/add_candidate.py', '--remove-run', familyId, '--out', 'data/candidates.json'])
+      if (!r.ok) {
+        sendJson(res, 500, { ok: false, error: (r.stderr || r.message || 'remove-run failed').trim() })
+        return true
+      }
+      if (Object.prototype.hasOwnProperty.call(before, familyId)) {
+        const disabled = readDisabledRuns(ctx.dataDir)
+        delete disabled[familyId]
+        writeDisabledRuns(ctx.dataDir, disabled)
+      }
+      sendJson(res, 200, { ok: true, family_id: familyId, stdout: r.stdout })
+      return true
+    } catch (e) {
+      sendJson(res, 500, { ok: false, error: e.message })
+      return true
+    }
+  }
+
+  return false
 }
 
 function parseAddOutput(stdout) {
@@ -2217,6 +2434,11 @@ function scanRequestHandler(ctx) {
 
     if (req.url.startsWith('/api/models') || req.url.startsWith('/api/models/probe')) {
       handleModelsApi(req, res, ctx, getJobs).then(done => { if (!done) next() })
+      return
+    }
+
+    if (req.url.startsWith('/api/runs')) {
+      handleRunsApi(req, res, ctx, getJobs).then(done => { if (!done) next() }).catch(() => next())
       return
     }
 

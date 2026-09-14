@@ -928,6 +928,76 @@ def _drop_results_rows(results_path: Path, run_ids: set, dry_run: bool) -> int:
     return dropped
 
 
+def remove_run_cascade(
+    run_id: str,
+    *,
+    runs_dir: Path = Path("runs"),
+    jobs_dir: Path = Path("artifacts/jobs"),
+    results_tsv: Path = Path("results.tsv"),
+    dry_run: bool = False,
+) -> Dict[str, Any]:
+    """Delete a single run family (exact base run id) including llmj sidecars,
+    referencing job logs, and results.tsv rows. ``--dry-run`` prints without
+    writing."""
+    run_files: List[Path] = []
+    benchmarks = [d for d in runs_dir.iterdir() if d.is_dir()] if runs_dir.exists() else []
+    for benchmark_dir in benchmarks:
+        for run_file in benchmark_dir.iterdir():
+            if not run_file.is_file():
+                continue
+            if _run_id_of_run_file(run_file.name) == run_id:
+                run_files.append(run_file)
+    if not run_files:
+        print(f"No run files match run id: {run_id}")
+        return {
+            "run_id": run_id,
+            "run_files": [],
+            "logs": [],
+            "active_logs": [],
+            "result_rows": 0,
+        }
+
+    run_ids = {run_id}
+    deletable_logs, active_logs = _scan_logs_for_run_ids(run_ids, jobs_dir)
+    rows = _drop_results_rows(results_tsv, run_ids, dry_run)
+
+    print(f"Found {len(run_files)} run file(s) for '{run_id}':")
+    for rf in run_files:
+        print(f"  - {rf}")
+    if deletable_logs:
+        print(f"Found {len(deletable_logs)} job log(s)")
+    if active_logs:
+        print(f"Skipped {len(active_logs)} active job log(s):")
+        for lg in active_logs:
+            print(f"  - {lg}")
+    if rows:
+        print(f"Found {rows} results.tsv row(s)")
+
+    summary = {
+        "run_id": run_id,
+        "run_files": [str(p) for p in run_files],
+        "logs": [str(p) for p in deletable_logs],
+        "active_logs": [str(p) for p in active_logs],
+        "result_rows": rows,
+    }
+
+    if dry_run:
+        print("(dry-run — no changes written)")
+        return summary
+
+    for rf in run_files:
+        rf.unlink()
+    print(f"Removed {len(run_files)} run file(s)")
+    if deletable_logs:
+        for lg in deletable_logs:
+            lg.unlink()
+        print(f"Removed {len(deletable_logs)} job log(s)")
+    if rows:
+        print(f"Removed {rows} results.tsv row(s)")
+
+    return summary
+
+
 def remove_profile_cascade(
     profile_key: str,
     *,
@@ -1110,6 +1180,9 @@ def main() -> None:
     parser.add_argument("--list", action="store_true",
                         help="List all profiles in candidates JSON")
     parser.add_argument("--remove", metavar="PATTERN", help="Remove profiles matching regex pattern")
+    parser.add_argument("--remove-run", metavar="RUN_ID",
+                        help="Remove a single run family by exact base run id (llmj sidecar files "
+                             "included) plus its references in job logs and results.tsv")
     parser.add_argument("--remove-profile", metavar="KEY",
                         help="Remove a single profile by exact key plus all of its run artifacts, "
                              "referencing job logs, and results.tsv rows")
@@ -1139,6 +1212,16 @@ def main() -> None:
 
     if args.list:
         list_profiles(args.out)
+        return
+
+    if args.remove_run is not None:
+        remove_run_cascade(
+            args.remove_run,
+            runs_dir=args.runs_dir,
+            jobs_dir=args.jobs_dir,
+            results_tsv=args.results_tsv,
+            dry_run=args.dry_run,
+        )
         return
 
     if args.remove_profile is not None:

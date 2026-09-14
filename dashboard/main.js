@@ -169,12 +169,34 @@ async function findRunJsonFiles() {
   }
 }
 
+// Base run-id a run artifact belongs to (mirrors dashboard familyIdOfRunFile).
+function familyIdOfRunFile(file) {
+  let base = String(file).replace(/\.json$/, '')
+  const slash = base.lastIndexOf('/')
+  if (slash >= 0) base = base.slice(slash + 1)
+  const i = base.indexOf('__llmj_')
+  if (i >= 0) base = base.slice(0, i)
+  return base
+}
+
+async function loadDisabledRunIds() {
+  try {
+    const res = await fetch('/api/runs/disabled')
+    if (!res.ok) return new Set()
+    const body = await res.json()
+    return new Set(Object.keys(body.disabled || {}))
+  } catch {
+    return new Set()
+  }
+}
+
 async function loadRuns(doRender = true) {
   try {
     const files = await findRunJsonFiles()
     const hiddenProfiles = new Set(
       (await fetch('/api/models/hidden').then(r => r.json()).catch(() => ({ hidden: [] }))).hidden || []
     )
+    const disabledRunIds = await loadDisabledRunIds()
     runs = []
 
     for (const file of files) {
@@ -248,6 +270,7 @@ async function loadRuns(doRender = true) {
           file: file
         }
         if (hiddenProfiles.has(run.candidate_name)) continue
+        if (disabledRunIds.has(familyIdOfRunFile(run.file))) continue
         runs.push(run)
       } catch (e) {
         console.warn(`Failed to load ${file}:`, e)

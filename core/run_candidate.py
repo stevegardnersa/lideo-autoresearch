@@ -2841,6 +2841,7 @@ def _run_single(
     previous_chapter_version = str(run_manifest.get("prompt_version") or "")
     run_manifest["prompt_version"] = str(chapter_prompt.get("version") or "")
     run_manifest["composer_prompt_version"] = str(composer_prompt.get("version") or "")
+    run_manifest["composer_stage_ran"] = not spec.disable_composer
     run_manifest["prompt_fingerprint"] = str(chapter_prompt.get("fingerprint") or "")
     run_manifest["prompt_source"] = _prompt_source_label(chapter_prompt)
     run_manifest["prompt_registry_sha"] = str(prompt_selection.get("registry_sha") or "")

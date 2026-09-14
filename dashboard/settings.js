@@ -63,6 +63,7 @@ const MODAL_TEMPLATE = `
     <div class="settings-body">
       <nav class="settings-nav">
         <button class="settings-nav-item active" data-section="models">Models</button>
+        <button class="settings-nav-item" data-section="runs">Runs</button>
         <button class="settings-nav-item" data-section="run">Run data</button>
         <button class="settings-nav-item" data-section="prompts">Prompts</button>
         <button class="settings-nav-item" data-section="upcoming" disabled title="Coming soon">Judges</button>
@@ -78,6 +79,59 @@ const MODAL_TEMPLATE = `
           </div>
           <div class="models-list" id="modelsList">
             <div class="placeholder-text">Loading models...</div>
+          </div>
+        </section>
+        <section class="settings-section" id="settingsRunsSection">
+          <div class="runs-head">
+            <div>
+              <div class="settings-section-title">Runs</div>
+              <div class="settings-section-sub">Every run artifact across benchmarks. Judge a single run with the LLM judge, soft-hide runs being kept for reference, or permanently delete a run family.</div>
+            </div>
+            <div class="runs-head-actions">
+              <button class="mini-btn" id="runsRefresh">Refresh</button>
+            </div>
+          </div>
+          <div class="run-banner cm-hidden" id="runsBanner" role="status"></div>
+          <div class="runs-toolbar">
+            <input class="runs-search" id="runsSearch" type="search" placeholder="Filter by model, profile, run id..." spellcheck="false" />
+            <select class="runs-select" id="runsModelFilter"><option value="">all models</option></select>
+            <select class="runs-select" id="runsJudgedFilter">
+              <option value="all">any judge</option>
+              <option value="llm">LLM-judged</option>
+              <option value="det">deterministic</option>
+            </select>
+            <select class="runs-select" id="runsDisabledFilter">
+              <option value="hide">exclude hidden</option>
+              <option value="include">include hidden</option>
+              <option value="only">hidden only</option>
+            </select>
+            <span class="runs-count" id="runsCount"></span>
+          </div>
+          <div class="runs-list-wrap">
+            <table class="runs-table">
+              <thead>
+                <tr>
+                  <th class="runs-check"><input type="checkbox" id="runsCheckAll" title="Select all visible" aria-label="Select all runs" /></th>
+                  <th>run id</th>
+                  <th>bench</th>
+                  <th>profile</th>
+                  <th>model</th>
+                  <th>judge</th>
+                  <th>prompt</th>
+                  <th>quality</th>
+                  <th>samples</th>
+                  <th>state<span class="runs-th-tip" title="active = run family lives on disk; '· N files' = the base run plus its LLM-judge sidecar JSONs (one row per file). hidden = family soft-disabled in data/disabled_runs.json, excluded from leaderboard and model stats.">ⓘ</span></th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="runsList"><tr><td colspan="11"><div class="placeholder-text">Loading runs...</div></td></tr></tbody>
+            </table>
+          </div>
+          <div class="runs-bulkbar">
+            <span class="runs-bulkcount" id="runsBulkCount"></span>
+            <button class="mini-btn" id="runsBulkDisable">Hide selected</button>
+            <button class="mini-btn" id="runsBulkEnable">Show selected</button>
+            <button class="mini-btn mini-btn-danger" id="runsBulkDelete">Delete selected</button>
           </div>
         </section>
         <section class="settings-section" id="settingsUpcomingSection">
@@ -389,6 +443,7 @@ function renderModelsPage(models) {
           <div class="ms-col"><span class="ms-k">LLM Q</span><span class="ms-v ${tested ? '' : 'ms-muted'}">${llm}</span></div>
         </div>
         <div class="model-actions">
+          <button class="mini-btn" data-action="runs">Runs</button>
           <button class="mini-btn" data-action="edit">Edit</button>
           <button class="mini-btn mini-btn-danger" data-action="delete">Delete</button>
         </div>
@@ -407,6 +462,216 @@ async function loadModels() {
   } catch (e) {
     list.innerHTML = `<div class="placeholder-text">Failed to load models: ${esc(e.message)}</div>`
   }
+}
+
+// ── Runs manager (per-run list/judge/hide/delete) ─────────────
+
+const RUNS_STATE = { runs: [], models: [], filter: { q: '', model: '', judge: 'all', disabled: 'hide' }, preset: null }
+
+function runsFamilyId(run) {
+  const i = run.family_id.indexOf('__llmj_')
+  return i >= 0 ? run.family_id.slice(0, i) : run.family_id
+}
+
+function setRunsBanner(msg, tone) {
+  const b = document.getElementById('runsBanner')
+  if (!b) return
+  if (!msg) { b.classList.add('cm-hidden'); b.innerHTML = ''; return }
+  b.innerHTML = msg
+  b.classList.toggle('run-banner-err', tone === 'error')
+  b.classList.remove('cm-hidden')
+}
+
+function runsFamilyOf(file) {
+  let base = String(file).replace(/\.json$/, '')
+  const slash = base.lastIndexOf('/')
+  if (slash >= 0) base = base.slice(slash + 1)
+  const i = base.indexOf('__llmj_')
+  if (i >= 0) base = base.slice(0, i)
+  return base
+}
+
+async function loadRunsManager() {
+  const list = document.getElementById('runsList')
+  try {
+    const [modelsRes, runsRes] = await Promise.all([
+      api('/api/models'),
+      api(`/api/runs?disabled=${RUNS_STATE.filter.disabled}`),
+    ])
+    RUNS_STATE.models = (modelsRes.models || []).map(m => m.model).sort()
+    RUNS_STATE.runs = runsRes.runs || []
+    if (RUNS_STATE.preset && RUNS_STATE.preset.model) {
+      RUNS_STATE.filter.model = RUNS_STATE.preset.model
+      RUNS_STATE.preset = null
+    }
+    renderRunsManager()
+  } catch (e) {
+    list.innerHTML = `<div class="placeholder-text">Failed to load runs: ${esc(e.message)}</div>`
+  }
+}
+
+function renderRunsManager() {
+  const list = document.getElementById('runsList')
+  const f = RUNS_STATE.filter
+  const modelSel = document.getElementById('runsModelFilter')
+  if (modelSel && modelSel.options.length !== RUNS_STATE.models.length + 1) {
+    modelSel.innerHTML = '<option value="">all models</option>' + RUNS_STATE.models.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('')
+    modelSel.value = RUNS_STATE.models.includes(f.model) ? f.model : ''
+  }
+  const judgedSel = document.getElementById('runsJudgedFilter')
+  if (judgedSel && judgedSel.value !== f.judge) judgedSel.value = f.judge
+  const disabledSel = document.getElementById('runsDisabledFilter')
+  if (disabledSel && disabledSel.value !== f.disabled) disabledSel.value = f.disabled
+  const q = f.q.trim().toLowerCase()
+  let out = RUNS_STATE.runs
+  if (f.model) out = out.filter(r => r.chapter_model === f.model)
+  if (f.judge === 'llm') out = out.filter(r => r.is_llm)
+  if (f.judge === 'det') out = out.filter(r => !r.is_llm)
+  if (f.disabled === 'hide') out = out.filter(r => !r.disabled)
+  if (f.disabled === 'only') out = out.filter(r => r.disabled)
+  if (q) {
+    out = out.filter(r => (r.run_id + ' ' + r.profile + ' ' + r.chapter_model + ' ' + r.bench).toLowerCase().includes(q))
+  }
+  const count = document.getElementById('runsCount')
+  if (count) count.textContent = `${out.length} of ${RUNS_STATE.runs.length} run${RUNS_STATE.runs.length === 1 ? '' : 's'}`
+  const checkAll = document.getElementById('runsCheckAll')
+  if (checkAll) checkAll.checked = false
+  const bulk = document.getElementById('runsBulkCount')
+  if (bulk) bulk.textContent = ''
+  if (!out.length) {
+    list.innerHTML = `<tr><td colspan="11"><div class="placeholder-text">No runs match the current filters.</div></td></tr>`
+    return
+  }
+  list.innerHTML = out.slice().sort((a, b) => `${a.bench}/${a.run_id}`.localeCompare(`${b.bench}/${b.run_id}`))
+    .map(r => {
+      const famId = runsFamilyId(r)
+      const judgeCell = r.is_llm ? `<span class="runs-badge runs-badge-llm" title="${esc(r.judge_model || '')} · ${esc(r.judge_version_resolved || '')}">LLM:${esc((r.judge_model || '').split('/').pop())}</span>`
+        : (r.family_judged ? `<span class="runs-badge runs-badge-det" title="a ${esc(r.judge_model || 'LLM')} sidecar exists in this family">det + llm</span>` : `<span class="runs-badge runs-badge-det">deterministic</span>`)
+      const stateCell = r.disabled
+        ? `<span class="runs-state runs-state-hidden">hidden</span>`
+        : (r.family_file_count > 1 ? `<span class="runs-state">active · ${r.family_file_count} files</span>` : `<span class="runs-state">active</span>`)
+      return `<tr class="${r.disabled ? 'runs-row-hidden' : ''}">
+        <td class="runs-check"><input type="checkbox" data-runs-check="${esc(famId)}" aria-label="Select run" /></td>
+        <td class="runs-id" title="${esc(r.file)}"><code>${esc(runIdShort(r.run_id))}</code></td>
+        <td>${esc(r.bench)}</td>
+        <td>${esc(r.profile)}</td>
+        <td>${esc(r.chapter_model)}</td>
+        <td>${judgeCell}</td>
+        <td class="runs-prompt" title="${r.prompt_hash_full ? `chapter prompt ${esc(r.prompt_hash_full)}` : ''}"><span>${r.prompt_version ? esc(r.prompt_version) : '<span class="muted">—</span>'}${r.composer_prompt_version && r.family_has_composer && r.composer_prompt_version !== r.prompt_version ? ` <span class="muted">· ${esc(r.composer_prompt_version)}</span>` : ''}</span></td>
+        <td>${fmtQuality(r.mean_quality)}</td>
+        <td>${r.n_samples}</td>
+        <td>${stateCell}</td>
+        <td class="runs-actions">
+          <button class="mini-btn" data-run-action="judge" data-family="${esc(famId)}" data-bench="${esc(r.bench)}" ${r.is_llm ? '' : ''}>Judge</button>
+          ${r.disabled
+            ? `<button class="mini-btn" data-run-action="enable" data-family="${esc(famId)}">Show</button>`
+            : `<button class="mini-btn" data-run-action="disable" data-family="${esc(famId)}">Hide</button>`}
+          <button class="mini-btn mini-btn-danger" data-run-action="delete" data-family="${esc(famId)}">Delete</button>
+        </td>
+      </tr>`
+    }).join('')
+}
+
+function runIdShort(id) {
+  if (!id) return ''
+  if (id.length <= 56) return id
+  return `${id.slice(0, 28)}…${id.slice(-24)}`
+}
+
+function runsCheckedFamilies() {
+  const fams = []
+  document.querySelectorAll('#runsList input[data-runs-check]:checked').forEach(cb => fams.push(cb.dataset.runsCheck))
+  return [...new Set(fams)]
+}
+
+async function runRunsAction(action, familyId, opts = {}) {
+  if (action === 'judge') {
+    const bench = opts.bench || ''
+    const remembered = storageGet('mm.judgeModel') || prefJudgeModel || DEFAULT_JUDGE_MODEL
+    let entered = null
+    try { entered = window.prompt('Judge model (e.g. openai/gpt-5.4-mini):', remembered) } catch { entered = null }
+    if (!entered || !entered.trim()) return
+    const judgeModel = entered.trim()
+    storageSet('mm.judgeModel', judgeModel)
+    launchProfileJob('judge_existing', {
+      bench,
+      run_id: familyId,
+      'judge-model': judgeModel,
+    }, `LLM judge of run <code>${esc(runIdShort(familyId))}</code> on <code>${esc(bench)}</code> with <code>${esc(judgeModel)}</code>`)
+    return
+  }
+  if (action === 'disable') {
+    try { await api('/api/runs/disable', { method: 'POST', body: JSON.stringify({ runId: familyId }) }) }
+    catch (e) { setRunsBanner(esc(e.message), 'error'); return }
+  } else if (action === 'enable') {
+    try { await api('/api/runs/enable', { method: 'POST', body: JSON.stringify({ runId: familyId }) }) }
+    catch (e) { setRunsBanner(esc(e.message), 'error'); return }
+  } else if (action === 'delete') {
+    const ok = window.confirm(`Permanently delete run family?\n\n${runIdShort(familyId)}\n\nDeletes the run JSON, samples, state, and llmj sidecar files, plus its results.tsv rows. This cannot be undone.`)
+    if (!ok) return
+    try {
+      await api('/api/runs/delete', { method: 'POST', body: JSON.stringify({ runId: familyId }) })
+      setRunsBanner(`Deleted run family <code>${esc(runIdShort(familyId))}</code>.`)
+    } catch (e) {
+      setRunsBanner(esc(e.message), 'error')
+      return
+    }
+  }
+  await loadRunsManager()
+}
+
+async function runsBulkAction(action) {
+  const fams = runsCheckedFamilies()
+  if (!fams.length) { setRunsBanner('Select at least one run first.', 'error'); return }
+  if (action === 'delete') {
+    const ok = window.confirm(`Permanently delete ${fams.length} run famil${fams.length === 1 ? 'y' : 'ies'}?\n\nThis cannot be undone.`)
+    if (!ok) return
+  }
+  for (const fam of fams) {
+    try {
+      if (action === 'disable') await api('/api/runs/disable', { method: 'POST', body: JSON.stringify({ runId: fam }) })
+      else if (action === 'enable') await api('/api/runs/enable', { method: 'POST', body: JSON.stringify({ runId: fam }) })
+      else if (action === 'delete') await api('/api/runs/delete', { method: 'POST', body: JSON.stringify({ runId: fam }) })
+    } catch (e) {
+      setRunsBanner(`${esc(action === 'delete' ? 'Delete' : action)} failed for <code>${esc(runIdShort(fam))}</code>: ${esc(e.message)}`, 'error')
+      return
+    }
+  }
+  await loadRunsManager()
+  setRunsBanner(action === 'delete' ? `Deleted ${fams.length} run famil${fams.length === 1 ? 'y' : 'ies'}.` : '')
+}
+
+function bindRunsManager() {
+  const section = document.getElementById('settingsRunsSection')
+  if (!section || section.dataset.bound) return
+  section.dataset.bound = '1'
+  document.getElementById('runsRefresh').addEventListener('click', () => loadRunsManager().catch(() => {}))
+  document.getElementById('runsSearch').addEventListener('input', (e) => { RUNS_STATE.filter.q = e.target.value; renderRunsManager() })
+  document.getElementById('runsModelFilter').addEventListener('change', (e) => { RUNS_STATE.filter.model = e.target.value; renderRunsManager() })
+  document.getElementById('runsJudgedFilter').addEventListener('change', (e) => { RUNS_STATE.filter.judge = e.target.value; renderRunsManager() })
+  document.getElementById('runsDisabledFilter').addEventListener('change', (e) => {
+    RUNS_STATE.filter.disabled = e.target.value
+    loadRunsManager().catch(() => renderRunsManager())
+  })
+  document.getElementById('runsList').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-run-action]')
+    if (!btn) return
+    runRunsAction(btn.dataset.runAction, btn.dataset.family, { bench: btn.dataset.bench })
+  })
+  document.getElementById('runsCheckAll').addEventListener('change', (e) => {
+    document.querySelectorAll('#runsList input[data-runs-check]').forEach(cb => { cb.checked = e.target.checked })
+    updateRunsBulkCount()
+  })
+  document.getElementById('runsList').addEventListener('change', updateRunsBulkCount)
+  document.getElementById('runsBulkDisable').addEventListener('click', () => runsBulkAction('disable'))
+  document.getElementById('runsBulkEnable').addEventListener('click', () => runsBulkAction('enable'))
+  document.getElementById('runsBulkDelete').addEventListener('click', () => runsBulkAction('delete'))
+}
+
+function updateRunsBulkCount() {
+  const n = runsCheckedFamilies().length
+  const el = document.getElementById('runsBulkCount')
+  if (el) el.textContent = n ? `${n} selected` : ''
 }
 
 // Updates the judged/status/runs-dir cells of an open edit dialog in place, so a
@@ -1659,7 +1924,10 @@ async function handleModelsListClick(e) {
   const card = e.target.closest('.model-card')
   const model = card.dataset.model
   const action = btn.dataset.action
-  if (action === 'edit') {
+  if (action === 'runs') {
+    RUNS_STATE.preset = { model }
+    activateSection('runs')
+  } else if (action === 'edit') {
     const { models } = await api('/api/models')
     const m = models.find(x => x.model === model)
     if (m) openEditDialog(m)
@@ -1703,6 +1971,7 @@ function activateSection(section) {
     s.classList.toggle('active', s.id === `settings${cap}Section`)
   })
   if (section === 'models') loadModels()
+  else if (section === 'runs') { bindRunsManager(); loadRunsManager().catch(() => {}) }
   else if (section === 'run') initRunData()
   else if (section === 'prompts') loadPrompts()
 }
@@ -3392,6 +3661,7 @@ function initSettings() {
   document.body.appendChild(wrap)
   wireGearButtons()
   bindModal()
+  bindRunsManager()
   bindPromptsPanel()
   bindPromptVersionDialog()
 }
