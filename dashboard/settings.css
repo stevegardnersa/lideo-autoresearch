@@ -751,7 +751,7 @@
 .job-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
 .job-count { font-size: 12px; font-weight: 650; color: var(--text, #1d2433); }
 .job-head-actions { display: flex; gap: 6px; }
-.job-list { display: flex; flex-direction: column; gap: 8px; max-height: 56vh; overflow-y: auto; }
+.job-list { display: flex; flex-direction: column; gap: 8px; max-height: 56vh; overflow-y: auto; padding-bottom: 120px; }
 .run-offline-hide { opacity: 0.35; pointer-events: none; }
 .job-offline {
   margin-top: 10px;
@@ -921,6 +921,75 @@
 }
 .log-panel-waiting { padding: 10px 16px; }
 .log-panel-raw { text-decoration: none; font-weight: 600; }
+
+/* floating run widget — bottom-right live cards (active runs) */
+.run-toast-stack {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 905;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(380px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  pointer-events: none;
+}
+.run-toast {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--line, #d8dee8);
+  border-radius: 10px;
+  background: var(--panel, #ffffff);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.22);
+  padding: 10px 12px;
+}
+.run-toast.is-pinned { border-color: #fca5a5; }
+.run-toast-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.run-toast-main { display: flex; align-items: center; gap: 7px; min-width: 0; flex: 1; }
+.run-toast-title {
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--text, #1d2433);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.run-toast-elapsed { font-size: 11px; color: var(--muted, #6b7280); flex: none; }
+.run-toast-expand { flex: none; }
+.run-toast-dismiss {
+  flex: none;
+  border: none;
+  background: none;
+  color: var(--muted, #6b7280);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+.run-toast-dismiss:hover { color: var(--text, #1d2433); }
+.run-toast-console {
+  max-height: 108px;
+  overflow-y: auto;
+  border-radius: 8px;
+  background: #0f172a;
+  padding: 8px 10px;
+}
+.run-toast.is-expanded .run-toast-console { max-height: 40vh; }
+.run-toast-pre {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #dbeafe;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.run-toast-waiting { font-size: 11px; color: var(--muted, #6b7280); font-style: italic; }
+.run-toast-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
 /* explorer header gear sits inline with controls */
 .controls-wrap > .settings-gear-btn { margin-right: 8px; }

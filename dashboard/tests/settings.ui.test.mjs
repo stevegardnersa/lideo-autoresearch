@@ -287,7 +287,11 @@ afterEach(() => {
   for (const k of ['pollTimer', 'dlgTimer', 'panelTimer']) {
     if (rs[k]) { clearInterval(rs[k]); rs[k] = null }
   }
-  for (const name of ['es', 'dlgEs', 'panelEs']) {
+  if (rs.widgetHideTimers && rs.widgetHideTimers.values) {
+    for (const t of rs.widgetHideTimers.values()) { try { clearTimeout(t) } catch {} }
+    rs.widgetHideTimers.clear()
+  }
+  for (const name of ['es', 'dlgEs', 'panelEs', 'widgetEs']) {
     const map = rs[name]
     if (map && map.values) {
       for (const es of map.values()) { try { es.close() } catch {} }
@@ -946,16 +950,18 @@ test('destructive run gates on typed RESET and posts confirm', async () => {
   assert.deepEqual(post.body.args, {})
 })
 
-test('job rows show status badges; cancel is two-step confirm', async () => {
+test('floating run widget shows active jobs; cancel is two-step confirm', async () => {
   const { doc, click, state } = h
   await openRun(h)
-  const runningRow = doc.querySelector('.job-row[data-job="j1"]')
-  assert.ok(runningRow, 'running job rendered')
-  const badge = runningRow.querySelector('.job-badge')
+  const card = doc.querySelector('.run-toast[data-job="j1"]')
+  assert.ok(card, 'running job rendered in the floating widget')
+  const badge = card.querySelector('.job-badge')
   assert.ok(badge.classList.contains('st-running'))
   assert.match(badge.textContent, /Running/)
+  assert.ok(doc.querySelector('.run-toast[data-job="j2"]'), 'queued job also shows a widget card')
+  assert.ok(!doc.querySelector('#jobsList .job-row[data-job="j1"]'), 'active job is not in the history list')
 
-  const cancelBtn = runningRow.querySelector('.job-cancel')
+  const cancelBtn = card.querySelector('.run-toast-cancel')
   click(cancelBtn)
   assert.equal(cancelBtn.textContent.trim(), 'Confirm cancel?')
   assert.equal(cancelBtn.dataset.armed, '1')
@@ -985,22 +991,116 @@ test('re-run replays original args via detail fetch', async () => {
   assert.deepEqual(post.body, { toolId: 'run_candidate', args: { bench: 'chapter_fast', profile: 'all', mock: true } })
 })
 
-test('expanded running job opens an EventSource stream', async () => {
+test('running job auto-streams into the widget without expansion', async () => {
   const { doc, click, state } = h
   await openRun(h)
-  const row = doc.querySelector('.job-row[data-job="j1"]')
-  click(row.querySelector('.job-row-head'))
-  const consoleEl = row.querySelector('.job-console')
-  assert.ok(!consoleEl.classList.contains('cm-hidden'), 'console expanded on click')
-  await waitUntil(() => state.es.length === 1)
-  assert.match(state.es[0], /\/api\/jobs\/j1\/stream/)
+  await waitUntil(() => state.esInstances.length === 1)
+  assert.match(state.es[0], /\/api\/jobs\/j1\/stream/, 'widget subscribes to the running job')
+  assert.ok(!state.es.some(u => /j2\/stream/.test(u)), 'queued job has no stream until it runs')
+
+  const card = doc.querySelector('.run-toast[data-job="j1"]')
+  assert.ok(!card.classList.contains('is-expanded'), 'compact by default')
+  click(card.querySelector('.run-toast-expand'))
+  const expanded = doc.querySelector('.run-toast[data-job="j1"]')
+  assert.ok(expanded.classList.contains('is-expanded'), 'expand toggles full console')
+  state.esInstances[0].emit('log', { stream: 'stdout', text: 'hello from j1' })
+  assert.match(doc.querySelector('.run-toast[data-job="j1"] .run-toast-pre').textContent, /hello from j1/)
+})
+
+test('widget stays visible while the Scripts section is open', async () => {
+  const { doc } = h
+  await openRun(h)
+  assert.ok(doc.getElementById('settingsRunSection').classList.contains('active'))
+  assert.ok(!doc.getElementById('runToastStack').classList.contains('cm-hidden'), 'floating widget not hidden by the section')
+})
+
+test('successful run auto-hides the widget card after the ttl', async () => {
+  const { doc, state } = h
+  await openRun(h)
+  assert.ok(doc.querySelector('.run-toast[data-job="j1"]'))
+  h.mod.RUN_STATE.widgetSuccessTtlMs = 20
+  await waitUntil(() => state.esInstances.length === 1)
+  state.jobs.jobs = [
+    { id: 'j1', toolId: 'run_candidate', status: 'succeeded', createdAt: '2026-09-05T10:00:00Z', finishedAt: '2026-09-05T10:01:00Z', exitCode: 0, resultHints: {} },
+  ]
+  state.esInstances[0].emit('status', { status: 'succeeded', exitCode: 0, resultHints: {} })
+  await waitUntil(() => !doc.querySelector('.run-toast[data-job="j1"]'), 2000)
+  assert.ok(!doc.querySelector('.run-toast[data-job="j1"]'), 'success card auto-hides')
+  assert.ok(doc.querySelector('#jobsList .job-row[data-job="j1"]'), 'finished run moves to history')
+})
+
+test('failed run pins the widget card until dismissed', async () => {
+  const { doc, click, state } = h
+  await openRun(h)
+  await waitUntil(() => state.esInstances.length === 1)
+  state.jobs.jobs = [
+    { id: 'j1', toolId: 'run_candidate', status: 'failed', error: 'boom', createdAt: '2026-09-05T10:00:00Z', finishedAt: '2026-09-05T10:01:00Z', exitCode: 1, resultHints: {} },
+  ]
+  state.esInstances[0].emit('status', { status: 'failed', exitCode: 1, resultHints: {} })
+  await waitUntil(() => {
+    const c = doc.querySelector('.run-toast[data-job="j1"]')
+    return !!(c && c.classList.contains('is-pinned'))
+  })
+  await new Promise(r => setTimeout(r, 60))
+  assert.ok(doc.querySelector('.run-toast[data-job="j1"]'), 'failure stays pinned, no auto-hide')
+  click(doc.querySelector('.run-toast[data-job="j1"] .run-toast-dismiss'))
+  assert.ok(!doc.querySelector('.run-toast[data-job="j1"]'), 'dismiss removes the pinned card')
+})
+
+test('opening the log panel hides the floating widget, closing restores it', async () => {
+  const { doc, click, state } = h
+  state.jobs.jobs = [RUN_JOB_RUNNING]
+  await openRun(h)
+  click(doc.querySelector('.run-toast[data-job="j9"] .run-toast-log'))
+  await waitUntil(() => !doc.getElementById('logPanel').classList.contains('cm-hidden'))
+  assert.ok(doc.getElementById('runToastStack').classList.contains('cm-hidden'), 'stack hidden behind the panel')
+  click(doc.getElementById('panelClose'))
+  assert.ok(!doc.getElementById('runToastStack').classList.contains('cm-hidden'), 'stack restored on close')
+})
+
+test('initRunWidget shows active runs without opening settings (widget lives on every page)', async () => {
+  const { doc, state } = h
+  assert.ok(doc.getElementById('runToastStack'), 'widget container injected on load')
+  await h.mod.initRunWidget()
+  await waitUntil(() => doc.querySelector('.run-toast[data-job="j1"]'))
+  assert.ok(doc.querySelector('.run-toast[data-job="j1"]'), 'active run card rendered on page load')
+  assert.ok(doc.getElementById('settingsOverlay').classList.contains('cm-hidden'), 'settings stays closed')
+  assert.ok(state.es.some(u => /\/api\/jobs\/j1\/stream/.test(u)), 'widget streams the running job')
+})
+
+test('expanding and dismissing persist to shared storage', async () => {
+  const { doc, click, state } = h
+  await h.mod.initRunWidget()
+  await waitUntil(() => doc.querySelector('.run-toast[data-job="j1"]'))
+  click(doc.querySelector('.run-toast[data-job="j1"] .run-toast-expand'))
+  const saved = JSON.parse(state.ls.get('mm.runWidget.expanded'))
+  assert.ok(saved.includes('j1'), 'expanded job id written to shared storage')
+  click(doc.querySelector('.run-toast[data-job="j1"] .run-toast-dismiss'))
+  const dismissed = JSON.parse(state.ls.get('mm.runWidget.dismissed'))
+  assert.ok(dismissed.includes('j1'), 'dismissed job id written to shared storage')
+})
+
+test('dismissed jobs stored by another tab are hidden on load', async () => {
+  const { doc, state } = h
+  state.ls.set('mm.runWidget.dismissed', JSON.stringify(['j1']))
+  await h.mod.initRunWidget()
+  await waitUntil(() => doc.querySelector('.run-toast[data-job="j2"]'))
+  assert.ok(!doc.querySelector('.run-toast[data-job="j1"]'), 'dismissed job hidden from restored state')
+  assert.ok(doc.querySelector('.run-toast[data-job="j2"]'), 'other active job still shown')
+})
+
+test('a storage event from another tab re-renders the widget', async () => {
+  const { doc, state } = h
+  await h.mod.initRunWidget()
+  await waitUntil(() => doc.querySelector('.run-toast[data-job="j1"]'))
+  state.ls.set('mm.runWidget.dismissed', JSON.stringify(['j1']))
+  h.window.dispatchEvent(new h.window.StorageEvent('storage', { key: 'mm.runWidget.dismissed', newValue: JSON.stringify(['j1']) }))
+  assert.ok(!doc.querySelector('.run-toast[data-job="j1"]'), 'dismissal synced from the other tab')
 })
 
 test('closing settings mid-run keeps the job stream so completion still refreshes', async () => {
-  const { doc, click, postRender, state } = h
+  const { click, postRender, state } = h
   await openRun(h)
-  const row = doc.querySelector('.job-row[data-job="j1"]')
-  click(row.querySelector('.job-row-head'))
   await waitUntil(() => state.esInstances.length === 1)
   const es = state.esInstances[0]
   let results = 0
@@ -1527,7 +1627,7 @@ test('dialog stream and run-data row stream coexist for the same job', async () 
   state.jobsPost = { ok: true, job: RUN_JOB_RUNNING }
   const card = await openPrefill()
   click(card.querySelector('.tool-run-submit'))
-  await waitUntil(() => state.es.length === 2)
+  await waitUntil(() => h.mod.RUN_STATE.dlgEs.size === 1 && h.mod.RUN_STATE.widgetEs.size === 1)
   assert.ok(state.es.every(u => /\/api\/jobs\/j9\/stream/.test(u)), 'two distinct stream subscriptions for j9')
 })
 
@@ -1537,8 +1637,8 @@ test('dlgRunClose detaches the dialog stream and hides the pane', async () => {
   state.jobsPost = { ok: true, job: RUN_JOB_RUNNING }
   const card = await openPrefill()
   click(card.querySelector('.tool-run-submit'))
-  await waitUntil(() => state.esInstances.length >= 2)
-  const dlgEs = state.esInstances[state.esInstances.length - 1]
+  await waitUntil(() => h.mod.RUN_STATE.dlgEs.size === 1)
+  const dlgEs = [...h.mod.RUN_STATE.dlgEs.values()][0]
   assert.ok(!dlgEs.closed, 'dialog stream live before close')
   click(doc.getElementById('dlgRunClose'))
   assert.ok(dlgEs.closed, 'dialog stream closed on run-form close')
@@ -1584,15 +1684,16 @@ test('api() surfaces a UI-banner fallback instead of a raw JSON parse failure', 
 
 // ── log side panel (live log viewer) ─────────────────────────
 
-const panelStream = (h) => h.state.esInstances[h.state.esInstances.length - 1]
+const panelStream = (h) => [...h.mod.RUN_STATE.panelEs.values()][0]
+const waitPanelStream = () => waitUntil(() => h.mod.RUN_STATE.panelEs.size === 1)
 
 test('run-data view log opens the live log side panel', async () => {
   const { doc, click, state } = h
   state.jobs.jobs = [RUN_JOB_RUNNING]
   await openRun(h)
-  const row = doc.querySelector('.job-row[data-job="j9"]')
-  assert.ok(row.querySelector('.job-log-link'), 'view log button rendered on row')
-  click(row.querySelector('.job-log-link'))
+  const row = doc.querySelector('.run-toast[data-job="j9"]')
+  assert.ok(row.querySelector('.run-toast-log'), 'view log button rendered on the widget card')
+  click(row.querySelector('.run-toast-log'))
   await waitUntil(() => !doc.getElementById('logPanel').classList.contains('cm-hidden'))
   assert.ok(!doc.getElementById('logPanelScrim').classList.contains('cm-hidden'), 'scrim visible')
   assert.equal(doc.getElementById('panelTitle').textContent, 'Run candidate')
@@ -1606,9 +1707,9 @@ test('log panel appends streamed events with stderr highlight', async () => {
   const { doc, click, state } = h
   state.jobs.jobs = [RUN_JOB_RUNNING]
   await openRun(h)
-  const row = doc.querySelector('.job-row[data-job="j9"]')
-  click(row.querySelector('.job-log-link'))
-  await waitUntil(() => state.esInstances.length === 1)
+  const row = doc.querySelector('.run-toast[data-job="j9"]')
+  click(row.querySelector('.run-toast-log'))
+  await waitPanelStream()
   const es = panelStream(h)
   es.emit('log', { stream: 'stdout', text: 'profile 1/3' })
   const pre = doc.querySelector('.log-panel-pre')
@@ -1623,8 +1724,8 @@ test('terminal status event closes the panel stream but keeps panel open', async
   const { doc, click, state } = h
   state.jobs.jobs = [RUN_JOB_RUNNING]
   await openRun(h)
-  click(doc.querySelector('.job-row[data-job="j9"] .job-log-link'))
-  await waitUntil(() => state.esInstances.length === 1)
+  click(doc.querySelector('.run-toast[data-job="j9"] .run-toast-log'))
+  await waitPanelStream()
   const es = panelStream(h)
   es.emit('status', { status: 'succeeded', exitCode: 0, resultHints: { runId: 'r9' } })
   assert.ok(es.closed, 'panel stream closed at terminal')
@@ -1636,8 +1737,8 @@ test('panel close button hides panel and detaches the stream', async () => {
   const { doc, click, state } = h
   state.jobs.jobs = [RUN_JOB_RUNNING]
   await openRun(h)
-  click(doc.querySelector('.job-row[data-job="j9"] .job-log-link'))
-  await waitUntil(() => state.esInstances.length === 1)
+  click(doc.querySelector('.run-toast[data-job="j9"] .run-toast-log'))
+  await waitPanelStream()
   const es = panelStream(h)
   click(doc.getElementById('panelClose'))
   assert.ok(es.closed, 'panel stream detached on close')
@@ -1650,7 +1751,7 @@ test('Escape closes the log panel', async () => {
   const { doc, click, state } = h
   state.jobs.jobs = [RUN_JOB_RUNNING]
   await openRun(h)
-  click(doc.querySelector('.job-row[data-job="j9"] .job-log-link'))
+  click(doc.querySelector('.run-toast[data-job="j9"] .run-toast-log'))
   await waitUntil(() => !doc.getElementById('logPanel').classList.contains('cm-hidden'))
   doc.body.dispatchEvent(new h.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
   assert.ok(doc.getElementById('logPanel').classList.contains('cm-hidden'), 'panel closed via Esc')
@@ -1662,7 +1763,7 @@ test('queued job panel shows queue position header', async () => {
   const q2 = { id: 'j9', toolId: 'run_candidate', status: 'queued', createdAt: '2026-09-05T09:00:01Z', exitCode: null, resultHints: {} }
   state.jobs.jobs = [q1, q2]
   await openRun(h)
-  click(doc.querySelector('.job-row[data-job="j9"] .job-log-link'))
+  click(doc.querySelector('.run-toast[data-job="j9"] .run-toast-log'))
   await waitUntil(() => /position 2/.test(doc.getElementById('panelStatus').textContent))
 })
 
@@ -1683,7 +1784,7 @@ test('log panel flags a running job with no output for 150s as stale', async () 
   const { doc, click, state } = h
   state.jobs.jobs = [RUN_JOB_RUNNING]
   await openRun(h)
-  click(doc.querySelector('.job-row[data-job="j9"] .job-log-link'))
+  click(doc.querySelector('.run-toast[data-job="j9"] .run-toast-log'))
   await waitUntil(() => /Running/.test(doc.getElementById('panelStatus').textContent))
   h.mod.RUN_STATE.panelLastOutputAt = new Date(Date.now() - 151_000).toISOString()
   const reconnectEl = doc.querySelector('.log-panel-reconnect')

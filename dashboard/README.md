@@ -1,7 +1,7 @@
 # Dashboard
 
 Vite dev server for the benchmark dashboard — model registry UI plus a
-**Run data** panel that lets you run every Python script in the repo from the
+**Scripts** panel that lets you run every Python script in the repo from the
 browser. Long jobs stream live stdout/stderr over SSE.
 
 ## Start
@@ -16,9 +16,9 @@ Requires `OPENROUTER_API_KEY` in `dashboard/.env` (or the shell) for anything
 that calls OpenRouter: `add_candidate`, `run_candidate` (unless `--mock`),
 `judge_existing`, `agent`, `snapshot_catalog`.
 
-## Run data (python script runner)
+## Scripts (python script runner)
 
-The **Run data** tab lists every script from the registry grouped by purpose:
+The **Scripts** tab lists every script from the registry grouped by purpose:
 
 - **Corpus validation** — `build_rubrics`, `build_bench`, `corpus_report`
 - **Candidates** — `add_candidate`, `gen_profile_literal`, `snapshot_catalog`
@@ -27,6 +27,18 @@ The **Run data** tab lists every script from the registry grouped by purpose:
 
 ### Behavior
 
+- **Floating run widget.** Active and queued runs appear as live cards in the
+  bottom-right corner of *every* dashboard page and browser tab (scatter, Run
+  Explorer, and every settings section) — so a run stays in view while you edit
+  models, review runs, or browse the explorer. Each card streams live output
+  (expand for the full console) with **Cancel**, **Re-run**, **view log**, and
+  dismiss. Successful runs auto-hide after a few seconds; failed runs stay
+  pinned until dismissed. The widget hides only while the full log drawer is
+  open. Expand/dismiss state is shared between tabs (localStorage + `storage`
+  events), so opening a card on one tab opens it on the others too.
+- **History only in the tab.** The **Scripts** tab keeps the tool launcher plus
+  a finished-run history list; active/queued runs live exclusively in the
+  floating widget.
 - **One long script at a time.** Corpus validation / candidates / run originate
   from the same Python env, so *writable* jobs (runtime class `write`/`llm`)
   serialize FIFO: the second job queues until the first finishes. `instant`
@@ -41,8 +53,9 @@ The **Run data** tab lists every script from the registry grouped by purpose:
   **Autoresearch agent** (bounded by the profile's 30m/60m budget). Run and
   agent launch straight into the job queue; the inline form keeps the model
   dialog open so you can review what you submitted.
-- **SSE** — click a running or queued job to expand it and stream live output.
-  Reconnect uses `Last-Event-ID`, so refreshes don't lose output.
+- **SSE** — running jobs stream into the floating widget automatically; the
+  **view log** button opens the full-height log drawer. Reconnect uses
+  `Last-Event-ID`, so refreshes don't lose output.
 - **Hard limits** — logs are capped (20 MB, truncation marker), SSE buffers are
   capped (10k events → stream returns 410 and the UI polls instead), strings are
   length-limited, and value validation happens both client- and server-side.

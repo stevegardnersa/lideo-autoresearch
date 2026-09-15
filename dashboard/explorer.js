@@ -1,5 +1,6 @@
 import { marked } from 'marked'
 import './settings.js'
+import { initRunWidget } from './settings.js'
 
 const ORIGINAL_CHAPTER = '__original__'
 
@@ -512,6 +513,7 @@ async function handleTimeToggle(timeBudget) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  initRunWidget()
   const { runId, judgeType } = getRunIdFromUrl()
   if (!runId) {
     document.getElementById('runSubtitle').textContent = 'No run_id provided.'

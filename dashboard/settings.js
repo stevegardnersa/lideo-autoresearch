@@ -53,6 +53,15 @@ function fmtDate(iso) {
 
 const GEAR_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`
 
+// The document this module instance was evaluated against. Timers from a
+// previous instance (tests re-import with a fresh jsdom) must not touch a newer
+// document, so async callbacks bail out once the global document moves on.
+const SETTINGS_DOC = typeof document !== 'undefined' ? document : null
+
+function settingsDocCurrent() {
+  return SETTINGS_DOC == null || typeof document === 'undefined' || document === SETTINGS_DOC
+}
+
 const MODAL_TEMPLATE = `
 <div class="settings-overlay cm-hidden" id="settingsOverlay">
   <div class="settings-modal">
@@ -64,7 +73,7 @@ const MODAL_TEMPLATE = `
       <nav class="settings-nav">
         <button class="settings-nav-item active" data-section="models">Models</button>
         <button class="settings-nav-item" data-section="runs">Runs</button>
-        <button class="settings-nav-item" data-section="run">Run data</button>
+        <button class="settings-nav-item" data-section="run">Scripts</button>
         <button class="settings-nav-item" data-section="prompts">Prompts</button>
         <button class="settings-nav-item" data-section="upcoming" disabled title="Coming soon">Judges</button>
       </nav>
@@ -152,7 +161,7 @@ const MODAL_TEMPLATE = `
         <section class="settings-section" id="settingsRunSection">
           <div class="runs-head">
             <div>
-              <div class="settings-section-title">Run data</div>
+              <div class="settings-section-title">Scripts</div>
               <div class="settings-section-sub">Run every corpus, candidate, harness, and maintenance script — no CLI. Long jobs stream live output.</div>
             </div>
           </div>
@@ -205,6 +214,8 @@ const MODAL_TEMPLATE = `
     <div class="console-wrap log-panel-console"><pre class="log-panel-pre" role="log"></pre></div>
   </div>
 </aside>
+
+<div class="run-toast-stack cm-hidden" id="runToastStack" aria-live="polite" aria-label="Active runs"></div>
 
 <div class="settings-overlay cm-hidden" id="modelDialogOverlay">
   <div class="settings-dialog" role="dialog" aria-modal="true" data-run-slug="">
@@ -1021,7 +1032,7 @@ function launchProfileJob(toolId, args, label) {
   api('/api/jobs', { method: 'POST', body: JSON.stringify({ toolId, args }) })
     .then(res => {
       const shortId = res.job && res.job.id ? esc(res.job.id.slice(0, 8)) : ''
-      setDialogNotice(`Launched <strong>${esc(toolId)}</strong>: ${label}. Job id <code>${shortId}…</code> — watch it stream in <strong>Run data</strong>.`)
+      setDialogNotice(`Launched <strong>${esc(toolId)}</strong>: ${label}. Job id <code>${shortId}…</code> — watch it stream in <strong>Scripts</strong>.`)
       refreshJobs().catch(() => {})
     })
     .catch(e => setDialogNotice(esc(e.message), 'error'))
@@ -1062,7 +1073,7 @@ async function openRunProfilePrefill(slug, tb) {
   await ensureRunData()
   clearInlineRunWidget()
   if (!RUN_TOOLS_BY_ID.has('run_candidate')) {
-    setDialogNotice('Run data failed to load — check the dev server and try again.', 'error')
+    setDialogNotice('Scripts failed to load — check the dev server and try again.', 'error')
     return
   }
   const tool = RUN_TOOLS_BY_ID.get('run_candidate')
@@ -1083,7 +1094,7 @@ async function openRunProfilePrefill(slug, tb) {
   dialog.dataset.runSlug = slug
   dialog.classList.add('has-run-form')
   holder.classList.remove('cm-hidden')
-  setDialogNotice('Tune any option below, then hit <strong>Run script</strong>. The job queues behind other harness runs and streams live in <strong>Run data</strong>.')
+  setDialogNotice('Tune any option below, then hit <strong>Run script</strong>. The job queues behind other harness runs and streams live in <strong>Scripts</strong>.')
   updateToolGuards()
 }
 
@@ -1319,7 +1330,7 @@ function renderDlgActions(jobId, resultHints = {}) {
   if (id) {
     actions.push(`<button type="button" class="mini-btn dlg-prog-log" data-job="${encodeURIComponent(id)}">view log</button>`)
   }
-  actions.push(`<button type="button" class="mini-btn dlg-prog-runs">Open in Run data</button>`)
+  actions.push(`<button type="button" class="mini-btn dlg-prog-runs">Open in Scripts</button>`)
   actions.push(`<button type="button" class="mini-btn dlg-prog-close">Close</button>`)
   box.innerHTML = actions.join('')
   const rerun = box.querySelector('.dlg-prog-rerun')
@@ -1637,6 +1648,7 @@ function closeLogPanel() {
   if (scrim) scrim.classList.add('cm-hidden')
   if (pre) pre.textContent = ''
   if (titleEl) titleEl.textContent = ''
+  renderRunWidgets()
 }
 
 async function openLogPanel(jobId) {
@@ -1690,6 +1702,7 @@ async function openLogPanel(jobId) {
     }
   }
   document.addEventListener('keydown', esc)
+  renderRunWidgets()
 }
 
 async function handleProbeForAdd(model, route) {
@@ -1941,6 +1954,7 @@ function wireGearButtons() {
     const overlay = document.getElementById('settingsOverlay')
     if (overlay) overlay.classList.remove('cm-hidden')
     loadModels()
+    bootstrapRunWidget()
   }
   document.querySelectorAll('[data-settings-toggle]').forEach(btn => {
     btn.addEventListener('click', open)
@@ -2156,6 +2170,16 @@ const RUN_STATE = {
   panelReconnecting: false,
   panelQueuePos: 0,
   panelLastOutputAt: null,
+  widgetEs: new Map(),
+  widgetLogs: new Map(),
+  widgetExpanded: new Set(),
+  widgetTracked: new Set(),
+  widgetPinned: new Set(),
+  widgetDismissed: new Set(),
+  widgetHandled: new Set(),
+  widgetHideTimers: new Map(),
+  widgetRenderKey: '',
+  widgetSuccessTtlMs: 5000,
 }
 
 const RUN_TOOLS_BY_ID = new Map()
@@ -2422,12 +2446,10 @@ async function runToolSubmit(card, tool) {
   if (submitBtn) submitBtn.disabled = true
   try {
     const res = await api('/api/jobs', { method: 'POST', body: JSON.stringify(body) })
+    // refreshJobs reconciles the floating widget and attaches its own live
+    // stream for any newly running job — no per-row expansion needed.
     await refreshJobs()
     const resJob = res.job
-    if (resJob && (resJob.status === 'running' || resJob.status === 'queued')) {
-      expandJob(resJob.id)
-      attachStreamIfPossible(resJob.id)
-    }
     if (inDialog && resJob) {
       handleDialogJobResult(res, tool.id, values)
       if (DLG_TERMINAL.includes(resJob.status)) {
@@ -2435,13 +2457,13 @@ async function runToolSubmit(card, tool) {
       } else if (res.duplicate) {
         setDialogNotice(`<strong>${esc(tool.id)}</strong> is already queued with these exact options — progress below.`)
       } else {
-        setDialogNotice(`Launched <strong>${esc(tool.id)}</strong> — progress below. <strong>Run data</strong> keeps the full history.`)
+        setDialogNotice(`Launched <strong>${esc(tool.id)}</strong> — progress below. <strong>Scripts</strong> keeps the full history.`)
       }
     }
   } catch (e) {
     showCardError(card, e.message)
     if (inDialog && /already running/.test(e.message)) {
-      setDialogNotice(`<strong>${esc(tool.title || tool.id)}</strong> is already running with identical options — the job is streaming in <strong>Run data</strong>.`, 'error')
+      setDialogNotice(`<strong>${esc(tool.title || tool.id)}</strong> is already running with identical options — the job is streaming in <strong>Scripts</strong>.`, 'error')
     }
   } finally {
     updateToolGuards()
@@ -2607,19 +2629,19 @@ function renderJobs() {
   const list = document.getElementById('jobsList')
   if (!list) return
   const count = document.getElementById('jobCount')
-  const active = RUN_STATE.jobs.filter(j => j.status === 'running').length
-  const queued = RUN_STATE.jobs.filter(j => j.status === 'queued').length
-  const parts = []
-  if (active) parts.push(`${active} running`)
-  if (queued) parts.push(`${queued} queued`)
-  count.textContent = parts.length ? parts.join(' · ') : (RUN_STATE.jobs.length ? `${RUN_STATE.jobs.length} run${RUN_STATE.jobs.length === 1 ? '' : 's'}` : 'No runs')
+  // Active/queued jobs float in the bottom-right widget; the section is the
+  // finished-run history so the list stays readable regardless of what's live.
+  const finished = RUN_STATE.jobs.filter(j => WIDGET_TERMINAL.includes(j.status))
+  count.textContent = RUN_STATE.jobs.length ? `${finished.length} finished` : 'No runs'
 
-  if (!RUN_STATE.jobs.length) {
-    list.innerHTML = '<div class="placeholder-text">No runs yet. Pick a tool on the left to run your first script.</div>'
+  if (!finished.length) {
+    list.innerHTML = RUN_STATE.jobs.length
+      ? '<div class="placeholder-text">No finished runs yet — active runs show in the corner widget.</div>'
+      : '<div class="placeholder-text">No runs yet. Pick a tool on the left to run your first script.</div>'
     updateToolGuards()
     return
   }
-  list.innerHTML = RUN_STATE.jobs.map(rollupJobRow).join('')
+  list.innerHTML = finished.map(rollupJobRow).join('')
 
   list.querySelectorAll('.job-row-head').forEach(head => {
     head.addEventListener('click', () => {
@@ -2636,27 +2658,6 @@ function renderJobs() {
       } else {
         RUN_STATE.expandedJobs.delete(id)
         detachStream(id)
-      }
-    })
-  })
-
-  list.querySelectorAll('.job-cancel').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      if (btn.dataset.armed) {
-        btn.dataset.armed = ''
-        btn.setAttribute('aria-pressed', 'false')
-        btn.textContent = 'Canceling…'
-        try {
-          await api(`/api/jobs/${btn.dataset.job}/cancel`, { method: 'POST' })
-          await refreshJobs()
-        } catch (e) {
-          btn.textContent = 'Cancel'
-          setBanner(`Cancel failed: ${esc(e.message)}`)
-        }
-      } else {
-        btn.dataset.armed = '1'
-        btn.setAttribute('aria-pressed', 'true')
-        btn.textContent = 'Confirm cancel?'
       }
     })
   })
@@ -2713,6 +2714,7 @@ function clearBanner() {
 }
 
 async function refreshJobs() {
+  if (!settingsDocCurrent()) return
   if (!document.getElementById('jobsList')) {
     stopRunPolling()
     return
@@ -2722,10 +2724,14 @@ async function refreshJobs() {
     RUN_STATE.jobs = res.jobs || []
     clearOffline()
     notifyAllHints()
+    reconcileRunWidgets()
+    syncWidgetStreams()
     renderJobs()
+    renderRunWidgets()
     // Once the last run finishes behind a closed drawer, nothing is left to
     // monitor — shut the poll down instead of polling forever.
     if (settingsOverlayHidden() && !runJobsActive()) stopRunPolling()
+    else ensureRunPolling()
   } catch (e) {
     setOffline()
     throw e
@@ -2740,20 +2746,6 @@ function setOffline() {
 function clearOffline() {
   document.getElementById('jobOffline').classList.add('cm-hidden')
   document.getElementById('jobsList').classList.remove('run-offline-hide')
-}
-
-function expandJob(id) {
-  const row = document.querySelector(`.job-row[data-job="${id}"]`)
-  if (row) {
-    RUN_STATE.expandedJobs.add(id)
-    const consoleEl = row.querySelector('.job-console')
-    if (consoleEl) {
-      consoleEl.classList.remove('cm-hidden')
-      const pre = row.querySelector('.console-pre')
-      pre.innerHTML = consoleContentHtml(id)
-      if (!RUN_STATE.logs.get(id) || RUN_STATE.logs.get(id).length === 0) pre.textContent = 'Waiting for output…\n'
-    }
-  }
 }
 
 function attachStreamIfPossible(job) {
@@ -2826,11 +2818,328 @@ function dispatchHints(job, hints) {
   }
 }
 
+// ── floating run widget (bottom-right live cards) ──────────────
+// Active/queued jobs live here instead of in the Scripts section, so a run
+// stayed in view no matter which settings section (or page) is open. Finished
+// jobs are history-only in the section; a card auto-hides on success and stays
+// pinned on failure until dismissed.
+
+const WIDGET_TAIL_LINES = 8
+const WIDGET_TERMINAL = ['succeeded', 'failed', 'canceled', 'interrupted']
+// The widget's open/dismissed state is persisted so every dashboard page and
+// browser tab agrees: open a card on one tab and it opens on the others too.
+const WIDGET_EXPANDED_KEY = 'mm.runWidget.expanded'
+const WIDGET_DISMISSED_KEY = 'mm.runWidget.dismissed'
+const WIDGET_STATE_CAP = 100
+
+function readWidgetIdSet(key) {
+  const raw = storageGet(key)
+  if (!raw) return null
+  try {
+    const arr = JSON.parse(raw)
+    if (Array.isArray(arr)) return new Set(arr.filter(x => typeof x === 'string'))
+  } catch { /* ignore malformed */ }
+  return null
+}
+
+function persistWidgetSets() {
+  storageSet(WIDGET_EXPANDED_KEY, JSON.stringify([...RUN_STATE.widgetExpanded].slice(-WIDGET_STATE_CAP)))
+  storageSet(WIDGET_DISMISSED_KEY, JSON.stringify([...RUN_STATE.widgetDismissed].slice(-WIDGET_STATE_CAP)))
+}
+
+function hydrateWidgetState() {
+  const expanded = readWidgetIdSet(WIDGET_EXPANDED_KEY)
+  if (expanded) RUN_STATE.widgetExpanded = expanded
+  const dismissed = readWidgetIdSet(WIDGET_DISMISSED_KEY)
+  if (dismissed) RUN_STATE.widgetDismissed = dismissed
+}
+
+function onWidgetStorage(e) {
+  if (!settingsDocCurrent()) return
+  if (e.key !== WIDGET_EXPANDED_KEY && e.key !== WIDGET_DISMISSED_KEY) return
+  const next = readWidgetIdSet(e.key)
+  if (!next) return
+  if (e.key === WIDGET_EXPANDED_KEY) RUN_STATE.widgetExpanded = next
+  else RUN_STATE.widgetDismissed = next
+  renderRunWidgets(true)
+}
+
+function runToastStackEl() {
+  return document.getElementById('runToastStack')
+}
+
+function logPanelOpen() {
+  const p = document.getElementById('logPanel')
+  return !!p && !p.classList.contains('cm-hidden')
+}
+
+function ensureRunPolling() {
+  if (RUN_STATE.pollTimer != null) return
+  const timer = setInterval(() => {
+    if (!settingsDocCurrent()) { clearInterval(timer); RUN_STATE.pollTimer = null; return }
+    const sec = document.getElementById('settingsRunSection')
+    const sectionOpen = !!sec && sec.classList.contains('active') && !settingsOverlayHidden()
+    if (runJobsActive() || sectionOpen) refreshJobs().catch(() => {})
+  }, 2000)
+  if (timer && typeof timer.unref === 'function') timer.unref()
+  RUN_STATE.pollTimer = timer
+}
+
+function widgetVisibleJobs() {
+  return RUN_STATE.jobs.filter(j =>
+    RUN_STATE.widgetTracked.has(j.id) &&
+    !RUN_STATE.widgetDismissed.has(j.id) &&
+    ((j.status === 'running' || j.status === 'queued') || RUN_STATE.widgetPinned.has(j.id)),
+  )
+}
+
+function reconcileRunWidgets() {
+  for (const j of RUN_STATE.jobs) {
+    if (j.status === 'running' || j.status === 'queued') {
+      RUN_STATE.widgetTracked.add(j.id)
+      RUN_STATE.widgetPinned.delete(j.id)
+      RUN_STATE.widgetHandled.delete(j.id)
+    } else if (RUN_STATE.widgetTracked.has(j.id) && !RUN_STATE.widgetHandled.has(j.id)) {
+      RUN_STATE.widgetHandled.add(j.id)
+      if (j.status === 'succeeded') scheduleWidgetAutoHide(j.id)
+      else RUN_STATE.widgetPinned.add(j.id)
+    }
+  }
+}
+
+function scheduleWidgetAutoHide(id) {
+  if (RUN_STATE.widgetHideTimers.has(id)) return
+  const ttl = RUN_STATE.widgetSuccessTtlMs
+  const timer = setTimeout(() => {
+    if (!settingsDocCurrent()) return
+    RUN_STATE.widgetHideTimers.delete(id)
+    RUN_STATE.widgetDismissed.add(id)
+    detachWidgetStream(id)
+    RUN_STATE.widgetLogs.delete(id)
+    RUN_STATE.widgetExpanded.delete(id)
+    persistWidgetSets()
+    renderRunWidgets(true)
+  }, ttl)
+  if (timer && typeof timer.unref === 'function') timer.unref()
+  RUN_STATE.widgetHideTimers.set(id, timer)
+}
+
+function cancelWidgetAutoHide(id) {
+  const t = RUN_STATE.widgetHideTimers.get(id)
+  if (t) { clearTimeout(t); RUN_STATE.widgetHideTimers.delete(id) }
+}
+
+function widgetConsoleHtml(id) {
+  const logs = RUN_STATE.widgetLogs.get(id) || []
+  const expanded = RUN_STATE.widgetExpanded.has(id)
+  const shown = expanded ? logs : logs.slice(-WIDGET_TAIL_LINES)
+  return shown.map(l =>
+    l.stream === 'stderr' ? `<span class="con-err">${esc(l.text)}</span>` : esc(l.text),
+  ).join('\n')
+}
+
+function runToastHtml(job) {
+  const tool = toolById(job.toolId)
+  const title = tool ? tool.title : job.toolId
+  const expanded = RUN_STATE.widgetExpanded.has(job.id)
+  const pinned = RUN_STATE.widgetPinned.has(job.id)
+  const active = job.status === 'running' || job.status === 'queued'
+  const hasLogs = (RUN_STATE.widgetLogs.get(job.id) || []).length > 0
+  const actions = []
+  if (active) {
+    actions.push(`<button type="button" class="mini-btn run-toast-cancel" data-job="${job.id}" aria-pressed="false">Cancel</button>`)
+  } else {
+    actions.push(`<button type="button" class="mini-btn run-toast-rerun" data-job="${job.id}">Re-run</button>`)
+  }
+  actions.push(`<button type="button" class="mini-btn run-toast-log" data-job="${job.id}">view log</button>`)
+  return `<article class="run-toast ${expanded ? 'is-expanded' : ''} ${pinned ? 'is-pinned' : ''}" data-job="${job.id}">
+    <header class="run-toast-head">
+      <div class="run-toast-main">${statusBadgeHtml(job.status)}<span class="run-toast-title">${esc(title)}</span></div>
+      <span class="run-toast-elapsed">${durationStr(job.createdAt, job.finishedAt)}</span>
+      <button type="button" class="run-toast-expand mini-btn" data-job="${job.id}" aria-expanded="${expanded ? 'true' : 'false'}">${expanded ? 'Collapse' : 'Expand'}</button>
+      <button type="button" class="run-toast-dismiss" data-job="${job.id}" aria-label="Dismiss run">\u00D7</button>
+    </header>
+    <div class="run-toast-console console-wrap"><pre class="run-toast-pre" role="log">${widgetConsoleHtml(job.id)}</pre></div>
+    <div class="run-toast-waiting ${hasLogs ? 'cm-hidden' : ''}">Waiting for output&hellip;</div>
+    <div class="run-toast-actions">${actions.join('')}</div>
+  </article>`
+}
+
+function renderRunWidgetHeaders() {
+  for (const card of document.querySelectorAll('.run-toast')) {
+    const job = RUN_STATE.jobs.find(j => j.id === card.dataset.job)
+    if (!job) continue
+    const el = card.querySelector('.run-toast-elapsed')
+    if (el) el.textContent = durationStr(job.createdAt, job.finishedAt)
+  }
+}
+
+function wireRunToasts(stack) {
+  stack.querySelectorAll('.run-toast-expand').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.job
+      if (RUN_STATE.widgetExpanded.has(id)) RUN_STATE.widgetExpanded.delete(id)
+      else RUN_STATE.widgetExpanded.add(id)
+      persistWidgetSets()
+      renderRunWidgets(true)
+    })
+  })
+  stack.querySelectorAll('.run-toast-dismiss').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.job
+      cancelWidgetAutoHide(id)
+      RUN_STATE.widgetDismissed.add(id)
+      RUN_STATE.widgetPinned.delete(id)
+      detachWidgetStream(id)
+      RUN_STATE.widgetLogs.delete(id)
+      RUN_STATE.widgetExpanded.delete(id)
+      persistWidgetSets()
+      renderRunWidgets(true)
+    })
+  })
+  stack.querySelectorAll('.run-toast-cancel').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (btn.dataset.armed) {
+        btn.dataset.armed = ''
+        btn.setAttribute('aria-pressed', 'false')
+        btn.textContent = 'Canceling…'
+        try {
+          await api(`/api/jobs/${btn.dataset.job}/cancel`, { method: 'POST' })
+          await refreshJobs()
+        } catch (e) {
+          btn.textContent = 'Cancel'
+          setBanner(`Cancel failed: ${esc(e.message)}`)
+        }
+      } else {
+        btn.dataset.armed = '1'
+        btn.setAttribute('aria-pressed', 'true')
+        btn.textContent = 'Confirm cancel?'
+      }
+    })
+  })
+  stack.querySelectorAll('.run-toast-rerun').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.job
+      try {
+        const { job } = await api(`/api/jobs/${id}`)
+        const tool = toolById(job.toolId)
+        if (tool && tool.destructive) return
+        await api('/api/jobs', { method: 'POST', body: JSON.stringify({ toolId: job.toolId, args: job.args || {} }) })
+        await refreshJobs()
+      } catch (e) {
+        setBanner(`Re-run failed: ${esc(e.message)}`)
+      }
+    })
+  })
+  stack.querySelectorAll('.run-toast-log').forEach(btn => {
+    btn.addEventListener('click', () => { openLogPanel(btn.dataset.job).catch(() => {}) })
+  })
+}
+
+function renderRunWidgets(force = false) {
+  const stack = runToastStackEl()
+  if (!stack) return
+  const jobs = widgetVisibleJobs()
+  const key = jobs
+    .map(j => `${j.id}:${j.status}:${RUN_STATE.widgetExpanded.has(j.id) ? 'x' : 'c'}`)
+    .join('|')
+  if (force || key !== RUN_STATE.widgetRenderKey) {
+    RUN_STATE.widgetRenderKey = key
+    stack.innerHTML = jobs.map(runToastHtml).join('')
+    wireRunToasts(stack)
+  } else {
+    renderRunWidgetHeaders()
+  }
+  stack.classList.toggle('cm-hidden', jobs.length === 0 || logPanelOpen())
+}
+
+function appendWidgetLog(id, ev) {
+  const logs = RUN_STATE.widgetLogs.get(id) || []
+  logs.push(ev)
+  if (logs.length > 2000) logs.splice(0, logs.length - 2000)
+  RUN_STATE.widgetLogs.set(id, logs)
+  const card = document.querySelector(`.run-toast[data-job="${id}"]`)
+  if (!card) return
+  const pre = card.querySelector('.run-toast-pre')
+  if (pre) pre.innerHTML = widgetConsoleHtml(id)
+  const waiting = card.querySelector('.run-toast-waiting')
+  if (waiting) waiting.classList.toggle('cm-hidden', logs.length > 0)
+  const wrap = card.querySelector('.run-toast-console')
+  if (wrap && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    wrap.scrollTop = wrap.scrollHeight
+  }
+}
+
+function attachWidgetStream(job) {
+  if (typeof window.EventSource === 'undefined' || RUN_STATE.widgetEs.has(job)) return
+  const rec = RUN_STATE.jobs.find(j => j.id === job)
+  if (!rec || rec.status !== 'running') return
+  const es = new window.EventSource(`/api/jobs/${job}/stream`)
+  RUN_STATE.widgetEs.set(job, es)
+  es.addEventListener('log', (e) => {
+    try { appendWidgetLog(job, JSON.parse(e.data)) } catch { /* ignore */ }
+  })
+  es.addEventListener('status', (e) => {
+    let status = {}
+    try { status = JSON.parse(e.data || '{}') } catch { return }
+    notifyStatusHints(job, status)
+    detachWidgetStream(job)
+    refreshJobs().catch(() => {})
+  })
+  es.addEventListener('cancel', () => {
+    detachWidgetStream(job)
+    refreshJobs().catch(() => {})
+  })
+  es.onerror = () => {
+    const rec2 = RUN_STATE.jobs.find(j => j.id === job)
+    if (rec2 && rec2.status !== 'running' && rec2.status !== 'queued') detachWidgetStream(job)
+  }
+}
+
+function detachWidgetStream(job) {
+  const es = RUN_STATE.widgetEs.get(job)
+  if (es) {
+    es.close()
+    RUN_STATE.widgetEs.delete(job)
+  }
+}
+
+function syncWidgetStreams() {
+  const want = new Set(RUN_STATE.jobs
+    .filter(j => j.status === 'running' && !RUN_STATE.widgetDismissed.has(j.id))
+    .map(j => j.id))
+  for (const id of [...RUN_STATE.widgetEs.keys()]) {
+    if (!want.has(id)) detachWidgetStream(id)
+  }
+  for (const id of want) attachWidgetStream(id)
+}
+
+async function bootstrapRunWidget() {
+  try { await refreshJobs() } catch { /* offline banner already set */ }
+  if (!settingsDocCurrent()) return
+  if (runJobsActive()) {
+    ensureRunPolling()
+    initRunData().catch(() => {})
+  }
+}
+
+// Called by every dashboard entrypoint (scatter + run explorer) so the floating
+// widget is live on each page/tab, and its open/dismissed state is shared
+// between tabs via localStorage + the `storage` event.
+function initRunWidget() {
+  hydrateWidgetState()
+  if (typeof window !== 'undefined' && window.addEventListener) {
+    window.addEventListener('storage', onWidgetStorage)
+  }
+  return bootstrapRunWidget()
+}
+
 // Loads the script registry + bench/env/jobs and wires the run tab.
 // `activeStarted` is only latched once registry loads: a failed initRunData
 // (e.g. the dev server predating /api/registry) retries on the next trigger
 // instead of leaving the run-data feature dead until a full reload.
 async function initRunData() {
+  if (!settingsDocCurrent()) return
   if (RUN_STATE.activeStarted) return
   let toolsLoaded = false
   try {
@@ -2855,16 +3164,7 @@ async function initRunData() {
     RUN_STATE.missingKeys = env.missingKeys || []
   } catch { RUN_STATE.missingKeys = [] }
   await refreshJobs().catch(() => {})
-  if (RUN_STATE.pollTimer == null) {
-    const timer = setInterval(() => {
-      const sec = document.getElementById('settingsRunSection')
-      if (sec && sec.classList.contains('active')) {
-        refreshJobs().catch(() => {})
-      }
-    }, 2000)
-    if (timer && typeof timer.unref === 'function') timer.unref()
-    RUN_STATE.pollTimer = timer
-  }
+  ensureRunPolling()
 }
 
 // ── Prompts section (prompt-version registry) ──────────────────
@@ -3555,7 +3855,7 @@ async function runPromptSmokeTest(id) {
   if (useCf) args['allow-prompt-override'] = true
   try {
     await api('/api/jobs', { method: 'POST', body: JSON.stringify({ toolId: 'run_candidate', args }) })
-    setPromptsBanner(`Smoke test started for ${id}. See Run data for progress.`)
+    setPromptsBanner(`Smoke test started for ${id}. See Scripts for progress.`)
   } catch (e) {
     setPromptsBanner(`Smoke test failed to start: ${e.message}`)
   }
@@ -3652,6 +3952,7 @@ function stopRunPolling() {
   for (const job of [...RUN_STATE.es.keys()]) detachStream(job)
   for (const job of [...RUN_STATE.dlgEs.keys()]) detachDlgStream(job)
   for (const job of [...RUN_STATE.panelEs.keys()]) detachPanelStream(job)
+  for (const job of [...RUN_STATE.widgetEs.keys()]) detachWidgetStream(job)
 }
 
 function initSettings() {
@@ -3674,4 +3975,4 @@ if (typeof document !== 'undefined') {
   }
 }
 
-export { initSettings, GEAR_SVG, MODAL_TEMPLATE, toolCardHtml, RUN_STATE }
+export { initSettings, initRunWidget, GEAR_SVG, MODAL_TEMPLATE, toolCardHtml, RUN_STATE }

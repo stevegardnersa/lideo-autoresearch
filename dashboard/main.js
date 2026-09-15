@@ -1,5 +1,6 @@
 import './style.css'
 import './settings.js'
+import { initRunWidget } from './settings.js'
 import {
   promptVersionColor,
   promptVersionLabel,
@@ -875,6 +876,7 @@ function updateMode(mode) {
 let savedState = null
 
 document.addEventListener('DOMContentLoaded', () => {
+  initRunWidget()
   savedState = loadPersistedState()
 
   if (savedState) {
