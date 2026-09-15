@@ -136,6 +136,7 @@ async function discoverProfiles(timeBudget) {
         manifest,
         bench: rm.bench || '',
         createdAt: rm.created_at_utc || '',
+        promptVersion: rm.prompt_version || '',
       })
     } catch {
       // skip
@@ -166,11 +167,10 @@ function formatRunTimestamp(createdAt) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-function runOptionLabel(run, anchorBench) {
+function runOptionLabel(run) {
   const ts = formatRunTimestamp(run.createdAt)
-  const parts = []
-  if (run.bench && run.bench !== anchorBench) parts.push(run.bench)
-  parts.push(ts || run.runId || 'unknown run')
+  const parts = [ts || run.runId || 'unknown run']
+  if (run.promptVersion) parts.push(run.promptVersion)
   return parts.join(' · ')
 }
 
@@ -196,12 +196,11 @@ function populateSideRunSelect(side) {
     return
   }
 
-  const anchorBench = currentManifest?.run_manifest?.bench || ''
   select.innerHTML = ''
   runs.forEach(run => {
     const opt = document.createElement('option')
     opt.value = run.runId
-    opt.textContent = runOptionLabel(run, anchorBench)
+    opt.textContent = runOptionLabel(run)
     select.appendChild(opt)
   })
 
@@ -680,6 +679,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       manifest: currentManifest,
       bench: runManifest.bench || '',
       createdAt: runManifest.created_at_utc || '',
+      promptVersion: runManifest.prompt_version || '',
     }
     anchorProfile = {
       candidateName: profileName,
