@@ -725,6 +725,52 @@
 }
 .req-star { color: #dc2626; }
 
+.bench-combo { position: relative; display: flex; align-items: stretch; }
+.bench-combo .bench-combo-input { flex: 1 1 auto; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.bench-combo-btn {
+  flex: 0 0 auto;
+  border: 1px solid var(--line, #d8dee8);
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  background: var(--panel, #fff);
+  color: var(--text, #1d2433);
+  font-size: 11px;
+  line-height: 1;
+  padding: 0 10px;
+  cursor: pointer;
+}
+.bench-combo-btn:hover { background: #f1f5f9; }
+.bench-combo-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 40;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--panel, #fff);
+  border: 1px solid var(--line, #d8dee8);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+  padding: 4px;
+}
+.bench-combo-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--text, #1d2433);
+  cursor: pointer;
+}
+.bench-combo-item:hover,
+.bench-combo-item.is-active { background: #eef2f7; }
+.bench-combo-item.is-selected { font-weight: 600; color: #1d4ed8; }
+
 .run-advanced-block { margin-top: 10px; }
 .run-advanced-toggle { margin-top: 8px; }
 

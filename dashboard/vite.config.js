@@ -1337,7 +1337,7 @@ const SCRIPT_REGISTRY = [
     runtimeClass: 'llm',
     outputs: ['runs/<bench>/<run_id>/*', 'results.tsv (when --write-results)'],
     args: [
-      arg('bench', 'Benchmark', { type: 'text', required: true, bench: true, hint: 'Name from bench/ (e.g. chapter_fast) or a bench/*.jsonl path.' }),
+      arg('bench', 'Benchmark', { type: 'text', required: true, bench: true, default: 'chapter_fast-v3', hint: 'Name from bench/ (e.g. chapter_fast-v3) or a bench/*.jsonl path.' }),
       arg('profile', 'Profile', { type: 'text', required: true, pattern: '^[A-Za-z0-9_.\\-]+$', default: 'all', hint: "Profile key, or 'all' with a --time filter." }),
       arg('time', 'Time budget', { type: 'enum', default: 'all', choices: ['all', '30m', '60m'] }),
       arg('judge-model', 'Judge model', { type: 'text', pattern: MODEL_PATTERN, toggle: true, default: 'openai/gpt-5.4-mini', placeholder: 'openai/gpt-5.4-mini', hint: 'When enabled the LLM judge scores the run. Uncheck to score deterministically without calling a judge model.' }),

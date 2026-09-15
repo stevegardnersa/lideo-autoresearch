@@ -51,7 +51,7 @@ const RUN_REGISTRY = [
     runtimeClass: 'llm',
     outputs: ['runs/'],
     args: [
-      { name: 'bench', label: 'Benchmark', type: 'text', required: true, bench: true, default: 'chapter_fast' },
+      { name: 'bench', label: 'Benchmark', type: 'text', required: true, bench: true, default: 'chapter_fast-v3' },
       { name: 'profile', label: 'Profile', type: 'text', default: 'all' },
       { name: 'time', label: 'Time budget', type: 'enum', default: 'all', choices: ['all', '30m', '60m'] },
       { name: 'judge-model', label: 'Judge model', type: 'text', toggle: true, default: 'openai/gpt-5.4-mini', placeholder: 'openai/gpt-5.4-mini', pattern: '^[A-Za-z0-9_.\\-]+/[A-Za-z0-9_.\\-]+$' },
@@ -903,12 +903,40 @@ test('run tab renders tool cards, groups, and empty jobs state', async () => {
   assert.ok(reset.querySelector('.tool-warning'), 'destructive warning shown')
   assert.ok(reset.querySelector('[data-confirm]'), 'confirm field shown')
 
-  const benchField = doc.querySelector('.tool-card[data-tool="run_candidate"] [data-arg="bench"]')
-  assert.ok(benchField.getAttribute('list') === 'benchList', 'bench input wired to datalist')
+  const card = doc.querySelector('.tool-card[data-tool="run_candidate"]')
+  const benchField = card.querySelector('[data-arg="bench"]')
+  assert.equal(benchField.value, 'chapter_fast-v3', 'bench defaults to chapter_fast-v3')
+  assert.ok(benchField.closest('.bench-combo'), 'bench input wrapped in combobox')
+  assert.equal(benchField.getAttribute('list'), null, 'bench input no longer uses a native datalist')
+  assert.ok(card.querySelector('[data-bench-menu].cm-hidden'), 'bench menu starts hidden')
 
   assert.match(doc.getElementById('jobsList').textContent, /No runs yet/)
   assert.match(doc.getElementById('jobCount').textContent, /No runs/)
   assert.equal(state.es.length, 0, 'no event sources without expanded jobs')
+})
+
+test('bench combobox reveals every benchmark and fills the input on select', async () => {
+  const { doc, click, state } = h
+  state.bench = { ok: true, benches: ['chapter_fast', 'chapter_fast-v3', 'holdout'] }
+  await openRun(h)
+  const card = doc.querySelector('.tool-card[data-tool="run_candidate"]')
+  const input = card.querySelector('[data-arg="bench"]')
+  const menu = card.querySelector('[data-bench-menu]')
+  assert.ok(menu.classList.contains('cm-hidden'), 'menu hidden before interaction')
+
+  click(input)
+  assert.ok(!menu.classList.contains('cm-hidden'), 'menu opens on click')
+  const items = Array.from(menu.querySelectorAll('.bench-combo-item')).map(i => i.textContent)
+  assert.deepEqual(items, ['chapter_fast', 'chapter_fast-v3', 'holdout'], 'all benches listed')
+
+  input.value = 'chap'
+  click(input)
+  const afterTyping = Array.from(menu.querySelectorAll('.bench-combo-item')).map(i => i.textContent)
+  assert.deepEqual(afterTyping, ['chapter_fast', 'chapter_fast-v3', 'holdout'], 'typing does not filter the menu')
+
+  click(menu.querySelector('.bench-combo-item[data-bench-option="holdout"]'))
+  assert.equal(input.value, 'holdout', 'selecting an option fills the input')
+  assert.ok(menu.classList.contains('cm-hidden'), 'menu closes after selection')
 })
 
 test('preset fills the form then submit POSTs collected args', async () => {

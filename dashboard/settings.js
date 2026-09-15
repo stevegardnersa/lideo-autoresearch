@@ -2242,6 +2242,17 @@ function groupLabel(id) {
   return map[id] || id
 }
 
+function textFieldHtml(a, idPrefix, extraClass = '') {
+  const cls = extraClass ? ` class="${extraClass}"` : ''
+  const base = `id="${idPrefix}-${a.name}" data-arg="${a.name}" type="text" spellcheck="false" autocomplete="off" placeholder="${esc(a.placeholder || '')}" value="${esc(a.default != null ? String(a.default) : '')}"`
+  if (!a.bench) return `<input ${base}${cls} />`
+  return `<div class="bench-combo">
+    <input ${base} class="bench-combo-input" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-autocomplete="none" />
+    <button type="button" class="bench-combo-btn" data-bench-toggle aria-label="Show all benchmarks" aria-expanded="false" tabindex="-1">&#9662;</button>
+    <div class="bench-combo-menu cm-hidden" data-bench-menu role="listbox" aria-label="Benchmarks"></div>
+  </div>`
+}
+
 function fieldHtml(a, idPrefix = 'run-fld') {
   const req = a.required ? ' <span class="req-star" aria-hidden="true">*</span>' : ''
   const label = `<label for="${idPrefix}-${a.name}" ${a.required ? 'aria-required="true"' : ''}>${esc(a.label)}${req}</label>`
@@ -2269,10 +2280,10 @@ function fieldHtml(a, idPrefix = 'run-fld') {
         const enabled = a.default != null && a.default !== ''
         return wrap(`${label}
           <div class="cb judge-tgl"><input type="checkbox" id="${idPrefix}-${a.name}-toggle" data-toggle="${a.name}" ${enabled ? 'checked' : ''} /><label for="${idPrefix}-${a.name}-toggle">Enable LLM judge</label></div>
-          <input id="${idPrefix}-${a.name}" data-arg="${a.name}" type="text" list="${a.bench ? 'benchList' : ''}" spellcheck="false" placeholder="${esc(a.placeholder || '')}" value="${esc(a.default != null ? String(a.default) : '')}" class="judge-model-fld" />
+          ${textFieldHtml(a, idPrefix, 'judge-model-fld')}
           ${hint}`)
       }
-      return wrap(`${label}<input id="${idPrefix}-${a.name}" data-arg="${a.name}" type="text" list="${a.bench ? 'benchList' : ''}" spellcheck="false" placeholder="${esc(a.placeholder || '')}" value="${esc(a.default != null ? String(a.default) : '')}" />${hint}`)
+      return wrap(`${label}${textFieldHtml(a, idPrefix)}${hint}`)
   }
 }
 
@@ -2476,6 +2487,98 @@ async function runToolSubmit(card, tool) {
   }
 }
 
+function benchComboOptions() {
+  const benches = Array.isArray(RUN_STATE.benches) ? RUN_STATE.benches.slice() : []
+  return benches.length ? benches : ['chapter_fast']
+}
+
+function closeBenchCombo(combo) {
+  const menu = combo.querySelector('[data-bench-menu]')
+  const input = combo.querySelector('.bench-combo-input')
+  const btn = combo.querySelector('[data-bench-toggle]')
+  if (menu) menu.classList.add('cm-hidden')
+  if (input) input.setAttribute('aria-expanded', 'false')
+  if (btn) btn.setAttribute('aria-expanded', 'false')
+}
+
+function closeAllBenchCombos(except) {
+  document.querySelectorAll('.bench-combo').forEach(c => { if (c !== except) closeBenchCombo(c) })
+}
+
+function openBenchCombo(combo) {
+  const menu = combo.querySelector('[data-bench-menu]')
+  const input = combo.querySelector('.bench-combo-input')
+  const btn = combo.querySelector('[data-bench-toggle]')
+  if (!menu || !input) return
+  closeAllBenchCombos(combo)
+  const current = input.value.trim()
+  menu.innerHTML = benchComboOptions().map(b => {
+    const sel = b === current ? ' is-selected' : ''
+    return `<button type="button" role="option" class="bench-combo-item${sel}" data-bench-option="${esc(b)}" aria-selected="${b === current}">${esc(b)}</button>`
+  }).join('')
+  menu.classList.remove('cm-hidden')
+  input.setAttribute('aria-expanded', 'true')
+  if (btn) btn.setAttribute('aria-expanded', 'true')
+}
+
+function benchMoveActive(combo, dir) {
+  const items = Array.from(combo.querySelectorAll('.bench-combo-item'))
+  if (!items.length) return
+  const idx = items.findIndex(i => i.classList.contains('is-active'))
+  let next = idx === -1 ? (dir > 0 ? 0 : items.length - 1) : idx + dir
+  if (next < 0) next = items.length - 1
+  if (next >= items.length) next = 0
+  items.forEach(i => i.classList.remove('is-active'))
+  items[next].classList.add('is-active')
+  items[next].scrollIntoView({ block: 'nearest' })
+}
+
+function pickBenchOption(combo, value) {
+  const input = combo.querySelector('.bench-combo-input')
+  if (input) input.value = value
+  closeBenchCombo(combo)
+}
+
+let BENCH_COMBO_DOC_WIRED = false
+
+function wireBenchCombo(combo) {
+  const input = combo.querySelector('.bench-combo-input')
+  const btn = combo.querySelector('[data-bench-toggle]')
+  const menu = combo.querySelector('[data-bench-menu]')
+  if (!input || !menu) return
+  if (!BENCH_COMBO_DOC_WIRED) {
+    BENCH_COMBO_DOC_WIRED = true
+    document.addEventListener('mousedown', (e) => { if (!e.target.closest('.bench-combo')) closeAllBenchCombos() })
+  }
+  const toggle = () => { menu.classList.contains('cm-hidden') ? openBenchCombo(combo) : closeBenchCombo(combo) }
+  if (btn) btn.addEventListener('mousedown', (e) => { e.preventDefault(); toggle() })
+  input.addEventListener('mousedown', () => { if (menu.classList.contains('cm-hidden')) openBenchCombo(combo) })
+  input.addEventListener('click', () => { if (menu.classList.contains('cm-hidden')) openBenchCombo(combo) })
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      if (menu.classList.contains('cm-hidden')) openBenchCombo(combo)
+      else benchMoveActive(combo, 1)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      if (menu.classList.contains('cm-hidden')) openBenchCombo(combo)
+      else benchMoveActive(combo, -1)
+    } else if (e.key === 'Enter') {
+      const act = combo.querySelector('.bench-combo-item.is-active')
+      if (act) { e.preventDefault(); pickBenchOption(combo, act.dataset.benchOption) }
+    } else if (e.key === 'Escape') {
+      closeBenchCombo(combo)
+    }
+  })
+  menu.addEventListener('mousedown', (e) => e.preventDefault())
+  menu.addEventListener('click', (e) => {
+    const item = e.target.closest('[data-bench-option]')
+    if (!item) return
+    pickBenchOption(combo, item.dataset.benchOption)
+    input.focus()
+  })
+}
+
 function wireToolCard(card, tool) {
   card.querySelector('.tool-run-btn').addEventListener('click', () => {
     const form = card.querySelector('.tool-form')
@@ -2520,6 +2623,7 @@ function wireToolCard(card, tool) {
     cb.addEventListener('change', sync)
     sync()
   })
+  card.querySelectorAll('.bench-combo').forEach(wireBenchCombo)
   return card
 }
 
