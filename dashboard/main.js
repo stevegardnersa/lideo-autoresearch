@@ -758,8 +758,9 @@ function showTooltip(e, d) {
   const judgeTag = run.is_llm_judged
     ? `<span style="background:#8b5cf6;color:white;border-radius:3px;padding:1px 6px;font-size:11px">LLM:${run.judge_model.split('/').pop()}</span>`
     : `<span style="background:#6b7280;color:white;border-radius:3px;padding:1px 6px;font-size:11px">det</span>`
+  const promptTag = `<span style="background:${promptVersionColor(run.prompt_version)};color:white;border-radius:3px;padding:1px 6px;font-size:11px" title="${run.prompt_fingerprint ? 'fingerprint ' + run.prompt_fingerprint : ''}">${promptVersionLabel(run.prompt_version)}</span>`
   tooltip.innerHTML = `
-    <strong>${run.candidate_name || run.run_id}</strong> ${judgeTag}
+    <strong>${run.candidate_name || run.run_id}</strong> ${judgeTag} ${promptTag}
     <div>X: ${d.x.toFixed(4)} (${document.getElementById('xSelect').value})</div>
     <div>Y: ${d.y.toFixed(4)} (${document.getElementById('ySelect').value})</div>
     <div>Bubble: ${d.size.toFixed(2)} (${document.getElementById('sizeSelect').value})</div>
