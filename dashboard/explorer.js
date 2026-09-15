@@ -432,7 +432,7 @@ function renderPaneMetrics(side, sample, score, isOriginal, originalText, thresh
   let qualityVal = '-', utilityVal = '-', faithVal = '-', conceptVal = '-', readabilityVal = '-'
   let statusText = '-', statusClass = ''
   let gradeVal = '-'
-  let actualLengthCls = '', faithFailCls = '', conceptFailCls = ''
+  let actualLengthCls = '', faithFailCls = '', conceptFailCls = '', gradeFailCls = ''
 
   if (score) {
     qualityVal = (score.quality || 0).toFixed(2)
@@ -442,6 +442,7 @@ function renderPaneMetrics(side, sample, score, isOriginal, originalText, thresh
     readabilityVal = (score.deterministic?.readability_band || 0).toFixed(2)
     const summaryGrade = calculateReadingGrade(summaryText)
     gradeVal = `G${summaryGrade.toFixed(1)}`
+    if (summaryGrade > 10) gradeFailCls = 'metric-fail'
     if (score.hard_fail) {
       statusText = 'FAIL'
       statusClass = 'status-fail'
@@ -474,7 +475,7 @@ function renderPaneMetrics(side, sample, score, isOriginal, originalText, thresh
     </div>
     <div class="metric-card">
       <div class="metric-label">Summary Grade</div>
-      <div class="metric-value"><span>${readabilityVal}</span> / <span>${gradeVal}</span></div>
+      <div class="metric-value"><span>${readabilityVal}</span> / <span class="${gradeFailCls}">${gradeVal}</span></div>
     </div>
     <div class="metric-card">
       <div class="metric-label">Status</div>

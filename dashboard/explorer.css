@@ -107,8 +107,8 @@ h1 {
   padding-left: 4px;
 }
 
-.status-fail { color: #ef4444; }
-.status-pass { color: #22c55e; }
+.metric-value.status-fail { color: #ef4444; }
+.metric-value.status-pass { color: #22c55e; }
 .metric-fail { color: #ef4444; font-weight: 700; }
 
 .shell {
