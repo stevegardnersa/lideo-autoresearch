@@ -27,8 +27,8 @@ let profileSamplesCache = {}
 let originalTextCache = {}
 let currentSamples = []
 let currentRunId = ''
+let currentRightRunId = ''
 let currentJudgeType = ''
-let anchorRuns = []
 let refreshNotesHook = null
 const manifestCache = new Map()
 
@@ -115,43 +115,8 @@ async function discoverProfiles(timeBudget) {
     f.endsWith('.json') && !f.includes('/mock/') && !f.endsWith('.state.json') && !f.includes('__llmj_')
   )
 
-  const profiles = []
-  const seen = new Set()
+  const byName = new Map()
 
-  for (const file of jsonFiles) {
-    try {
-      const resp = await fetch(`/runs/${file}`)
-      const manifest = await resp.json()
-      const name = manifest.run_manifest?.candidate_name || ''
-      if (!name.startsWith(timeBudget + '_')) continue
-      if (seen.has(name)) continue
-      seen.add(name)
-      if (hiddenProfiles.has(name)) continue
-      profiles.push({
-        candidateName: name,
-        runId: manifest.run_manifest?.run_id || '',
-        file,
-        manifest,
-      })
-    } catch {
-      // skip
-    }
-  }
-
-  profiles.sort((a, b) => a.candidateName.localeCompare(b.candidateName))
-  return profiles
-}
-
-async function discoverRunsForCandidate(candidateName, judgeType) {
-  if (!candidateName) return []
-  const files = await fetch('/runs-list').then(r => r.json())
-  const isLlm = judgeType.startsWith('LLM:')
-  const jsonFiles = files.filter(f =>
-    f.endsWith('.json') && !f.includes('/mock/') && !f.endsWith('.state.json') &&
-    (isLlm ? f.includes('__llmj_') : !f.includes('__llmj_'))
-  )
-
-  const runs = []
   for (const file of jsonFiles) {
     try {
       let manifest = manifestCache.get(file)
@@ -161,8 +126,11 @@ async function discoverRunsForCandidate(candidateName, judgeType) {
         manifestCache.set(file, manifest)
       }
       const rm = manifest.run_manifest || {}
-      if (rm.candidate_name !== candidateName) continue
-      runs.push({
+      const name = rm.candidate_name || ''
+      if (!name.startsWith(timeBudget + '_')) continue
+      if (hiddenProfiles.has(name)) continue
+      if (!byName.has(name)) byName.set(name, [])
+      byName.get(name).push({
         runId: rm.run_id || '',
         file,
         manifest,
@@ -174,8 +142,20 @@ async function discoverRunsForCandidate(candidateName, judgeType) {
     }
   }
 
-  runs.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '') || (b.runId || '').localeCompare(a.runId || ''))
-  return runs
+  const profiles = []
+  for (const [name, runs] of byName) {
+    runs.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '') || (b.runId || '').localeCompare(a.runId || ''))
+    profiles.push({
+      candidateName: name,
+      runId: runs[0].runId,
+      file: runs[0].file,
+      manifest: runs[0].manifest,
+      runs,
+    })
+  }
+
+  profiles.sort((a, b) => a.candidateName.localeCompare(b.candidateName))
+  return profiles
 }
 
 function formatRunTimestamp(createdAt) {
@@ -194,33 +174,45 @@ function runOptionLabel(run, anchorBench) {
   return parts.join(' · ')
 }
 
-function populateRunSelect(anchorRun, runs) {
-  const select = document.getElementById('runSelect')
+function getRunForSide(side) {
+  const profile = getProfileByCandidateName(getPaneSelection(side))
+  if (!profile || !profile.runs || profile.runs.length === 0) return null
+  const desired = side === 'left' ? currentRunId : currentRightRunId
+  return profile.runs.find(r => r.runId === desired) || profile.runs[0]
+}
+
+function populateSideRunSelect(side) {
+  const select = document.getElementById(`${side}RunSelect`)
   if (!select) return
+
+  const selection = getPaneSelection(side)
+  const profile = selection && selection !== ORIGINAL_CHAPTER ? getProfileByCandidateName(selection) : null
+  const runs = profile?.runs || []
+
+  if (!profile || runs.length === 0) {
+    select.innerHTML = ''
+    select.style.display = 'none'
+    select.disabled = false
+    return
+  }
+
+  const anchorBench = currentManifest?.run_manifest?.bench || ''
   select.innerHTML = ''
-  const anchorBench = anchorRun?.bench || ''
-
-  const sorted = runs.slice().sort((a, b) => {
-    if ((a.bench === anchorBench) !== (b.bench === anchorBench)) return a.bench === anchorBench ? -1 : 1
-    return (b.createdAt || '').localeCompare(a.createdAt || '')
-  })
-
-  sorted.forEach(run => {
+  runs.forEach(run => {
     const opt = document.createElement('option')
     opt.value = run.runId
     opt.textContent = runOptionLabel(run, anchorBench)
     select.appendChild(opt)
   })
 
-  const hasSelection = sorted.some(r => r.runId === currentRunId)
-  if (hasSelection) {
-    select.value = currentRunId
-  } else if (anchorRun) {
-    const match = sorted.find(r => r.file === anchorRun.file)
-    if (match) select.value = match.runId
-  }
+  const desired = side === 'left' ? currentRunId : currentRightRunId
+  const run = runs.find(r => r.runId === desired) || runs[0]
+  select.value = run.runId
+  if (side === 'left') currentRunId = run.runId
+  else currentRightRunId = run.runId
 
-  updateRunSelectVisibility()
+  select.style.display = ''
+  select.disabled = runs.length <= 1
 }
 
 function updateUrlRunId(runId) {
@@ -233,10 +225,11 @@ function getSamplesFile(manifestFile) {
   return manifestFile.replace(/\.json$/, '.samples.jsonl')
 }
 
-async function getProfileSamples(profile) {
-  const key = profile.candidateName
+async function getRunSamples(run) {
+  if (!run || !run.file) return []
+  const key = run.file
   if (profileSamplesCache[key]) return profileSamplesCache[key]
-  const samples = await fetchAndParseSamples(getSamplesFile(profile.file))
+  const samples = await fetchAndParseSamples(getSamplesFile(run.file))
   profileSamplesCache[key] = samples
   return samples
 }
@@ -309,6 +302,11 @@ function populateChapterSelect(samples) {
   return select.value
 }
 
+function profileOptionLabel(profile) {
+  const count = profile.runs?.length || 0
+  return `${profile.candidateName} (${count})`
+}
+
 function populatePaneSelects() {
   const leftSelect = document.getElementById('leftProfileSelect')
   const rightSelect = document.getElementById('rightProfileSelect')
@@ -324,7 +322,7 @@ function populatePaneSelects() {
     allProfiles.forEach(p => {
       const opt = document.createElement('option')
       opt.value = p.candidateName
-      opt.textContent = p.candidateName
+      opt.textContent = profileOptionLabel(p)
       opt.disabled = isProfileDisabled(p)
       sel.appendChild(opt)
     })
@@ -349,24 +347,6 @@ function populatePaneSelects() {
 
 function getProfileByCandidateName(name) {
   return allProfiles.find(p => p.candidateName === name) || null
-}
-
-function syncAnchorProfile(manifest, runFile) {
-  const name = manifest?.run_manifest?.candidate_name
-  if (!name) return
-  const entry = {
-    candidateName: name,
-    runId: manifest.run_manifest?.run_id || '',
-    file: runFile,
-    manifest,
-  }
-  const idx = allProfiles.findIndex(p => p.candidateName === name)
-  if (idx === -1) {
-    allProfiles.push(entry)
-  } else {
-    allProfiles[idx] = entry
-  }
-  delete profileSamplesCache[name]
 }
 
 function getMatchingSample(samples, itemKey) {
@@ -534,15 +514,16 @@ async function renderPane(side) {
   }
 
   const thresholds = getScoringGates(profile.candidateName)
-  const samples = await getProfileSamples(profile)
+  const run = getRunForSide(side)
+  const samples = await getRunSamples(run)
   const sample = getMatchingSample(samples, selectedChapterKey)
   if (!sample) {
-    contentEl.innerHTML = '<div class="placeholder-text">No data for this chapter in selected profile.</div>'
+    contentEl.innerHTML = '<div class="placeholder-text">No data for this chapter in selected run.</div>'
     document.getElementById(`${side}Metrics`).innerHTML = ''
     return
   }
 
-  const score = getScoreForSample(profile.manifest, sample.sample_id || sample.item_key)
+  const score = getScoreForSample(run?.manifest, sample.sample_id || sample.item_key)
   contentEl.innerHTML = renderSummaryHTML(sample)
   renderPaneMetrics(side, sample, score, false, '', thresholds)
 }
@@ -570,19 +551,39 @@ async function handleChapterChange() {
 async function handleProfileChange(side) {
   const select = document.getElementById(`${side}ProfileSelect`)
   setPaneSelection(side, select.value)
-  await renderPane(side)
+
+  const profile = getProfileByCandidateName(select.value)
+  if (side === 'left') {
+    const desired = currentRunId
+    const run = profile?.runs?.find(r => r.runId === desired) || profile?.runs?.[0] || null
+    if (run) {
+      await applyActiveRun(run)
+    } else {
+      populateSideRunSelect('left')
+      await renderPane('left')
+    }
+  } else {
+    const desired = currentRightRunId
+    const run = profile?.runs?.find(r => r.runId === desired) || profile?.runs?.[0] || null
+    if (run) currentRightRunId = run.runId
+    populateSideRunSelect('right')
+    await renderPane('right')
+  }
 }
 
 async function applyActiveRun(run) {
+  if (!run) return
   currentRunId = run.runId
   currentManifest = run.manifest
 
   const runManifest = run.manifest.run_manifest || {}
   const profileLabel = runManifest.candidate_name || run.runId
 
-  syncAnchorProfile(run.manifest, run.file)
-
   currentSamples = await loadRunSamples(run.runId, currentJudgeType)
+
+  populateSideRunSelect('left')
+  populateSideRunSelect('right')
+
   if (currentSamples.length === 0) {
     document.getElementById('runSubtitle').textContent = `${profileLabel} (no samples found)`
     return
@@ -597,14 +598,22 @@ async function applyActiveRun(run) {
   await updateGenreSubtext()
 }
 
-async function handleRunChange(runId) {
-  if (!runId || runId === currentRunId) return
-  const run = anchorRuns.find(r => r.runId === runId)
+async function handleRunChange(side, runId) {
+  if (!runId) return
+  const profile = getProfileByCandidateName(getPaneSelection(side))
+  const run = profile?.runs?.find(r => r.runId === runId)
   if (!run) return
 
-  updateUrlRunId(run.runId)
-  await applyActiveRun(run)
-  if (refreshNotesHook) await refreshNotesHook()
+  if (side === 'left') {
+    if (runId === currentRunId) return
+    updateUrlRunId(runId)
+    await applyActiveRun(run)
+    if (refreshNotesHook) await refreshNotesHook()
+  } else {
+    if (runId === currentRightRunId) return
+    currentRightRunId = runId
+    await renderPane('right')
+  }
 }
 
 async function handleTimeToggle(timeBudget) {
@@ -615,56 +624,13 @@ async function handleTimeToggle(timeBudget) {
 
   allProfiles = await discoverProfiles(timeBudget)
 
-  const leftSelect = document.getElementById('leftProfileSelect')
-  const rightSelect = document.getElementById('rightProfileSelect')
-
-  ;[leftSelect, rightSelect].forEach((sel, idx) => {
-    const side = idx === 0 ? 'left' : 'right'
-    const prevVal = getPaneSelection(side)
-    sel.innerHTML = ''
-    const origOption = document.createElement('option')
-    origOption.value = ORIGINAL_CHAPTER
-    origOption.textContent = 'Original Chapter'
-    sel.appendChild(origOption)
-    allProfiles.forEach(p => {
-      const opt = document.createElement('option')
-      opt.value = p.candidateName
-      opt.textContent = p.candidateName
-      opt.disabled = isProfileDisabled(p)
-      sel.appendChild(opt)
-    })
-    const prevStillValid = prevVal && prevVal !== ORIGINAL_CHAPTER &&
-      allProfiles.some(p => p.candidateName === prevVal && !isProfileDisabled(p))
-    if (prevStillValid) {
-      sel.value = prevVal
-    } else if (idx === 0) {
-      const firstActive = allProfiles.find(p => !isProfileDisabled(p))
-      if (firstActive) {
-        sel.value = firstActive.candidateName
-        setPaneSelection('left', firstActive.candidateName)
-      } else {
-        sel.value = ORIGINAL_CHAPTER
-        setPaneSelection(side, ORIGINAL_CHAPTER)
-      }
-    } else {
-      sel.value = ORIGINAL_CHAPTER
-      setPaneSelection(side, ORIGINAL_CHAPTER)
-    }
-  })
-
-  updateRunSelectVisibility()
+  populatePaneSelects()
+  populateSideRunSelect('left')
+  populateSideRunSelect('right')
 
   await renderPane('left')
   await renderPane('right')
-}
-
-function updateRunSelectVisibility() {
-  const group = document.getElementById('runSelect')?.closest('.run-select-group')
-  if (!group) return
-  const anchor = anchorRuns.find(r => r.runId === currentRunId)
-  const anchorName = anchor?.manifest?.run_manifest?.candidate_name || ''
-  const matchesBudget = anchorName.startsWith(currentTimeBudget + '_')
-  group.style.display = (matchesBudget && anchorRuns.length > 1) ? '' : 'none'
+  await updateGenreSubtext()
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -705,19 +671,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  anchorRuns = await discoverRunsForCandidate(runManifest.candidate_name || '', currentJudgeType)
-  if (anchorRuns.length === 0) {
-    anchorRuns = [{
+  let anchorProfile = getProfileByCandidateName(profileName)
+  if (!anchorProfile && profileName) {
+    const anchorFile = await findRunFile(runId, judgeType)
+    const anchorRunEntry = {
       runId: runManifest.run_id || runId,
-      file: await findRunFile(runId, judgeType),
+      file: anchorFile,
       manifest: currentManifest,
       bench: runManifest.bench || '',
       createdAt: runManifest.created_at_utc || '',
-    }]
+    }
+    anchorProfile = {
+      candidateName: profileName,
+      runId: anchorRunEntry.runId,
+      file: anchorFile,
+      manifest: currentManifest,
+      runs: [anchorRunEntry],
+    }
+    allProfiles.push(anchorProfile)
+    populatePaneSelects()
+    setPaneSelection('left', profileName)
+    document.getElementById('leftProfileSelect').value = profileName
   }
-  const anchorRun = anchorRuns.find(r => r.runId === currentRunId) || anchorRuns[0]
-  populateRunSelect(anchorRun, anchorRuns)
-  document.getElementById('runSelect').addEventListener('change', e => handleRunChange(e.target.value))
+
+  const anchorRun = anchorProfile?.runs?.find(r => r.runId === currentRunId) || anchorProfile?.runs?.[0] || null
 
   await applyActiveRun(anchorRun)
 
@@ -725,6 +702,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('leftProfileSelect').addEventListener('change', () => handleProfileChange('left'))
   document.getElementById('rightProfileSelect').addEventListener('change', () => handleProfileChange('right'))
+
+  document.getElementById('leftRunSelect').addEventListener('change', e => handleRunChange('left', e.target.value))
+  document.getElementById('rightRunSelect').addEventListener('change', e => handleRunChange('right', e.target.value))
 
   document.querySelectorAll('.time-pill').forEach(pill => {
     pill.addEventListener('click', () => handleTimeToggle(pill.dataset.time))

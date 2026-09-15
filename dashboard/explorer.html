@@ -26,9 +26,6 @@
           <button class="time-pill active" data-time="30m">30m</button>
           <button class="time-pill" data-time="60m">60m</button>
         </div>
-        <div class="run-select-group">
-          <select id="runSelect" title="Select run"></select>
-        </div>
         <div class="chapter-select-group">
           <select id="chapterSelect">
             <option value="">Select a chapter...</option>
@@ -41,7 +38,10 @@
     <div class="shell">
       <div class="column-layout">
         <div class="column" id="leftColumn">
-          <select class="pane-header-select" id="leftProfileSelect"></select>
+          <div class="pane-header">
+            <select class="pane-header-select" id="leftProfileSelect"></select>
+            <select class="pane-header-select pane-run-select" id="leftRunSelect" title="Select run"></select>
+          </div>
           <div class="metric-section" id="leftMetrics"></div>
           <div class="pane-content" id="leftContent">
             <div class="placeholder-text">Select a chapter to view.</div>
@@ -49,7 +49,10 @@
         </div>
         <div class="column-divider"></div>
         <div class="column" id="rightColumn">
-          <select class="pane-header-select" id="rightProfileSelect"></select>
+          <div class="pane-header">
+            <select class="pane-header-select" id="rightProfileSelect"></select>
+            <select class="pane-header-select pane-run-select" id="rightRunSelect" title="Select run"></select>
+          </div>
           <div class="metric-section" id="rightMetrics"></div>
           <div class="pane-content" id="rightContent">
             <div class="placeholder-text">Select a chapter to view.</div>
