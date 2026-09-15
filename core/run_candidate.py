@@ -674,10 +674,10 @@ def parse_args() -> argparse.Namespace:
         "--chapter-concurrency",
         type=int,
         default=int(os.getenv("CF_CHAPTER_CONCURRENCY", "1")),
-        help="Run chapters in parallel via the Cloud Function. 1 (default) runs "
-        "sequentially. >1 dispatches chapter generation from a thread pool, bounded "
-        "by a shared semaphore on in-flight Cloud Function invocations. Only "
-        "effective in Cloud Function transport mode. Defaults to the "
+        help="Run chapters in parallel. 1 (default) runs sequentially. >1 dispatches "
+        "chapter generation from a thread pool: bounded by a shared semaphore on "
+        "in-flight Cloud Function invocations, and by the pool size for the direct "
+        "OpenRouter transport. Applies to both transports. Defaults to the "
         "CF_CHAPTER_CONCURRENCY env var or 1.",
     )
     parser.add_argument("--run-id", default="", help="Optional explicit run id for a new run.")
@@ -1940,7 +1940,7 @@ def run_book_sample(
             file=sys.stderr,
         )
 
-    if chapter_concurrency is not None and chapter_concurrency > 1 and pending and _is_cloud_function(client):
+    if chapter_concurrency is not None and chapter_concurrency > 1 and pending and client is not None:
         workers = min(int(chapter_concurrency), len(pending))
         with ThreadPoolExecutor(max_workers=workers) as executor:
             futures = {
@@ -2697,6 +2697,13 @@ def _run_single(
             print("=" * 72)
             print(f"details: {exc}", file=sys.stderr)
             raise SystemExit(4)
+    elif client is not None:
+        _concurrency = int(args.chapter_concurrency or 1)
+        if _concurrency > 1:
+            print(
+                f"Direct OpenRouter chapter concurrency: {_concurrency} "
+                f"(chapters dispatched in parallel)."
+            )
 
     bench_name = Path(args.bench).stem if str(args.bench).endswith(".jsonl") else args.bench
     bench_path = resolve_path(args.bench) if str(args.bench).endswith(".jsonl") else (ROOT / "bench" / f"{args.bench}.jsonl")
@@ -2861,6 +2868,8 @@ def _run_single(
         run_manifest["generation_transport"] = "mock"
     else:
         run_manifest["generation_transport"] = "direct"
+        if client is not None:
+            run_manifest["chapter_concurrency"] = int(args.chapter_concurrency or 1)
     state["run_manifest"] = run_manifest
 
     samples, traces, completed_item_keys = load_sample_checkpoints(samples_path, data_dir)
@@ -2999,7 +3008,7 @@ def _run_single(
         if sample_key_from_item(item, bench_name=bench_name) not in completed_set
     ]
     use_parallel = (
-        _is_cloud_function(client)
+        client is not None
         and int(args.chapter_concurrency or 1) > 1
         and len(pending_entries) > 1
         and all(_item_uses_chapter_path(item) for _, item in pending_entries)
@@ -3007,9 +3016,10 @@ def _run_single(
 
     if use_parallel:
         max_workers = min(int(args.chapter_concurrency), len(pending_entries))
+        transport_label = "Cloud Function" if _is_cloud_function(client) else "direct"
         print(
-            f"Running {len(pending_entries)} chapter items concurrently via Cloud Function "
-            f"(concurrency={max_workers})."
+            f"Running {len(pending_entries)} chapter items concurrently via {transport_label} "
+            f"transport (concurrency={max_workers})."
         )
         executor = ThreadPoolExecutor(max_workers=max_workers)
         try:

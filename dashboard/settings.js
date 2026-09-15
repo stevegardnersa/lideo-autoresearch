@@ -956,6 +956,8 @@ async function refreshProfileMeta() {
         const meta = PROFILE_META.get(a.profile) || {}
         if (job.toolId === 'run_candidate' && a.bench) meta.lastBench = a.bench
         if (a['judge-model']) meta.lastJudgeModel = a['judge-model']
+        const concurrency = Number(a['chapter-concurrency'])
+        if (Number.isInteger(concurrency) && concurrency > 1) meta.lastConcurrency = concurrency
         PROFILE_META.set(a.profile, meta)
       }
     }
@@ -968,7 +970,11 @@ function benchFor(slug) {
 }
 
 function buildProfileArgs(slug, tb, extra = {}) {
-  return { bench: benchFor(slug), profile: slug, time: tb || 'all', ...extra }
+  const meta = PROFILE_META.get(slug) || {}
+  const args = { bench: benchFor(slug), profile: slug, time: tb || 'all', ...extra }
+  const concurrency = Number(meta.lastConcurrency)
+  if (Number.isInteger(concurrency) && concurrency > 1) args['chapter-concurrency'] = concurrency
+  return args
 }
 
 function closeProfileMenus() {

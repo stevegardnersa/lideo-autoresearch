@@ -53,6 +53,14 @@ The **Scripts** tab lists every script from the registry grouped by purpose:
   **Autoresearch agent** (bounded by the profile's 30m/60m budget). Run and
   agent launch straight into the job queue; the inline form keeps the model
   dialog open so you can review what you submitted.
+- **Parallel chapter runs.** `run_candidate` exposes **Chapter concurrency**
+  (advanced, default `1` = sequential). Raise it to generate a bench's chapters
+  in parallel; it works on both transports — the direct OpenRouter client (no
+  GCP needed) and the Cloud Function (bounded by a shared in-flight semaphore).
+  A **30m all (4 chapters parallel)** preset opts in; once you run with `>1`,
+  the profile's quick **Run candidate now** action remembers and reuses it.
+  Higher values multiply concurrent OpenRouter calls, so raise deliberately —
+  the client already retries HTTP 429 with backoff.
 - **SSE** — running jobs stream into the floating widget automatically; the
   **view log** button opens the full-height log drawer. Reconnect uses
   `Last-Event-ID`, so refreshes don't lose output.

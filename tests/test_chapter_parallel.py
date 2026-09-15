@@ -9,6 +9,7 @@ Covers:
     of both checkpointed chapters and mid-flight chapter stage state
   * run_candidate._run_single parallelizing chapter bench items, checkpointing
     each item, recovering on resume, and pausing on insufficient credits
+    (both Cloud Function and direct OpenRouter transports)
   * ModelUnavailableError detection/backoff at the CF client, the runner banner,
     and a run pausing (not failing items) when the gateway has no deployment
   * CloudFunctionAuthError (expired OIDC token) failing fast at preflight and
@@ -162,6 +163,33 @@ def uninstall_fake_cf() -> None:
     rc._is_cloud_function = _ORIG_IS_CLOUD_FUNCTION
     rc.make_client = _ORIG_MAKE_CLIENT
     rc.set_cf_concurrency(None)
+
+
+class FakeDirectClient(FakeCloudFunctionClient):
+    """Fake direct (local OpenRouter) client.
+
+    Mirrors the minimal surface run_candidate touches on the direct transport:
+    ``chat_completion`` called with just the request body, ``fetch_models`` for
+    catalog capture, and a ``pricing_snapshot`` attribute. Reuses the CF fake's
+    call counting / in-flight tracking so concurrency can be asserted.
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.function_url = ""
+        self.auth_mode = ""
+        self.pricing_snapshot = None
+        self.fetch_models_calls = 0
+
+    def fetch_models(self, refresh: bool = False, **kwargs):
+        self.fetch_models_calls += 1
+        return {}
+
+
+def install_fake_direct(client) -> None:
+    """Install a direct-transport client (``_is_cloud_function`` returns False)."""
+    rc._is_cloud_function = lambda candidate: False
+    rc.make_client = lambda args: client
 
 
 def make_synthetic_book(root: Path, *, book_id: str = "synthetic-book", n_chapters: int = 6, source_words: int = 120):
@@ -421,6 +449,61 @@ def test_run_candidate_parallelizes_chapter_bench_items():
         assert sorted(row["sample_index"] for row in sample_rows) == [0, 1, 2, 3]
         assert (run_dir / "parallel-smoke.json").exists()
     print("test_run_candidate_parallelizes_chapter_bench_items: OK")
+
+
+def test_run_candidate_parallelizes_chapter_items_on_direct_transport():
+    """Direct (local OpenRouter) transport must parallelize chapters too, not
+    just the Cloud Function transport."""
+    with tempfile.TemporaryDirectory() as tmp_name:
+        tmp = Path(tmp_name)
+        manifest = load_benchmark_manifest(ROOT / "benchmark_version.json")
+        client = FakeDirectClient(delay=0.02)
+        install_fake_direct(client)
+        try:
+            args = build_run_args(tmp, run_id="direct-parallel-smoke", concurrency=3)
+            rc._run_single(args, manifest, ROOT / "candidate_spec.py", inherited_run_id=None)
+        finally:
+            uninstall_fake_cf()
+
+        run_dir = tmp / "runs" / run_dir_for(manifest)
+        state = json.loads((run_dir / "direct-parallel-smoke.state.json").read_text())
+        assert state["status"] == "finished", state["status"]
+        assert state["completed_count"] == 4, state["completed_count"]
+        assert state["run_manifest"]["generation_transport"] == "direct", state["run_manifest"]
+        assert state["run_manifest"]["chapter_concurrency"] == 3, state["run_manifest"]
+        assert client.fetch_models_calls == 1, client.fetch_models_calls
+        assert 2 <= client.max_in_flight <= 3, client.max_in_flight
+        sample_rows = [
+            json.loads(line)
+            for line in (run_dir / "direct-parallel-smoke.samples.jsonl").read_text().splitlines()
+            if line.strip()
+        ]
+        assert len(sample_rows) == 4, len(sample_rows)
+        assert sorted(row["sample_index"] for row in sample_rows) == [0, 1, 2, 3]
+        assert (run_dir / "direct-parallel-smoke.json").exists()
+    print("test_run_candidate_parallelizes_chapter_items_on_direct_transport: OK")
+
+
+def test_run_candidate_sequential_on_direct_transport_when_concurrency_one():
+    with tempfile.TemporaryDirectory() as tmp_name:
+        tmp = Path(tmp_name)
+        manifest = load_benchmark_manifest(ROOT / "benchmark_version.json")
+        client = FakeDirectClient(delay=0.005)
+        install_fake_direct(client)
+        try:
+            args = build_run_args(tmp, run_id="direct-sequential-smoke", concurrency=1)
+            rc._run_single(args, manifest, ROOT / "candidate_spec.py", inherited_run_id=None)
+        finally:
+            uninstall_fake_cf()
+
+        run_dir = tmp / "runs" / run_dir_for(manifest)
+        state = json.loads((run_dir / "direct-sequential-smoke.state.json").read_text())
+        assert state["status"] == "finished", state["status"]
+        assert state["completed_count"] == 4, state["completed_count"]
+        assert state["run_manifest"]["generation_transport"] == "direct"
+        assert state["run_manifest"]["chapter_concurrency"] == 1, state["run_manifest"]
+        assert client.max_in_flight == 1, client.max_in_flight
+    print("test_run_candidate_sequential_on_direct_transport_when_concurrency_one: OK")
 
 
 def test_run_candidate_resume_runs_only_remaining_items():
@@ -1181,6 +1264,8 @@ def main():
         test_run_book_sample_all_chapters_failing_raises,
         test_run_book_sample_propagates_insufficient_credits,
         test_run_candidate_parallelizes_chapter_bench_items,
+        test_run_candidate_parallelizes_chapter_items_on_direct_transport,
+        test_run_candidate_sequential_on_direct_transport_when_concurrency_one,
         test_run_candidate_resume_runs_only_remaining_items,
         test_run_candidate_parallel_pauses_on_insufficient_credits,
         test_run_candidate_parallel_isolates_item_exception_and_continues,

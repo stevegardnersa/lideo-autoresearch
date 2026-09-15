@@ -1345,6 +1345,7 @@ const SCRIPT_REGISTRY = [
       arg('mock', 'Mock (no API calls)', { type: 'bool', default: false }),
       arg('write-results', 'Write results.tsv', { type: 'bool', default: false }),
       arg('max-samples', 'Max samples (0 = all)', { type: 'int', default: 0, min: 0, advanced: true }),
+      arg('chapter-concurrency', 'Chapter concurrency', { type: 'int', default: 1, min: 1, max: 32, advanced: true, hint: 'Chapters generated in parallel. 1 = sequential (default). Works for direct and Cloud Function transports.' }),
       arg('run-id', 'Explicit run id', { type: 'text', pattern: '^[A-Za-z0-9_.\\-]*$', advanced: true }),
       arg('resume', 'Resume run id', { type: 'text', pattern: '^[A-Za-z0-9_.\\-]*$', advanced: true }),
       arg('wait-for-credits', 'Wait for credits on 402', { type: 'bool', default: false, advanced: true }),
@@ -1358,6 +1359,7 @@ const SCRIPT_REGISTRY = [
       { id: 'smoke', label: 'Smoke (mock)', args: { bench: 'chapter_fast', profile: 'all', time: 'all', mock: true, 'write-results': true, 'max-samples': 4 } },
       { id: '30m-all', label: '30m all profiles', args: { bench: 'chapter_fast', profile: 'all', time: '30m', 'write-results': true } },
       { id: '60m-all', label: '60m all profiles', args: { bench: 'chapter_fast', profile: 'all', time: '60m', 'write-results': true } },
+      { id: 'chapter-parallel', label: '30m all (4 chapters parallel)', args: { bench: 'chapter_fast', profile: 'all', time: '30m', 'write-results': true, 'chapter-concurrency': 4 } },
     ],
   },
   {
