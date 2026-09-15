@@ -1,3 +1,20 @@
 {
-  "disabled": {}
+  "disabled": {
+    "20260914t214859z__booksum-v4__chapter_fast-v3-grade4__30m_gpt-5.6-luna__30m_gpt-5.6-luna_notthinking_v1": {
+      "disabled_at": "2026-09-15T03:55:12.935Z",
+      "reason": null
+    },
+    "20260914t215626z__booksum-v4__chapter_fast-v3-grade4__30m_gpt-5.6-luna__30m_gpt-5.6-luna_notthinking_v1": {
+      "disabled_at": "2026-09-15T03:55:16.299Z",
+      "reason": null
+    },
+    "20260914t220309z__booksum-v4__chapter_fast-v3-grade4__30m_gpt-5.6-luna__30m_gpt-5.6-luna_notthinking_v1": {
+      "disabled_at": "2026-09-15T03:55:17.828Z",
+      "reason": null
+    },
+    "20260914t220826z__booksum-v4__chapter_fast-v3-grade4__30m_gpt-5.6-luna__30m_gpt-5.6-luna_notthinking_v1": {
+      "disabled_at": "2026-09-15T03:55:19.289Z",
+      "reason": null
+    }
+  }
 }
