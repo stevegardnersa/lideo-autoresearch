@@ -279,6 +279,21 @@ h1 {
   max-width: 500px;
 }
 
+.run-select-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.run-select-group select {
+  width: auto;
+  min-width: 210px;
+  max-width: 340px;
+  height: 34px;
+  padding: 6px 10px;
+}
+
 select {
   border: 1px solid var(--line);
   background: white;

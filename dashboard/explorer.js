@@ -26,6 +26,11 @@ function setPaneSelection(side, value) {
 let profileSamplesCache = {}
 let originalTextCache = {}
 let currentSamples = []
+let currentRunId = ''
+let currentJudgeType = ''
+let anchorRuns = []
+let refreshNotesHook = null
+const manifestCache = new Map()
 
 function getRunIdFromUrl() {
   const params = new URLSearchParams(window.location.search)
@@ -52,23 +57,23 @@ async function findRunFile(runId, judgeType) {
   return candidates[0] || null
 }
 
-async function loadRunManifest(runId) {
+async function loadRunManifest(runId, judgeType) {
   try {
-    const { runId: rid, judgeType } = getRunIdFromUrl()
-    const runFile = await findRunFile(rid, judgeType)
+    const runFile = await findRunFile(runId, judgeType)
     if (!runFile) return null
 
     const response = await fetch(`/runs/${runFile}`)
-    return await response.json()
+    const manifest = await response.json()
+    manifestCache.set(runFile, manifest)
+    return manifest
   } catch (e) {
     console.error('Failed to load run manifest:', e)
     return null
   }
 }
 
-async function loadRunSamples(runId) {
+async function loadRunSamples(runId, judgeType) {
   try {
-    const { judgeType } = getRunIdFromUrl()
     const files = await fetch('/runs-list').then(r => r.json())
     if (!runId) return []
 
@@ -135,6 +140,93 @@ async function discoverProfiles(timeBudget) {
 
   profiles.sort((a, b) => a.candidateName.localeCompare(b.candidateName))
   return profiles
+}
+
+async function discoverRunsForCandidate(candidateName, judgeType) {
+  if (!candidateName) return []
+  const files = await fetch('/runs-list').then(r => r.json())
+  const isLlm = judgeType.startsWith('LLM:')
+  const jsonFiles = files.filter(f =>
+    f.endsWith('.json') && !f.includes('/mock/') && !f.endsWith('.state.json') &&
+    (isLlm ? f.includes('__llmj_') : !f.includes('__llmj_'))
+  )
+
+  const runs = []
+  for (const file of jsonFiles) {
+    try {
+      let manifest = manifestCache.get(file)
+      if (!manifest) {
+        const resp = await fetch(`/runs/${file}`)
+        manifest = await resp.json()
+        manifestCache.set(file, manifest)
+      }
+      const rm = manifest.run_manifest || {}
+      if (rm.candidate_name !== candidateName) continue
+      runs.push({
+        runId: rm.run_id || '',
+        file,
+        manifest,
+        bench: rm.bench || '',
+        createdAt: rm.created_at_utc || '',
+      })
+    } catch {
+      // skip
+    }
+  }
+
+  runs.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '') || (b.runId || '').localeCompare(a.runId || ''))
+  return runs
+}
+
+function formatRunTimestamp(createdAt) {
+  if (!createdAt) return ''
+  const d = new Date(createdAt)
+  if (isNaN(d.getTime())) return ''
+  const pad = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+function runOptionLabel(run, anchorBench) {
+  const ts = formatRunTimestamp(run.createdAt)
+  const parts = []
+  if (run.bench && run.bench !== anchorBench) parts.push(run.bench)
+  parts.push(ts || run.runId || 'unknown run')
+  return parts.join(' · ')
+}
+
+function populateRunSelect(anchorRun, runs) {
+  const select = document.getElementById('runSelect')
+  if (!select) return
+  select.innerHTML = ''
+  const anchorBench = anchorRun?.bench || ''
+
+  const sorted = runs.slice().sort((a, b) => {
+    if ((a.bench === anchorBench) !== (b.bench === anchorBench)) return a.bench === anchorBench ? -1 : 1
+    return (b.createdAt || '').localeCompare(a.createdAt || '')
+  })
+
+  sorted.forEach(run => {
+    const opt = document.createElement('option')
+    opt.value = run.runId
+    opt.textContent = runOptionLabel(run, anchorBench)
+    select.appendChild(opt)
+  })
+
+  const hasSelection = sorted.some(r => r.runId === currentRunId)
+  if (hasSelection) {
+    select.value = currentRunId
+  } else if (anchorRun) {
+    const match = sorted.find(r => r.file === anchorRun.file)
+    if (match) select.value = match.runId
+  }
+
+  updateRunSelectVisibility()
+}
+
+function updateUrlRunId(runId) {
+  const url = new URL(window.location.href)
+  url.searchParams.set('run_id', runId)
+  window.history.replaceState({}, '', url)
 }
 
 function getSamplesFile(manifestFile) {
@@ -257,6 +349,24 @@ function populatePaneSelects() {
 
 function getProfileByCandidateName(name) {
   return allProfiles.find(p => p.candidateName === name) || null
+}
+
+function syncAnchorProfile(manifest, runFile) {
+  const name = manifest?.run_manifest?.candidate_name
+  if (!name) return
+  const entry = {
+    candidateName: name,
+    runId: manifest.run_manifest?.run_id || '',
+    file: runFile,
+    manifest,
+  }
+  const idx = allProfiles.findIndex(p => p.candidateName === name)
+  if (idx === -1) {
+    allProfiles.push(entry)
+  } else {
+    allProfiles[idx] = entry
+  }
+  delete profileSamplesCache[name]
 }
 
 function getMatchingSample(samples, itemKey) {
@@ -463,6 +573,40 @@ async function handleProfileChange(side) {
   await renderPane(side)
 }
 
+async function applyActiveRun(run) {
+  currentRunId = run.runId
+  currentManifest = run.manifest
+
+  const runManifest = run.manifest.run_manifest || {}
+  const profileLabel = runManifest.candidate_name || run.runId
+
+  syncAnchorProfile(run.manifest, run.file)
+
+  currentSamples = await loadRunSamples(run.runId, currentJudgeType)
+  if (currentSamples.length === 0) {
+    document.getElementById('runSubtitle').textContent = `${profileLabel} (no samples found)`
+    return
+  }
+
+  document.getElementById('runSubtitle').textContent = profileLabel
+
+  selectedChapterKey = populateChapterSelect(currentSamples)
+
+  await renderPane('left')
+  await renderPane('right')
+  await updateGenreSubtext()
+}
+
+async function handleRunChange(runId) {
+  if (!runId || runId === currentRunId) return
+  const run = anchorRuns.find(r => r.runId === runId)
+  if (!run) return
+
+  updateUrlRunId(run.runId)
+  await applyActiveRun(run)
+  if (refreshNotesHook) await refreshNotesHook()
+}
+
 async function handleTimeToggle(timeBudget) {
   currentTimeBudget = timeBudget
   document.querySelectorAll('.time-pill').forEach(pill => {
@@ -508,8 +652,19 @@ async function handleTimeToggle(timeBudget) {
     }
   })
 
+  updateRunSelectVisibility()
+
   await renderPane('left')
   await renderPane('right')
+}
+
+function updateRunSelectVisibility() {
+  const group = document.getElementById('runSelect')?.closest('.run-select-group')
+  if (!group) return
+  const anchor = anchorRuns.find(r => r.runId === currentRunId)
+  const anchorName = anchor?.manifest?.run_manifest?.candidate_name || ''
+  const matchesBudget = anchorName.startsWith(currentTimeBudget + '_')
+  group.style.display = (matchesBudget && anchorRuns.length > 1) ? '' : 'none'
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -520,7 +675,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     return
   }
 
-  currentManifest = await loadRunManifest(runId)
+  currentRunId = runId
+  currentJudgeType = judgeType
+  currentManifest = await loadRunManifest(runId, judgeType)
   if (!currentManifest) {
     document.getElementById('runSubtitle').textContent = 'Run not found: ' + runId
     return
@@ -548,22 +705,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  currentSamples = await loadRunSamples(runId)
-  if (currentSamples.length === 0) {
-    document.getElementById('runSubtitle').textContent = `${runManifest.candidate_name || runId} (no samples found)`
-    return
+  anchorRuns = await discoverRunsForCandidate(runManifest.candidate_name || '', currentJudgeType)
+  if (anchorRuns.length === 0) {
+    anchorRuns = [{
+      runId: runManifest.run_id || runId,
+      file: await findRunFile(runId, judgeType),
+      manifest: currentManifest,
+      bench: runManifest.bench || '',
+      createdAt: runManifest.created_at_utc || '',
+    }]
   }
+  const anchorRun = anchorRuns.find(r => r.runId === currentRunId) || anchorRuns[0]
+  populateRunSelect(anchorRun, anchorRuns)
+  document.getElementById('runSelect').addEventListener('change', e => handleRunChange(e.target.value))
 
-  document.getElementById('runSubtitle').textContent = runManifest.candidate_name || runId
-
-  const selectedKey = populateChapterSelect(currentSamples)
-  selectedChapterKey = selectedKey
-
-  if (selectedKey) {
-    await renderPane('left')
-    await renderPane('right')
-    await updateGenreSubtext()
-  }
+  await applyActiveRun(anchorRun)
 
   document.getElementById('chapterSelect').addEventListener('change', handleChapterChange)
 
@@ -674,6 +830,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       notesList.innerHTML = '<div class="placeholder-text">Failed to load notes.</div>'
     }
   }
+
+  refreshNotesHook = loadAndRenderNotes
 
   const origHandleChapterChange = handleChapterChange
   handleChapterChange = async function() {
