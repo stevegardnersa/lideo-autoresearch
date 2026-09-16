@@ -3277,306 +3277,6 @@
       "disable_composer": false,
       "notes": "Auto-generated: qwen/qwen3.6-35b-a3b chapter+composer, 60m, notthinking (effort=none), schema=False"
     },
-    "30m_step-3.5-flash_thinking": {
-      "name": "30m_step-3.5-flash_thinking_v1",
-      "profile": "30m_step-3.5-flash_thinking",
-      "chapter_stage": {
-        "model": "stepfun/step-3.5-flash",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "dense_faithful",
-          "detail_policy": "mechanisms_first",
-          "qualifier_policy": "strict",
-          "structure_policy": "heading_aware",
-          "example_policy": "explanatory_only",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "provider": null,
-        "use_json_schema": true,
-        "reasoning": {
-          "enabled": true
-        }
-      },
-      "composer_stage": {
-        "model": "stepfun/step-3.5-flash",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "architectural_synthesizer",
-          "synthesis_policy": "thesis_then_frameworks",
-          "detail_policy": "balanced_dense",
-          "qualifier_policy": "strict",
-          "structure_policy": "theme_clustered",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "provider": null,
-        "use_json_schema": true,
-        "reasoning": {
-          "enabled": true
-        }
-      },
-      "composer_mode": "summaries_only",
-      "length_control": {
-        "max_passes": 5,
-        "tolerance_pct": 0.08,
-        "hard_tolerance_pct": 0.1,
-        "repair_strategy": "edit_existing",
-        "repair_more_prompt_id": "expand_mechanisms_first",
-        "repair_less_prompt_id": "shrink_sentence_delete",
-        "repair_target_mode": "low",
-        "repair_sentence_delete": true,
-        "repair_min_reduction_pct": 0.08,
-        "early_stop_patience": 1,
-        "early_stop_epsilon": 3,
-        "stop_on_direction_flip": true,
-        "accept_within_hard_tolerance": true
-      },
-      "budget_allocator": {
-        "words_per_minute": 200,
-        "allocation_alpha": 0.9,
-        "min_chapter_share": 0.03,
-        "max_chapter_share": 0.18,
-        "chapter_stage_multiplier_30m": 1.2,
-        "chapter_stage_multiplier_60m": 1,
-        "max_summary_to_source_ratio": 0.9
-      },
-      "disable_composer": false,
-      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, thinking (enabled=true), schema=True"
-    },
-    "30m_step-3.5-flash_notthinking": {
-      "name": "30m_step-3.5-flash_notthinking_v1",
-      "profile": "30m_step-3.5-flash_notthinking",
-      "chapter_stage": {
-        "model": "stepfun/step-3.5-flash",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "dense_faithful",
-          "detail_policy": "mechanisms_first",
-          "qualifier_policy": "strict",
-          "structure_policy": "heading_aware",
-          "example_policy": "explanatory_only",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "provider": null,
-        "use_json_schema": true,
-        "reasoning": {
-          "enabled": false
-        }
-      },
-      "composer_stage": {
-        "model": "stepfun/step-3.5-flash",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "architectural_synthesizer",
-          "synthesis_policy": "thesis_then_frameworks",
-          "detail_policy": "balanced_dense",
-          "qualifier_policy": "strict",
-          "structure_policy": "theme_clustered",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "provider": null,
-        "use_json_schema": true,
-        "reasoning": {
-          "enabled": false
-        }
-      },
-      "composer_mode": "summaries_only",
-      "length_control": {
-        "max_passes": 5,
-        "tolerance_pct": 0.08,
-        "hard_tolerance_pct": 0.1,
-        "repair_strategy": "edit_existing",
-        "repair_more_prompt_id": "expand_mechanisms_first",
-        "repair_less_prompt_id": "shrink_sentence_delete",
-        "repair_target_mode": "low",
-        "repair_sentence_delete": true,
-        "repair_min_reduction_pct": 0.08,
-        "early_stop_patience": 1,
-        "early_stop_epsilon": 3,
-        "stop_on_direction_flip": true,
-        "accept_within_hard_tolerance": true
-      },
-      "budget_allocator": {
-        "words_per_minute": 200,
-        "allocation_alpha": 0.9,
-        "min_chapter_share": 0.03,
-        "max_chapter_share": 0.18,
-        "chapter_stage_multiplier_30m": 1.2,
-        "chapter_stage_multiplier_60m": 1,
-        "max_summary_to_source_ratio": 0.9
-      },
-      "disable_composer": false,
-      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, notthinking (effort=none), schema=True"
-    },
-    "60m_step-3.5-flash_thinking": {
-      "name": "60m_step-3.5-flash_thinking_v1",
-      "profile": "60m_step-3.5-flash_thinking",
-      "chapter_stage": {
-        "model": "stepfun/step-3.5-flash",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "dense_faithful",
-          "detail_policy": "mechanisms_first",
-          "qualifier_policy": "strict",
-          "structure_policy": "heading_aware",
-          "example_policy": "explanatory_only",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "provider": null,
-        "use_json_schema": true,
-        "reasoning": {
-          "enabled": true
-        }
-      },
-      "composer_stage": {
-        "model": "stepfun/step-3.5-flash",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "architectural_synthesizer",
-          "synthesis_policy": "thesis_then_frameworks",
-          "detail_policy": "balanced_dense",
-          "qualifier_policy": "strict",
-          "structure_policy": "theme_clustered",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "provider": null,
-        "use_json_schema": true,
-        "reasoning": {
-          "enabled": true
-        }
-      },
-      "composer_mode": "summaries_only",
-      "length_control": {
-        "max_passes": 5,
-        "tolerance_pct": 0.08,
-        "hard_tolerance_pct": 0.1,
-        "repair_strategy": "edit_existing",
-        "repair_more_prompt_id": "expand_mechanisms_first",
-        "repair_less_prompt_id": "shrink_sentence_delete",
-        "repair_target_mode": "low",
-        "repair_sentence_delete": true,
-        "repair_min_reduction_pct": 0.08,
-        "early_stop_patience": 1,
-        "early_stop_epsilon": 3,
-        "stop_on_direction_flip": true,
-        "accept_within_hard_tolerance": true
-      },
-      "budget_allocator": {
-        "words_per_minute": 200,
-        "allocation_alpha": 0.9,
-        "min_chapter_share": 0.03,
-        "max_chapter_share": 0.18,
-        "chapter_stage_multiplier_30m": 1.2,
-        "chapter_stage_multiplier_60m": 1,
-        "max_summary_to_source_ratio": 0.9
-      },
-      "disable_composer": false,
-      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, thinking (enabled=true), schema=True"
-    },
-    "60m_step-3.5-flash_notthinking": {
-      "name": "60m_step-3.5-flash_notthinking_v1",
-      "profile": "60m_step-3.5-flash_notthinking",
-      "chapter_stage": {
-        "model": "stepfun/step-3.5-flash",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "dense_faithful",
-          "detail_policy": "mechanisms_first",
-          "qualifier_policy": "strict",
-          "structure_policy": "heading_aware",
-          "example_policy": "explanatory_only",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "provider": null,
-        "use_json_schema": true,
-        "reasoning": {
-          "enabled": false
-        }
-      },
-      "composer_stage": {
-        "model": "stepfun/step-3.5-flash",
-        "temperature": 0.2,
-        "seed": 42,
-        "max_tokens": 8192,
-        "format_mode": "markdown_sections",
-        "context_mode": "chapter_plus_toc_and_meta",
-        "prompt_components": {
-          "system_style": "architectural_synthesizer",
-          "synthesis_policy": "thesis_then_frameworks",
-          "detail_policy": "balanced_dense",
-          "qualifier_policy": "strict",
-          "structure_policy": "theme_clustered",
-          "terminology_policy": "keep_source_terms",
-          "anti_fluff_policy": "hard"
-        },
-        "provider": null,
-        "use_json_schema": true,
-        "reasoning": {
-          "enabled": false
-        }
-      },
-      "composer_mode": "summaries_only",
-      "length_control": {
-        "max_passes": 5,
-        "tolerance_pct": 0.08,
-        "hard_tolerance_pct": 0.1,
-        "repair_strategy": "edit_existing",
-        "repair_more_prompt_id": "expand_mechanisms_first",
-        "repair_less_prompt_id": "shrink_sentence_delete",
-        "repair_target_mode": "low",
-        "repair_sentence_delete": true,
-        "repair_min_reduction_pct": 0.08,
-        "early_stop_patience": 1,
-        "early_stop_epsilon": 3,
-        "stop_on_direction_flip": true,
-        "accept_within_hard_tolerance": true
-      },
-      "budget_allocator": {
-        "words_per_minute": 200,
-        "allocation_alpha": 0.9,
-        "min_chapter_share": 0.03,
-        "max_chapter_share": 0.18,
-        "chapter_stage_multiplier_30m": 1.2,
-        "chapter_stage_multiplier_60m": 1,
-        "max_summary_to_source_ratio": 0.9
-      },
-      "disable_composer": false,
-      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, notthinking (effort=none), schema=True"
-    },
     "30m_grok-4.3_thinking": {
       "name": "30m_grok-4.3_thinking_v1",
       "profile": "30m_grok-4.3_thinking",
@@ -7034,6 +6734,1070 @@
       },
       "disable_composer": false,
       "notes": "Auto-generated: z-ai/glm-5.3-flash chapter+composer, 30m, thinking (enabled=true), schema=True"
+    },
+    "30m_step-3.5-flash_thinking": {
+      "name": "30m_step-3.5-flash_thinking_v1",
+      "profile": "30m_step-3.5-flash_thinking",
+      "chapter_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
+      },
+      "composer_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_sentence_delete",
+        "repair_target_mode": "low",
+        "repair_sentence_delete": true,
+        "repair_min_reduction_pct": 0.08,
+        "early_stop_patience": 1,
+        "early_stop_epsilon": 3,
+        "stop_on_direction_flip": true,
+        "accept_within_hard_tolerance": true
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, thinking (enabled=true), schema=True",
+      "hidden": true
+    },
+    "60m_step-3.5-flash_thinking": {
+      "name": "60m_step-3.5-flash_thinking_v1",
+      "profile": "60m_step-3.5-flash_thinking",
+      "chapter_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
+      },
+      "composer_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 8192,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": true,
+        "reasoning": {
+          "enabled": true
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_sentence_delete",
+        "repair_target_mode": "low",
+        "repair_sentence_delete": true,
+        "repair_min_reduction_pct": 0.08,
+        "early_stop_patience": 1,
+        "early_stop_epsilon": 3,
+        "stop_on_direction_flip": true,
+        "accept_within_hard_tolerance": true
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, thinking (enabled=true), schema=True",
+      "hidden": true
+    },
+    "30m_step-3.5-flash_effort-minimal": {
+      "name": "30m_step-3.5-flash_effort-minimal_v1",
+      "profile": "30m_step-3.5-flash_effort-minimal",
+      "chapter_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 9103,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "minimal"
+        }
+      },
+      "composer_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 9103,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "minimal"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_sentence_delete",
+        "repair_target_mode": "low",
+        "repair_sentence_delete": true,
+        "repair_min_reduction_pct": 0.08,
+        "early_stop_patience": 1,
+        "early_stop_epsilon": 3,
+        "stop_on_direction_flip": true,
+        "accept_within_hard_tolerance": true
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, effort-minimal (effort=minimal), schema=False",
+      "use_json_schema": false
+    },
+    "30m_step-3.5-flash_effort-low": {
+      "name": "30m_step-3.5-flash_effort-low_v1",
+      "profile": "30m_step-3.5-flash_effort-low",
+      "chapter_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 10240,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "low"
+        }
+      },
+      "composer_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 10240,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "low"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_sentence_delete",
+        "repair_target_mode": "low",
+        "repair_sentence_delete": true,
+        "repair_min_reduction_pct": 0.08,
+        "early_stop_patience": 1,
+        "early_stop_epsilon": 3,
+        "stop_on_direction_flip": true,
+        "accept_within_hard_tolerance": true
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, effort-low (effort=low), schema=False",
+      "use_json_schema": false
+    },
+    "30m_step-3.5-flash_effort-medium": {
+      "name": "30m_step-3.5-flash_effort-medium_v1",
+      "profile": "30m_step-3.5-flash_effort-medium",
+      "chapter_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 16384,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "medium"
+        }
+      },
+      "composer_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 16384,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "medium"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_sentence_delete",
+        "repair_target_mode": "low",
+        "repair_sentence_delete": true,
+        "repair_min_reduction_pct": 0.08,
+        "early_stop_patience": 1,
+        "early_stop_epsilon": 3,
+        "stop_on_direction_flip": true,
+        "accept_within_hard_tolerance": true
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, effort-medium (effort=medium), schema=False",
+      "use_json_schema": false
+    },
+    "30m_step-3.5-flash_effort-high": {
+      "name": "30m_step-3.5-flash_effort-high_v1",
+      "profile": "30m_step-3.5-flash_effort-high",
+      "chapter_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 40960,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "high"
+        }
+      },
+      "composer_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 40960,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "high"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_sentence_delete",
+        "repair_target_mode": "low",
+        "repair_sentence_delete": true,
+        "repair_min_reduction_pct": 0.08,
+        "early_stop_patience": 1,
+        "early_stop_epsilon": 3,
+        "stop_on_direction_flip": true,
+        "accept_within_hard_tolerance": true
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, effort-high (effort=high), schema=False",
+      "use_json_schema": false
+    },
+    "30m_step-3.5-flash_effort-xhigh": {
+      "name": "30m_step-3.5-flash_effort-xhigh_v1",
+      "profile": "30m_step-3.5-flash_effort-xhigh",
+      "chapter_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 163840,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "xhigh"
+        }
+      },
+      "composer_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 163840,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "xhigh"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_sentence_delete",
+        "repair_target_mode": "low",
+        "repair_sentence_delete": true,
+        "repair_min_reduction_pct": 0.08,
+        "early_stop_patience": 1,
+        "early_stop_epsilon": 3,
+        "stop_on_direction_flip": true,
+        "accept_within_hard_tolerance": true
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, effort-xhigh (effort=xhigh), schema=False",
+      "use_json_schema": false
+    },
+    "30m_step-3.5-flash_effort-max": {
+      "name": "30m_step-3.5-flash_effort-max_v1",
+      "profile": "30m_step-3.5-flash_effort-max",
+      "chapter_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 163840,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "max"
+        }
+      },
+      "composer_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 163840,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "max"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_sentence_delete",
+        "repair_target_mode": "low",
+        "repair_sentence_delete": true,
+        "repair_min_reduction_pct": 0.08,
+        "early_stop_patience": 1,
+        "early_stop_epsilon": 3,
+        "stop_on_direction_flip": true,
+        "accept_within_hard_tolerance": true
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 30m, effort-max (effort=max), schema=False",
+      "use_json_schema": false
+    },
+    "60m_step-3.5-flash_effort-minimal": {
+      "name": "60m_step-3.5-flash_effort-minimal_v1",
+      "profile": "60m_step-3.5-flash_effort-minimal",
+      "chapter_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 9103,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "minimal"
+        }
+      },
+      "composer_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 9103,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "minimal"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_sentence_delete",
+        "repair_target_mode": "low",
+        "repair_sentence_delete": true,
+        "repair_min_reduction_pct": 0.08,
+        "early_stop_patience": 1,
+        "early_stop_epsilon": 3,
+        "stop_on_direction_flip": true,
+        "accept_within_hard_tolerance": true
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, effort-minimal (effort=minimal), schema=False",
+      "use_json_schema": false
+    },
+    "60m_step-3.5-flash_effort-low": {
+      "name": "60m_step-3.5-flash_effort-low_v1",
+      "profile": "60m_step-3.5-flash_effort-low",
+      "chapter_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 10240,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "low"
+        }
+      },
+      "composer_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 10240,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "low"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_sentence_delete",
+        "repair_target_mode": "low",
+        "repair_sentence_delete": true,
+        "repair_min_reduction_pct": 0.08,
+        "early_stop_patience": 1,
+        "early_stop_epsilon": 3,
+        "stop_on_direction_flip": true,
+        "accept_within_hard_tolerance": true
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, effort-low (effort=low), schema=False",
+      "use_json_schema": false
+    },
+    "60m_step-3.5-flash_effort-medium": {
+      "name": "60m_step-3.5-flash_effort-medium_v1",
+      "profile": "60m_step-3.5-flash_effort-medium",
+      "chapter_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 16384,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "medium"
+        }
+      },
+      "composer_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 16384,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "medium"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_sentence_delete",
+        "repair_target_mode": "low",
+        "repair_sentence_delete": true,
+        "repair_min_reduction_pct": 0.08,
+        "early_stop_patience": 1,
+        "early_stop_epsilon": 3,
+        "stop_on_direction_flip": true,
+        "accept_within_hard_tolerance": true
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, effort-medium (effort=medium), schema=False",
+      "use_json_schema": false
+    },
+    "60m_step-3.5-flash_effort-high": {
+      "name": "60m_step-3.5-flash_effort-high_v1",
+      "profile": "60m_step-3.5-flash_effort-high",
+      "chapter_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 40960,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "high"
+        }
+      },
+      "composer_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 40960,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "high"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_sentence_delete",
+        "repair_target_mode": "low",
+        "repair_sentence_delete": true,
+        "repair_min_reduction_pct": 0.08,
+        "early_stop_patience": 1,
+        "early_stop_epsilon": 3,
+        "stop_on_direction_flip": true,
+        "accept_within_hard_tolerance": true
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, effort-high (effort=high), schema=False",
+      "use_json_schema": false
+    },
+    "60m_step-3.5-flash_effort-xhigh": {
+      "name": "60m_step-3.5-flash_effort-xhigh_v1",
+      "profile": "60m_step-3.5-flash_effort-xhigh",
+      "chapter_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 163840,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "xhigh"
+        }
+      },
+      "composer_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 163840,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "xhigh"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_sentence_delete",
+        "repair_target_mode": "low",
+        "repair_sentence_delete": true,
+        "repair_min_reduction_pct": 0.08,
+        "early_stop_patience": 1,
+        "early_stop_epsilon": 3,
+        "stop_on_direction_flip": true,
+        "accept_within_hard_tolerance": true
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, effort-xhigh (effort=xhigh), schema=False",
+      "use_json_schema": false
+    },
+    "60m_step-3.5-flash_effort-max": {
+      "name": "60m_step-3.5-flash_effort-max_v1",
+      "profile": "60m_step-3.5-flash_effort-max",
+      "chapter_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 163840,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "dense_faithful",
+          "detail_policy": "mechanisms_first",
+          "qualifier_policy": "strict",
+          "structure_policy": "heading_aware",
+          "example_policy": "explanatory_only",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "max"
+        }
+      },
+      "composer_stage": {
+        "model": "stepfun/step-3.5-flash",
+        "temperature": 0.2,
+        "seed": 42,
+        "max_tokens": 163840,
+        "format_mode": "markdown_sections",
+        "context_mode": "chapter_plus_toc_and_meta",
+        "prompt_components": {
+          "system_style": "architectural_synthesizer",
+          "synthesis_policy": "thesis_then_frameworks",
+          "detail_policy": "balanced_dense",
+          "qualifier_policy": "strict",
+          "structure_policy": "theme_clustered",
+          "terminology_policy": "keep_source_terms",
+          "anti_fluff_policy": "hard"
+        },
+        "provider": null,
+        "use_json_schema": false,
+        "reasoning": {
+          "effort": "max"
+        }
+      },
+      "composer_mode": "summaries_only",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.08,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_mechanisms_first",
+        "repair_less_prompt_id": "shrink_sentence_delete",
+        "repair_target_mode": "low",
+        "repair_sentence_delete": true,
+        "repair_min_reduction_pct": 0.08,
+        "early_stop_patience": 1,
+        "early_stop_epsilon": 3,
+        "stop_on_direction_flip": true,
+        "accept_within_hard_tolerance": true
+      },
+      "budget_allocator": {
+        "words_per_minute": 200,
+        "allocation_alpha": 0.9,
+        "min_chapter_share": 0.03,
+        "max_chapter_share": 0.18,
+        "chapter_stage_multiplier_30m": 1.2,
+        "chapter_stage_multiplier_60m": 1,
+        "max_summary_to_source_ratio": 0.9
+      },
+      "disable_composer": false,
+      "notes": "Auto-generated: stepfun/step-3.5-flash chapter+composer, 60m, effort-max (effort=max), schema=False",
+      "use_json_schema": false
     }
   },
   "capabilities": {
@@ -7088,6 +7852,21 @@
       "effort_style": "reasoning",
       "none_style": "mandatory",
       "support_note": "Reasoning is MANDATORY for this endpoint: reasoning.enabled:false is rejected, and a plain request still reasons at default effort. _notthinking is impossible; a request that tries to disable reasoning fails loudly (client-side)."
+    },
+    "stepfun/step-3.5-flash": {
+      "schema": false,
+      "efforts": [
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "effort_style": "reasoning",
+      "none_style": "mandatory",
+      "thinking_param": null,
+      "support_note": null
     }
   },
   "schema_version": 2,
@@ -7101,6 +7880,11 @@
       "provider_route": null,
       "updated_at": "2026-09-13T08:58:17.612Z",
       "added_at": "2026-09-13T08:58:17.612Z"
+    },
+    "stepfun/step-3.5-flash": {
+      "provider_route": null,
+      "updated_at": "2026-09-16T19:13:09.759Z",
+      "added_at": "2026-09-16T19:13:09.759Z"
     }
   }
 }

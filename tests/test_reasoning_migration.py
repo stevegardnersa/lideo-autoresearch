@@ -123,6 +123,78 @@ def test_mandatory_models_have_no_notthinking_profile():
     print(f"test_mandatory_models_have_no_notthinking_profile: OK ({len(mandatory)} models)")
 
 
+def test_raw_json_has_no_off_variant_for_mandatory_models():
+    candidates_path = Path(__file__).resolve().parents[1] / "data" / "candidates.json"
+    data = json.loads(candidates_path.read_text(encoding="utf-8"))
+    caps = data.get("capabilities", {}) or {}
+    mandatory_caps = {
+        model
+        for model, cap in caps.items()
+        if isinstance(cap, dict) and cap.get("none_style") in ("mandatory", "plain")
+    }
+    assert mandatory_caps, "expected mandatory/plain capabilities in candidates.json"
+    for key, profile in (data.get("profiles") or {}).items():
+        model = ((profile or {}).get("chapter_stage") or {}).get("model")
+        if model not in mandatory_caps:
+            continue
+        reasoning = ((profile.get("chapter_stage") or {}).get("reasoning")) or {}
+        disabled = reasoning.get("enabled") is False or reasoning.get("effort") == "none"
+        assert not disabled, (
+            f"{key}: an effort-off variant must never be authored for mandatory-reasoning "
+            f"model {model} (hidden or not)"
+        )
+    print("test_raw_json_has_no_off_variant_for_mandatory_models: OK")
+
+
+def test_mandatory_off_variant_filtered_even_if_unhidden():
+    import importlib.util
+
+    spec_path = Path(__file__).resolve().parents[1] / "tools" / "gen_profile_literal.py"
+    spec = importlib.util.spec_from_file_location("_gen_profile_literal", spec_path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    mandatory = mod.load_mandatory_reasoning_models()
+    assert "stepfun/step-3.5-flash" in mandatory
+    assert mod._disables_reasoning(
+        {"chapter_stage": {"model": "stepfun/step-3.5-flash", "reasoning": {"enabled": False}}}
+    )
+    assert mod._disables_reasoning(
+        {"chapter_stage": {"model": "stepfun/step-3.5-flash", "reasoning": {"effort": "none"}}}
+    )
+    assert not mod._disables_reasoning(
+        {"chapter_stage": {"model": "stepfun/step-3.5-flash", "reasoning": {"effort": "minimal"}}}
+    )
+    print("test_mandatory_off_variant_filtered_even_if_unhidden: OK")
+
+
+def test_step_35_flash_is_registered_mandatory():
+    model = "stepfun/step-3.5-flash"
+    assert model in candidate_spec.MANDATORY_REASONING_MODELS, (
+        f"{model} must be registered as mandatory-reasoning "
+        "(provider rejects reasoning.enabled=false)"
+    )
+    step_keys = [
+        key
+        for key, spec in candidate_spec.PROFILE_CANDIDATES.items()
+        if spec.chapter_stage.model == model
+    ]
+    assert step_keys, f"no {model} profiles present"
+    for key in step_keys:
+        assert not key.endswith("_notthinking"), f"{key}: notthinking is impossible for {model}"
+    for key in ("30m_step-3.5-flash_effort-medium", "60m_step-3.5-flash_effort-medium"):
+        spec = candidate_spec.PROFILE_CANDIDATES.get(key)
+        assert spec is not None, f"{key} missing"
+        assert spec.use_json_schema is False, f"{key}: provider rejects JSON schema"
+        for stage in (spec.chapter_stage, spec.composer_stage):
+            assert stage.reasoning == {"effort": "medium"}, (key, stage.reasoning)
+            effective_schema = (
+                stage.use_json_schema if stage.use_json_schema is not None else spec.use_json_schema
+            )
+            assert effective_schema is False, f"{key}: request would carry a JSON schema"
+    print("test_step_35_flash_is_registered_mandatory: OK")
+
+
 def test_reasoning_request_params_raises_on_mandatory_disable():
     from types import SimpleNamespace
 
@@ -224,6 +296,9 @@ def main():
         test_generated_py_matches_json_reasoning_fields,
         test_every_family_has_notthinking_profile,
         test_mandatory_models_have_no_notthinking_profile,
+        test_raw_json_has_no_off_variant_for_mandatory_models,
+        test_mandatory_off_variant_filtered_even_if_unhidden,
+        test_step_35_flash_is_registered_mandatory,
         test_reasoning_request_params_raises_on_mandatory_disable,
         test_build_openrouter_request_raises_on_mandatory_disable,
         test_tool_prevents_mandatory_notthinking_creation,

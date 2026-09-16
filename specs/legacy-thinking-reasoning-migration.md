@@ -57,6 +57,15 @@ Plus the requested gaps:
   | `30m_step-3.7-flash` | effort-medium | reasoning MANDATORY — cannot be disabled |
   | `60m_step-3.7-flash` | effort-medium | reasoning MANDATORY — cannot be disabled |
 
+> **Addendum (step-3.5-flash, provider policy change).** `stepfun/step-3.5-flash` later
+> changed server-side: it now rejects `reasoning.enabled=false` ("Reasoning is mandatory"),
+> rejects JSON-schema structured output, and still reasons on a plain request. Its legacy
+> `30m/60m_step-3.5-flash_{thinking,notthinking}` profiles were therefore hidden and
+> replaced by six effort tiers per budget (`_effort-minimal|low|medium|high|xhigh|max`),
+> each with `use_json_schema=false`. The model joined `MANDATORY_REASONING_MODELS`
+> (now `stepfun/step-3.7-flash`, `stepfun/step-3.5-flash`), so a `_notthinking` profile
+> remains impossible for it and the client-side disable guard fires loudly.
+
 ---
 
 ## 4. Requirements

@@ -508,7 +508,7 @@ Reasoning params are translated to native OpenRouter form in `handler.py`:
 - `reasoning_effort="<tier>"` → `{"reasoning": {"effort": <tier>}}`; `"none"` → `{"enabled": false}`.
 - `thinking` bool (legacy) → `{"reasoning": {"enabled": true|false}}`. Only applied when present.
 - No reasoning signal at all → **no** `reasoning` field is emitted (provider default applies). The litellm `extra_body={"thinking": {...}}` wrapper is never emitted — OpenRouter ignores it.
-- **Mandatory-reasoning models** (`candidate_spec.MANDATORY_REASONING_MODELS`, currently `stepfun/step-3.7-flash`): the client raises a `ValueError` before sending any request that tries to disable reasoning (`enabled=false`, effort/scalar `"none"`), because the provider rejects the disabled form and a plain request still reasons at default effort.
+- **Mandatory-reasoning models** (`candidate_spec.MANDATORY_REASONING_MODELS`, currently `stepfun/step-3.7-flash` and `stepfun/step-3.5-flash`): the client raises a `ValueError` before sending any request that tries to disable reasoning (`enabled=false`, effort/scalar `"none"`), because the provider rejects the disabled form and a plain request still reasons at default effort.
 
 ### Cost Management
 

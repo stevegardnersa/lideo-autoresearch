@@ -77,7 +77,8 @@ Content-Type: application/json
 > ignores it, which would silently leave reasoning at provider defaults.
 >
 > **Mandatory-reasoning models fail loudly.** Some endpoints (probe
-> `none_style="mandatory"`, currently `stepfun/step-3.7-flash`) reject
+> `none_style="mandatory"`, currently `stepfun/step-3.7-flash` and
+> `stepfun/step-3.5-flash`) reject
 > `reasoning={"enabled": false}` and still reason on a plain request, so a
 > `_notthinking` profile is impossible. The probe refuses to create one, the
 > generated `candidate_spec.MANDATORY_REASONING_MODELS` registers the model, and

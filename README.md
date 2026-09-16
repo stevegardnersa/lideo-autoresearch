@@ -260,7 +260,7 @@ The script probes the model for (a) JSON schema support and (b) reasoning-effort
 
 The probe records `capabilities[<model>].none_style`:
 - `"enabled_false"` — model accepts `reasoning.enabled=false`; a `_notthinking` profile is created.
-- `"mandatory"` — model rejects `enabled=false` **and** still reasons on a plain request (e.g. `stepfun/step-3.7-flash`). Reasoning cannot be turned off, so **no** `_notthinking` profile is created for it, and `_resolve_efforts` raises if you explicitly request `--efforts none`. These models are registered in `candidate_spec.MANDATORY_REASONING_MODELS`; any code path that tries to disable their reasoning raises `ValueError` instead of silently running at default effort.
+- `"mandatory"` — model rejects `enabled=false` **and** still reasons on a plain request (e.g. `stepfun/step-3.7-flash`, `stepfun/step-3.5-flash`). Reasoning cannot be turned off, so **no** `_notthinking` profile is created for it, and `_resolve_efforts` raises if you explicitly request `--efforts none`. These models are registered in `candidate_spec.MANDATORY_REASONING_MODELS`; any code path that tries to disable their reasoning raises `ValueError` instead of silently running at default effort.
 
 Every new run also records the model's probed capability block under `data/candidates.json → capabilities[<model>]` and bumps `schema_version` to `2`.
 

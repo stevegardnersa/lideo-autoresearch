@@ -16,14 +16,46 @@ CANDIDATES_JSON = Path("data/candidates.json")
 CANDIDATE_SPEC_PY = Path("candidate_spec.py")
 
 
+def _disables_reasoning(profile: dict) -> bool:
+    """True when a profile's stage reasoning turns reasoning off.
+
+    Covers the legacy ``{"enabled": false}`` form and the effort spellings that
+    resolve to "disabled" for reasoning models.
+    """
+    stage = (profile or {}).get("chapter_stage") or {}
+    reasoning = stage.get("reasoning")
+    if reasoning is None:
+        return False
+    if isinstance(reasoning, dict):
+        if reasoning.get("enabled") is False:
+            return True
+        effort = reasoning.get("effort")
+        return isinstance(effort, str) and effort.strip().lower() in ("none", "off", "disabled")
+    if isinstance(reasoning, str):
+        return reasoning.strip().lower() in ("none", "off", "disabled")
+    return False
+
+
 def load_profiles() -> dict:
     with open(CANDIDATES_JSON, encoding="utf-8") as f:
         data = json.load(f)
     profiles = data.get("profiles", {})
+    # Models whose reasoning cannot be disabled (probe none_style=mandatory/plain)
+    # must never surface an "off" variant, even if one lingers in the JSON.
+    no_off_variant = load_mandatory_reasoning_models()
+
+    def keep(key: str, profile: dict) -> bool:
+        if not profile or profile.get("hidden"):
+            return False
+        model = ((profile.get("chapter_stage") or {}).get("model"))
+        if model in no_off_variant and _disables_reasoning(profile):
+            return False
+        return True
+
     # Hidden profiles are kept on disk (run data preserved) but excluded from the
     # run harness (PROFILE_CANDIDATES) so they no longer appear in "all profiles"
     # runs or get_all_profiles()/get_profiles_by_time().
-    return {k: v for k, v in profiles.items() if not (v and v.get("hidden"))}
+    return {k: v for k, v in profiles.items() if keep(k, v)}
 
 
 def load_mandatory_reasoning_models() -> frozenset:
