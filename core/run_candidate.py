@@ -1042,9 +1042,11 @@ def render_composer_repair_user(
                 "before finishing and adjust if needed."
             )
         if (spec.composer_stage.prompt_components or {}).get("length_policy"):
-            from candidate_spec import _words_per_sentence, sentence_budget
+            from candidate_spec import sentence_budget, _sentence_target_words, _sentence_budget_scale
             target_sentences = sentence_budget(
-                target_words, words_per_sentence=_words_per_sentence(spec.composer_stage)
+                target_words,
+                words_per_sentence=_sentence_target_words(spec.composer_stage),
+                scale=_sentence_budget_scale(spec.composer_stage),
             )
             numeric_delta += (
                 f" The sentence budget is {target_sentences}; adjust sentence count as well as word count."

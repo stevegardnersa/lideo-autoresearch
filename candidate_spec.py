@@ -311,6 +311,13 @@ LENGTH_POLICIES: Dict[str, str] = {
         "exceed this sentence count under any circumstance. Prefer the target word count; the "
         "sentence count is the hard constraint."
     ),
+    "sentence_primary": (
+        "The sentence count is the primary, hard constraint. The request gives an exact sentence "
+        "budget S and the target words per sentence. Write exactly S sentences, each close to that "
+        "words-per-sentence, so the summary lands near the stated word target. Never exceed S "
+        "sentences. If the sentence budget and the word target conflict, honor the sentence budget. "
+        "Keep every sentence at or below the stated maximum words per sentence; split longer ones."
+    ),
     "sentence_split_hard": (
         "Sentence mechanics are a hard constraint, as strict as the word budget. The request gives "
         "a sentence budget S computed at the target words-per-sentence. Write close to S sentences, "
@@ -607,27 +614,84 @@ def _component_text(components: Dict[str, str], lookup_tables: Dict[str, Dict[st
 # from a visible-word target (see system-prompt-v2 spec §3.2).
 SENTENCE_WORDS = 18
 
-# Prompt-component key that overrides the per-sentence word budget (defaults to
-# SENTENCE_WORDS when absent). E.g. {"target_sentence_words": "14"} forces a
-# tighter sentence budget, which lowers average sentence length and the
-# Flesch-Kincaid reading grade of the output.
+# Prompt-component key that sets the maximum per-sentence word budget (defaults
+# to SENTENCE_WORDS when absent). E.g. {"target_sentence_words": "13"} caps
+# sentence length, which lowers the Flesch-Kincaid reading grade of the output.
+# It is also the fallback words-per-sentence used to derive the sentence budget.
 TARGET_SENTENCE_WORDS_KEY = "target_sentence_words"
+
+# Prompt-component key that overrides the words-per-sentence used *only* to
+# derive the sentence budget S_target (falls back to target_sentence_words, then
+# SENTENCE_WORDS). Splitting this from target_sentence_words lets the sentence
+# budget track the model's measured words-per-sentence while keeping the
+# Flesch-Kincaid sentence cap fixed.
+SENTENCE_TARGET_WORDS_KEY = "sentence_target_words"
+
+# Prompt-component key that scales the derived sentence budget (float, e.g.
+# "0.9"). Used to test whether deliberately reducing the sentence count pulls
+# the word count closer to target.
+SENTENCE_BUDGET_SCALE_KEY = "sentence_budget_scale"
+
+# Prompt-component key selecting where the first-pass prompt aims the length
+# target: "low" aims at the low edge of the acceptable range, a fraction like
+# "0.90" aims at that share of the target, anything else aims at the center.
+LENGTH_AIM_KEY = "length_aim"
+
+
+def _positive_int_component(raw: Any, default: int) -> int:
+    text = str(raw or "").strip()
+    if not text:
+        return default
+    try:
+        value = int(text)
+    except ValueError:
+        return default
+    return value if value >= 3 else default
 
 
 def _words_per_sentence(stage: Any) -> int:
-    raw = str(((getattr(stage, "prompt_components", None) or {}).get(TARGET_SENTENCE_WORDS_KEY) or "")).strip()
+    """Maximum per-sentence word budget (FK sentence cap)."""
+    raw = (getattr(stage, "prompt_components", None) or {}).get(TARGET_SENTENCE_WORDS_KEY)
+    return _positive_int_component(raw, SENTENCE_WORDS)
+
+
+def _sentence_target_words(stage: Any) -> int:
+    """Words-per-sentence used to derive the sentence budget S_target."""
+    components = getattr(stage, "prompt_components", None) or {}
+    raw = components.get(SENTENCE_TARGET_WORDS_KEY)
+    if raw is None or not str(raw).strip():
+        return _words_per_sentence(stage)
+    return _positive_int_component(raw, _words_per_sentence(stage))
+
+
+def _sentence_budget_scale(stage: Any) -> float:
+    components = getattr(stage, "prompt_components", None) or {}
+    raw = str(components.get(SENTENCE_BUDGET_SCALE_KEY) or "").strip()
     if not raw:
-        return SENTENCE_WORDS
+        return 1.0
     try:
-        value = int(raw)
+        value = float(raw)
     except ValueError:
-        return SENTENCE_WORDS
-    return value if value >= 3 else SENTENCE_WORDS
+        return 1.0
+    return value if value > 0 else 1.0
 
 
-def sentence_budget(target_words: int, *, words_per_sentence: Optional[int] = None) -> int:
+def _length_aim(stage: Any) -> str:
+    components = getattr(stage, "prompt_components", None) or {}
+    return str(components.get(LENGTH_AIM_KEY) or "").strip().lower() or "target"
+
+
+def sentence_budget(
+    target_words: int,
+    *,
+    words_per_sentence: Optional[int] = None,
+    scale: float = 1.0,
+) -> int:
     wps = words_per_sentence if words_per_sentence is not None else SENTENCE_WORDS
-    return max(1, int(round(max(1, target_words) / wps)))
+    budget = max(1, int(round(max(1, target_words) / wps)))
+    if scale != 1.0:
+        budget = max(1, int(round(budget * scale)))
+    return budget
 
 
 def chapter_component_tables() -> Dict[str, Dict[str, str]]:
@@ -666,6 +730,9 @@ COMPONENT_HELP: Dict[str, str] = {
     "anti_fluff_policy": "How aggressively to strip filler, hedging, rhetorical framing, and repetition that adds no information.",
     "length_policy": "How the word/sentence budget is communicated to the model: explicit first-pass budget, outline-then-fill, or a strict sentence target.",
     "target_sentence_words": "Integer override for the assumed words-per-sentence used to derive the sentence budget (default 18). Lower values force shorter sentences and a lower reading grade.",
+    "sentence_target_words": "Integer words-per-sentence used only to derive the sentence budget S_target (defaults to target_sentence_words). Set it to the model's measured words-per-sentence so the sentence budget tracks the real output length.",
+    "sentence_budget_scale": "Float multiplier applied to the derived sentence budget (e.g. 0.9). Lower values ask for fewer sentences, which pulls the visible word count down.",
+    "length_aim": "Where the first-pass length target aims: 'low' targets the low edge of the acceptable range, a fraction like '0.90' aims at that share of the target, default targets the center.",
     "synthesis_policy": "Composer-only: whether to lead with the thesis then frameworks, or build a progressive argument that accumulates across chapters.",
 }
 
@@ -733,19 +800,58 @@ def render_chapter_user(
     stage = spec.chapter_stage
     low, high = visible_word_range(target_words, spec.length_control.tolerance_pct)
     wps = _words_per_sentence(stage)
-    if stage.prompt_components.get("length_policy"):
-        s_target = sentence_budget(target_words, words_per_sentence=wps)
+    s_wps = _sentence_target_words(stage)
+    scale = _sentence_budget_scale(stage)
+    policy_id = stage.prompt_components.get("length_policy")
+    aim = _length_aim(stage)
+    aim_word = target_words
+    if aim == "low":
+        aim_word = low
+    elif aim and aim != "target":
+        try:
+            frac = float(aim)
+        except ValueError:
+            frac = 0.0
+        if 0 < frac <= 1.5:
+            aim_word = max(1, int(round(target_words * frac)))
+    aim_low = aim_word < target_words
+    if policy_id == "sentence_primary":
+        s_target = sentence_budget(target_words, words_per_sentence=s_wps, scale=scale)
+        derived_words = s_target * s_wps
         target_block = (
-            f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
-            f"Target sentences: {s_target}\n(about {wps} words each). "
-            f"Try to land inside the word range on the first pass; do not exceed {s_target} sentences."
+            f"Target: write exactly {s_target} sentences, about {s_wps} words each "
+            f"(roughly {derived_words} visible words; acceptable range {low}-{high}). "
+            f"The sentence count is the hard constraint: do not exceed {s_target} sentences and do "
+            f"not fall short of it. Keep every sentence at or below {wps} words."
         )
+    elif policy_id:
+        s_target = sentence_budget(target_words, words_per_sentence=wps, scale=scale)
+        if aim_low:
+            target_block = (
+                f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
+                f"Target sentences: {s_target} (about {wps} words each). "
+                f"Aim for about {aim_word} words; treat {high} as a hard ceiling, and do not exceed "
+                f"{s_target} sentences."
+            )
+        else:
+            target_block = (
+                f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
+                f"Target sentences: {s_target}\n(about {wps} words each). "
+                f"Try to land inside the word range on the first pass; do not exceed {s_target} sentences."
+            )
     else:
-        s_target = sentence_budget(target_words, words_per_sentence=wps)
-        target_block = (
-            f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
-            "Try to land inside the range on the first pass."
-        )
+        s_target = sentence_budget(target_words, words_per_sentence=wps, scale=scale)
+        if aim_low:
+            target_block = (
+                f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
+                f"Aim for about {aim_word} words; treat {high} as a hard ceiling. "
+                "Try to land inside the range on the first pass."
+            )
+        else:
+            target_block = (
+                f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
+                "Try to land inside the range on the first pass."
+            )
     context = _context_block(
         context_mode=stage.context_mode,
         book_title=book_title,
@@ -830,8 +936,9 @@ def render_repair_user(
                 "before finishing and adjust if needed."
             )
         if spec.chapter_stage.prompt_components.get("length_policy"):
+            stage = spec.chapter_stage
             numeric_delta += (
-                f" The sentence budget is {sentence_budget(target_words, words_per_sentence=_words_per_sentence(spec.chapter_stage))}; adjust sentence count as well "
+                f" The sentence budget is {sentence_budget(target_words, words_per_sentence=_sentence_target_words(stage), scale=_sentence_budget_scale(stage))}; adjust sentence count as well "
                 "as word count."
             )
         if direction == "less" and lc.repair_sentence_delete:
