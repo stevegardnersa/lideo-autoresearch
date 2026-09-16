@@ -206,7 +206,7 @@ CHAPTER_SYSTEM_STYLES: Dict[str, str] = {
         "Precision must survive, but the prose must be plain. "
         "SENTENCE RULE: A sentence is one idea. Split any sentence with more than one clause "
         "joined by and/but/so/because/while or by commas into separate sentences. "
-        "Target an average of 14 to 16 words per sentence. "
+        "Keep sentences at or below the words-per-sentence the request asks for; prefer 12 to 14 words. "
         "WORD RULE: Prefer short, common words (use, get, keep, make) over longer formal ones "
         "(utilize, obtain, maintain, facilitate). When a technical term is required, keep the "
         "term but follow it with a short plain gloss. "

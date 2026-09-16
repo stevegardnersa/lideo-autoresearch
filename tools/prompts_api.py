@@ -32,6 +32,56 @@ def _fail(message: str, *, code: int = 400, error: Optional[str] = None, **extra
     return payload
 
 
+# Curated base chapter prompts, slug -> registry label. A base is an ordinary
+# version whose label starts with ``base: <slug>`` (see
+# specs/base-prompts-and-model-strategy-tuning.md §4.2/§4.3).
+BASE_PROMPTS: Dict[str, str] = {
+    "sentence": "base: sentence",
+    "readable": "base: readable",
+    "readable-low": "base: readable-low",
+}
+
+
+def _base_label_matches(label: str, slug: str) -> bool:
+    """True when ``label`` is ``base: <slug>`` or ``base: <slug> <suffix>``.
+
+    The trailing separator check keeps ``readable`` from matching
+    ``base: readable-low``.
+    """
+    text = str(label or "").strip()
+    prefix = f"base: {slug}"
+    return text == prefix or text.startswith(prefix + " ")
+
+
+def list_base_prompts(*, stage: str = "chapter", path: Optional[Path] = None) -> List[Dict[str, Any]]:
+    """Resolve each ``BASE_PROMPTS`` slug to its version record.
+
+    Raises ``pr.PromptRegistryError`` when a slug resolves to zero or more than
+    one version, so an ambiguous or missing base fails loudly rather than
+    silently picking one.
+    """
+    versions = [
+        v for v in pr.list_versions(stage, path=path)
+        if pr.version_scope(v)["kind"] == "general"
+    ]
+    bases: List[Dict[str, Any]] = []
+    for slug in BASE_PROMPTS:
+        matches = [v for v in versions if _base_label_matches(v.get("label"), slug)]
+        if len(matches) != 1:
+            raise pr.PromptRegistryError(
+                f"base {slug!r} must resolve to exactly one version, found {len(matches)}"
+            )
+        version = matches[0]
+        bases.append({
+            "slug": slug,
+            "version_id": version.get("id", ""),
+            "label": version.get("label", ""),
+            "components": dict(version.get("components") or {}),
+            "system_prompt_fingerprint": version.get("system_prompt_fingerprint", ""),
+        })
+    return bases
+
+
 def _stage_filter(command: Dict[str, Any]) -> str:
     stage = str(command.get("stage") or "").strip()
     return stage if stage in pr.STAGES else ""
@@ -343,15 +393,30 @@ def handle(command: Dict[str, Any]) -> Dict[str, Any]:
                 if pr.version_scope(v)["kind"] == "general" or pr.version_scope(v).get("model") == model_filter
             ]
         models, profiles_by_model = _models_info()
+        try:
+            bases = list_base_prompts(stage=stage or "chapter", path=path)
+            bases_error = ""
+        except pr.PromptRegistryError as exc:
+            bases, bases_error = [], str(exc)
         return {
             "ok": True,
             "registry_sha": registry.get("registry_sha", ""),
             "versions": versions,
             "slots": registry.get("slots", {}),
+            "bases": bases,
+            "bases_error": bases_error,
             "production_status": _production_status(registry),
             "effective": _effective_map(registry, models),
             "models": models,
             "profiles_by_model": profiles_by_model,
+        }
+
+    if op == "list_bases":
+        stage = _stage_filter(command) or "chapter"
+        return {
+            "ok": True,
+            "stage": stage,
+            "bases": list_base_prompts(stage=stage, path=path),
         }
 
     if op == "options":
@@ -429,6 +494,19 @@ def handle(command: Dict[str, Any]) -> Dict[str, Any]:
                 scope_error = exc.error
         if field_errors:
             return _fail(scope_error or _template_error_code(field_errors), fieldErrors=field_errors)
+        derived_from = str(command.get("derived_from") or "").strip()
+        if derived_from:
+            source = pr.get_version(derived_from, path)
+            if source is None:
+                field_errors["derived_from"] = "Unknown source version"
+            elif str(source.get("stage") or "") != stage:
+                field_errors["derived_from"] = "Source version is a different stage"
+        if field_errors:
+            return _fail(
+                scope_error or _template_error_code(field_errors),
+                error="invalid_derived_from" if "derived_from" in field_errors else None,
+                fieldErrors=field_errors,
+            )
         body = {k: v for k, v in dict(command).items() if k not in {"op", "path", "stage", "label"}}
         record_bytes = len(json.dumps(body, ensure_ascii=False).encode("utf-8"))
         if record_bytes > pt.MAX_VERSION_BYTES:
@@ -443,6 +521,7 @@ def handle(command: Dict[str, Any]) -> Dict[str, Any]:
             scope=scope,
             template=command.get("template") or None,
             notes=str(command.get("notes") or ""),
+            derived_from=derived_from or None,
             path=path,
         )
         return {"ok": True, "version": version}

@@ -3286,6 +3286,8 @@ const PROMPTS_STATE = {
   pvAbort: null,
   filter: 'all',
   slotScope: 'general',
+  showExperiments: false,
+  sweep: { profile: '', bench: 'chapter_fast-v3', repeat: 3 },
 }
 
 function setPromptsBanner(msg, kind = '') {
@@ -3297,9 +3299,14 @@ function setPromptsBanner(msg, kind = '') {
   el.dataset.kind = kind
 }
 
-function _promptVersionOptions(versions, stage) {
+function _isExperiment(v) {
+  return String((v && v.label) || '').trim().startsWith('experiment:')
+}
+
+function _promptVersionOptions(versions, stage, alwaysIds = []) {
+  const keep = new Set((alwaysIds || []).filter(Boolean))
   return versions
-    .filter(v => v.stage === stage)
+    .filter(v => v.stage === stage && (!_isExperiment(v) || keep.has(v.id)))
     .map(v => `<option value="${esc(v.id)}">${esc(v.id)} — ${esc(v.label || '')}</option>`)
     .join('')
 }
@@ -3396,16 +3403,17 @@ function renderPrompts(data) {
       return activeScope === 'general' ? scope.kind === 'general' : (scope.kind === 'general' || scope.model === activeScope)
     })
     const noneLabel = activeScope === 'general' ? '(use baseline)' : '(inherit general)'
+    const keepIds = [scopeSlots.local, scopeSlots.production]
     return `
       <tr>
         <td>${esc(stage)}</td>
         <td><label class="cm-visually-hidden" for="promptLocal_${esc(stage)}">local</label>
           <select id="promptLocal_${esc(stage)}" data-stage="${esc(stage)}" data-slot="local">
-            <option value="">${noneLabel}</option>${_promptVersionOptions(scopedVersions, stage)}
+            <option value="">${noneLabel}</option>${_promptVersionOptions(scopedVersions, stage, keepIds)}
           </select></td>
         <td><label class="cm-visually-hidden" for="promptProd_${esc(stage)}">production</label>
           <select id="promptProd_${esc(stage)}" data-stage="${esc(stage)}" data-slot="production">
-            <option value="">${noneLabel}</option>${_promptVersionOptions(scopedVersions, stage)}
+            <option value="">${noneLabel}</option>${_promptVersionOptions(scopedVersions, stage, keepIds)}
           </select></td>
         <td><button class="mini-btn" data-action="save-slot" data-stage="${esc(stage)}" data-model="${esc(activeScope === 'general' ? '' : activeScope)}" disabled>Save</button></td>
         <td>${_driftBadge(status)}</td>
@@ -3414,6 +3422,7 @@ function renderPrompts(data) {
 
   const filter = PROMPTS_STATE.filter
   const filtered = versions.filter(v => {
+    if (_isExperiment(v) && !PROMPTS_STATE.showExperiments) return false
     const scope = _scopeOf(v)
     if (filter === 'all') return true
     if (filter === 'general') return scope.kind === 'general'
@@ -3450,16 +3459,56 @@ function renderPrompts(data) {
       </tr>`
   }).join('')
 
+  const bases = data.bases || []
+  const baseRows = bases.length
+    ? bases.map(b => `
+      <tr>
+        <td>${esc(b.slug)}</td>
+        <td>${esc(b.version_id)}</td>
+        <td>${esc((b.components && b.components.length_policy) || '–')}</td>
+        <td><span title="${esc(b.system_prompt_fingerprint || '')}">${esc((b.system_prompt_fingerprint || '').slice(0, 8))}</span></td>
+        <td><button class="mini-btn" data-action="fork-base" data-id="${esc(b.version_id)}" aria-label="Fork base ${esc(b.slug)}">Fork</button></td>
+      </tr>`).join('')
+    : `<tr><td colspan="5" class="placeholder-text">${esc(data.bases_error || 'No bases resolved.')}</td></tr>`
+
   const scopeOptions = [
     `<option value="general"${activeScope === 'general' ? ' selected' : ''}>General</option>`,
     ...models.map(m => `<option value="${esc(m)}"${activeScope === m ? ' selected' : ''}>${esc(m)}</option>`),
   ].join('')
-
   const filterOptions = [
     ['all', 'All'], ['general', 'General'], ...models.map(m => [m, m]),
   ].map(([val, label]) => `<option value="${esc(val)}"${filter === val ? ' selected' : ''}>${esc(label)}</option>`).join('')
 
   panel.innerHTML = `
+    <div class="prompt-block">
+      <div class="prompt-head-row">
+        <div class="settings-section-title">Base prompts</div>
+        <div class="prompt-head-actions">
+          <button class="mini-btn" data-action="sweep-bases">Compare base prompts</button>
+        </div>
+      </div>
+      <div class="prompt-table-wrap">
+        <table class="prompt-table">
+          <caption class="cm-visually-hidden">Curated base chapter prompts</caption>
+          <thead><tr><th>base</th><th>version</th><th>length_policy</th><th>fingerprint</th><th>actions</th></tr></thead>
+          <tbody>${baseRows}</tbody>
+        </table>
+      </div>
+      <div class="prompt-actions cm-hidden" id="sweepBasesForm">
+        <label class="small">Profile
+          <input type="text" id="sweepBasesProfile" list="sweepBasesProfiles" value="${esc(PROMPTS_STATE.sweep.profile)}" placeholder="30m_gpt-5.6-luna_notthinking" />
+          <datalist id="sweepBasesProfiles">${models.map(m => `<option value="${esc(m)}"></option>`).join('')}</datalist>
+        </label>
+        <label class="small">Bench
+          <input type="text" id="sweepBasesBench" value="${esc(PROMPTS_STATE.sweep.bench)}" placeholder="chapter_fast-v3" />
+        </label>
+        <label class="small">Runs per base
+          <input type="number" id="sweepBasesRepeat" min="1" max="10" value="${esc(String(PROMPTS_STATE.sweep.repeat))}" />
+        </label>
+        <button class="mini-btn" data-action="sweep-bases-run">Run sweep</button>
+        <span class="small">Ranked per model; writes artifacts/autoresearch/base_sweep/.</span>
+      </div>
+    </div>
     <div class="prompt-block">
       <div class="prompt-head-row">
         <div class="settings-section-title">Slots</div>
@@ -3488,6 +3537,7 @@ function renderPrompts(data) {
           <label class="small" for="promptScopeFilter">Filter
             <select id="promptScopeFilter">${filterOptions}</select>
           </label>
+          <label class="small"><input type="checkbox" id="promptShowExperiments"${PROMPTS_STATE.showExperiments ? ' checked' : ''} /> Show experiments</label>
           <button class="model-add-btn" data-action="new-version">+ New version</button>
         </div>
       </div>
@@ -3529,6 +3579,11 @@ function renderPrompts(data) {
   const filterSel = document.getElementById('promptScopeFilter')
   if (filterSel) filterSel.addEventListener('change', () => {
     PROMPTS_STATE.filter = filterSel.value
+    renderPrompts(PROMPTS_STATE.data)
+  })
+  const expToggle = document.getElementById('promptShowExperiments')
+  if (expToggle) expToggle.addEventListener('change', () => {
+    PROMPTS_STATE.showExperiments = expToggle.checked
     renderPrompts(PROMPTS_STATE.data)
   })
 }
@@ -3681,6 +3736,7 @@ function pvCollect() {
     system_template: document.getElementById('pvSystemTemplate').value,
     user_template: document.getElementById('pvUserTemplate').value,
     scope,
+    derived_from: pv && pv.sourceId ? pv.sourceId : '',
   }
 }
 
@@ -3950,6 +4006,36 @@ async function syncPrompts() {
   }
 }
 
+function toggleBaseSweepForm() {
+  const form = document.getElementById('sweepBasesForm')
+  if (!form) return
+  form.classList.toggle('cm-hidden')
+  const profileEl = document.getElementById('sweepBasesProfile')
+  if (profileEl && !form.classList.contains('cm-hidden')) profileEl.focus()
+}
+
+async function runBaseSweep() {
+  const profileEl = document.getElementById('sweepBasesProfile')
+  const benchEl = document.getElementById('sweepBasesBench')
+  const repeatEl = document.getElementById('sweepBasesRepeat')
+  const profile = profileEl ? profileEl.value.trim() : ''
+  const bench = benchEl ? benchEl.value.trim() : ''
+  const repeat = repeatEl ? Number(repeatEl.value) : 3
+  if (!profile) { setPromptsBanner('Choose a profile to sweep.', 'error'); return }
+  if (profile === 'all') { setPromptsBanner('Sweep one profile at a time (not "all").', 'error'); return }
+  if (!Number.isInteger(repeat) || repeat < 1 || repeat > 10) { setPromptsBanner('Runs per base must be 1–10.', 'error'); return }
+  PROMPTS_STATE.sweep = { profile, bench: bench || 'chapter_fast-v3', repeat }
+  try {
+    const args = { profile, bench: bench || 'chapter_fast-v3', repeat }
+    const res = await api('/api/jobs', { method: 'POST', body: JSON.stringify({ toolId: 'sweep_base_prompts', args }) })
+    const shortId = res.job && res.job.id ? res.job.id.slice(0, 8) : ''
+    setPromptsBanner(`Base sweep started for ${profile} (job ${shortId}…). Watch it stream in Scripts; the ranked summary lands in artifacts/autoresearch/base_sweep/.`)
+    if (typeof refreshJobs === 'function') refreshJobs().catch(() => {})
+  } catch (e) {
+    setPromptsBanner(`Base sweep failed to start: ${e.message}`)
+  }
+}
+
 async function runPromptSmokeTest(id) {
   const useCf = !!(document.getElementById('promptSmokeCf') || {}).checked
   const args = {
@@ -3984,6 +4070,9 @@ function runPromptAction(action, id, model, stage) {
     else if (action === 'set-local') { api('/api/prompts/slots', { method: 'POST', body: JSON.stringify({ stage: (_findVersion(id) || {}).stage, slot: 'local', version_id: id, model: model || undefined, expected_sha: PROMPTS_STATE.data.registry_sha }) }).then(loadPrompts).catch(err => setPromptsBanner(err.message)) }
     else if (action === 'set-production') { api('/api/prompts/slots', { method: 'POST', body: JSON.stringify({ stage: (_findVersion(id) || {}).stage, slot: 'production', version_id: id, model: model || undefined, expected_sha: PROMPTS_STATE.data.registry_sha }) }).then(() => { setPromptsBanner(`Production now points at ${id} — run Sync/Promote to deploy it to the Cloud Function.`); return loadPrompts() }).catch(err => setPromptsBanner(err.message)) }
     else if (action === 'clone') { openPromptVersionDialog({ mode: 'clone', source: _findVersion(id) }).catch(err => setPromptsBanner(err.message)) }
+    else if (action === 'fork-base') { openPromptVersionDialog({ mode: 'clone', source: _findVersion(id) }).catch(err => setPromptsBanner(err.message)) }
+    else if (action === 'sweep-bases') { toggleBaseSweepForm() }
+    else if (action === 'sweep-bases-run') { runBaseSweep() }
     else if (action === 'delete') { deletePromptVersion(id) }
     else if (action === 'smoke') { runPromptSmokeTest(id) }
     else if (action === 'sync') { syncPrompts() }

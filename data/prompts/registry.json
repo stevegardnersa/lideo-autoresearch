@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "registry_sha": "17d8d6656c20cd67cc42c448a2e79df62492dcc160b437b7367e46e91a865559",
-  "updated_at": "2026-09-15T20:25:51.453647Z",
+  "registry_sha": "986960edf2d0d37b3513bd7c54526586bad6bec63d42416c18f77d7e110bc713",
+  "updated_at": "2026-09-16T20:14:32.566085Z",
   "versions": [
     {
       "id": "chapter-p1",
@@ -59,7 +59,7 @@
     {
       "id": "chapter-p3",
       "stage": "chapter",
-      "label": "v3 plain readable FK<10 (shipped)",
+      "label": "experiment: v3 plain readable FK<10 (shipped)",
       "scope": {
         "kind": "general"
       },
@@ -84,7 +84,7 @@
     {
       "id": "chapter-p4",
       "stage": "chapter",
-      "label": "v4 sentence-primary 11w/s (test)",
+      "label": "experiment: v4 sentence-primary 11w/s (test)",
       "scope": {
         "kind": "general"
       },
@@ -108,7 +108,7 @@
     {
       "id": "chapter-p5",
       "stage": "chapter",
-      "label": "v5 sentence-primary 11w/s x0.9 (test)",
+      "label": "experiment: v5 sentence-primary 11w/s x0.9 (test)",
       "scope": {
         "kind": "general"
       },
@@ -133,7 +133,7 @@
     {
       "id": "chapter-p6",
       "stage": "chapter",
-      "label": "v6 aim-low target (test)",
+      "label": "experiment: v6 aim-low target (test)",
       "scope": {
         "kind": "general"
       },
@@ -157,7 +157,7 @@
     {
       "id": "chapter-p7",
       "stage": "chapter",
-      "label": "v7 readable + aim-low (test)",
+      "label": "experiment: v7 readable + aim-low (test)",
       "scope": {
         "kind": "general"
       },
@@ -183,7 +183,7 @@
     {
       "id": "chapter-p8",
       "stage": "chapter",
-      "label": "v8 readable + aim 0.90 (test)",
+      "label": "experiment: v8 readable + aim 0.90 (test)",
       "scope": {
         "kind": "general"
       },
@@ -209,7 +209,7 @@
     {
       "id": "chapter-p9",
       "stage": "chapter",
-      "label": "v9 readable + explicit word budget (test)",
+      "label": "experiment: v9 readable + explicit word budget (test)",
       "scope": {
         "kind": "general"
       },
@@ -234,7 +234,7 @@
     {
       "id": "chapter-p10",
       "stage": "chapter",
-      "label": "v10 readable + explicit word budget + aim 0.90 (test)",
+      "label": "experiment: v10 readable + explicit word budget + aim 0.90 (test)",
       "scope": {
         "kind": "general"
       },
@@ -260,7 +260,7 @@
     {
       "id": "chapter-p11",
       "stage": "chapter",
-      "label": "v11 readable + word-first + aim low (test)",
+      "label": "experiment: v11 readable + word-first + aim low (test)",
       "scope": {
         "kind": "general"
       },
@@ -286,7 +286,7 @@
     {
       "id": "chapter-p12",
       "stage": "chapter",
-      "label": "v12 readable + word-first + aim 0.90 + 12w/s (test)",
+      "label": "experiment: v12 readable + word-first + aim 0.90 + 12w/s (test)",
       "scope": {
         "kind": "general"
       },
@@ -312,7 +312,7 @@
     {
       "id": "chapter-p13",
       "stage": "chapter",
-      "label": "v13 readable + word-first + aim 0.90 + 11w/s (test)",
+      "label": "experiment: v13 readable + word-first + aim 0.90 + 11w/s (test)",
       "scope": {
         "kind": "general"
       },
@@ -338,7 +338,7 @@
     {
       "id": "chapter-p14",
       "stage": "chapter",
-      "label": "v4 readable word-first + aim 0.90 + 12w/s (length+FK)",
+      "label": "experiment: v4 readable word-first + aim 0.90 + 12w/s (length+FK)",
       "scope": {
         "kind": "general"
       },
@@ -360,13 +360,90 @@
       "notes": "Length + readability: word-budget-first policy (replaces sentence_split_hard), first-pass aim at 0.90*target, 12-word sentence cap. Halves length error vs chapter-p3 while keeping FK<10. Derived from chapter-p3.",
       "immutable": true,
       "derived_from": "chapter-p3"
+    },
+    {
+      "id": "chapter-p15",
+      "stage": "chapter",
+      "label": "base: sentence",
+      "scope": {
+        "kind": "general"
+      },
+      "components": {
+        "length_policy": "sentence_primary",
+        "system_style": "plain_readable",
+        "target_sentence_words": "13",
+        "sentence_target_words": "11"
+      },
+      "component_text": {},
+      "system_template": "",
+      "user_template": "",
+      "template": "You write faithful nonfiction summaries at an approachable reading level. Precision must survive, but the prose must be plain. SENTENCE RULE: A sentence is one idea. Split any sentence with more than one clause joined by and/but/so/because/while or by commas into separate sentences. Keep sentences at or below the words-per-sentence the request asks for; prefer 12 to 14 words. WORD RULE: Prefer short, common words (use, get, keep, make) over longer formal ones (utilize, obtain, maintain, facilitate). When a technical term is required, keep the term but follow it with a short plain gloss. FIDELITY: Keep the author's concepts, mechanisms, examples, names, numbers, quotes, and caveats. Compression and simplification of STYLE, not of content. Never invent facts the source does not state.\nPrioritize how things work: mechanisms, sequences, cause-and-effect, operational logic, and why each concept matters. Compress rhetorical framing before explanatory material.\nPreserve scope conditions, caveats, exceptions, uncertainty, trade-offs, and limits. Do not turn a qualified claim into an absolute one.\nUse short markdown section headings that broadly follow the chapter's conceptual structure. You may merge minor headings, but keep the summary easy to scan.\nInclude examples only when they clarify a concept, mechanism, or distinction. Drop decorative anecdotes.\nPreserve the author's technical terms and named concepts when they carry meaning. If a term may be unfamiliar, gloss it once in plain language rather than replacing it.\nAvoid motivational framing, praise, repetition, scene-setting, and meta commentary. Every paragraph should add source-grounded information.\nThe sentence count is the primary, hard constraint. The request gives an exact sentence budget S and the target words per sentence. Write exactly S sentences, each close to that words-per-sentence, so the summary lands near the stated word target. Never exceed S sentences. If the sentence budget and the word target conflict, honor the sentence budget. Keep every sentence at or below the stated maximum words per sentence; split longer ones.",
+      "system_prompt_sha256": "abadf1130845add0a8537a1875bc591ae1243f2008848ac26d36668357a7eebd",
+      "system_prompt_fingerprint": "abadf1130845add0",
+      "user_template_fingerprint": "",
+      "created_at": "2026-09-16T20:06:46.078985Z",
+      "created_by": "operator",
+      "notes": "Base prompt: sentence-count primary. S = target_words / sentence_target_words (11 w/s); 13-word FK sentence cap via plain_readable + target_sentence_words.",
+      "immutable": true,
+      "derived_from": "chapter-p3"
+    },
+    {
+      "id": "chapter-p16",
+      "stage": "chapter",
+      "label": "base: readable",
+      "scope": {
+        "kind": "general"
+      },
+      "components": {
+        "length_policy": "sentence_split_hard",
+        "system_style": "plain_readable",
+        "target_sentence_words": "13"
+      },
+      "component_text": {},
+      "system_template": "",
+      "user_template": "",
+      "template": "You write faithful nonfiction summaries at an approachable reading level. Precision must survive, but the prose must be plain. SENTENCE RULE: A sentence is one idea. Split any sentence with more than one clause joined by and/but/so/because/while or by commas into separate sentences. Keep sentences at or below the words-per-sentence the request asks for; prefer 12 to 14 words. WORD RULE: Prefer short, common words (use, get, keep, make) over longer formal ones (utilize, obtain, maintain, facilitate). When a technical term is required, keep the term but follow it with a short plain gloss. FIDELITY: Keep the author's concepts, mechanisms, examples, names, numbers, quotes, and caveats. Compression and simplification of STYLE, not of content. Never invent facts the source does not state.\nPrioritize how things work: mechanisms, sequences, cause-and-effect, operational logic, and why each concept matters. Compress rhetorical framing before explanatory material.\nPreserve scope conditions, caveats, exceptions, uncertainty, trade-offs, and limits. Do not turn a qualified claim into an absolute one.\nUse short markdown section headings that broadly follow the chapter's conceptual structure. You may merge minor headings, but keep the summary easy to scan.\nInclude examples only when they clarify a concept, mechanism, or distinction. Drop decorative anecdotes.\nPreserve the author's technical terms and named concepts when they carry meaning. If a term may be unfamiliar, gloss it once in plain language rather than replacing it.\nAvoid motivational framing, praise, repetition, scene-setting, and meta commentary. Every paragraph should add source-grounded information.\nSentence mechanics are a hard constraint, as strict as the word budget. The request gives a sentence budget S computed at the target words-per-sentence. Write close to S sentences, and never average more than the target words per sentence. Split every sentence that joins two or more independent clauses with and/but/so/because/while or a comma. A sentence is one idea: subject + verb + one clause. If a sentence exceeds the target length, cut it at the next clause boundary and start a new sentence. Do the same split when a sentence reaches three comma-separated parts. The result must read naturally as short, plain, complete sentences, not truncated fragments.",
+      "system_prompt_sha256": "f3b9ba81d23cd37cedde1f6797b957e5aa271fdd21dcd8a09b83ce71c015e1e8",
+      "system_prompt_fingerprint": "f3b9ba81d23cd37c",
+      "user_template_fingerprint": "",
+      "created_at": "2026-09-16T20:06:46.088960Z",
+      "created_by": "operator",
+      "notes": "Base prompt: word budget first, sentence-split hard, plain_readable, 13 w/s.",
+      "immutable": true,
+      "derived_from": "chapter-p3"
+    },
+    {
+      "id": "chapter-p17",
+      "stage": "chapter",
+      "label": "base: readable-low",
+      "scope": {
+        "kind": "general"
+      },
+      "components": {
+        "length_policy": "explicit_budget_first",
+        "system_style": "plain_readable",
+        "target_sentence_words": "12",
+        "length_aim": "0.90"
+      },
+      "component_text": {},
+      "system_template": "",
+      "user_template": "",
+      "template": "You write faithful nonfiction summaries at an approachable reading level. Precision must survive, but the prose must be plain. SENTENCE RULE: A sentence is one idea. Split any sentence with more than one clause joined by and/but/so/because/while or by commas into separate sentences. Keep sentences at or below the words-per-sentence the request asks for; prefer 12 to 14 words. WORD RULE: Prefer short, common words (use, get, keep, make) over longer formal ones (utilize, obtain, maintain, facilitate). When a technical term is required, keep the term but follow it with a short plain gloss. FIDELITY: Keep the author's concepts, mechanisms, examples, names, numbers, quotes, and caveats. Compression and simplification of STYLE, not of content. Never invent facts the source does not state.\nPrioritize how things work: mechanisms, sequences, cause-and-effect, operational logic, and why each concept matters. Compress rhetorical framing before explanatory material.\nPreserve scope conditions, caveats, exceptions, uncertainty, trade-offs, and limits. Do not turn a qualified claim into an absolute one.\nUse short markdown section headings that broadly follow the chapter's conceptual structure. You may merge minor headings, but keep the summary easy to scan.\nInclude examples only when they clarify a concept, mechanism, or distinction. Drop decorative anecdotes.\nPreserve the author's technical terms and named concepts when they carry meaning. If a term may be unfamiliar, gloss it once in plain language rather than replacing it.\nAvoid motivational framing, praise, repetition, scene-setting, and meta commentary. Every paragraph should add source-grounded information.\nPlan the entire summary against the stated word and sentence budgets before writing a single sentence. The request gives an exact target word count, an acceptable range, and a sentence budget. Obey the word range. Treat the sentence budget as the structural limit: never write more sentences than the budget. Before finishing, count your visible words and sentences and trim or expand to land inside the stated range.",
+      "system_prompt_sha256": "8699da3a7e09b538b2b352f3dac8218a7813b7ead853cbb65b06bfaa542cb010",
+      "system_prompt_fingerprint": "8699da3a7e09b538",
+      "user_template_fingerprint": "",
+      "created_at": "2026-09-16T20:06:46.091635Z",
+      "created_by": "operator",
+      "notes": "Base prompt: readable + word budget first + first-pass aim 0.90*target + 12 w/s.",
+      "immutable": true,
+      "derived_from": "chapter-p14"
     }
   ],
   "slots": {
     "chapter": {
       "general": {
-        "local": "chapter-p14",
-        "production": "chapter-p3"
+        "local": "chapter-p15",
+        "production": "chapter-p16"
       },
       "models": {}
     },

@@ -100,6 +100,8 @@ def add_history_entry(
     cost: float,
     samples_scored: int,
     run_id: str = "",
+    base_prompt: str = "",
+    metrics: Optional[Dict[str, float]] = None,
 ) -> int:
     """Append a history entry to the permutation file. Returns the version number."""
     data = load_permutation(permutation_key)
@@ -122,6 +124,12 @@ def add_history_entry(
         "run_id": run_id,
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
+    if base_prompt:
+        entry["base_prompt"] = str(base_prompt)
+    for key, value in dict(metrics or {}).items():
+        if value is None:
+            continue
+        entry[str(key)] = round(float(value), 6) if isinstance(value, (int, float)) else value
     stage_data["history"].append(entry)
     save_permutation(permutation_key, data)
     return version

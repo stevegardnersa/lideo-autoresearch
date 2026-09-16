@@ -3,7 +3,7 @@
 Covers the length/readability tuning work: separate words-per-sentence for the
 sentence budget, sentence-budget scaling, and the first-pass length aim.
 
-Run with: python3 -m pytest tests/test_sentence_budget.py
+Run with: python3 tests/test_sentence_budget.py
 """
 
 import sys
@@ -21,6 +21,7 @@ from candidate_spec import (
     _sentence_budget_scale,
     _length_aim,
 )
+from core import prompt_registry as pr
 
 
 class _Stage:
@@ -98,3 +99,36 @@ def test_sentence_primary_policy_rendered():
     assert "write exactly 117 sentences" in text
     assert "hard constraint" in text
     print("test_sentence_primary_policy_rendered: OK")
+
+
+def test_sentence_base_rendered_from_registry():
+    """The curated `sentence` base renders the exact S instruction (spec §5)."""
+    from tools.prompts_api import list_base_prompts
+
+    bases = {b["slug"]: b for b in list_base_prompts()}
+    base = bases["sentence"]
+    spec = get_candidate("30m_gpt-5.6-luna_notthinking")
+    pr.apply_overlay(spec, stage_kind="chapter", prompt_version=base["version_id"])
+    text = render_chapter_user(spec, source_md="src", target_words=1288, book_title="B")
+    assert "write exactly 117 sentences" in text, text
+    assert "hard constraint" in text, text
+    assert base["version_id"] == "chapter-p15", base
+    print("test_sentence_base_rendered_from_registry: OK")
+
+
+def main():
+    tests = [
+        test_sentence_budget_defaults,
+        test_sentence_budget_scale,
+        test_component_readers,
+        test_aim_targets_rendered,
+        test_sentence_primary_policy_rendered,
+        test_sentence_base_rendered_from_registry,
+    ]
+    for test in tests:
+        test()
+    print(f"\nALL {len(tests)} SENTENCE-BUDGET TESTS PASSED")
+
+
+if __name__ == "__main__":
+    main()

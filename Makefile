@@ -2,6 +2,8 @@ PYTHON ?= python3
 BOOKS_ROOT ?= data/books
 ARTIFACTS_ROOT ?= artifacts
 BENCH_DIR ?= bench
+PROFILE ?= 30m_gpt-5.6-luna_notthinking
+SWEEP_BENCH ?= chapter_fast-v3
 
 rubrics:
 	$(PYTHON) tools/build_rubrics.py --books-root $(BOOKS_ROOT) --artifacts-root $(ARTIFACTS_ROOT)
@@ -15,6 +17,8 @@ test:
 	$(PYTHON) tests/test_reasoning_migration.py
 	$(PYTHON) tests/test_prompt_registry.py
 	$(PYTHON) tests/test_cf_prompt_version.py
+	$(PYTHON) tests/test_sentence_budget.py
+	$(PYTHON) tests/test_base_prompts.py
 
 bench:
 	$(PYTHON) tools/build_bench.py --books-root $(BOOKS_ROOT) --bench-dir $(BENCH_DIR) --dev-books 10 --gate-books 4 --holdout-books 4 --seed 42
@@ -27,6 +31,9 @@ smoke:
 
 leaderboard:
 	$(PYTHON) tools/leaderboard.py
+
+sweep-bases:
+	$(PYTHON) tools/sweep_base_prompts.py --profile $(PROFILE) --bench $(SWEEP_BENCH)
 
 cf-smoke:
 	$(PYTHON) -m pip show functions-framework >/dev/null 2>&1 || $(PYTHON) -m pip install functions-framework

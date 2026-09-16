@@ -58,7 +58,7 @@ from .optimizer import (
     make_components_from_spec,
     components_to_dimensions,
 )
-from . import permutation_store
+from . import base_resolver, permutation_store
 from .permutation_store import extract_permutation_key
 
 
@@ -114,6 +114,7 @@ def run_hill_climb(
     max_iterations: int = 5,
     dry_run: bool = False,
     stage: str = "chapter",
+    base: Optional[dict] = None,
 ) -> OptimizationRun:
     parsed = parse_variant_name(candidate_name)
     base_root = parsed[0] if parsed else candidate_name
@@ -126,13 +127,19 @@ def run_hill_climb(
         base_profile=base_spec.get("profile", ""),
         base_variant_name=candidate_name,
         stage=stage,
+        base_prompt=str((base or {}).get("slug") or ""),
+        base_prompt_version=str((base or {}).get("version_id") or ""),
     )
 
-    # Evaluate baseline (v1, already in candidate_spec)
+    # Evaluate baseline (v1, already in candidate_spec), seeded from the base prompt.
     print(f"\n{'='*60}")
     print(f"Evaluating baseline: {candidate_name}")
+    if base:
+        print(f"  Base prompt: {base.get('slug')} ({base.get('version_id')}, source={base.get('source')})")
     if not dry_run:
-        baseline_result = evaluate_variant(candidate_name)
+        baseline_result = evaluate_variant(
+            candidate_name, prompt_version=str((base or {}).get("version_id") or "")
+        )
     else:
         baseline_result = _dummy_result(candidate_name, 0.70, 0.55, 0.40, 0.80)
 
@@ -143,6 +150,7 @@ def run_hill_climb(
         baseline_result.avg_quality, baseline_result.avg_faithfulness,
         baseline_result.avg_concept_coverage, baseline_result.pass_rate,
         baseline_result.total_cost, baseline_result.samples_scored,
+        base_prompt=str((base or {}).get("slug") or ""),
     )
 
     opt_run.best_result = baseline_result
@@ -241,6 +249,7 @@ def run_grid_search(
     max_variants: int = 12,
     dry_run: bool = False,
     stage: str = "chapter",
+    base: Optional[dict] = None,
 ) -> OptimizationRun:
     perm_key = extract_permutation_key(candidate_name)
 
@@ -251,13 +260,19 @@ def run_grid_search(
         base_profile=base_spec.get("profile", ""),
         base_variant_name=candidate_name,
         stage=stage,
+        base_prompt=str((base or {}).get("slug") or ""),
+        base_prompt_version=str((base or {}).get("version_id") or ""),
     )
 
     # Evaluate baseline
     print(f"\n{'='*60}")
     print(f"Evaluating baseline: {candidate_name}")
+    if base:
+        print(f"  Base prompt: {base.get('slug')} ({base.get('version_id')}, source={base.get('source')})")
     if not dry_run:
-        baseline_result = evaluate_variant(candidate_name)
+        baseline_result = evaluate_variant(
+            candidate_name, prompt_version=str((base or {}).get("version_id") or "")
+        )
     else:
         baseline_result = _dummy_result(candidate_name, 0.70, 0.55, 0.40, 0.80)
 
@@ -267,6 +282,7 @@ def run_grid_search(
         baseline_result.avg_quality, baseline_result.avg_faithfulness,
         baseline_result.avg_concept_coverage, baseline_result.pass_rate,
         baseline_result.total_cost, baseline_result.samples_scored,
+        base_prompt=str((base or {}).get("slug") or ""),
     )
 
     opt_run.best_result = baseline_result
@@ -344,6 +360,20 @@ def main():
     parser.add_argument("--output", type=str, default=None)
     parser.add_argument("--stage", type=str, choices=["chapter", "composer"], default="chapter",
                         help="Which pipeline stage to optimize (default: chapter)")
+    parser.add_argument(
+        "--base",
+        type=str,
+        default=None,
+        help="Base chapter prompt slug to seed the search from (sentence, readable, "
+        "readable-low), or 'none' to use the profile defaults. Defaults to the base "
+        "sweep winner for the profile, else 'readable'.",
+    )
+    parser.add_argument(
+        "--base-bench",
+        type=str,
+        default="chapter_fast-v3",
+        help="Bench used to pick the base sweep winner when --base is omitted.",
+    )
     parser.add_argument(
         "--function-url",
         default=os.getenv("FUNCTION_URL", ""),
@@ -441,6 +471,18 @@ def main():
         cand_signals = signals.candidates.get(cname)
         n_signals = cand_signals.total_signals if cand_signals else 0
 
+        # Resolve the base prompt (chapter stage only; composer has no bases).
+        base = None
+        if args.stage == "chapter":
+            try:
+                base = base_resolver.resolve_base(cname, args.base, args.base_bench)
+            except ValueError as exc:
+                print(f"  [WARN] {exc}", file=sys.stderr)
+                base = None
+            if base:
+                base_resolver.seed_components(base_spec, base, stage=args.stage)
+                print(f"  Base prompt: {base['slug']} ({base['version_id']}, source={base['source']})")
+
         mode = args.mode
         if mode == "auto":
             mode = "grid_search" if n_signals >= 5 else "hill_climb"
@@ -452,11 +494,11 @@ def main():
         if mode == "hill_climb":
             opt_run = run_hill_climb(cname, base_spec, signals,
                                      max_iterations=args.max_iter, dry_run=args.dry_run,
-                                     stage=args.stage)
+                                     stage=args.stage, base=base)
         else:
             opt_run = run_grid_search(cname, base_spec, signals,
                                       max_variants=args.max_variants, dry_run=args.dry_run,
-                                      stage=args.stage)
+                                      stage=args.stage, base=base)
         all_runs.append(opt_run)
 
     # Summary
@@ -466,6 +508,8 @@ def main():
     for opt_run in all_runs:
         best = opt_run.best_result
         print(f"\n{opt_run.base_variant_name} (stage={opt_run.stage}):")
+        if opt_run.base_prompt:
+            print(f"  Base prompt: {opt_run.base_prompt} ({opt_run.base_prompt_version})")
         print(f"  Best composite: {best.composite_score:.4f}" if best else "  No result")
         if best and best.success:
             print(f"  Quality: {best.avg_quality:.2f}  Faith: {best.avg_faithfulness:.2f}  "
@@ -492,6 +536,8 @@ def main():
                     "steps": len(r.steps),
                     "best_variant_name": r.best_variant.name if r.best_variant else None,
                     "best_changes": r.best_variant.changed_dimensions if r.best_variant else [],
+                    "base_prompt": r.base_prompt,
+                    "base_prompt_version": r.base_prompt_version,
                     "permutation_key": extract_permutation_key(r.base_variant_name),
                 }
                 for r in all_runs

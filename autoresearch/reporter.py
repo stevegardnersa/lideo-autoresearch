@@ -19,6 +19,8 @@ class RunSummary:
     model: str
     time_budget: str
     stage: str = "chapter"
+    base_prompt: str = ""
+    base_prompt_version: str = ""
     signal_count: int = 0
     dimensions_with_notes: List[str] = None
     baseline_composite: float = 0.0
@@ -56,6 +58,9 @@ def render_run_markdown(run: RunSummary) -> str:
     lines.append(f"**Model:** {run.model}  ")
     lines.append(f"**Budget:** {run.time_budget}  ")
     lines.append(f"**Stage:** {run.stage}  ")
+    if run.base_prompt:
+        version = f" ({run.base_prompt_version})" if run.base_prompt_version else ""
+        lines.append(f"**Base prompt:** `{run.base_prompt}`{version}  ")
     lines.append(f"**Notes received:** {run.signal_count}  ")
     lines.append(f"**Dimensions:** {', '.join(run.dimensions_with_notes) if run.dimensions_with_notes else 'none'}\n")
 
@@ -116,6 +121,8 @@ def report_from_agent_output(
             model=r.get("model", "?"),
             time_budget=r.get("time_budget", "?"),
             stage=r.get("stage", "chapter"),
+            base_prompt=r.get("base_prompt", ""),
+            base_prompt_version=r.get("base_prompt_version", ""),
             signal_count=r.get("signal_count", 0),
             dimensions_with_notes=r.get("dimensions_with_notes", []),
             baseline_composite=r.get("baseline_composite", 0),

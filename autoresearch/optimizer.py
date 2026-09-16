@@ -96,6 +96,8 @@ class OptimizationRun:
     base_profile: str
     base_variant_name: str
     stage: str = "chapter"
+    base_prompt: str = ""
+    base_prompt_version: str = ""
     started_at: str = field(default_factory=lambda: time.strftime("%Y-%m-%dT%H:%M:%S"))
     steps: List[OptimizationStep] = field(default_factory=list)
     best_variant: Optional[Variant] = None
@@ -226,10 +228,38 @@ def get_candidate(profile):
     return tmpdir
 
 
+def build_candidate_cmd(
+    *,
+    run_candidate_script: str,
+    profile: str,
+    bench: str = "chapter_fast-v3",
+    spec_path: str = "",
+    prompt_version: str = "",
+) -> List[str]:
+    """Build the run_candidate argv for an evaluation run.
+
+    ``--spec`` points run_candidate at a patched candidate_spec.py when set, so
+    temp-spec variant evaluation runs from the repo root instead of a bare temp
+    directory.
+    """
+    cmd = [
+        sys.executable, run_candidate_script,
+        "--bench", bench,
+        "--profile", profile,
+    ]
+    if spec_path:
+        cmd += ["--spec", spec_path]
+    if prompt_version:
+        cmd += ["--prompt-version", prompt_version, "--prompt-stage", "chapter"]
+    return cmd
+
+
 def evaluate_variant_tempfile(
     variant_name: str,
     variant_components: Dict[str, str],
     run_candidate_script: str = "core/run_candidate.py",
+    prompt_version: str = "",
+    bench: str = "chapter_fast-v3",
 ) -> EvaluationResult:
     """Run benchmark for a variant using a temp patched candidate_spec.py."""
     result = EvaluationResult(variant_name=variant_name)
@@ -237,10 +267,17 @@ def evaluate_variant_tempfile(
     try:
         tmpdir = _create_temp_spec_file(variant_name, variant_components)
 
+        cmd = build_candidate_cmd(
+            run_candidate_script=run_candidate_script,
+            profile=variant_name,
+            bench=bench,
+            spec_path=os.path.join(tmpdir, "candidate_spec.py"),
+            prompt_version=prompt_version,
+        )
         proc = subprocess.run(
-            [sys.executable, run_candidate_script, variant_name],
+            cmd,
             capture_output=True, text=True,
-            cwd=tmpdir,
+            cwd=os.getcwd(),
             timeout=3600,
         )
         if proc.returncode != 0:
@@ -267,6 +304,8 @@ def evaluate_variant_tempfile(
 def evaluate_variant(
     variant_name: str,
     run_candidate_script: str = "core/run_candidate.py",
+    prompt_version: str = "",
+    bench: str = "chapter_fast-v3",
 ) -> EvaluationResult:
     """Run benchmark for a variant that already exists in candidate_spec.
 
@@ -274,8 +313,14 @@ def evaluate_variant(
     """
     result = EvaluationResult(variant_name=variant_name)
     try:
+        cmd = build_candidate_cmd(
+            run_candidate_script=run_candidate_script,
+            profile=variant_name,
+            bench=bench,
+            prompt_version=prompt_version,
+        )
         proc = subprocess.run(
-            [sys.executable, run_candidate_script, variant_name],
+            cmd,
             capture_output=True, text=True,
             cwd=os.getcwd(),
             timeout=3600,

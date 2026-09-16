@@ -1401,6 +1401,28 @@ const SCRIPT_REGISTRY = [
     ],
   },
   {
+    id: 'sweep_base_prompts',
+    group: 'run',
+    title: 'Compare base prompts',
+    description: 'Sweep the curated base chapter prompts (sentence, readable, readable-low) on a benchmark, repeat N times, and rank them per model.',
+    script: 'tools/sweep_base_prompts.py',
+    runtimeClass: 'llm',
+    outputs: ['artifacts/autoresearch/base_sweep/*'],
+    args: [
+      arg('profile', 'Profile', { type: 'text', required: true, pattern: '^[A-Za-z0-9_.\\-]+$', default: '30m_gpt-5.6-luna_notthinking', hint: 'Profile key to sweep (a single profile, not "all").' }),
+      arg('bench', 'Benchmark', { type: 'text', required: true, bench: true, default: 'chapter_fast-v3', hint: 'Name from bench/ (e.g. chapter_fast-v3) or a bench/*.jsonl path.' }),
+      arg('bases', 'Bases', { type: 'enum', multiple: true, choices: ['sentence', 'readable', 'readable-low'], advanced: true, hint: 'Leave empty to sweep all bases.' }),
+      arg('repeat', 'Runs per base', { type: 'int', default: 3, min: 1, max: 10 }),
+      arg('adopt', 'Adopt winner', { type: 'bool', default: false, advanced: true, hint: 'Write the winning components into the permutation store (opt-in; never touches slots).' }),
+      arg('mock', 'Mock (no API calls)', { type: 'bool', default: false, advanced: true }),
+      arg('max-samples', 'Max samples (0 = all)', { type: 'int', default: 0, min: 0, advanced: true }),
+    ],
+    presets: [
+      { id: 'default', label: 'All bases x3', args: { profile: '30m_gpt-5.6-luna_notthinking', bench: 'chapter_fast-v3', repeat: 3 } },
+      { id: 'smoke', label: 'Smoke (mock)', args: { profile: '30m_gpt-5.6-luna_notthinking', bench: 'chapter_fast-v3', repeat: 1, mock: true, 'max-samples': 4 } },
+    ],
+  },
+  {
     id: 'leaderboard',
     group: 'maintenance',
     title: 'Leaderboard',
