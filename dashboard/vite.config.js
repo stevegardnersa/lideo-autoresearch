@@ -1397,6 +1397,8 @@ const SCRIPT_REGISTRY = [
       arg('max-iter', 'Max iterations', { type: 'int', default: 5, min: 1, max: 50, advanced: true }),
       arg('max-variants', 'Max variants', { type: 'int', default: 12, min: 1, max: 50, advanced: true }),
       arg('stage', 'Pipeline stage', { type: 'enum', default: 'chapter', choices: ['chapter', 'composer'], advanced: true }),
+      arg('base', 'Base prompt', { type: 'enum', choices: ['sentence', 'readable', 'readable-low', 'none'], advanced: true, hint: 'Seed the search from a curated base (default: base-sweep winner, else readable).' }),
+      arg('base-bench', 'Base sweep bench', { type: 'text', default: 'chapter_fast-v3', advanced: true, hint: 'Bench used to pick the base-sweep winner when --base is omitted.' }),
       arg('dry-run', 'Dry run', { type: 'bool', default: false }),
     ],
   },
@@ -1409,7 +1411,7 @@ const SCRIPT_REGISTRY = [
     runtimeClass: 'llm',
     outputs: ['artifacts/autoresearch/base_sweep/*'],
     args: [
-      arg('profile', 'Profile', { type: 'text', required: true, pattern: '^[A-Za-z0-9_.\\-]+$', default: '30m_gpt-5.6-luna_notthinking', hint: 'Profile key to sweep (a single profile, not "all").' }),
+      arg('profile', 'Profile key', { type: 'text', required: true, pattern: '^[A-Za-z0-9_.\\-]+$', default: '30m_gpt-5.6-luna_notthinking', hint: 'Profile key for ONE model, e.g. 30m_step-3.5-flash_effort-medium (time budget + model + thinking/effort). Not a provider/model id — slashes are rejected. Prefer the Prompts tab Compare base prompts form, which lists valid keys.' }),
       arg('bench', 'Benchmark', { type: 'text', required: true, bench: true, default: 'chapter_fast-v3', hint: 'Name from bench/ (e.g. chapter_fast-v3) or a bench/*.jsonl path.' }),
       arg('bases', 'Bases', { type: 'enum', multiple: true, choices: ['sentence', 'readable', 'readable-low'], advanced: true, hint: 'Leave empty to sweep all bases.' }),
       arg('repeat', 'Runs per base', { type: 'int', default: 3, min: 1, max: 10 }),

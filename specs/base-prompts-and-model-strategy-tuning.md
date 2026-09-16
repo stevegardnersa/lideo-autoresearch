@@ -161,6 +161,14 @@ python3 tools/sweep_base_prompts.py --profile <profile> [--bench chapter_fast-v3
 - `dashboard/settings.js` — a **Compare base prompts** button in the Prompts tab (`#promptsPanel`)
   that opens a small form (profile, bench, repeat) and dispatches via `POST /api/jobs`. The panel
   renders the `.md` artifact summary when the job completes (same pattern as existing run jobs).
+- **Profile must be a valid profile key, not a provider/model id.** `run_candidate.py` takes profile
+  keys like `30m_step-3.5-flash_effort-medium`; a bare `stepfun/step-3.5-flash` (or `30m_step-3.5-flash`)
+  is unknown and aborts the run. The form therefore uses two selects — **Model** (provider/model ids
+  from `data.models`) and **Profile** (profile keys from `data.profiles_by_model[model]`) — so only
+  real keys are selectable. The provider/model id itself is not a valid `--profile` value.
+- `run_candidate.py` and `tools/sweep_base_prompts.py` both validate the profile up front and exit
+  with a `Unknown profile: <x>` message plus the valid keys for that model/budget, instead of a bare
+  `KeyError` traceback.
 
 ### 4.6 Tuning integration
 
@@ -227,7 +235,10 @@ Precedence is unchanged (`cli override → permutation → registry model → re
    render (drift guard passes); `p3`/`p14` are relabeled `experiment:` and still resolvable by id.
 4. `python3 tools/sweep_base_prompts.py --profile 30m_gpt-5.6-luna_notthinking` on `chapter_fast-v3`
    emits 3 ranked rows + a deterministic winner in both artifacts, with repeats honored.
-5. The Prompts-tab **Compare base prompts** button runs the sweep and shows the summary.
+5. The Prompts-tab **Compare base prompts** button runs the sweep and shows the summary. The form's
+   **Model** and **Profile** selects only offer valid profile keys (e.g. picking
+   `stepfun/step-3.5-flash` restricts Profile to `30m_step-3.5-flash_effort-*`/`_thinking` keys); an
+   invalid profile exits with `Unknown profile: <x>` plus valid-key hints, not a traceback.
 6. `--base <slug>` seeds the hill-climber and the base slug appears in the permutation/report record.
 7. `cloud_function/prompts/registry.json` reflects the re-derived shas.
 8. Existing test suites pass; new tests in §5 pass.

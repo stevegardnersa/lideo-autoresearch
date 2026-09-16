@@ -38,7 +38,9 @@ an explicit review point.
 ## SCOPE
 - Sweep reuses `specs/per-model-prompt-tuning.md` §5 metrics, eligibility floors, and ranking verbatim.
 - Dashboard: `SCRIPT_REGISTRY` + a **Compare base prompts** button in the Prompts tab, dispatched via
-  `POST /api/jobs`.
+  `POST /api/jobs`. The form uses **Model** + **Profile** selects so only valid profile keys are
+  selectable (a provider/model id like `stepfun/step-3.5-flash` is not a valid `--profile`); both the
+  sweep and `run_candidate.py` exit with `Unknown profile: <x>` + valid-key hints on a bad key.
 - Tuning: manual "Fork base" uses `POST /api/prompts` (from `prompts-ui-model-scoped-editing.md`);
   auto adds `--base <slug>` to `autoresearch/tune_prompt.py` / `agent.run_hill_climb`, seeding from the
   base and recording `base_prompt`.

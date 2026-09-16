@@ -3287,7 +3287,7 @@ const PROMPTS_STATE = {
   filter: 'all',
   slotScope: 'general',
   showExperiments: false,
-  sweep: { profile: '', bench: 'chapter_fast-v3', repeat: 3 },
+  sweep: { model: '', profile: '', bench: 'chapter_fast-v3', repeat: 3 },
 }
 
 function setPromptsBanner(msg, kind = '') {
@@ -3471,6 +3471,39 @@ function renderPrompts(data) {
       </tr>`).join('')
     : `<tr><td colspan="5" class="placeholder-text">${esc(data.bases_error || 'No bases resolved.')}</td></tr>`
 
+  // Sweep form: pick a model, then a profile key for that model. The sweep needs
+  // a profile key (e.g. 30m_step-3.5-flash_effort-medium), not a provider/model id.
+  const byModel = (data.profiles_by_model)
+    || (PROMPTS_STATE.options || {}).profiles_by_model || {}
+  const sweepModels = (models.length ? models : Object.keys(byModel))
+    .filter(m => (byModel[m] || []).length > 0)
+  let sweepModel = PROMPTS_STATE.sweep.model
+  let sweepProfile = PROMPTS_STATE.sweep.profile
+  if (sweepProfile) {
+    const owner = sweepModels.find(m => (byModel[m] || []).includes(sweepProfile))
+    if (owner) sweepModel = owner
+  }
+  if (!sweepModel || !(byModel[sweepModel] || []).length) sweepModel = sweepModels[0] || ''
+  if (!sweepProfile || !(byModel[sweepModel] || []).includes(sweepProfile)) {
+    sweepProfile = (byModel[sweepModel] || [])[0] || ''
+  }
+  PROMPTS_STATE.sweep.model = sweepModel
+  PROMPTS_STATE.sweep.profile = sweepProfile
+  const sweepModelOptions = sweepModels
+    .map(m => `<option value="${esc(m)}"${m === sweepModel ? ' selected' : ''}>${esc(m)}</option>`).join('')
+  const sweepProfileOptions = (byModel[sweepModel] || [])
+    .map(p => `<option value="${esc(p)}"${p === sweepProfile ? ' selected' : ''}>${esc(p)}</option>`).join('')
+  const sweepProfileField = sweepModels.length
+    ? `<label class="small">Model
+          <select id="sweepBasesModel">${sweepModelOptions}</select>
+        </label>
+        <label class="small">Profile
+          <select id="sweepBasesProfile">${sweepProfileOptions}</select>
+        </label>`
+    : `<label class="small">Profile
+          <input type="text" id="sweepBasesProfile" value="${esc(sweepProfile)}" placeholder="30m_gpt-5.6-luna_notthinking" />
+        </label>`
+
   const scopeOptions = [
     `<option value="general"${activeScope === 'general' ? ' selected' : ''}>General</option>`,
     ...models.map(m => `<option value="${esc(m)}"${activeScope === m ? ' selected' : ''}>${esc(m)}</option>`),
@@ -3495,10 +3528,7 @@ function renderPrompts(data) {
         </table>
       </div>
       <div class="prompt-actions cm-hidden" id="sweepBasesForm">
-        <label class="small">Profile
-          <input type="text" id="sweepBasesProfile" list="sweepBasesProfiles" value="${esc(PROMPTS_STATE.sweep.profile)}" placeholder="30m_gpt-5.6-luna_notthinking" />
-          <datalist id="sweepBasesProfiles">${models.map(m => `<option value="${esc(m)}"></option>`).join('')}</datalist>
-        </label>
+        ${sweepProfileField}
         <label class="small">Bench
           <input type="text" id="sweepBasesBench" value="${esc(PROMPTS_STATE.sweep.bench)}" placeholder="chapter_fast-v3" />
         </label>
@@ -3586,6 +3616,20 @@ function renderPrompts(data) {
     PROMPTS_STATE.showExperiments = expToggle.checked
     renderPrompts(PROMPTS_STATE.data)
   })
+  const sweepModelSel = document.getElementById('sweepBasesModel')
+  if (sweepModelSel) sweepModelSel.addEventListener('change', () => {
+    PROMPTS_STATE.sweep.model = sweepModelSel.value
+    PROMPTS_STATE.sweep.profile = ''
+    renderPrompts(PROMPTS_STATE.data)
+    const form = document.getElementById('sweepBasesForm')
+    if (form) form.classList.remove('cm-hidden')
+    const profileSel = document.getElementById('sweepBasesProfile')
+    if (profileSel) profileSel.focus()
+  })
+  const sweepProfileSel = document.getElementById('sweepBasesProfile')
+  if (sweepProfileSel && sweepProfileSel.tagName === 'SELECT') {
+    sweepProfileSel.addEventListener('change', () => { PROMPTS_STATE.sweep.profile = sweepProfileSel.value })
+  }
 }
 
 async function loadPrompts() {

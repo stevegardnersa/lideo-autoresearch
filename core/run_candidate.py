@@ -2654,7 +2654,21 @@ def _run_single(
         args.run_id = inherited_run_id
     spec_path = resolve_path(args.spec)
     candidate_module = load_module_from_path("candidate_spec_runtime", spec_path)
-    spec = copy.deepcopy(candidate_module.get_candidate(args.profile))
+    try:
+        spec = copy.deepcopy(candidate_module.get_candidate(args.profile))
+    except KeyError as exc:
+        available = getattr(candidate_module, "get_all_profiles", None)
+        hint = ""
+        if callable(available):
+            budget = str(args.profile).split("_")[0]
+            matching = [p for p in available() if budget and str(p).startswith(f"{budget}_")]
+            if matching:
+                hint = "\n  Did you mean one of: " + ", ".join(sorted(matching)[:8])
+        raise SystemExit(
+            f"Unknown profile: {args.profile}. "
+            f"Profile keys look like '30m_step-3.5-flash_effort-medium' "
+            f"(time budget + model + thinking/effort), not a provider/model id.{hint}"
+        ) from exc
     client = make_client(args)
     prompt_selection = _resolve_prompt_versions(args, spec, candidate_module, client)
     _LATENCY_ACCUMULATOR.clear()

@@ -295,16 +295,44 @@ def _default_runner(args: argparse.Namespace, base: Dict[str, Any], repeat: int)
     return _find_manifest(Path(args.runs_dir), run_id)
 
 
-def _max_passes_for(profile: str) -> int:
+def _resolve_profile_spec(profile: str):
+    """Resolve a profile to its CandidateSpec, or None when unknown."""
     try:
         import candidate_spec
-        spec = candidate_spec.get_candidate(profile)
-        return int(getattr(spec.length_control, "max_passes", DEFAULT_MAX_PASSES) or DEFAULT_MAX_PASSES)
+        return candidate_spec.get_candidate(profile)
     except Exception:
+        return None
+
+
+def _profile_hint(profile: str) -> str:
+    try:
+        import candidate_spec
+        all_profiles = candidate_spec.get_all_profiles()
+    except Exception:
+        return ""
+    wanted = str(profile)
+    budget, _, rest = wanted.partition("_")
+    model = rest.rsplit("_", 1)[0] if "_" in rest else rest
+    # Prefer profiles that share the requested model, then fall back to time budget.
+    same_model = [p for p in all_profiles if model and model in str(p)]
+    same_budget = [p for p in all_profiles if budget and str(p).startswith(f"{budget}_")]
+    candidates = same_model or same_budget
+    if not candidates:
+        return ""
+    return ("\n  Profile keys look like '30m_step-3.5-flash_effort-medium'. Did you mean: "
+            + ", ".join(sorted(candidates)[:8]))
+
+
+def _max_passes_for(profile: str) -> int:
+    spec = _resolve_profile_spec(profile)
+    if spec is None:
         return DEFAULT_MAX_PASSES
+    return int(getattr(spec.length_control, "max_passes", DEFAULT_MAX_PASSES) or DEFAULT_MAX_PASSES)
 
 
 def run_sweep(args: argparse.Namespace, *, runner: Optional[Runner] = None) -> Dict[str, Any]:
+    if _resolve_profile_spec(args.profile) is None:
+        raise SystemExit(f"Unknown profile: {args.profile}.{_profile_hint(args.profile)}")
     bases = list_base_prompts()
     selected = [b for b in bases if not args.bases or b["slug"] in args.bases]
     missing = [s for s in (args.bases or []) if s not in {b["slug"] for b in bases}]
