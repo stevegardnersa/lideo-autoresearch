@@ -1148,6 +1148,29 @@
   min-width: 170px;
 }
 
+.comparison-row {
+  cursor: pointer;
+}
+
+.comparison-row:hover td,
+.comparison-row:focus-visible td {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.comparison-row:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline-offset: -2px;
+}
+
+.comparison-winner {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: rgba(16, 185, 129, 0.16);
+  color: #047857;
+}
+
 .scope-badge {
   display: inline-block;
   padding: 1px 7px;

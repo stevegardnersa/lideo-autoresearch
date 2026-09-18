@@ -148,8 +148,11 @@ python3 tools/sweep_base_prompts.py --profile <profile> [--bench chapter_fast-v3
 - **Tie-break:** lower `mean_extra_passes` → higher faithfulness → base order
   `sentence, readable, readable-low`.
 - **Output.** Deterministic winner + full table.
-  - `artifacts/autoresearch/base_sweep/<profile>_<bench>.json` — ranked rows with all aggregates.
-  - `artifacts/autoresearch/base_sweep/<profile>_<bench>.md` — human summary + recommendation.
+  - `artifacts/autoresearch/base_sweep/<profile>_<bench>_<timestamp>.json` — ranked rows with all aggregates.
+  - `artifacts/autoresearch/base_sweep/<profile>_<bench>_<timestamp>.md` — human summary + recommendation.
+  - Each run is timestamped (numeric suffix on collision) so every sweep is preserved as its own
+    comparison run; `--json-out`/`--md-out` override the paths. Artifacts carrying `--job-id`
+    (set automatically for dashboard-launched sweeps) link back to their live job log.
 - **`--adopt`** (opt-in): set the permutation store's base components for `profile`'s chapter stage
   to the winner (via the existing `set_current_best` path). Off by default; never touches slots.
 

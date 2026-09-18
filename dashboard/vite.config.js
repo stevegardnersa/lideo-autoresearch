@@ -1409,6 +1409,7 @@ const SCRIPT_REGISTRY = [
     description: 'Sweep the curated base chapter prompts (sentence, readable, readable-low) on a benchmark, repeat N times, and rank them per model.',
     script: 'tools/sweep_base_prompts.py',
     runtimeClass: 'llm',
+    jobIdArg: 'job-id',
     outputs: ['artifacts/autoresearch/base_sweep/*'],
     args: [
       arg('profile', 'Profile key', { type: 'text', required: true, pattern: '^[A-Za-z0-9_.\\-]+$', default: '30m_gpt-5.6-luna_notthinking', hint: 'Profile key for ONE model, e.g. 30m_step-3.5-flash_effort-medium (time budget + model + thinking/effort). Not a provider/model id — slashes are rejected. Prefer the Prompts tab Compare base prompts form, which lists valid keys.' }),
@@ -1651,8 +1652,9 @@ function validateJobArgs(tool, rawArgs) {
   return { ok: Object.keys(errors).length === 0, args: out, fieldErrors: errors }
 }
 
-function buildArgv(tool, args) {
+function buildArgv(tool, args, jobId) {
   const argv = [tool.script]
+  if (tool.jobIdArg && jobId) argv.push(`--${tool.jobIdArg}`, String(jobId))
   for (const a of tool.args) {
     const val = args[a.name]
     if (val === undefined || val === null || val === '') continue
@@ -2007,7 +2009,7 @@ function createJobManager(opts = {}) {
       failJob(job, `script not found: ${script}`)
       return
     }
-    const argv = buildArgv(tool, job.args)
+    const argv = buildArgv(tool, job.args, job.id)
     let child
     try {
       child = spawnFn(argv, { cwd: repoRoot, env: { ...process.env, PYTHONUNBUFFERED: '1' } })
@@ -2384,6 +2386,15 @@ async function handlePromptsApi(req, res, ctx) {
       send(await call({ op: 'options' }))
       return true
     }
+    if (req.method === 'GET' && pathOnly === '/api/prompts/comparisons') {
+      send(await call({ op: 'list_comparisons' }))
+      return true
+    }
+    const comparisonMatch = pathOnly.match(/^\/api\/prompts\/comparisons\/([^/]+)$/)
+    if (req.method === 'GET' && comparisonMatch) {
+      send(await call({ op: 'get_comparison', id: decodeURIComponent(comparisonMatch[1]) }))
+      return true
+    }
     if (req.method === 'POST' && pathOnly === '/api/prompts/slots') {
       const body = await readBody(req)
       send(await call({ op: 'set_slot', ...body }))
@@ -2538,17 +2549,23 @@ function scanRequestHandler(ctx) {
       }
       if (req.method === 'GET' && id && sub === '/log') {
         const j = jm.get(id)
-        if (!j) {
-          sendJson(res, 404, { ok: false, error: 'unknown job' })
+        if (j && existsSync(j.logPath)) {
+          res.setHeader('Content-Type', 'text/plain')
+          res.setHeader('Content-Disposition', `attachment; filename="${id}.log"`)
+          res.end(readFileSync(j.logPath, 'utf-8'))
           return
         }
-        if (!existsSync(j.logPath)) {
-          sendJson(res, 404, { ok: false, error: 'log pruned' })
+        // Job unknown to this session (server restarted) or pruned from the
+        // in-memory manager: serve the on-disk log if the id is well-formed.
+        const jobsDir = ctx.jobsDir || join(REPO_ROOT, 'artifacts', 'jobs')
+        const diskPath = /^[0-9a-fA-F][0-9a-fA-F-]{6,}$/.test(id) ? join(jobsDir, `${id}.log`) : null
+        if (diskPath && existsSync(diskPath)) {
+          res.setHeader('Content-Type', 'text/plain')
+          res.setHeader('Content-Disposition', `attachment; filename="${id}.log"`)
+          res.end(readFileSync(diskPath, 'utf-8'))
           return
         }
-        res.setHeader('Content-Type', 'text/plain')
-        res.setHeader('Content-Disposition', `attachment; filename="${id}.log"`)
-        res.end(readFileSync(j.logPath, 'utf-8'))
+        sendJson(res, 404, { ok: false, error: j ? 'log pruned' : 'unknown job' })
         return
       }
       if (req.method === 'POST' && id && sub === '/cancel') {

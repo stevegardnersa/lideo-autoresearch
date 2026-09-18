@@ -270,6 +270,150 @@ def test_sweep_end_to_end_mocked():
     print("test_sweep_end_to_end_mocked: OK")
 
 
+# ── comparison runs (dashboard "Base prompt comparisons") ───────────────
+
+def test_default_artifact_paths_timestamped():
+    original = sweep.ARTIFACT_DIR
+    tmpdir = Path(tempfile.mkdtemp(prefix="base-sweep-artifacts-"))
+    sweep.ARTIFACT_DIR = tmpdir
+    try:
+        json_path, md_path = sweep._default_artifact_paths(
+            "30m_model/odd", "bench:v1", stamp="20260101T000000Z"
+        )
+        assert json_path.name == "30m_model_odd_bench_v1_20260101T000000Z.json", json_path
+        assert md_path == json_path.with_suffix(".md"), md_path
+
+        # Collision within the same second gets a numeric suffix.
+        json_path.write_text("{}", encoding="utf-8")
+        again, again_md = sweep._default_artifact_paths(
+            "30m_model/odd", "bench:v1", stamp="20260101T000000Z"
+        )
+        assert again.name.endswith("-2.json"), again
+        assert again_md.name.endswith("-2.md"), again_md
+
+        # Without a stamp the legacy fixed path is used (explicit --json-out case).
+        plain, _ = sweep._default_artifact_paths("30m_model", "chapter_fast-v3")
+        assert plain.name == "30m_model_chapter_fast-v3.json", plain
+    finally:
+        sweep.ARTIFACT_DIR = original
+    print("test_default_artifact_paths_timestamped: OK")
+
+
+def test_run_sweep_records_job_id_and_timestamp():
+    tmpdir = Path(tempfile.mkdtemp(prefix="base-sweep-job-"))
+    runner = lambda base, repeat: None  # noqa: E731 - no manifests is fine
+    args = argparse.Namespace(
+        profile=PROFILE, bench="chapter_fast-v3", bases=["sentence"], repeat=1, mock=True,
+        max_samples=0, adopt=False, dry_run=False, tolerance_pct=0.05,
+        python=sys.executable, run_candidate="core/run_candidate.py",
+        runs_dir=str(tmpdir), json_out="", md_out="",
+        job_id="job-abc123", generated_at="2026-01-01T00:00:00Z",
+    )
+    result = sweep.run_sweep(args, runner=runner)
+    assert result["job_id"] == "job-abc123", result["job_id"]
+    assert result["generated_at"] == "2026-01-01T00:00:00Z", result["generated_at"]
+    print("test_run_sweep_records_job_id_and_timestamp: OK")
+
+
+def _write_comparison(dir_path: Path, stem: str, *, profile: str, bench: str,
+                      generated_at: str, job_id: str = "") -> None:
+    payload = {
+        "profile": profile,
+        "bench": bench,
+        "generated_at": generated_at,
+        "job_id": job_id,
+        "winner": "sentence",
+        "rows": [{"slug": "sentence", "length_score": 0.9}],
+    }
+    (dir_path / f"{stem}.json").write_text(json.dumps(payload), encoding="utf-8")
+    (dir_path / f"{stem}.md").write_text(f"# Summary for {profile}\n", encoding="utf-8")
+
+
+def _write_sweep_job(jobs_dir: Path, job_id: str, *, profile: str, bench: str,
+                     created_at: str) -> None:
+    (jobs_dir / f"{job_id}.log").write_text(
+        f'[job] meta: {{"kind":"meta","jobId":"{job_id}","toolId":"sweep_base_prompts",'
+        f'"createdAt":"{created_at}"}}\n'
+        f"  $ python core/run_candidate.py --bench {bench} --profile {profile}\n",
+        encoding="utf-8",
+    )
+
+
+def test_list_and_get_comparisons():
+    tmpdir = Path(tempfile.mkdtemp(prefix="base-sweep-comparisons-"))
+    jobs_dir = Path(tempfile.mkdtemp(prefix="base-sweep-jobs-"))
+    _write_comparison(tmpdir, "old_run", profile="30m_a", bench="bench-v1",
+                      generated_at="2026-01-01T00:00:00Z")
+    _write_comparison(tmpdir, "new_run", profile="30m_b", bench="bench-v2",
+                      generated_at="2026-02-01T00:00:00Z", job_id="job-xyz")
+    # Non-sweep JSON files are ignored.
+    (tmpdir / "not_a_sweep.json").write_text(json.dumps({"hello": "world"}), encoding="utf-8")
+
+    comparisons = prompts_api.list_comparisons(artifact_dir=tmpdir, jobs_dir=jobs_dir)
+    assert [c["id"] for c in comparisons] == ["new_run", "old_run"], comparisons
+    assert comparisons[0]["job_id"] == "job-xyz" and comparisons[0]["has_log"] is True
+    assert comparisons[1]["has_log"] is False
+
+    detail = prompts_api.get_comparison("old_run", artifact_dir=tmpdir, jobs_dir=jobs_dir)
+    assert detail["markdown"].startswith("# Summary for 30m_a"), detail["markdown"]
+    assert detail["data"]["winner"] == "sentence"
+
+    # Path traversal and unknown ids resolve to nothing.
+    assert prompts_api.get_comparison("../registry", artifact_dir=tmpdir, jobs_dir=jobs_dir) is None
+    assert prompts_api.get_comparison("does-not-exist", artifact_dir=tmpdir, jobs_dir=jobs_dir) is None
+
+    # The list op embeds the same summaries.
+    listed = prompts_api.handle({"op": "list_comparisons", "artifact_dir": str(tmpdir),
+                                 "jobs_dir": str(jobs_dir)})
+    assert listed["ok"] and [c["id"] for c in listed["comparisons"]] == ["new_run", "old_run"]
+    fetched = prompts_api.handle({"op": "get_comparison", "id": "new_run",
+                                  "artifact_dir": str(tmpdir), "jobs_dir": str(jobs_dir)})
+    assert fetched["ok"] and fetched["id"] == "new_run"
+    missing = prompts_api.handle({"op": "get_comparison", "id": "nope",
+                                  "artifact_dir": str(tmpdir), "jobs_dir": str(jobs_dir)})
+    assert missing["ok"] is False and missing["code"] == 404
+    print("test_list_and_get_comparisons: OK")
+
+
+def test_resolve_comparison_job_from_logs():
+    sweep_dir = Path(tempfile.mkdtemp(prefix="base-sweep-match-"))
+    jobs_dir = Path(tempfile.mkdtemp(prefix="base-sweep-match-jobs-"))
+    resolved_id = "abc12345-0000-0000-0000-000000000000"
+    _write_sweep_job(jobs_dir, resolved_id, profile="30m_b", bench="bench-v2",
+                     created_at="2026-02-01T00:00:00.000Z")
+    _write_sweep_job(jobs_dir, "recorded-id", profile="30m_r", bench="bench-v3",
+                     created_at="2026-02-02T00:00:00.000Z")
+    # A non-sweep log must never be matched.
+    (jobs_dir / "other.log").write_text(
+        '[job] meta: {"kind":"meta","jobId":"other","toolId":"run_candidate",'
+        '"createdAt":"2026-02-01T00:00:00.000Z"}\n'
+        "  $ python core/run_candidate.py --bench bench-v2 --profile 30m_b\n",
+        encoding="utf-8",
+    )
+
+    _write_comparison(sweep_dir, "resolved", profile="30m_b", bench="bench-v2",
+                      generated_at="2026-02-01T00:03:00Z")
+    _write_comparison(sweep_dir, "unmatched", profile="30m_c", bench="bench-v9",
+                      generated_at="2026-02-01T00:03:00Z")
+    _write_comparison(sweep_dir, "recorded", profile="30m_r", bench="bench-v3",
+                      generated_at="2026-02-02T00:03:00Z", job_id="recorded-id")
+
+    comps = {c["id"]: c for c in prompts_api.list_comparisons(
+        artifact_dir=sweep_dir, jobs_dir=jobs_dir)}
+    assert comps["resolved"]["job_id"] == resolved_id, comps["resolved"]
+    assert comps["resolved"]["log_resolved"] is True
+    assert comps["unmatched"]["job_id"] == "" and comps["unmatched"]["has_log"] is False
+
+    # A recorded job id is trusted even when a matching log exists.
+    assert comps["recorded"]["job_id"] == "recorded-id"
+    assert comps["recorded"]["log_resolved"] is False
+
+    # Detail view exposes the same resolved job id.
+    detail = prompts_api.get_comparison("resolved", artifact_dir=sweep_dir, jobs_dir=jobs_dir)
+    assert detail["summary"]["job_id"] == resolved_id
+    print("test_resolve_comparison_job_from_logs: OK")
+
+
 # ── §4.6 base-aware tuning plumbing ─────────────────────────────────────
 
 def test_base_resolver_order():
@@ -321,6 +465,10 @@ def main():
         test_length_score_monotonic,
         test_rank_bases_eligibility_and_tiebreak,
         test_sweep_end_to_end_mocked,
+        test_default_artifact_paths_timestamped,
+        test_run_sweep_records_job_id_and_timestamp,
+        test_list_and_get_comparisons,
+        test_resolve_comparison_job_from_logs,
         test_base_resolver_order,
         test_seed_components_overlays_spec,
         test_candidate_cmd_shape,

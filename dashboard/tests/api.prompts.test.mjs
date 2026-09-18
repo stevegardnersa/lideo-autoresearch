@@ -1,6 +1,6 @@
 import { test, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import http from 'node:http'
@@ -8,17 +8,41 @@ import { scanRequestHandler, makeCtx } from '../vite.config.js'
 
 let tmp
 let registryPath
+let sweepDir
+let jobsDir
 
 beforeEach(() => {
   tmp = mkdtempSync(join(tmpdir(), 'prompts-api-'))
   registryPath = join(tmp, 'registry.json')
+  sweepDir = join(tmp, 'base_sweep')
+  jobsDir = join(tmp, 'jobs')
+  mkdirSync(sweepDir, { recursive: true })
+  mkdirSync(jobsDir, { recursive: true })
   process.env.PROMPT_REGISTRY_PATH = registryPath
+  process.env.BASE_SWEEP_ARTIFACT_DIR = sweepDir
+  process.env.BASE_SWEEP_JOBS_DIR = jobsDir
 })
 
 afterEach(() => {
   delete process.env.PROMPT_REGISTRY_PATH
+  delete process.env.BASE_SWEEP_ARTIFACT_DIR
+  delete process.env.BASE_SWEEP_JOBS_DIR
   rmSync(tmp, { recursive: true, force: true })
 })
+
+function writeSweepJob(jobId, { profile, bench, createdAt }) {
+  writeFileSync(join(jobsDir, `${jobId}.log`),
+    `[job] meta: {"kind":"meta","jobId":"${jobId}","toolId":"sweep_base_prompts","createdAt":"${createdAt}"}\n`
+    + `  $ python core/run_candidate.py --bench ${bench} --profile ${profile}\n`)
+}
+
+function writeComparison(stem, { profile, bench, generatedAt, jobId = '' }) {
+  writeFileSync(join(sweepDir, `${stem}.json`), JSON.stringify({
+    profile, bench, generated_at: generatedAt, job_id: jobId, winner: 'sentence',
+    rows: [{ slug: 'sentence', length_score: 0.9 }],
+  }))
+  writeFileSync(join(sweepDir, `${stem}.md`), `# Summary for ${profile}\n`)
+}
 
 async function startServer() {
   const ctx = makeCtx({}) // default pythonRunner runs tools/prompts_api.py from the repo root
@@ -91,6 +115,59 @@ test('slot save round-trips and stale writes are rejected', async () => {
     })
     assert.equal(stale.status, 409)
     assert.equal(stale.body.error, 'registry_changed')
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('comparison runs list newest-first and expose their summary', async () => {
+  writeComparison('old_run', { profile: '30m_a', bench: 'bench-v1', generatedAt: '2026-01-01T00:00:00Z' })
+  writeComparison('new_run', {
+    profile: '30m_b', bench: 'bench-v2', generatedAt: '2026-02-01T00:00:00Z', jobId: 'job-xyz',
+  })
+
+  const { server, base } = await startServer()
+  try {
+    const list = await call(base, '/api/prompts/comparisons')
+    assert.equal(list.status, 200)
+    assert.deepEqual(list.body.comparisons.map(c => c.id), ['new_run', 'old_run'])
+    assert.equal(list.body.comparisons[0].job_id, 'job-xyz')
+    assert.equal(list.body.comparisons[1].has_log, false)
+
+    const one = await call(base, '/api/prompts/comparisons/new_run')
+    assert.equal(one.status, 200)
+    assert.equal(one.body.summary.profile, '30m_b')
+    assert.match(one.body.markdown, /Summary for 30m_b/)
+
+    const missing = await call(base, '/api/prompts/comparisons/nope')
+    assert.equal(missing.status, 404)
+
+    const index = await call(base, '/api/prompts')
+    assert.deepEqual(index.body.comparisons.map(c => c.id), ['new_run', 'old_run'])
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('a sweep artifact with no recorded job id is resolved to its job log', async () => {
+  const jobId = 'abc12345-0000-0000-0000-000000000000'
+  writeSweepJob(jobId, { profile: '30m_b', bench: 'bench-v2', createdAt: '2026-02-01T00:00:00.000Z' })
+  writeComparison('resolved_run', { profile: '30m_b', bench: 'bench-v2', generatedAt: '2026-02-01T00:03:00Z' })
+  writeComparison('other_run', { profile: '30m_c', bench: 'bench-v9', generatedAt: '2026-02-01T00:03:00Z' })
+
+  const { server, base } = await startServer()
+  try {
+    const list = await call(base, '/api/prompts/comparisons')
+    const resolved = list.body.comparisons.find(c => c.id === 'resolved_run')
+    assert.equal(resolved.job_id, jobId)
+    assert.equal(resolved.log_resolved, true)
+    assert.equal(resolved.has_log, true)
+    const unmatched = list.body.comparisons.find(c => c.id === 'other_run')
+    assert.equal(unmatched.job_id, '')
+    assert.equal(unmatched.has_log, false)
+
+    const detail = await call(base, '/api/prompts/comparisons/resolved_run')
+    assert.equal(detail.body.summary.job_id, jobId)
   } finally {
     await closeServer(server)
   }

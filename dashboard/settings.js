@@ -206,6 +206,7 @@ const MODAL_TEMPLATE = `
     <label class="cb autoscroll-wrap"><input type="checkbox" class="log-panel-autoscroll" checked /> Auto-scroll</label>
     <button type="button" class="mini-btn log-panel-clear">Clear view</button>
     <span class="log-panel-spacer"></span>
+    <button type="button" class="mini-btn log-panel-summary cm-hidden" id="panelSummary" aria-pressed="false">Summary</button>
     <a class="mini-btn log-panel-raw" target="_blank" rel="noopener">raw log</a>
     <button type="button" class="mini-btn log-panel-close" id="panelClose" aria-label="Close log panel">&times;</button>
   </div>
@@ -1643,8 +1644,13 @@ function closeLogPanel() {
   RUN_STATE.panelQueuePos = 0
   RUN_STATE.panelLogs = []
   RUN_STATE.panelLastOutputAt = null
+  RUN_STATE.panelStatic = false
+  RUN_STATE.panelComparison = null
   const p = panelEl()
   const scrim = document.getElementById('logPanelScrim')
+  const rawLink = p && p.querySelector('.log-panel-raw')
+  if (rawLink) rawLink.classList.remove('cm-hidden')
+  updateSummaryButton()
   const pre = p && p.querySelector('.log-panel-pre')
   const titleEl = document.getElementById('panelTitle')
   if (p) {
@@ -1668,11 +1674,11 @@ async function openLogPanel(jobId) {
   }
   if (!rec) {
     setBanner(`Log unavailable: unknown job ${jobId}`)
-    return
+    return false
   }
   const p = panelEl()
   const scrim = document.getElementById('logPanelScrim')
-  if (!p) return
+  if (!p) return false
   stopPanelTimer()
   if (RUN_STATE.panelJobId != null && RUN_STATE.panelJobId !== jobId) detachPanelStream(RUN_STATE.panelJobId)
   RUN_STATE.panelJobId = jobId
@@ -1683,6 +1689,9 @@ async function openLogPanel(jobId) {
   RUN_STATE.panelQueuePos = 0
   RUN_STATE.panelLogs = []
   RUN_STATE.panelLastOutputAt = null
+  RUN_STATE.panelStatic = false
+  const rawLink = p.querySelector('.log-panel-raw')
+  if (rawLink) rawLink.classList.remove('cm-hidden')
   const tool = toolById(rec.toolId)
   RUN_STATE.panelTitle = tool ? tool.title : (rec.toolId || jobId.slice(0, 8))
   const titleEl = document.getElementById('panelTitle')
@@ -1708,7 +1717,102 @@ async function openLogPanel(jobId) {
     }
   }
   document.addEventListener('keydown', esc)
+  updateSummaryButton()
   renderRunWidgets()
+  return true
+}
+
+// Toggle button in the drawer toolbar: only visible for comparison runs that
+// also have a job log, so the user can flip between the ranked summary and the
+// full console output.
+function updateSummaryButton() {
+  const btn = document.getElementById('panelSummary')
+  if (!btn) return
+  const c = RUN_STATE.panelComparison
+  if (!c || !c.jobId) {
+    btn.classList.add('cm-hidden')
+    btn.textContent = 'Summary'
+    btn.setAttribute('aria-pressed', 'false')
+    return
+  }
+  btn.classList.remove('cm-hidden')
+  btn.textContent = RUN_STATE.panelStatic ? 'Live log' : 'Summary'
+  btn.setAttribute('aria-pressed', RUN_STATE.panelStatic ? 'true' : 'false')
+}
+
+// Show a sweep summary (markdown artifact) in the shared log drawer. Used for
+// comparison runs launched from the CLI/Makefile that have no job log, and as
+// the summary half of the log/summary toggle.
+function renderComparisonSummary() {
+  const c = RUN_STATE.panelComparison || {}
+  const p = panelEl()
+  if (!p) return
+  const scrim = document.getElementById('logPanelScrim')
+  stopPanelTimer()
+  if (RUN_STATE.panelJobId != null) {
+    detachPanelStream(RUN_STATE.panelJobId)
+    RUN_STATE.panelJobId = null
+  }
+  RUN_STATE.panelStatic = true
+  RUN_STATE.panelStatus = ''
+  RUN_STATE.panelStartedAt = null
+  RUN_STATE.panelFinishedAt = null
+  RUN_STATE.panelQueuePos = 0
+  RUN_STATE.panelLastOutputAt = null
+  RUN_STATE.panelReconnecting = false
+  RUN_STATE.panelTitle = c.title || 'Comparison summary'
+  const titleEl = document.getElementById('panelTitle')
+  if (titleEl) titleEl.textContent = RUN_STATE.panelTitle
+  const stateText = p.querySelector('.panel-state-text')
+  if (stateText) stateText.textContent = 'Comparison summary'
+  const elapsed = p.querySelector('.log-panel-elapsed')
+  if (elapsed) elapsed.textContent = ''
+  const reconnect = p.querySelector('.log-panel-reconnect')
+  if (reconnect) reconnect.textContent = ''
+  const badge = document.getElementById('panelBadge')
+  if (badge) badge.innerHTML = ''
+  const raw = p.querySelector('.log-panel-raw')
+  if (raw) {
+    // Keep the raw log reachable even after a server restart, when the job is
+    // no longer live but its log file still exists on disk.
+    if (c.jobId) {
+      raw.classList.remove('cm-hidden')
+      raw.setAttribute('href', `/api/jobs/${encodeURIComponent(c.jobId)}/log`)
+    } else {
+      raw.classList.add('cm-hidden')
+    }
+  }
+  RUN_STATE.panelLogs = [{ stream: 'stdout', text: c.text || '(no summary)' }]
+  p.classList.remove('cm-hidden')
+  p.setAttribute('aria-hidden', 'false')
+  if (scrim) scrim.classList.remove('cm-hidden')
+  renderPanelConsole()
+  updateSummaryButton()
+  const closeBtn = document.getElementById('panelClose')
+  if (closeBtn && closeBtn.focus) closeBtn.focus()
+  const onKey = (e) => {
+    if (e.key === 'Escape') {
+      closeLogPanel()
+      document.removeEventListener('keydown', onKey)
+    }
+  }
+  document.addEventListener('keydown', onKey)
+  renderRunWidgets()
+}
+
+function openComparisonPanel({ title = 'Comparison summary', text = '', jobId = '' } = {}) {
+  RUN_STATE.panelComparison = { title, text, jobId }
+  renderComparisonSummary()
+}
+
+function togglePanelComparison() {
+  const c = RUN_STATE.panelComparison
+  if (!c) return
+  if (RUN_STATE.panelStatic && c.jobId) {
+    openLogPanel(c.jobId)
+  } else {
+    renderComparisonSummary()
+  }
 }
 
 async function handleProbeForAdd(model, route) {
@@ -2047,6 +2151,8 @@ function bindModal() {
     RUN_STATE.panelLogs = []
     renderPanelConsole()
   })
+  const panelSummary = document.getElementById('panelSummary')
+  if (panelSummary) panelSummary.addEventListener('click', togglePanelComparison)
   const panelScrim = document.getElementById('logPanelScrim')
   if (panelScrim) panelScrim.addEventListener('click', closeLogPanel)
   dialogOverlay.addEventListener('click', (e) => {
@@ -2176,6 +2282,8 @@ const RUN_STATE = {
   panelReconnecting: false,
   panelQueuePos: 0,
   panelLastOutputAt: null,
+  panelStatic: false,
+  panelComparison: null,
   widgetEs: new Map(),
   widgetLogs: new Map(),
   widgetExpanded: new Set(),
@@ -3504,6 +3612,17 @@ function renderPrompts(data) {
           <input type="text" id="sweepBasesProfile" value="${esc(sweepProfile)}" placeholder="30m_gpt-5.6-luna_notthinking" />
         </label>`
 
+  const comparisons = data.comparisons || []
+  const comparisonRows = comparisons.length
+    ? comparisons.map(c => `
+      <tr class="comparison-row" data-action="open-comparison" data-id="${esc(c.id)}" tabindex="0" role="button" aria-label="Open comparison run ${esc(c.id)}">
+        <td>${esc(c.profile || '–')}</td>
+        <td>${esc(c.bench || '–')}</td>
+        <td>${c.winner ? `<span class="comparison-winner">${esc(c.winner)}</span>` : '<span class="placeholder-text">none eligible</span>'}</td>
+        <td>${esc(fmtDate(c.generated_at))}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="4" class="placeholder-text">${esc(data.comparisons_error || 'No comparison runs yet. Run a sweep from Base prompts.')}</td></tr>`
+
   const scopeOptions = [
     `<option value="general"${activeScope === 'general' ? ' selected' : ''}>General</option>`,
     ...models.map(m => `<option value="${esc(m)}"${activeScope === m ? ' selected' : ''}>${esc(m)}</option>`),
@@ -3578,6 +3697,20 @@ function renderPrompts(data) {
           <tbody>${versionRows || '<tr><td colspan="9" class="placeholder-text">No versions in this scope. <button class="mini-btn" data-action="new-version">+ New version</button></td></tr>'}</tbody>
         </table>
       </div>
+    </div>
+    <div class="prompt-block">
+      <div class="prompt-head-row">
+        <div class="settings-section-title">Base prompt comparisons</div>
+        <div class="prompt-head-actions"><span class="small">Newest first</span></div>
+      </div>
+      <div class="prompt-table-wrap">
+        <table class="prompt-table comparison-table">
+          <caption class="cm-visually-hidden">Base prompt comparison runs</caption>
+          <thead><tr><th>model profile</th><th>bench</th><th>recommended</th><th>generated</th></tr></thead>
+          <tbody>${comparisonRows}</tbody>
+        </table>
+      </div>
+      <div class="prompt-actions"><span class="small">Open a run to view its ranked summary or live log.</span></div>
     </div>
     <div class="prompt-block">
       <div class="settings-section-title">Preview</div>
@@ -3756,6 +3889,7 @@ function pvRenderComponents() {
 }
 
 function pvCollect() {
+  const pv = PROMPTS_STATE.pv
   const stage = document.getElementById('pvStage').value
   const components = {}
   document.querySelectorAll('#pvComponents select[data-component]').forEach(sel => {
@@ -4080,6 +4214,34 @@ async function runBaseSweep() {
   }
 }
 
+async function openComparisonRun(id) {
+  const comparisons = (PROMPTS_STATE.data || {}).comparisons || []
+  const comp = comparisons.find(c => c.id === id)
+  if (!comp) { setPromptsBanner('Comparison run not found — reloading.'); return }
+  try {
+    const res = await api(`/api/prompts/comparisons/${encodeURIComponent(id)}`)
+    const summary = res.summary || {}
+    const title = `${summary.profile || comp.profile || 'sweep'} · ${summary.bench || comp.bench || ''}`.trim()
+    const jobId = summary.job_id || comp.job_id || ''
+    if (jobId) {
+      // Full console log by default; the toolbar gains a Summary toggle.
+      RUN_STATE.panelComparison = { title, text: res.markdown || '', jobId }
+      const opened = await openLogPanel(jobId)
+      if (opened) {
+        RUN_STATE.panelTitle = title
+        const titleEl = document.getElementById('panelTitle')
+        if (titleEl) titleEl.textContent = title
+      } else {
+        renderComparisonSummary()
+      }
+    } else {
+      openComparisonPanel({ title, text: res.markdown || '' })
+    }
+  } catch (e) {
+    setPromptsBanner(`Comparison unavailable: ${e.message}`)
+  }
+}
+
 async function runPromptSmokeTest(id) {
   const useCf = !!(document.getElementById('promptSmokeCf') || {}).checked
   const args = {
@@ -4117,6 +4279,7 @@ function runPromptAction(action, id, model, stage) {
     else if (action === 'fork-base') { openPromptVersionDialog({ mode: 'clone', source: _findVersion(id) }).catch(err => setPromptsBanner(err.message)) }
     else if (action === 'sweep-bases') { toggleBaseSweepForm() }
     else if (action === 'sweep-bases-run') { runBaseSweep() }
+    else if (action === 'open-comparison') { openComparisonRun(id) }
     else if (action === 'delete') { deletePromptVersion(id) }
     else if (action === 'smoke') { runPromptSmokeTest(id) }
     else if (action === 'sync') { syncPrompts() }
@@ -4155,6 +4318,13 @@ function bindPromptsPanel() {
     const btn = e.target.closest('[data-action]')
     if (!btn) return
     runPromptAction(btn.dataset.action, btn.dataset.id, btn.dataset.model, btn.dataset.stage)
+  })
+  panel.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return
+    const row = e.target.closest('[data-action="open-comparison"]')
+    if (!row) return
+    e.preventDefault()
+    runPromptAction('open-comparison', row.dataset.id)
   })
 }
 

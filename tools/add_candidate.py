@@ -33,6 +33,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from core.dotenv import load_dotenv
 from core.reasoning import (
     DEFAULT_THINKING_EFFORT,
     REASONING_EFFORTS,
@@ -199,10 +200,12 @@ def _probe_efforts(client, model: str, style: str) -> Tuple[List[str], Optional[
     return ok, none_style
 
 
-def probe_effort_capabilities(model: str, *, probe_legacy: bool = False) -> Dict[str, Any]:
+def probe_effort_capabilities(
+    model: str, *, probe_legacy: bool = False, api_key_env: str = "OPENROUTER_API_KEY"
+) -> Dict[str, Any]:
     """Probe schema support and effort tiers, returning a capabilities dict."""
     from core.openrouter_client import OpenRouterClient
-    client = OpenRouterClient.from_env()
+    client = OpenRouterClient.from_env(api_key_env=api_key_env)
 
     print(f"  Probing JSON schema support for {model}...", end=" ", flush=True)
     schema_ok = _probe_json_schema(client, model)
@@ -446,10 +449,10 @@ def _resolve_efforts(caps: Dict[str, Any], requested: Optional[List[str]]) -> Li
     return supported
 
 
-def run_probes(model: str) -> tuple[bool, bool, bool]:
+def run_probes(model: str, *, api_key_env: str = "OPENROUTER_API_KEY") -> tuple[bool, bool, bool]:
     """Backward-compatible thin wrapper: legacy thinking/notthinking probes."""
     from core.openrouter_client import OpenRouterClient
-    client = OpenRouterClient.from_env()
+    client = OpenRouterClient.from_env(api_key_env=api_key_env)
     print(f"  Probing JSON schema support for {model}...", end=" ", flush=True)
     schema_ok = _probe_json_schema(client, model)
     print()
@@ -472,12 +475,13 @@ def add_candidates(
     provider: Optional[Dict[str, Any]] = None,
     efforts: Optional[List[str]] = None,
     probe_legacy: bool = False,
+    api_key_env: str = "OPENROUTER_API_KEY",
 ) -> List[str]:
     if time_budgets is None:
         time_budgets = ["30m", "60m"]
 
     print(f"\n=== Probing {model} ===")
-    caps = probe_effort_capabilities(model, probe_legacy=probe_legacy)
+    caps = probe_effort_capabilities(model, probe_legacy=probe_legacy, api_key_env=api_key_env)
     caps["model"] = model
 
     if not caps.get("efforts"):
@@ -652,6 +656,7 @@ def migrate_legacy_thinking(
     one_to_one: bool = True,
     add_missing_none: bool = True,
     effort: str = DEFAULT_THINKING_EFFORT,
+    api_key_env: str = "OPENROUTER_API_KEY",
 ) -> List[str]:
     """Migrate legacy ``_thinking``/``_notthinking`` profiles to native reasoning.
 
@@ -760,7 +765,7 @@ def migrate_legacy_thinking(
         return []
 
     print(f"\nMigrating {len(targets)} legacy profile(s) for {model} -> new-style reasoning:")
-    caps = probe_effort_capabilities(model, probe_legacy=True)
+    caps = probe_effort_capabilities(model, probe_legacy=True, api_key_env=api_key_env)
     caps["model"] = model
 
     rewrites: List[str] = []
@@ -1192,6 +1197,9 @@ def main() -> None:
                         help="Dashboard job log directory (default: artifacts/jobs)")
     parser.add_argument("--results-tsv", type=Path, default=Path("results.tsv"),
                         help="Results table path (default: results.tsv)")
+    parser.add_argument("--api-key-env", default="OPENROUTER_API_KEY",
+                        help="Environment variable holding the OpenRouter API key "
+                             "(default: OPENROUTER_API_KEY). .env is loaded automatically.")
     parser.add_argument("--timeout", type=int, default=60,
                         help="Timeout per probe call in seconds")
     parser.add_argument("--efforts", nargs="+", default=None,
@@ -1209,6 +1217,8 @@ def main() -> None:
     parser.add_argument("--no-add-missing-none", action="store_true",
                         help="With --migrate-legacy-thinking: do not add missing _notthinking profiles")
     args = parser.parse_args()
+
+    load_dotenv()
 
     if args.list:
         list_profiles(args.out)
@@ -1264,6 +1274,7 @@ def main() -> None:
             dry_run=args.dry_run,
             one_to_one=not args.upgrade_efforts,
             add_missing_none=not args.no_add_missing_none,
+            api_key_env=args.api_key_env,
         )
         return
 
@@ -1292,6 +1303,7 @@ def main() -> None:
         provider=provider,
         efforts=args.efforts,
         probe_legacy=args.probe_legacy,
+        api_key_env=args.api_key_env,
     )
 
 

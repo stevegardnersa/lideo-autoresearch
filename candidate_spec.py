@@ -26,8 +26,14 @@ from dataclasses import asdict, dataclass, field
 from typing import Dict, List, Literal, Optional, Sequence, Tuple
 
 Profile = Literal[
-    "30m_deepseek-v4-flash_notthinking", "30m_deepseek-v4-flash_thinking", "30m_deepseek-v4-pro_notthinking",
-    "30m_deepseek-v4-pro_thinking", "30m_gemini-3-flash-preview_notthinking", "30m_gemini-3-flash-preview_thinking",
+    "30m_deepseek-v4-flash-0731_effort-high", "30m_deepseek-v4-flash-0731_effort-low",
+    "30m_deepseek-v4-flash-0731_effort-max", "30m_deepseek-v4-flash-0731_effort-medium",
+    "30m_deepseek-v4-flash-0731_effort-minimal", "30m_deepseek-v4-flash-0731_effort-xhigh",
+    "30m_deepseek-v4-flash-0731_notthinking", "30m_deepseek-v4-flash_notthinking", "30m_deepseek-v4-flash_thinking",
+    "30m_deepseek-v4-pro_notthinking", "30m_deepseek-v4-pro_thinking", "30m_deepseek-v4.1-flash_effort-high",
+    "30m_deepseek-v4.1-flash_effort-low", "30m_deepseek-v4.1-flash_effort-max", "30m_deepseek-v4.1-flash_effort-medium",
+    "30m_deepseek-v4.1-flash_effort-minimal", "30m_deepseek-v4.1-flash_effort-xhigh", "30m_deepseek-v4.1-flash_notthinking",
+    "30m_gemini-3-flash-preview_notthinking", "30m_gemini-3-flash-preview_thinking",
     "30m_gemini-3.1-flash-lite-preview_notthinking", "30m_gemini-3.1-flash-lite-preview_thinking",
     "30m_gemini-3.1-pro-preview_notthinking", "30m_gemini-3.1-pro-preview_thinking", "30m_gemini-3.5-flash_notthinking",
     "30m_gemini-3.5-flash_thinking", "30m_glm-5.3-flash_effort-minimal", "30m_glm-5.3-flash_notthinking",
@@ -43,8 +49,14 @@ Profile = Literal[
     "30m_qwen3.7-max_notthinking", "30m_qwen3.7-max_thinking", "30m_step-3.5-flash_effort-high",
     "30m_step-3.5-flash_effort-low", "30m_step-3.5-flash_effort-max", "30m_step-3.5-flash_effort-medium",
     "30m_step-3.5-flash_effort-minimal", "30m_step-3.5-flash_effort-xhigh", "30m_step-3.7-flash_effort-medium",
-    "60m_deepseek-v4-flash_notthinking", "60m_deepseek-v4-flash_thinking", "60m_deepseek-v4-pro_notthinking",
-    "60m_deepseek-v4-pro_thinking", "60m_gemini-3-flash-preview_notthinking", "60m_gemini-3-flash-preview_thinking",
+    "60m_deepseek-v4-flash-0731_effort-high", "60m_deepseek-v4-flash-0731_effort-low",
+    "60m_deepseek-v4-flash-0731_effort-max", "60m_deepseek-v4-flash-0731_effort-medium",
+    "60m_deepseek-v4-flash-0731_effort-minimal", "60m_deepseek-v4-flash-0731_effort-xhigh",
+    "60m_deepseek-v4-flash-0731_notthinking", "60m_deepseek-v4-flash_notthinking", "60m_deepseek-v4-flash_thinking",
+    "60m_deepseek-v4-pro_notthinking", "60m_deepseek-v4-pro_thinking", "60m_deepseek-v4.1-flash_effort-high",
+    "60m_deepseek-v4.1-flash_effort-low", "60m_deepseek-v4.1-flash_effort-max", "60m_deepseek-v4.1-flash_effort-medium",
+    "60m_deepseek-v4.1-flash_effort-minimal", "60m_deepseek-v4.1-flash_effort-xhigh", "60m_deepseek-v4.1-flash_notthinking",
+    "60m_gemini-3-flash-preview_notthinking", "60m_gemini-3-flash-preview_thinking",
     "60m_gemini-3.1-flash-lite-preview_notthinking", "60m_gemini-3.1-flash-lite-preview_thinking",
     "60m_gemini-3.1-pro-preview_notthinking", "60m_gemini-3.1-pro-preview_thinking", "60m_glm-5.3-flash_notthinking",
     "60m_gpt-5.4-mini_notthinking", "60m_gpt-5.4-mini_thinking", "60m_gpt-5.4-nano_notthinking", "60m_gpt-5.4-nano_thinking",
@@ -1098,6 +1110,139 @@ def build_openrouter_request(
 
 
 PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
+    "30m_deepseek-v4-flash-0731_effort-high": CandidateSpec(
+        name="30m_deepseek-v4-flash-0731_effort-high_v1",
+        profile="30m_deepseek-v4-flash-0731_effort-high",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=40960, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "high"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=40960, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "high"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4-flash-0731 chapter+composer, 30m, effort-high (effort=high), schema=False",
+        disable_composer=False
+    ),
+    "30m_deepseek-v4-flash-0731_effort-low": CandidateSpec(
+        name="30m_deepseek-v4-flash-0731_effort-low_v1",
+        profile="30m_deepseek-v4-flash-0731_effort-low",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=10240, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "low"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=10240, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "low"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4-flash-0731 chapter+composer, 30m, effort-low (effort=low), schema=False",
+        disable_composer=False
+    ),
+    "30m_deepseek-v4-flash-0731_effort-max": CandidateSpec(
+        name="30m_deepseek-v4-flash-0731_effort-max_v1",
+        profile="30m_deepseek-v4-flash-0731_effort-max",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=163840, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "max"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=163840, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "max"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4-flash-0731 chapter+composer, 30m, effort-max (effort=max), schema=False",
+        disable_composer=False
+    ),
+    "30m_deepseek-v4-flash-0731_effort-medium": CandidateSpec(
+        name="30m_deepseek-v4-flash-0731_effort-medium_v1",
+        profile="30m_deepseek-v4-flash-0731_effort-medium",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4-flash-0731 chapter+composer, 30m, effort-medium (effort=medium), schema=False",
+        disable_composer=False
+    ),
+    "30m_deepseek-v4-flash-0731_effort-minimal": CandidateSpec(
+        name="30m_deepseek-v4-flash-0731_effort-minimal_v1",
+        profile="30m_deepseek-v4-flash-0731_effort-minimal",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4-flash-0731 chapter+composer, 30m, effort-minimal (effort=minimal), schema=False",
+        disable_composer=False
+    ),
+    "30m_deepseek-v4-flash-0731_effort-xhigh": CandidateSpec(
+        name="30m_deepseek-v4-flash-0731_effort-xhigh_v1",
+        profile="30m_deepseek-v4-flash-0731_effort-xhigh",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=163840, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "xhigh"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=163840, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "xhigh"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4-flash-0731 chapter+composer, 30m, effort-xhigh (effort=xhigh), schema=False",
+        disable_composer=False
+    ),
+    "30m_deepseek-v4-flash-0731_notthinking": CandidateSpec(
+        name="30m_deepseek-v4-flash-0731_notthinking_v1",
+        profile="30m_deepseek-v4-flash-0731_notthinking",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4-flash-0731 chapter+composer, 30m, notthinking (effort=none), schema=False",
+        disable_composer=False
+    ),
     "30m_deepseek-v4-flash_notthinking": CandidateSpec(
         name="30m_deepseek-v4-flash_notthinking_v1",
         profile="30m_deepseek-v4-flash_notthinking",
@@ -1172,6 +1317,139 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=True,
         json_schema_name="summary_response",
         notes="Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 30m, thinking (enabled=true), schema=True",
+        disable_composer=False
+    ),
+    "30m_deepseek-v4.1-flash_effort-high": CandidateSpec(
+        name="30m_deepseek-v4.1-flash_effort-high_v1",
+        profile="30m_deepseek-v4.1-flash_effort-high",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=40960, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "high"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=40960, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "high"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4.1-flash chapter+composer, 30m, effort-high (effort=high), schema=False",
+        disable_composer=False
+    ),
+    "30m_deepseek-v4.1-flash_effort-low": CandidateSpec(
+        name="30m_deepseek-v4.1-flash_effort-low_v1",
+        profile="30m_deepseek-v4.1-flash_effort-low",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=10240, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "low"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=10240, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "low"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4.1-flash chapter+composer, 30m, effort-low (effort=low), schema=False",
+        disable_composer=False
+    ),
+    "30m_deepseek-v4.1-flash_effort-max": CandidateSpec(
+        name="30m_deepseek-v4.1-flash_effort-max_v1",
+        profile="30m_deepseek-v4.1-flash_effort-max",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=163840, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "max"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=163840, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "max"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4.1-flash chapter+composer, 30m, effort-max (effort=max), schema=False",
+        disable_composer=False
+    ),
+    "30m_deepseek-v4.1-flash_effort-medium": CandidateSpec(
+        name="30m_deepseek-v4.1-flash_effort-medium_v1",
+        profile="30m_deepseek-v4.1-flash_effort-medium",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4.1-flash chapter+composer, 30m, effort-medium (effort=medium), schema=False",
+        disable_composer=False
+    ),
+    "30m_deepseek-v4.1-flash_effort-minimal": CandidateSpec(
+        name="30m_deepseek-v4.1-flash_effort-minimal_v1",
+        profile="30m_deepseek-v4.1-flash_effort-minimal",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4.1-flash chapter+composer, 30m, effort-minimal (effort=minimal), schema=False",
+        disable_composer=False
+    ),
+    "30m_deepseek-v4.1-flash_effort-xhigh": CandidateSpec(
+        name="30m_deepseek-v4.1-flash_effort-xhigh_v1",
+        profile="30m_deepseek-v4.1-flash_effort-xhigh",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=163840, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "xhigh"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=163840, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "xhigh"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4.1-flash chapter+composer, 30m, effort-xhigh (effort=xhigh), schema=False",
+        disable_composer=False
+    ),
+    "30m_deepseek-v4.1-flash_notthinking": CandidateSpec(
+        name="30m_deepseek-v4.1-flash_notthinking_v1",
+        profile="30m_deepseek-v4.1-flash_notthinking",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4.1-flash chapter+composer, 30m, notthinking (effort=none), schema=False",
         disable_composer=False
     ),
     "30m_gemini-3-flash-preview_notthinking": CandidateSpec(
@@ -2067,6 +2345,139 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         notes="Auto-generated: stepfun/step-3.7-flash chapter+composer, 30m, effort-medium, schema=False",
         disable_composer=False
     ),
+    "60m_deepseek-v4-flash-0731_effort-high": CandidateSpec(
+        name="60m_deepseek-v4-flash-0731_effort-high_v1",
+        profile="60m_deepseek-v4-flash-0731_effort-high",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=40960, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "high"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=40960, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "high"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4-flash-0731 chapter+composer, 60m, effort-high (effort=high), schema=False",
+        disable_composer=False
+    ),
+    "60m_deepseek-v4-flash-0731_effort-low": CandidateSpec(
+        name="60m_deepseek-v4-flash-0731_effort-low_v1",
+        profile="60m_deepseek-v4-flash-0731_effort-low",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=10240, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "low"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=10240, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "low"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4-flash-0731 chapter+composer, 60m, effort-low (effort=low), schema=False",
+        disable_composer=False
+    ),
+    "60m_deepseek-v4-flash-0731_effort-max": CandidateSpec(
+        name="60m_deepseek-v4-flash-0731_effort-max_v1",
+        profile="60m_deepseek-v4-flash-0731_effort-max",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=163840, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "max"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=163840, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "max"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4-flash-0731 chapter+composer, 60m, effort-max (effort=max), schema=False",
+        disable_composer=False
+    ),
+    "60m_deepseek-v4-flash-0731_effort-medium": CandidateSpec(
+        name="60m_deepseek-v4-flash-0731_effort-medium_v1",
+        profile="60m_deepseek-v4-flash-0731_effort-medium",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4-flash-0731 chapter+composer, 60m, effort-medium (effort=medium), schema=False",
+        disable_composer=False
+    ),
+    "60m_deepseek-v4-flash-0731_effort-minimal": CandidateSpec(
+        name="60m_deepseek-v4-flash-0731_effort-minimal_v1",
+        profile="60m_deepseek-v4-flash-0731_effort-minimal",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4-flash-0731 chapter+composer, 60m, effort-minimal (effort=minimal), schema=False",
+        disable_composer=False
+    ),
+    "60m_deepseek-v4-flash-0731_effort-xhigh": CandidateSpec(
+        name="60m_deepseek-v4-flash-0731_effort-xhigh_v1",
+        profile="60m_deepseek-v4-flash-0731_effort-xhigh",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=163840, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "xhigh"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=163840, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "xhigh"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4-flash-0731 chapter+composer, 60m, effort-xhigh (effort=xhigh), schema=False",
+        disable_composer=False
+    ),
+    "60m_deepseek-v4-flash-0731_notthinking": CandidateSpec(
+        name="60m_deepseek-v4-flash-0731_notthinking_v1",
+        profile="60m_deepseek-v4-flash-0731_notthinking",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4-flash-0731", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4-flash-0731 chapter+composer, 60m, notthinking (effort=none), schema=False",
+        disable_composer=False
+    ),
     "60m_deepseek-v4-flash_notthinking": CandidateSpec(
         name="60m_deepseek-v4-flash_notthinking_v1",
         profile="60m_deepseek-v4-flash_notthinking",
@@ -2141,6 +2552,139 @@ PROFILE_CANDIDATES: Dict[Profile, CandidateSpec] = {
         use_json_schema=True,
         json_schema_name="summary_response",
         notes="Auto-generated: deepseek/deepseek-v4-pro chapter+composer, 60m, thinking (enabled=true), schema=True",
+        disable_composer=False
+    ),
+    "60m_deepseek-v4.1-flash_effort-high": CandidateSpec(
+        name="60m_deepseek-v4.1-flash_effort-high_v1",
+        profile="60m_deepseek-v4.1-flash_effort-high",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=40960, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "high"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=40960, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "high"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4.1-flash chapter+composer, 60m, effort-high (effort=high), schema=False",
+        disable_composer=False
+    ),
+    "60m_deepseek-v4.1-flash_effort-low": CandidateSpec(
+        name="60m_deepseek-v4.1-flash_effort-low_v1",
+        profile="60m_deepseek-v4.1-flash_effort-low",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=10240, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "low"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=10240, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "low"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4.1-flash chapter+composer, 60m, effort-low (effort=low), schema=False",
+        disable_composer=False
+    ),
+    "60m_deepseek-v4.1-flash_effort-max": CandidateSpec(
+        name="60m_deepseek-v4.1-flash_effort-max_v1",
+        profile="60m_deepseek-v4.1-flash_effort-max",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=163840, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "max"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=163840, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "max"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4.1-flash chapter+composer, 60m, effort-max (effort=max), schema=False",
+        disable_composer=False
+    ),
+    "60m_deepseek-v4.1-flash_effort-medium": CandidateSpec(
+        name="60m_deepseek-v4.1-flash_effort-medium_v1",
+        profile="60m_deepseek-v4.1-flash_effort-medium",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=16384, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "medium"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4.1-flash chapter+composer, 60m, effort-medium (effort=medium), schema=False",
+        disable_composer=False
+    ),
+    "60m_deepseek-v4.1-flash_effort-minimal": CandidateSpec(
+        name="60m_deepseek-v4.1-flash_effort-minimal_v1",
+        profile="60m_deepseek-v4.1-flash_effort-minimal",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=9103, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "minimal"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4.1-flash chapter+composer, 60m, effort-minimal (effort=minimal), schema=False",
+        disable_composer=False
+    ),
+    "60m_deepseek-v4.1-flash_effort-xhigh": CandidateSpec(
+        name="60m_deepseek-v4.1-flash_effort-xhigh_v1",
+        profile="60m_deepseek-v4.1-flash_effort-xhigh",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=163840, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "xhigh"}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=163840, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"effort": "xhigh"}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4.1-flash chapter+composer, 60m, effort-xhigh (effort=xhigh), schema=False",
+        disable_composer=False
+    ),
+    "60m_deepseek-v4.1-flash_notthinking": CandidateSpec(
+        name="60m_deepseek-v4.1-flash_notthinking_v1",
+        profile="60m_deepseek-v4.1-flash_notthinking",
+        chapter_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "dense_faithful", "detail_policy": "mechanisms_first", "qualifier_policy": "strict", "structure_policy": "heading_aware", "example_policy": "explanatory_only", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        composer_stage=StageConfig(model="deepseek/deepseek-v4.1-flash", temperature=0.2, seed=42, max_tokens=8192, format_mode="markdown_sections", context_mode="chapter_plus_toc_and_meta", prompt_components={"system_style": "architectural_synthesizer", "synthesis_policy": "thesis_then_frameworks", "detail_policy": "balanced_dense", "qualifier_policy": "strict", "structure_policy": "theme_clustered", "terminology_policy": "keep_source_terms", "anti_fluff_policy": "hard"}, provider=None, reasoning={"enabled": False}, extra_body=None),
+        length_control=LengthControlConfig(
+            max_passes=5, tolerance_pct=0.08, hard_tolerance_pct=0.1, repair_strategy="edit_existing",
+            repair_more_prompt_id="expand_mechanisms_first", repair_less_prompt_id="shrink_sentence_delete", max_truncation_retries=1,
+            repair_target_mode="low", repair_sentence_delete=True, repair_min_reduction_pct=0.08,
+            early_stop_patience=1, early_stop_epsilon=3, stop_on_direction_flip=True, accept_within_hard_tolerance=True
+        ),
+        budget_allocator=BudgetAllocatorConfig(
+            words_per_minute=200, allocation_alpha=0.9, min_chapter_share=0.03, max_chapter_share=0.18, chapter_stage_multiplier_30m=1.2, chapter_stage_multiplier_60m=1.0, max_summary_to_source_ratio=0.9
+        ),
+        use_json_schema=True,
+        json_schema_name="summary_response",
+        notes="Auto-generated: deepseek/deepseek-v4.1-flash chapter+composer, 60m, notthinking (effort=none), schema=False",
         disable_composer=False
     ),
     "60m_gemini-3-flash-preview_notthinking": CandidateSpec(

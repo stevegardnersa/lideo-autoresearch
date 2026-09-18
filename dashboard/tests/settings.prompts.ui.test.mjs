@@ -30,6 +30,11 @@ const OPTIONS = {
   profiles_by_model: { 'deepseek/deepseek-v4-flash': ['30m_deepseek-v4-flash_thinking'] },
 }
 
+const COMPARISONS = [
+  { id: '30m_b_bench-v2_20260201T000000Z', profile: '30m_b', bench: 'bench-v2', winner: 'readable', generated_at: '2026-02-01T00:00:00Z', job_id: 'job-xyz', has_log: true },
+  { id: '30m_a_bench-v1_20260101T000000Z', profile: '30m_a', bench: 'bench-v1', winner: 'sentence', generated_at: '2026-01-01T00:00:00Z', job_id: '', has_log: false },
+]
+
 const VERSIONS = [
   { id: 'chapter-p1', stage: 'chapter', label: 'v1 baseline (profile defaults)', scope: { kind: 'general' }, components: {}, system_prompt_fingerprint: '2906d9c5015f7f21', created_at: '2026-09-12T00:00:00Z' },
   { id: 'chapter-p2', stage: 'chapter', label: 'v2 target-aware (default)', scope: { kind: 'general' }, components: { length_policy: 'explicit_budget_first' }, system_prompt_fingerprint: 'ce79c4d35f92de9a', created_at: '2026-09-12T00:00:00Z' },
@@ -77,12 +82,31 @@ function makeHarness() {
       state.slotSha = `sha-${state.slotWrites + 1}`
       return json({ ok: true, slots: {}, registry_sha: state.slotSha })
     }
+    const cmpMatch = url.match(/^\/api\/prompts\/comparisons\/(.+)$/)
+    if (cmpMatch && method === 'GET') {
+      const comp = COMPARISONS.find(c => c.id === decodeURIComponent(cmpMatch[1]))
+      if (!comp) return json({ ok: false, error: 'unknown_comparison', code: 404 }, 404)
+      return json({
+        ok: true,
+        id: comp.id,
+        summary: comp,
+        markdown: `# Base prompt sweep — ${comp.profile}\n\nRecommendation: adopt base \`${comp.winner}\`.`,
+      })
+    }
+    if (/^\/api\/jobs\/[^/]+$/.test(url) && method === 'GET') {
+      const id = url.split('/').pop()
+      return json({
+        ok: true,
+        job: { id, toolId: 'sweep_base_prompts', status: 'finished', startedAt: '2026-02-01T00:00:00Z', finishedAt: '2026-02-01T00:05:00Z', logPath: `/tmp/${id}.log` },
+      })
+    }
     if (url === '/api/prompts' && method === 'GET') {
       if (state.listStatus !== 200) return json({ ok: false, error: 'boom' }, state.listStatus)
       return json({
         ok: true,
         registry_sha: 'sha-1',
         versions: VERSIONS,
+        comparisons: COMPARISONS,
         models: OPTIONS.models,
         slots: {
           chapter: { general: { local: 'chapter-p1', production: 'chapter-p1' }, models: {} },
@@ -372,4 +396,50 @@ test('a stale registry sha surfaces a reload banner instead of a hard error', as
   await flush()
   assert.match(h.doc.getElementById('promptsBanner').textContent, /Registry changed elsewhere/)
   assert.match(h.doc.getElementById('promptsPanel').textContent, /chapter-p1/)
+})
+
+test('Base prompt comparisons render below Versions and open a summary drawer', async () => {
+  await openPrompts()
+  const blocks = [...h.doc.querySelectorAll('#promptsPanel .prompt-block')]
+  const titles = blocks.map(b => (b.querySelector('.settings-section-title') || {}).textContent)
+  assert.equal(titles.indexOf('Base prompt comparisons'), titles.indexOf('Versions') + 1, titles.join(' | '))
+
+  const rows = h.doc.querySelectorAll('#promptsPanel .comparison-row')
+  assert.equal(rows.length, 2)
+  assert.equal(rows[0].dataset.id, '30m_b_bench-v2_20260201T000000Z')
+  assert.match(rows[1].textContent, /sentence/)
+
+  h.click(rows[1])
+  await flush()
+  const panel = h.doc.getElementById('logPanel')
+  assert.equal(panel.classList.contains('cm-hidden'), false)
+  assert.match(panel.textContent, /30m_a · bench-v1/)
+  assert.match(panel.textContent, /Recommendation: adopt base/)
+  assert.match(h.doc.querySelector('.log-panel-status').textContent, /Comparison summary/)
+  // No job log for this run, so the summary toggle stays hidden.
+  assert.equal(h.doc.getElementById('panelSummary').classList.contains('cm-hidden'), true)
+})
+
+test('comparison run with a job log opens the log by default with a Summary toggle', async () => {
+  await openPrompts()
+  const rows = h.doc.querySelectorAll('#promptsPanel .comparison-row')
+  h.click(rows[0])
+  await flush()
+  const panel = h.doc.getElementById('logPanel')
+  assert.equal(panel.classList.contains('cm-hidden'), false)
+  assert.match(panel.textContent, /30m_b · bench-v2/)
+
+  const toggle = h.doc.getElementById('panelSummary')
+  assert.equal(toggle.classList.contains('cm-hidden'), false)
+  assert.equal(toggle.textContent, 'Summary')
+
+  h.click(toggle)
+  await flush()
+  assert.match(panel.textContent, /Recommendation: adopt base/)
+  assert.match(h.doc.querySelector('.log-panel-status').textContent, /Comparison summary/)
+  assert.equal(toggle.textContent, 'Live log')
+
+  h.click(toggle)
+  await flush()
+  assert.equal(toggle.textContent, 'Summary')
 })

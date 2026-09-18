@@ -12,7 +12,10 @@ from __future__ import annotations
 
 import copy
 import json
+import os
+import re
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -375,10 +378,222 @@ def _effective_map(registry: Dict[str, Any], models: List[str]) -> Dict[str, Any
     return effective
 
 
+BASE_SWEEP_DIR = ROOT / "artifacts" / "autoresearch" / "base_sweep"
+JOBS_DIR = ROOT / "artifacts" / "jobs"
+
+_SWEEP_JOB_WINDOW_S = 6 * 3600
+_PROFILE_RE = re.compile(r"--profile\s+(\S+)")
+_BENCH_RE = re.compile(r"--bench\s+(\S+)")
+_JOB_ID_RE = re.compile(r'"jobId"\s*:\s*"([^"]+)"')
+_CREATED_RE = re.compile(r'"createdAt"\s*:\s*"([^"]+)"')
+_SWEEP_JOB_CACHE: Dict[str, Optional[Dict[str, Any]]] = {}
+
+
+def _artifact_dir(explicit: Optional[Any] = None) -> Path:
+    """Resolve the base-sweep artifact directory.
+
+    Priority: an explicit path, then ``BASE_SWEEP_ARTIFACT_DIR`` (used by tests
+    and alternate checkouts), then the repo default.
+    """
+    if explicit:
+        return Path(explicit)
+    env = os.environ.get("BASE_SWEEP_ARTIFACT_DIR")
+    return Path(env) if env else BASE_SWEEP_DIR
+
+
+def _jobs_dir(explicit: Optional[Any] = None) -> Path:
+    """Resolve the job-log directory (env override keeps tests isolated)."""
+    if explicit:
+        return Path(explicit)
+    env = os.environ.get("BASE_SWEEP_JOBS_DIR")
+    return Path(env) if env else JOBS_DIR
+
+
+def _safe_comparison_id(value: Any) -> str:
+    """Reject comparison ids that could escape the artifact directory."""
+    text = str(value or "").strip()
+    if not text or text in {".", ".."} or "/" in text or "\\" in text or text.startswith("."):
+        return ""
+    return text
+
+
+def _parse_iso(value: Any) -> Optional[float]:
+    """Parse an ISO-8601 timestamp (with optional Z / millis) into epoch seconds."""
+    text = str(value or "").strip()
+    if not text:
+        return None
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00")).timestamp()
+    except ValueError:
+        return None
+
+
+def _scan_sweep_job(log_path: Path) -> Optional[Dict[str, Any]]:
+    """Parse a job log into a lightweight sweep record, or None if not a sweep.
+
+    Results are cached by (path, mtime, size) so repeated listing calls stay cheap.
+    """
+    try:
+        st = log_path.stat()
+    except OSError:
+        return None
+    key = f"{log_path}:{st.st_mtime_ns}:{st.st_size}"
+    if key in _SWEEP_JOB_CACHE:
+        return _SWEEP_JOB_CACHE[key]
+    record: Optional[Dict[str, Any]] = None
+    try:
+        with log_path.open("r", encoding="utf-8", errors="replace") as fh:
+            text = fh.read(4_000_000)
+    except OSError:
+        text = ""
+    first = text.splitlines()[0] if text else ""
+    if '"toolId":"sweep_base_prompts"' in first:
+        profile = _PROFILE_RE.search(text)
+        bench = _BENCH_RE.search(text)
+        job_id = _JOB_ID_RE.search(first)
+        created = _CREATED_RE.search(first)
+        record = {
+            "job_id": job_id.group(1) if job_id else log_path.stem,
+            "created_at": created.group(1) if created else "",
+            "mtime": st.st_mtime,
+            "profile": profile.group(1) if profile else "",
+            "bench": bench.group(1) if bench else "",
+            "log_path": str(log_path),
+        }
+    _SWEEP_JOB_CACHE[key] = record
+    return record
+
+
+def resolve_comparison_job(data: Dict[str, Any],
+                           jobs_dir: Optional[Any] = None) -> Dict[str, Any]:
+    """Find the job that produced a sweep artifact.
+
+    Uses the recorded ``job_id`` when present; otherwise falls back to matching
+    a sweep job log by profile + bench within a time window around
+    ``generated_at`` (this recovers runs launched from the CLI/Makefile).
+    """
+    recorded = str(data.get("job_id") or "")
+    directory = _jobs_dir(jobs_dir)
+    if recorded:
+        log_path = directory / f"{recorded}.log"
+        return {
+            "job_id": recorded,
+            "resolved": False,
+            "log_path": str(log_path) if log_path.is_file() else "",
+        }
+    profile = str(data.get("profile") or "")
+    bench = str(data.get("bench") or "")
+    if not profile and not bench:
+        return {"job_id": "", "resolved": False, "log_path": ""}
+    if not directory.is_dir():
+        return {"job_id": "", "resolved": False, "log_path": ""}
+    generated = _parse_iso(data.get("generated_at"))
+    candidates: List[Dict[str, Any]] = []
+    for log_path in directory.glob("*.log"):
+        rec = _scan_sweep_job(log_path)
+        if not rec or rec["profile"] != profile or rec["bench"] != bench:
+            continue
+        candidates.append(rec)
+    if not candidates:
+        return {"job_id": "", "resolved": False, "log_path": ""}
+
+    def window_ok(rec: Dict[str, Any]) -> bool:
+        if generated is None:
+            return True
+        created = _parse_iso(rec["created_at"])
+        lo = (created if created is not None else rec["mtime"] - _SWEEP_JOB_WINDOW_S) - _SWEEP_JOB_WINDOW_S
+        hi = rec["mtime"] + _SWEEP_JOB_WINDOW_S
+        return lo <= generated <= hi
+
+    in_window = [c for c in candidates if window_ok(c)]
+    pool = in_window or candidates
+    target = generated if generated is not None else 0.0
+    if generated is None:
+        best = max(pool, key=lambda c: c["mtime"])
+    else:
+        best = min(pool, key=lambda c: abs(c["mtime"] - target))
+    return {"job_id": best["job_id"], "resolved": True, "log_path": best["log_path"]}
+
+
+def _comparison_summary(json_path: Path, data: Dict[str, Any],
+                        job: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    job = job or {"job_id": str(data.get("job_id") or ""), "resolved": False, "log_path": ""}
+    job_id = str(job.get("job_id") or "")
+    return {
+        "id": json_path.stem,
+        "profile": str(data.get("profile") or ""),
+        "bench": str(data.get("bench") or ""),
+        "generated_at": str(data.get("generated_at") or ""),
+        "winner": str(data.get("winner") or ""),
+        "repeat": data.get("repeat"),
+        "tolerance_pct": data.get("tolerance_pct"),
+        "job_id": job_id,
+        "has_log": bool(job_id),
+        "log_resolved": bool(job.get("resolved")),
+        "log_path": str(job.get("log_path") or ""),
+        "artifact": str(json_path),
+        "markdown": str(json_path.with_suffix(".md")),
+    }
+
+
+def list_comparisons(*, artifact_dir: Optional[Path] = None,
+                     jobs_dir: Optional[Any] = None) -> List[Dict[str, Any]]:
+    """List every base-prompt sweep artifact as a comparison run, newest first."""
+    directory = _artifact_dir(artifact_dir)
+    if not directory.is_dir():
+        return []
+    summaries: List[Dict[str, Any]] = []
+    for json_path in directory.glob("*.json"):
+        try:
+            data = json.loads(json_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(data, dict) or "rows" not in data:
+            continue
+        job = resolve_comparison_job(data, jobs_dir=jobs_dir)
+        summaries.append(_comparison_summary(json_path, data, job))
+    summaries.sort(key=lambda s: (s["generated_at"], s["id"]), reverse=True)
+    return summaries
+
+
+def get_comparison(comparison_id: str, *, artifact_dir: Optional[Path] = None,
+                   jobs_dir: Optional[Any] = None) -> Optional[Dict[str, Any]]:
+    """Return one sweep's parsed JSON plus its rendered markdown summary."""
+    safe = _safe_comparison_id(comparison_id)
+    if not safe:
+        return None
+    directory = _artifact_dir(artifact_dir)
+    json_path = directory / f"{safe}.json"
+    if not json_path.is_file():
+        return None
+    try:
+        data = json.loads(json_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    markdown = ""
+    md_path = json_path.with_suffix(".md")
+    if md_path.is_file():
+        try:
+            markdown = md_path.read_text(encoding="utf-8")
+        except OSError:
+            markdown = ""
+    job = resolve_comparison_job(data, jobs_dir=jobs_dir) if isinstance(data, dict) else None
+    return {
+        "id": safe,
+        "summary": _comparison_summary(json_path, data, job) if isinstance(data, dict) else {},
+        "data": data,
+        "markdown": markdown,
+    }
+
+
 def handle(command: Dict[str, Any]) -> Dict[str, Any]:
     op = str(command.get("op") or "").strip()
     regex_path = command.get("path")
     path = Path(regex_path) if regex_path else None
+    artifact_arg = command.get("artifact_dir")
+    comparison_dir = Path(artifact_arg) if artifact_arg else None
+    jobs_arg = command.get("jobs_dir")
+    comparison_jobs_dir = Path(jobs_arg) if jobs_arg else None
 
     if op == "list":
         registry = pr.load_registry(path)
@@ -398,6 +613,11 @@ def handle(command: Dict[str, Any]) -> Dict[str, Any]:
             bases_error = ""
         except pr.PromptRegistryError as exc:
             bases, bases_error = [], str(exc)
+        try:
+            comparisons, comparisons_error = list_comparisons(
+                artifact_dir=comparison_dir, jobs_dir=comparison_jobs_dir), ""
+        except OSError as exc:
+            comparisons, comparisons_error = [], str(exc)
         return {
             "ok": True,
             "registry_sha": registry.get("registry_sha", ""),
@@ -405,6 +625,8 @@ def handle(command: Dict[str, Any]) -> Dict[str, Any]:
             "slots": registry.get("slots", {}),
             "bases": bases,
             "bases_error": bases_error,
+            "comparisons": comparisons,
+            "comparisons_error": comparisons_error,
             "production_status": _production_status(registry),
             "effective": _effective_map(registry, models),
             "models": models,
@@ -418,6 +640,17 @@ def handle(command: Dict[str, Any]) -> Dict[str, Any]:
             "stage": stage,
             "bases": list_base_prompts(stage=stage, path=path),
         }
+
+    if op == "list_comparisons":
+        return {"ok": True, "comparisons": list_comparisons(
+            artifact_dir=comparison_dir, jobs_dir=comparison_jobs_dir)}
+
+    if op == "get_comparison":
+        result = get_comparison(str(command.get("id") or ""), artifact_dir=comparison_dir,
+                                jobs_dir=comparison_jobs_dir)
+        if result is None:
+            return _fail("unknown_comparison", code=404)
+        return {"ok": True, **result}
 
     if op == "options":
         return {"ok": True, **_options()}

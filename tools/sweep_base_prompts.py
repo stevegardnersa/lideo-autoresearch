@@ -11,8 +11,12 @@ Example::
 
 Artifacts are written to ``artifacts/autoresearch/base_sweep/``:
 
-* ``<profile>_<bench>.json`` — ranked rows with all aggregates
-* ``<profile>_<bench>.md``   — human summary + recommendation
+* ``<profile>_<bench>_<timestamp>.json`` — ranked rows with all aggregates
+* ``<profile>_<bench>_<timestamp>.md``   — human summary + recommendation
+
+Each run is timestamped (with a numeric suffix on collision) so every sweep is
+preserved as its own comparison run. ``--json-out`` / ``--md-out`` still override
+the paths when an explicit location is wanted.
 
 ``--adopt`` (opt-in) writes the winning components into the permutation store
 for the profile; it never touches registry slots.
@@ -386,7 +390,9 @@ def run_sweep(args: argparse.Namespace, *, runner: Optional[Runner] = None) -> D
         "repeat": args.repeat,
         "tolerance_pct": args.tolerance_pct,
         "max_passes": max_passes,
-        "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "generated_at": (getattr(args, "generated_at", None)
+                         or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())),
+        "job_id": str(getattr(args, "job_id", "") or ""),
         "winner": winner,
         "rows": ranked,
     }
@@ -484,11 +490,28 @@ def render_markdown(result: Dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _default_artifact_paths(profile: str, bench: str) -> Tuple[Path, Path]:
+def _default_artifact_paths(profile: str, bench: str, *,
+                            stamp: Optional[str] = None) -> Tuple[Path, Path]:
+    """Return the (json, md) artifact paths for a sweep.
+
+    When ``stamp`` is given the filename is timestamped so successive sweeps of
+    the same profile/bench are preserved as distinct comparison runs. A numeric
+    suffix is added on collision to guarantee uniqueness within a second.
+    """
     slug = "".join(c if c.isalnum() or c in "-_." else "_" for c in profile)
     bench_slug = "".join(c if c.isalnum() or c in "-_." else "_" for c in bench)
     stem = f"{slug}_{bench_slug}"
-    return ARTIFACT_DIR / f"{stem}.json", ARTIFACT_DIR / f"{stem}.md"
+    if not stamp:
+        return ARTIFACT_DIR / f"{stem}.json", ARTIFACT_DIR / f"{stem}.md"
+    unique_stem = f"{stem}_{stamp}"
+    json_path = ARTIFACT_DIR / f"{unique_stem}.json"
+    md_path = ARTIFACT_DIR / f"{unique_stem}.md"
+    suffix = 2
+    while json_path.exists() or md_path.exists():
+        json_path = ARTIFACT_DIR / f"{unique_stem}-{suffix}.json"
+        md_path = ARTIFACT_DIR / f"{unique_stem}-{suffix}.md"
+        suffix += 1
+    return json_path, md_path
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
@@ -507,10 +530,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--python", default=sys.executable, help="Python interpreter for run_candidate.")
     parser.add_argument("--run-candidate", default=DEFAULT_RUN_CANDIDATE, help="Path to run_candidate.py.")
     parser.add_argument("--runs-dir", default=str(ROOT / "runs"), help="Where to look for run manifests.")
+    parser.add_argument("--job-id", default="", help="Dashboard job id recorded in the artifact (for the run log).")
     args = parser.parse_args(argv)
     args.bases = [s.strip() for raw in (args.bases or []) for s in str(raw).split(",") if s.strip()]
 
-    json_path, md_path = _default_artifact_paths(args.profile, args.bench)
+    now = time.gmtime()
+    args.generated_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", now)
+    stamp = time.strftime("%Y%m%dT%H%M%SZ", now)
+    json_path, md_path = _default_artifact_paths(args.profile, args.bench, stamp=stamp)
     if not args.json_out:
         args.json_out = str(json_path)
     if not args.md_out:
