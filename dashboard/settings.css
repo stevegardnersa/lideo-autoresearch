@@ -240,6 +240,8 @@
 
 .mini-btn-danger:hover, .mini-btn-danger.armed { background: #fef2f2; }
 
+.mini-btn.armed { border-color: #f59e0b; background: #fffbeb; color: #92400e; }
+
 .model-chip-row {
   margin-top: 10px;
   display: flex;
@@ -337,6 +339,14 @@
 .dlg-run-close:hover { background: var(--panel-2, #f6f7f9); color: var(--text, #1d2433); }
 .dlg-run-widget { min-width: 0; }
 .dlg-run .tool-card { margin-bottom: 0; background: var(--panel-2, #f6f7f9); }
+
+/* deploy-mode shows only the run/progress pane (no model form). */
+#modelDialogOverlay.deploy-mode .settings-dialog { width: min(760px, calc(100vw - 48px)); }
+#modelDialogOverlay.deploy-mode .dialog-body { display: block; }
+#modelDialogOverlay.deploy-mode .dlg-left { display: none; }
+#modelDialogOverlay.deploy-mode .dlg-run { border-left: none; padding-left: 0; }
+#modelDialogOverlay.deploy-mode .dlg-run-widget { display: none; }
+#modelDialogOverlay.deploy-mode .dlg-run-progress { border-top: none; margin-top: 0; padding-top: 0; }
 
 @media (max-width: 720px) {
   #modelDialogOverlay.has-run-form .settings-dialog { width: min(600px, calc(100vw - 48px)); }

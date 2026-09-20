@@ -119,6 +119,10 @@ function makeHarness() {
       })
     }
     if (url === '/api/prompts/sync' && method === 'POST') return json({ ok: true, copied: 'cloud_function/prompts/registry.json', production_version: 'chapter-p1', registry_sha: 'sha-1' })
+    if (url === '/api/jobs' && method === 'POST') {
+      state.lastJob = state.calls[state.calls.length - 1].body
+      return json({ job: { id: 'job-deploy-1', toolId: 'deploy_cf', status: 'queued' } }, 201)
+    }
     if (url === '/api/models/hidden') return json({ hidden: [] })
     throw new Error(`unexpected fetch ${method} ${url}`)
   }
@@ -184,6 +188,25 @@ test('Sync button calls the sync endpoint once and reports the result', async ()
   const syncCalls = h.state.calls.filter(c => c.url === '/api/prompts/sync')
   assert.equal(syncCalls.length, 1)
   assert.match(h.doc.getElementById('promptsBanner').textContent, /Synced registry/)
+})
+
+test('Deploy button arms on first click and starts the deploy_cf job on confirm', async () => {
+  await openPrompts()
+  const deployBtn = h.doc.querySelector('[data-action="deploy"]')
+  assert.ok(deployBtn)
+  h.click(deployBtn)
+  await new Promise(r => setImmediate(r))
+  assert.equal(h.state.calls.filter(c => c.url === '/api/jobs').length, 0, 'first click only arms')
+  assert.equal(deployBtn.dataset.armed, '1')
+  assert.match(deployBtn.textContent, /confirm deploy/i)
+  h.click(deployBtn)
+  await new Promise(r => setImmediate(r))
+  await new Promise(r => setImmediate(r))
+  const jobCalls = h.state.calls.filter(c => c.url === '/api/jobs')
+  assert.equal(jobCalls.length, 1)
+  assert.equal(jobCalls[0].body.toolId, 'deploy_cf')
+  assert.equal(jobCalls[0].body.args.confirm, true)
+  assert.match(h.doc.getElementById('promptsBanner').textContent, /deploy started/i)
 })
 
 test('Prompts section shows an error with Retry when the API fails', async () => {

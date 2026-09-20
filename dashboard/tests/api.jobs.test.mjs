@@ -186,7 +186,7 @@ test('/api/registry exposes grouped tools', async () => {
     const { status, body } = await call(base, '/api/registry')
     assert.equal(status, 200)
     const ids = body.tools.map(t => t.id)
-    for (const expected of ['build_rubrics', 'build_bench', 'corpus_report', 'add_candidate', 'gen_profile_literal', 'snapshot_catalog', 'run_candidate', 'judge_existing', 'agent', 'leaderboard', 'reset_benchmark']) {
+    for (const expected of ['build_rubrics', 'build_bench', 'corpus_report', 'add_candidate', 'gen_profile_literal', 'snapshot_catalog', 'deploy_cf', 'run_candidate', 'judge_existing', 'agent', 'leaderboard', 'reset_benchmark']) {
       assert.ok(ids.includes(expected), `${expected} in registry`)
     }
     const reset = body.tools.find(t => t.id === 'reset_benchmark')
@@ -194,6 +194,24 @@ test('/api/registry exposes grouped tools', async () => {
     assert.equal(reset.confirmPhrase, 'RESET')
     const run = body.tools.find(t => t.id === 'run_candidate')
     assert.ok(run.presets.length > 0)
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('deploy_cf builds the gcloud deploy argv and passes confirmation', async () => {
+  const { server, base, procs } = await startServer()
+  try {
+    const res = await call(base, '/api/jobs', { method: 'POST', body: { toolId: 'deploy_cf', args: { confirm: true, project: 'lideo-387b7' } } })
+    assert.equal(res.status, 201)
+    const argv = procs[0].argv
+    assert.equal(argv[0], 'tools/deploy_cf.py')
+    assert.ok(argv.includes('--confirm'))
+    assert.equal(argv[argv.indexOf('--project') + 1], 'lideo-387b7')
+    assert.equal(argv[argv.indexOf('--region') + 1], 'us-central1')
+    assert.equal(argv[argv.indexOf('--function') + 1], 'summarize')
+    assert.ok(!argv.includes('--no-sync'), 'sync runs by default')
+    assert.ok(!argv.includes('--no-smoke'), 'smoke runs by default')
   } finally {
     await closeServer(server)
   }

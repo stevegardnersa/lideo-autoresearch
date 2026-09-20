@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "deployed": true,
+  "registry_sha": "986960edf2d0d37b3513bd7c54526586bad6bec63d42416c18f77d7e110bc713",
+  "project": "lideo-387b7",
+  "region": "us-central1",
+  "function": "summarize",
+  "url": "https://summarize-q2dzk4wjva-uc.a.run.app",
+  "revision": "summarize-00014-liy",
+  "smoke": {
+    "ok": true,
+    "status": 200,
+    "meta": {
+      "scoring_version": "3af66486b27d11ddef60d90d2cc5fb101115a9d51a2c4e2502a6883195d3b873",
+      "handler_version": "78ed483309e8d3aeb93f2b58ba0d2745740d1769736a258982ebccf6eef2dedc",
+      "deployed_at_utc": "1980-01-01T00:00:01+00:00",
+      "prompt_registry_sha": "986960edf2d0d37b3513bd7c54526586bad6bec63d42416c18f77d7e110bc713"
+    }
+  },
+  "probe_registry_sha": "986960edf2d0d37b3513bd7c54526586bad6bec63d42416c18f77d7e110bc713",
+  "prompt_version": "chapter-p16",
+  "prompt_fingerprint": "f3b9ba81d23cd37c",
+  "prompt_source": "deploy_smoke",
+  "prompt_model": "",
+  "reported_at": "2026-09-19T10:56:53.530353Z"
+}

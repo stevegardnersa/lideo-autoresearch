@@ -1050,6 +1050,7 @@ function clearInlineRunWidget() {
   if (!dialog) return
   resetDlgPane()
   dialog.classList.remove('has-run-form')
+  dialog.classList.remove('deploy-mode')
   dialog.dataset.runSlug = ''
   const holder = document.getElementById('dlgRunForm')
   const widget = document.getElementById('dlgRunWidget')
@@ -3676,6 +3677,7 @@ function renderPrompts(data) {
       </div>
       <div class="prompt-actions">
         <button class="mini-btn" data-action="sync">Sync / Promote to Cloud Function</button>
+        <button class="mini-btn" data-action="deploy">Deploy to Cloud Function</button>
         <label class="small"><input type="checkbox" id="promptSmokeCf" /> Smoke tests use Cloud Function</label>
       </div>
     </div>
@@ -4178,10 +4180,65 @@ async function syncPrompts() {
   try {
     const res = await api('/api/prompts/sync', { method: 'POST', body: JSON.stringify({}) })
     const scoped = res.scoped_versions ? ` (${res.scoped_versions} scoped)` : ''
-    setPromptsBanner(`Synced registry ${res.registry_sha ? res.registry_sha.slice(0, 8) : ''}${scoped} to the Cloud Function bundle. Redeploy to take effect.`)
+    setPromptsBanner(`Synced registry ${res.registry_sha ? res.registry_sha.slice(0, 8) : ''}${scoped} to the Cloud Function bundle. Redeploy to take effect — use Deploy to Cloud Function.`)
   } catch (e) {
     setPromptsBanner(`Sync failed: ${e.message}`)
   }
+}
+
+const DEPLOY_BTN_LABEL = 'Deploy to Cloud Function'
+
+function resetDeployButton(btn) {
+  if (!btn) return
+  delete btn.dataset.armed
+  btn.classList.remove('armed')
+  btn.textContent = btn.dataset.origLabel || DEPLOY_BTN_LABEL
+  btn.disabled = false
+}
+
+async function deployCf(btn) {
+  if (btn && !btn.dataset.armed) {
+    btn.dataset.armed = '1'
+    btn.dataset.origLabel = btn.dataset.origLabel || btn.textContent || DEPLOY_BTN_LABEL
+    btn.textContent = 'Confirm deploy to production?'
+    btn.classList.add('armed')
+    setPromptsBanner('Deploy runs gcloud functions deploy (~2–5 min) then smoke-tests it. Click again to confirm.')
+    setTimeout(() => { if (btn.dataset.armed) resetDeployButton(btn) }, 6000)
+    return
+  }
+  if (btn) { btn.disabled = true; btn.classList.remove('armed'); btn.textContent = 'Deploying…' }
+  try {
+    const res = await api('/api/jobs', { method: 'POST', body: JSON.stringify({ toolId: 'deploy_cf', args: { confirm: true } }) })
+    const job = res.job
+    const shortId = job && job.id ? job.id.slice(0, 8) : ''
+    if (job) openDeployProgress(job)
+    setPromptsBanner(`Cloud Function deploy started (job ${shortId}…). Live progress is open.`)
+    if (typeof refreshJobs === 'function') refreshJobs().catch(() => {})
+  } catch (e) {
+    setPromptsBanner(`Deploy failed to start: ${e.message}`)
+  } finally {
+    resetDeployButton(btn)
+  }
+}
+
+function openDeployProgress(job) {
+  const overlay = document.getElementById('modelDialogOverlay')
+  if (!overlay || !job) return
+  clearInlineRunWidget()
+  overlay.dataset.mode = 'run'
+  overlay.classList.add('deploy-mode')
+  overlay.classList.add('has-run-form')
+  const title = document.getElementById('dlgTitle')
+  if (title) title.textContent = 'Deploy Cloud Function'
+  const holder = document.getElementById('dlgRunForm')
+  if (holder) holder.classList.remove('cm-hidden')
+  const widget = document.getElementById('dlgRunWidget')
+  if (widget) widget.innerHTML = ''
+  const runTitle = document.getElementById('dlgRunTitle')
+  if (runTitle) runTitle.textContent = 'Cloud Function deploy'
+  setDialogNotice('Syncing the registry, deploying via gcloud, then smoke-testing — ~2–5 minutes. Safe to close: the job keeps running in <strong>Scripts</strong>.')
+  overlay.classList.remove('cm-hidden')
+  openDialogProgress(job, 'deploy_cf', job.args || { confirm: true })
 }
 
 function toggleBaseSweepForm() {
@@ -4267,7 +4324,7 @@ function _findVersion(id) {
   return ((PROMPTS_STATE.data || {}).versions || []).find(v => v.id === id) || null
 }
 
-function runPromptAction(action, id, model, stage) {
+function runPromptAction(action, id, model, stage, btn) {
   try {
     if (action === 'save-slot') { savePromptSlot(stage, model).catch(err => setPromptsBanner(err.message)) }
     else if (action === 'preview') { previewPromptVersion(id) }
@@ -4283,6 +4340,7 @@ function runPromptAction(action, id, model, stage) {
     else if (action === 'delete') { deletePromptVersion(id) }
     else if (action === 'smoke') { runPromptSmokeTest(id) }
     else if (action === 'sync') { syncPrompts() }
+    else if (action === 'deploy') { deployCf(btn) }
     else if (action === 'copy-preview') { if (PROMPTS_STATE.previewText) navigator.clipboard.writeText(PROMPTS_STATE.previewText) }
   } catch (err) {
     setPromptsBanner(err.message)
@@ -4317,7 +4375,7 @@ function bindPromptsPanel() {
     }
     const btn = e.target.closest('[data-action]')
     if (!btn) return
-    runPromptAction(btn.dataset.action, btn.dataset.id, btn.dataset.model, btn.dataset.stage)
+    runPromptAction(btn.dataset.action, btn.dataset.id, btn.dataset.model, btn.dataset.stage, btn)
   })
   panel.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' && e.key !== ' ') return
