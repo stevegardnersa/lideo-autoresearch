@@ -49,6 +49,7 @@ from core.openrouter_client import (
     UsageRecord,
 )
 from core.cf_client import CloudFunctionAuthError
+from core.length_control import run_length_control
 from core.reasoning import DEFAULT_MAX_TOKEN_CAP, effort_enables_thinking, manifest_effort_label, stage_reasoning_effort, visible_max_tokens
 from core import prompt_registry
 from core.versioning import (
@@ -1197,209 +1198,89 @@ def run_length_controlled_stage(
     checkpoint_callback: Optional[Callable[[Mapping[str, Any]], None]] = None,
 ) -> StageRun:
     build_openrouter_request = getattr(candidate_module, "build_openrouter_request")
-    low, high = getattr(candidate_module, "visible_word_range")(target_words, spec.length_control.tolerance_pct)
 
-    restored = dict(resume_state or {})
-    responses: List[Mapping[str, Any]] = list(restored.get("raw_responses") or [])
-    total_cost = float(restored.get("generation_cost") or 0.0)
-    total_uncached_cost = float(restored.get("uncached_generation_cost") or 0.0)
-    passes_used = int(restored.get("passes_used") or 0)
-    summary_md = str(restored.get("summary_md") or "").strip()
-    first_pass_summary_md = str(restored.get("first_pass_summary_md") or "").strip()
-    total_truncation_retries = int(restored.get("truncation_retries") or 0)
-    pass_latencies: List[float] = [float(v) for v in (restored.get("pass_latency_seconds") or [])]
-
-    # Best-pass selection: among all passes executed (including passes restored
-    # from a checkpoint), track the one whose visible word count is closest to
-    # target_words. Returned summary_md is this pass, not the last one.
-    best_summary_md = str(restored.get("best_summary_md") or "").strip()
-    if not best_summary_md and summary_md:
-        # Old-format checkpoint (no best pass recorded): seed from latest pass.
-        best_summary_md = summary_md
-    if best_summary_md:
-        best_distance = abs(visible_word_count(best_summary_md) - target_words)
-    else:
-        best_distance = None
-
-    def update_best(candidate_md: str) -> None:
-        nonlocal best_summary_md, best_distance
-        if not best_summary_md:
-            best_summary_md = candidate_md
-            best_distance = abs(visible_word_count(candidate_md) - target_words)
-            return
-        distance = abs(visible_word_count(candidate_md) - target_words)
-        # Strict < keeps the earliest pass on ties.
-        assert best_distance is not None
-        if distance < best_distance:
-            best_summary_md = candidate_md
-            best_distance = distance
-
-    def emit_checkpoint() -> None:
-        if checkpoint_callback is None:
-            return
-        checkpoint_callback(
-            {
-                "summary_md": summary_md,
-                "best_summary_md": best_summary_md,
-                "best_distance": best_distance,
-                "first_pass_summary_md": first_pass_summary_md or summary_md,
-                "passes_used": passes_used,
-                "generation_cost": total_cost,
-                "uncached_generation_cost": total_uncached_cost,
-                "truncation_retries": total_truncation_retries,
-                "raw_responses": _json_safe(list(responses)),
-                "pass_latency_seconds": [float(v) for v in pass_latencies],
-            }
+    def generate(user_prompt: str, attempt_target: int, current_for_mock: str) -> GenerationResult:
+        use_json_schema = stage_config.use_json_schema if stage_config.use_json_schema is not None else spec.use_json_schema
+        # Target-aware generation-time cap: derive max_tokens from the
+        # visible-word target (plus reasoning reservation) so the model cannot
+        # free-run to multiples of the target. Re-derived per truncation retry
+        # from the lowered attempt_target, so retries automatically tighten.
+        effective_max_tokens = visible_max_tokens(
+            attempt_target,
+            effort=stage_reasoning_effort(stage_config),
+            cap=int(stage_config.max_tokens or DEFAULT_MAX_TOKEN_CAP),
+        )
+        # Reconciliation with the pipeline brief's truncation floor: a short
+        # sentence budget must not starve the JSON payload. Never exceeds the
+        # profile budget.
+        t_max_floor = max(1, int(round(attempt_target * 1.35 * 1.15)))
+        effective_max_tokens = min(
+            int(stage_config.max_tokens or DEFAULT_MAX_TOKEN_CAP),
+            max(effective_max_tokens, t_max_floor),
+        )
+        request = build_openrouter_request(
+            stage=stage_config,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            schema_name=spec.json_schema_name,
+            use_json_schema=use_json_schema,
+            max_tokens=effective_max_tokens,
+        )
+        request = _merge_prompt_meta(request, stage_kind)
+        return invoke_generation(
+            client,
+            request,
+            mock_source_md=mock_source_md,
+            target_words=attempt_target,
+            current_summary_md=current_for_mock,
         )
 
-    max_truncation_retries = int(getattr(spec.length_control, "max_truncation_retries", 1) or 0)
+    def render_repair(direction: str, current_summary_md: str, target: int, current_word_count: int) -> str:
+        if stage_kind == "chapter":
+            return candidate_module.render_repair_user(
+                spec,
+                source_md=mock_source_md,
+                current_summary_md=current_summary_md,
+                target_words=target,
+                direction=direction,
+                book_title=current_book_title,
+                chapter_title=current_chapter_title,
+                current_word_count=current_word_count,
+            )
+        return render_composer_repair_user(
+            candidate_module,
+            spec,
+            chapter_summaries_md=chapter_summaries_md,
+            current_summary_md=current_summary_md,
+            target_words=target,
+            direction=direction,
+            book_title=current_book_title,
+            toc_md=toc_md,
+            book_metadata=book_metadata,
+            retrieved_source_excerpts=retrieved_source_excerpts,
+            current_word_count=current_word_count,
+        )
 
-    def generate_pass(user_prompt: str, *, current_for_mock: str, pass_target: int) -> GenerationResult:
-        nonlocal total_cost, total_uncached_cost, total_truncation_retries
-        use_json_schema = stage_config.use_json_schema if stage_config.use_json_schema is not None else spec.use_json_schema
-        attempt_target = max(1, pass_target)
-        retry_count = 0
-        retry_prompt = user_prompt
-        while True:
-            # Target-aware generation-time cap: derive max_tokens from the
-            # visible-word target (plus reasoning reservation) so the model cannot
-            # free-run to multiples of the target. Re-derived per truncation retry
-            # from the lowered pass_target, so retries automatically tighten.
-            effective_max_tokens = visible_max_tokens(
-                attempt_target,
-                effort=stage_reasoning_effort(stage_config),
-                cap=int(stage_config.max_tokens or DEFAULT_MAX_TOKEN_CAP),
-            )
-            # Reconciliation with the pipeline brief's truncation floor: a short
-            # sentence budget must not starve the JSON payload. Never exceeds the
-            # profile budget.
-            t_max_floor = max(1, int(round(attempt_target * 1.35 * 1.15)))
-            effective_max_tokens = min(
-                int(stage_config.max_tokens or DEFAULT_MAX_TOKEN_CAP),
-                max(effective_max_tokens, t_max_floor),
-            )
-            request = build_openrouter_request(
-                stage=stage_config,
-                system_prompt=system_prompt,
-                user_prompt=retry_prompt,
-                schema_name=spec.json_schema_name,
-                use_json_schema=use_json_schema,
-                max_tokens=effective_max_tokens,
-            )
-            request = _merge_prompt_meta(request, stage_kind)
-            pass_started = time.perf_counter()
-            result = invoke_generation(
-                client,
-                request,
-                mock_source_md=mock_source_md,
-                target_words=attempt_target,
-                current_summary_md=current_for_mock,
-            )
-            pass_latencies.append(time.perf_counter() - pass_started)
-            _LATENCY_ACCUMULATOR.append(pass_latencies[-1])
-            responses.append(_json_safe(dict(result.raw_response)))
-            total_cost += result.usage.generation_cost
-            total_uncached_cost += result.usage.uncached_generation_cost or result.usage.generation_cost
-            if not result.truncated or retry_count >= max_truncation_retries:
-                return result
-            retry_count += 1
-            total_truncation_retries += 1
-            attempt_target = max(1, int(round(pass_target * (0.7 ** retry_count))))
-            responses.append(
-                {
-                    "kind": "truncation_retry",
-                    "retry_index": retry_count,
-                    "pass_target_words": attempt_target,
-                    "finish_reason": result.finish_reason,
-                    "json_recovery": result.json_recovery,
-                }
-            )
-            retry_prompt = (
-                user_prompt
-                + f"\n\nIMPORTANT: The previous attempt was cut off because it exceeded the output length limit "
-                f"(finish_reason={result.finish_reason}). Rewrite a COMPLETE summary of at most {attempt_target} "
-                "visible words so the JSON payload is not truncated. Do not leave the summary or the payload unfinished."
-            )
-
-    if passes_used <= 0 or not summary_md:
-        result = generate_pass(initial_user_prompt, current_for_mock="", pass_target=target_words)
-        passes_used = 1
-        summary_md = result.summary_md.strip()
-        first_pass_summary_md = summary_md
-        update_best(summary_md)
-        emit_checkpoint()
-
-    lc = spec.length_control
-    hard_low, hard_high = getattr(candidate_module, "visible_word_range")(target_words, lc.hard_tolerance_pct)
-    last_words: Optional[int] = None
-    last_direction: Optional[str] = None
-    stalled_passes = 0
-    while passes_used < lc.max_passes:
-        words = visible_word_count(summary_md)
-        if low <= words <= high:
-            break
-        if lc.accept_within_hard_tolerance and hard_low <= words <= hard_high:
-            break
-        direction = "more" if words < low else "less"
-        # Direction flip: we overshot past the target into the other repair mode.
-        if lc.stop_on_direction_flip and last_direction is not None and direction != last_direction:
-            break
-        # Diminishing returns: the last pass barely (or did not) reduce error.
-        if last_words is not None and lc.early_stop_patience > 0:
-            if abs(words - target_words) <= abs(last_words - target_words) - lc.early_stop_epsilon:
-                stalled_passes = 0
-            else:
-                stalled_passes += 1
-                if stalled_passes >= lc.early_stop_patience:
-                    break
-        if lc.repair_strategy == "regenerate_from_source":
-            repair_user_prompt = initial_user_prompt
-            current_for_mock = ""
-        else:
-            if stage_kind == "chapter":
-                repair_user_prompt = candidate_module.render_repair_user(
-                    spec,
-                    source_md=mock_source_md,
-                    current_summary_md=summary_md,
-                    target_words=target_words,
-                    direction=direction,
-                    book_title=current_book_title,
-                    chapter_title=current_chapter_title,
-                    current_word_count=words,
-                )
-            else:
-                repair_user_prompt = render_composer_repair_user(
-                    candidate_module,
-                    spec,
-                    chapter_summaries_md=chapter_summaries_md,
-                    current_summary_md=summary_md,
-                    target_words=target_words,
-                    direction=direction,
-                    book_title=current_book_title,
-                    toc_md=toc_md,
-                    book_metadata=book_metadata,
-                    retrieved_source_excerpts=retrieved_source_excerpts,
-                    current_word_count=words,
-                )
-            current_for_mock = summary_md
-        result = generate_pass(repair_user_prompt, current_for_mock=current_for_mock, pass_target=target_words)
-        passes_used += 1
-        summary_md = result.summary_md.strip()
-        if not first_pass_summary_md:
-            first_pass_summary_md = summary_md
-        update_best(summary_md)
-        last_words = words
-        last_direction = direction
-        emit_checkpoint()
-
+    result = run_length_control(
+        generate=generate,
+        render_repair=render_repair,
+        word_range=getattr(candidate_module, "visible_word_range"),
+        initial_user_prompt=initial_user_prompt,
+        target_words=target_words,
+        length_control=spec.length_control,
+        resume_state=resume_state,
+        checkpoint_callback=checkpoint_callback,
+        latency_accumulator=_LATENCY_ACCUMULATOR,
+        visible_words=visible_word_count,
+    )
     return StageRun(
-        summary_md=best_summary_md,
-        first_pass_summary_md=first_pass_summary_md or summary_md,
-        passes_used=passes_used,
-        generation_cost=total_cost,
-        uncached_generation_cost=total_uncached_cost,
-        raw_responses=tuple(responses),
-        pass_latency_seconds=tuple(pass_latencies),
+        summary_md=result.summary_md,
+        first_pass_summary_md=result.first_pass_summary_md,
+        passes_used=result.passes_used,
+        generation_cost=result.generation_cost,
+        uncached_generation_cost=result.uncached_generation_cost,
+        raw_responses=result.raw_responses,
+        pass_latency_seconds=result.pass_latency_seconds,
     )
 
 
