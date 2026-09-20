@@ -1,7 +1,20 @@
+# VCS / local env
 .git/
 .gitignore
 .env
 .venv/
+
+# Agent/tooling session data — not runtime deps, can be hundreds of MB
+.lcm/
+.opencode/
+.openchamber/
+.sessions/
+.notes/
+.hermes/
+.claude/
+.pytest_cache/
+
+# Benchmarks, datasets, generated outputs
 runs/
 artifacts/
 data/
@@ -10,6 +23,18 @@ dashboard/
 tools/
 bench/
 specs/
+tests/
+
+# Secrets (service-account keys etc.)
+secrets/
+
+# Scratch / report files
+results.tsv
+benchmark_version.json
+benchmark_version_v3.json
+*.md
+
+# Python bytecode / OS cruft
 __pycache__/
 *.pyc
 .DS_Store

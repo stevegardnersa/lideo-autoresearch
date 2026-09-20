@@ -242,6 +242,16 @@ ls cloud_function/
 # → .gcloudignore  handler.py  main.py  README.md  requirements.txt  sample_request.json
 ```
 
+The deployment entry point is the repository root `main.py`, which re-exports
+`cloud_function.main.summarize`. The contract (root shim → `@functions_framework.http
+summarize` → `cloud_function/handler.py`, plus `.gcloudignore` exclusions for
+`specs/`, `*.md`, `secrets/`, and agent session dirs) is guarded by
+`tests/test_deploy_entrypoint.py` — run it before deploying:
+
+```bash
+make test   # includes tests/test_deploy_entrypoint.py
+```
+
 ### 7c. Deploy
 
 ```bash
@@ -267,7 +277,7 @@ gcloud functions deploy summarize \
 | `--gen2` | _(flag)_ | Cloud Functions 2nd gen (Cloud Run backing, longer timeouts, more features) |
 | `--runtime` | `python312` | Python version matching our code |
 | `--trigger-http` | _(flag)_ | HTTP-triggered (not event/background) |
-| `--entry-point` | `summarize` | Must match the function name in `main.py` |
+| `--entry-point` | `summarize` | Function name in the root `main.py`, which just re-exports `cloud_function.main.summarize` |
 | `--source` | `.` | Uploads the entire project root. `.gcloudignore` excludes unnecessary files |
 | `--region` | `us-central1` | Iowa. Closest to west coast. Cheapest. |
 | `--set-secrets` | `KEY=secret-name:latest` | Binds the Secret Manager secret as env var `LLM_API_KEY` |
@@ -416,6 +426,12 @@ gcloud functions logs read summarize \
 
 Whenever you modify `cloud_function/main.py`, `cloud_function/handler.py`, or any imported file (`core/*.py`, `scoring.py`), redeploy:
 
+> The deployment entry-point contract is AST-guarded by
+> `tests/test_deploy_entrypoint.py` (`make test`). If a refactor breaks the
+> root-shim → `@functions_framework.http summarize` → `cloud_function/handler.py`
+> wiring, or `.gcloudignore` starts shipping docs/secrets, the guard fails the
+> `test:` target before you deploy.
+
 ```bash
 gcloud functions deploy summarize \
   --gen2 \
@@ -467,12 +483,21 @@ curl -X POST http://localhost:8080 \
 ```
 runs/
 artifacts/
-data/books/
+data/
+snapshots/
 dashboard/
 tools/
 bench/
+specs/
+tests/
+secrets/
+.venv/
+.lcm/ .opencode/ .sessions/ .notes/ .hermes/ .claude/ .pytest_cache/
+results.tsv
+*.md
 ```
-If you see "Source size exceeds limit", add more exclusions.
+With these, the deploy upload is ~0.8 MB. If you see "Source size exceeds
+limit", add more exclusions.
 
 ### 10b. Function deploys but returns 500
 

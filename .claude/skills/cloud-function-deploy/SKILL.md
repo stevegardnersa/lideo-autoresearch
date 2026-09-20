@@ -157,7 +157,15 @@ For the litellm proxy config, replace the two flags with
 
 Notes:
 - `--source .` uploads the project root; `.gcloudignore` must exclude `runs/`,
-  `artifacts/`, `data/books/`, `dashboard/`, `tools/`, `bench/`, `.venv/`.
+  `artifacts/`, `data/books/`, `dashboard/`, `tools/`, `bench/`, `.venv/`, plus
+  the agent session dirs (`.lcm/`, `.opencode/`, `.sessions/`, `.notes/`), `tests/`,
+  `secrets/`, scratch files (`results.tsv`, `*.md`). A loose root `.gcloudignore`
+  can push the upload into the hundreds of MB and stall the deploy.
+- Entry point is the root `main.py`, which is authoritative nowhere: it merely
+  re-exports `cloud_function.main.summarize`. All logic lives in `cloud_function/`.
+  The deploy contract (root shim → `@functions_framework.http summarize` →
+  `cloud_function/handler.py`, `.gcloudignore` exclusions) is drift-guarded by
+  `tests/test_deploy_entrypoint.py`, wired into `make test`.
 - Bump `--memory 2048Mi` if deploying for thinking/reasoning models.
 - Initial deploy 2-5 min; re-deploy ~60 s.
 
