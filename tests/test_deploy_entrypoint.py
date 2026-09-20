@@ -162,12 +162,33 @@ def test_no_stale_duplicate_entrypoints() -> None:
     check("single cloud_function/main.py", len(mains) == 1)
 
 
+def test_entrypoint_does_not_require_model_or_user_prompt() -> None:
+    print("\ntest_entrypoint_does_not_require_model_or_user_prompt")
+    if not CF_MAIN.exists():
+        check("cloud_function/main.py exists", False)
+        return
+    source = CF_MAIN.read_text(encoding="utf-8")
+    # Production bakes model + user_template; the entry gate must never require
+    # the client to send model/user_prompt again (spec §7.2 baked model).
+    check(
+        "no required-fields gate referencing model",
+        '"model"' not in source and "'model'" not in source,
+        "cloud_function/main.py must not require a request model",
+    )
+    check(
+        "no user_prompt requirement in the entry gate",
+        '"user_prompt"' not in source and "'user_prompt'" not in source,
+        "cloud_function/main.py must not require a request user_prompt",
+    )
+
+
 def main() -> None:
     print(f"Deployment entry-point guard ({ROOT})")
     test_root_shim_re_exports_summarize()
     test_cloud_function_main_exposes_summarize()
     test_gcloudignore_keeps_bundle_prod_only()
     test_no_stale_duplicate_entrypoints()
+    test_entrypoint_does_not_require_model_or_user_prompt()
 
     if FAILURES:
         print(f"\n{len(FAILURES)} GUARD CHECK(S) FAILED: {', '.join(FAILURES)}")

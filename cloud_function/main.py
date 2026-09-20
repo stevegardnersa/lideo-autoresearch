@@ -32,14 +32,14 @@ def summarize(request):
     if not body or not isinstance(body, dict):
         return _json_error(400, "Request body must be a JSON object")
 
-    required = ["source_md", "model"]
-    missing = [f for f in required if not body.get(f)]
+    # model and user_prompt are optional: the CF resolves the production
+    # version (chapter-p18), which bakes the model, reasoning default, and a
+    # bundled user_template rendered from source_md/chapter_title/target_words.
+    source_md = str(body.get("source_md") or "").strip()
     summary_md = str(body.get("summary_md") or "").strip()
-    if not summary_md:
-        # system_prompt is optional: the Cloud Function can resolve it from its
-        # bundled prompt registry (production default) or a prompt_version.
-        if not body.get("user_prompt"):
-            missing.append("user_prompt")
+    missing: list = []
+    if not summary_md and not source_md:
+        missing.append("source_md")
     if missing:
         return _json_error(400, f"Missing required fields: {', '.join(missing)}")
 
