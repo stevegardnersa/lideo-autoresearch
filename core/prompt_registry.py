@@ -363,13 +363,22 @@ def _next_version_id(stage: str, registry: Mapping[str, Any]) -> str:
     return f"{stage}-p{n}"
 
 
+def _clean_reasoning(raw: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
+    """Normalize a baked ``reasoning`` directive to a plain dict (or {})."""
+    if not isinstance(raw, Mapping) or not raw:
+        return {}
+    return {str(k): v for k, v in dict(raw).items()}
+
+
 def _version_record(*, stage: str, version_id: str, label: str, components: Mapping[str, str],
                     template: Optional[str], notes: str, created_by: str,
                     scope: Optional[Mapping[str, Any]] = None,
                     component_text: Optional[Mapping[str, str]] = None,
                     system_template: Optional[str] = None,
                     user_template: Optional[str] = None,
-                    derived_from: Optional[str] = None) -> Dict[str, Any]:
+                    derived_from: Optional[str] = None,
+                    model: Optional[str] = None,
+                    reasoning: Optional[Mapping[str, Any]] = None) -> Dict[str, Any]:
     components = {k: str(v) for k, v in dict(components).items() if str(v).strip()}
     clean_component_text = _clean_component_text(component_text)
     system_tmpl = str(system_template or "")
@@ -399,6 +408,12 @@ def _version_record(*, stage: str, version_id: str, label: str, components: Mapp
         "notes": notes,
         "immutable": True,
     }
+    baked_model = str(model or "").strip()
+    if baked_model:
+        record["model"] = baked_model
+    baked_reasoning = _clean_reasoning(reasoning)
+    if baked_reasoning:
+        record["reasoning"] = baked_reasoning
     if derived_from:
         record["derived_from"] = derived_from
     return record
@@ -417,6 +432,8 @@ def create_version(
     system_template: Optional[str] = None,
     user_template: Optional[str] = None,
     derived_from: Optional[str] = None,
+    model: Optional[str] = None,
+    reasoning: Optional[Mapping[str, Any]] = None,
     path: Optional[Path] = None,
 ) -> Dict[str, Any]:
     if stage not in STAGES:
@@ -436,6 +453,8 @@ def create_version(
         system_template=system_template,
         user_template=user_template,
         derived_from=derived_from,
+        model=model,
+        reasoning=reasoning,
     )
     registry.setdefault("versions", []).append(version)
     save_registry(registry, path)
@@ -453,6 +472,8 @@ def revise_version(
     component_text: Optional[Mapping[str, str]] = None,
     system_template: Optional[str] = None,
     user_template: Optional[str] = None,
+    model: Optional[str] = None,
+    reasoning: Optional[Mapping[str, Any]] = None,
     created_by: str = "operator",
     path: Optional[Path] = None,
 ) -> Dict[str, Any]:
@@ -494,6 +515,8 @@ def revise_version(
         user_template=user_tmpl,
         derived_from=version_id,
         path=path,
+        model=model if model is not None else str(source.get("model") or ""),
+        reasoning=reasoning if reasoning is not None else (source.get("reasoning") or None),
     )
 
 
@@ -778,6 +801,8 @@ class ResolvedPrompt:
     source: str
     placeholders: Dict[str, List[str]]
     user_template: str = ""
+    model: str = ""
+    reasoning: Dict[str, Any] = dataclasses.field(default_factory=dict)
 
     def render_user(self, values: Mapping[str, object]) -> str:
         from core import prompt_template
@@ -820,6 +845,8 @@ def resolve_prompt(
         source=source,
         placeholders=placeholders,
         user_template=user_template,
+        model=str((version or {}).get("model") or ""),
+        reasoning=dict((version or {}).get("reasoning") or {}),
     )
 
 

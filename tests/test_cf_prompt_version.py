@@ -217,6 +217,99 @@ def test_sync_round_trip_copies_scoped_versions():
     print("test_sync_round_trip_copies_scoped_versions: OK")
 
 
+# 17 — production version may bake model + reasoning + a bundled user_template
+def test_baked_model_reasoning_and_user_template():
+    path = _temp_registry()
+    tpl = ("Rewrite the chapter in about {{target_words}} words (between {{low}} and "
+           "{{high}}). Keep it short.\n\nTitle: {{chapter_title}}\n\nChapter:\n{{source_md}}\n")
+    v = pr.create_version(
+        stage="chapter", label="baked", components={"target_sentence_words": "13"},
+        user_template=tpl, model="openai/gpt-5.6-luna",
+        reasoning={"enabled": False}, path=path,
+    )
+    pr.set_slot(stage="chapter", slot="production", version_id=v["id"], path=path)
+    fake = _install(path)
+    try:
+        result = handler.run_summarize({"source_md": "the chapter body.", "title": "The Chapter"})
+    finally:
+        _restore()
+    payload = fake.payloads[-1]
+    assert payload["model"] == "openai/gpt-5.6-luna", payload["model"]
+    assert payload["reasoning"] == {"enabled": False}, payload.get("reasoning")
+    assert result["meta"]["prompt_version"] == v["id"]
+    assert result["meta"]["prompt_source"] == "production_default"
+    assert result["meta"]["model"] == "openai/gpt-5.6-luna"
+    user = payload["messages"][1]["content"]
+    assert "the chapter body" in user
+    assert "The Chapter" in user
+    assert "between" in user
+    print("test_baked_model_reasoning_and_user_template: OK")
+
+
+# 18 — explicit request model wins over the baked one
+def test_request_model_overrides_baked():
+    path = _temp_registry()
+    v = pr.create_version(
+        stage="chapter", label="baked", components={},
+        user_template="Summarize {{source_md}}.",
+        model="openai/gpt-5.6-luna", reasoning={"enabled": False}, path=path,
+    )
+    pr.set_slot(stage="chapter", slot="production", version_id=v["id"], path=path)
+    fake = _install(path)
+    try:
+        handler.run_summarize({"source_md": "s", "model": "deepseek/deepseek-v4-flash"})
+    finally:
+        _restore()
+    payload = fake.payloads[-1]
+    assert payload["model"] == "deepseek/deepseek-v4-flash"
+    # reasoning is still baked when no reasoning controls are given
+    assert payload["reasoning"] == {"enabled": False}
+    print("test_request_model_overrides_baked: OK")
+
+
+# 19 — legacy field aliases (chapter/title/words) feed the bundled template
+def test_field_aliases_feed_user_template():
+    path = _temp_registry()
+    tpl = ("Rewrite in about {{target_words}} words (between {{low}} and {{high}}).\n\n"
+           "Title: {{chapter_title}}\n\nChapter:\n{{source_md}}")
+    v = pr.create_version(
+        stage="chapter", label="aliases", components={"target_sentence_words": "10"},
+        user_template=tpl, model="openai/gpt-5.6-luna", reasoning={"enabled": False}, path=path,
+    )
+    pr.set_slot(stage="chapter", slot="production", version_id=v["id"], path=path)
+    fake = _install(path)
+    try:
+        handler.run_summarize({
+            "chapter": "the chapter body", "title": "T", "words": 200, "model": "m/x",
+        })
+    finally:
+        _restore()
+    user = fake.payloads[-1]["messages"][1]["content"]
+    assert "about 200 words" in user
+    assert "between 190 and 210" in user
+    assert "the chapter body" in user
+    print("test_field_aliases_feed_user_template: OK")
+
+
+# 20 — production version without a user_template still requires a user prompt
+def test_missing_user_prompt_rejected():
+    path = _temp_registry()
+    v = pr.create_version(stage="chapter", label="no tpl", components={}, path=path)
+    pr.set_slot(stage="chapter", slot="production", version_id=v["id"], path=path)
+    _install(path)
+    try:
+        try:
+            handler.run_summarize({"source_md": "x"})
+        except handler.PromptVersionError as exc:
+            assert exc.status_code == 422
+            assert exc.error == "missing_user_prompt"
+        else:
+            raise AssertionError("expected missing_user_prompt 422")
+    finally:
+        _restore()
+    print("test_missing_user_prompt_rejected: OK")
+
+
 def main():
     tests = [
         test_known_version,
@@ -227,6 +320,10 @@ def main():
         test_production_default,
         test_scoped_production_default,
         test_sync_round_trip_copies_scoped_versions,
+        test_baked_model_reasoning_and_user_template,
+        test_request_model_overrides_baked,
+        test_field_aliases_feed_user_template,
+        test_missing_user_prompt_rejected,
     ]
     for test in tests:
         test()
