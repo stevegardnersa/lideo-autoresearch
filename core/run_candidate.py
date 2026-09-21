@@ -1007,72 +1007,53 @@ def render_composer_repair_user(
     retrieved_source_excerpts: str,
     current_word_count: Optional[int] = None,
 ) -> str:
+    from core import repair_prompt as repair_prompt_module
     repair_more_policies = getattr(candidate_module, "REPAIR_MORE_POLICIES", {})
     repair_less_policies = getattr(candidate_module, "REPAIR_LESS_POLICIES", {})
-    visible_word_range = getattr(candidate_module, "visible_word_range")
-    low, high = visible_word_range(target_words, spec.length_control.tolerance_pct)
     if direction == "more":
         policy = repair_more_policies.get(spec.length_control.repair_more_prompt_id, "Expand missing detail.")
     else:
         policy = repair_less_policies.get(spec.length_control.repair_less_prompt_id, "Shorten by removing repetition.")
     format_instructions = getattr(candidate_module, "FORMAT_INSTRUCTIONS", {})[spec.composer_stage.format_mode]
     lc = spec.length_control
-    numeric_delta = ""
-    if current_word_count is not None:
-        if direction == "less":
-            ceiling = low if lc.repair_target_mode == "low" else high
-            gap = max(0, current_word_count - ceiling)
-            min_cut = math.ceil(current_word_count * lc.repair_min_reduction_pct) if lc.repair_min_reduction_pct > 0 else 0
-            cut = max(gap, min_cut)
-            landing = (
-                f"land at or below {low}" if lc.repair_target_mode == "low"
-                else f"land inside [{low}, {high}]"
-            )
-            numeric_delta = (
-                f"Current summary is {current_word_count} visible words; target is {target_words} "
-                f"(range {low}-{high}). Delete at least {cut} words so the final markdown does {landing}. "
-                f"Your output MUST be strictly shorter than {current_word_count} visible words; a revision "
-                "that is not shorter is rejected. Count the visible words of your output before finishing "
-                "and delete more if needed."
-            )
-        else:
-            numeric_delta = (
-                f"Current summary is {current_word_count} visible words; target is {target_words} "
-                f"(range {low}-{high}). Add approximately {max(0, low - current_word_count)} words so "
-                f"the final markdown lands inside [{low}, {high}]. Count the visible words of your output "
-                "before finishing and adjust if needed."
-            )
-        if (spec.composer_stage.prompt_components or {}).get("length_policy"):
-            from candidate_spec import sentence_budget, _sentence_target_words, _sentence_budget_scale
-            target_sentences = sentence_budget(
-                target_words,
-                words_per_sentence=_sentence_target_words(spec.composer_stage),
-                scale=_sentence_budget_scale(spec.composer_stage),
-            )
-            numeric_delta += (
-                f" The sentence budget is {target_sentences}; adjust sentence count as well as word count."
-            )
-        if direction == "less" and lc.repair_sentence_delete:
-            numeric_delta += (
-                " Prefer deleting whole sentences, lowest-value first, over rewording; do not add new "
-                "sentences."
-            )
-    blocks = [
-        "Revise the whole-book summary to hit the target length more accurately.",
-        f"Book title: {book_title}" if book_title else "",
-        f"Target visible words: {target_words}. Acceptable range: {low}-{high}. This repair direction is: {direction}.",
-        numeric_delta if numeric_delta else "",
-        policy,
-        format_instructions,
-        "Keep the result faithful to the chapter summaries and any retrieved source excerpts.",
-        "Current whole-book summary:\n" + current_summary_md.strip(),
-        f"Table of contents:\n{toc_md.strip()}" if toc_md.strip() else "",
-        f"Book metadata:\n{book_metadata.strip()}" if book_metadata.strip() else "",
-        "Chapter summaries:\n" + chapter_summaries_md.strip(),
-    ]
-    if retrieved_source_excerpts.strip():
-        blocks.append("Retrieved source excerpts:\n" + retrieved_source_excerpts.strip())
-    return "\n\n".join(block for block in blocks if block)
+    sentence_budget_note = ""
+    if current_word_count is not None and (spec.composer_stage.prompt_components or {}).get("length_policy"):
+        from candidate_spec import sentence_budget, _sentence_target_words, _sentence_budget_scale
+        target_sentences = sentence_budget(
+            target_words,
+            words_per_sentence=_sentence_target_words(spec.composer_stage),
+            scale=_sentence_budget_scale(spec.composer_stage),
+        )
+        sentence_budget_note = (
+            f" The sentence budget is {target_sentences}; adjust sentence count as well as word count."
+        )
+    template = repair_prompt_module.composer_repair_template(
+        policy=policy,
+        format_instructions=format_instructions,
+    )
+    return repair_prompt_module.render_repair_prompt(
+        template,
+        direction=direction,
+        target_words=target_words,
+        current_word_count=current_word_count,
+        current_summary_md=current_summary_md,
+        book_title=book_title,
+        tolerance_pct=lc.tolerance_pct,
+        repair_target_mode=lc.repair_target_mode,
+        repair_min_reduction_pct=lc.repair_min_reduction_pct,
+        repair_sentence_delete=lc.repair_sentence_delete,
+        sentence_budget_note=sentence_budget_note or None,
+        extra_values={
+            "chapter_summaries_md": chapter_summaries_md.strip(),
+            "toc_line": f"Table of contents:\n{toc_md.strip()}" if toc_md.strip() else "",
+            "metadata_line": f"Book metadata:\n{book_metadata.strip()}" if book_metadata.strip() else "",
+            "excerpts_line": (
+                f"Retrieved source excerpts:\n{retrieved_source_excerpts.strip()}"
+                if retrieved_source_excerpts.strip()
+                else ""
+            ),
+        },
+    )
 
 
 def extractive_mock_summary(markdown_text: str, target_words: int) -> str:

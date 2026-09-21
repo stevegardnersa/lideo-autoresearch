@@ -370,6 +370,27 @@ def _clean_reasoning(raw: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
     return {str(k): v for k, v in dict(raw).items()}
 
 
+def _clean_mapping(raw: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
+    """Normalize a baked mapping of JSON scalars (or {}), dropping blanks.
+
+    Used for the length-control config and the repair templates so a version
+    record can never carry a value the Cloud Function cannot render.
+    """
+    if not isinstance(raw, Mapping) or not raw:
+        return {}
+    out: Dict[str, Any] = {}
+    for key, value in dict(raw).items():
+        name = str(key)
+        if isinstance(value, bool):
+            out[name] = value
+        elif isinstance(value, (int, float)):
+            out[name] = value
+        elif isinstance(value, str):
+            if value.strip():
+                out[name] = value
+    return out
+
+
 def _version_record(*, stage: str, version_id: str, label: str, components: Mapping[str, str],
                     template: Optional[str], notes: str, created_by: str,
                     scope: Optional[Mapping[str, Any]] = None,
@@ -378,7 +399,9 @@ def _version_record(*, stage: str, version_id: str, label: str, components: Mapp
                     user_template: Optional[str] = None,
                     derived_from: Optional[str] = None,
                     model: Optional[str] = None,
-                    reasoning: Optional[Mapping[str, Any]] = None) -> Dict[str, Any]:
+                    reasoning: Optional[Mapping[str, Any]] = None,
+                    length_control: Optional[Mapping[str, Any]] = None,
+                    repair_templates: Optional[Mapping[str, Any]] = None) -> Dict[str, Any]:
     components = {k: str(v) for k, v in dict(components).items() if str(v).strip()}
     clean_component_text = _clean_component_text(component_text)
     system_tmpl = str(system_template or "")
@@ -414,6 +437,14 @@ def _version_record(*, stage: str, version_id: str, label: str, components: Mapp
     baked_reasoning = _clean_reasoning(reasoning)
     if baked_reasoning:
         record["reasoning"] = baked_reasoning
+    baked_length_control = _clean_mapping(length_control)
+    if baked_length_control:
+        record["length_control"] = baked_length_control
+    baked_repair_templates = {
+        str(k): str(v) for k, v in _clean_mapping(repair_templates).items()
+    }
+    if baked_repair_templates:
+        record["repair_templates"] = baked_repair_templates
     if derived_from:
         record["derived_from"] = derived_from
     return record
@@ -434,6 +465,8 @@ def create_version(
     derived_from: Optional[str] = None,
     model: Optional[str] = None,
     reasoning: Optional[Mapping[str, Any]] = None,
+    length_control: Optional[Mapping[str, Any]] = None,
+    repair_templates: Optional[Mapping[str, Any]] = None,
     path: Optional[Path] = None,
 ) -> Dict[str, Any]:
     if stage not in STAGES:
@@ -455,6 +488,8 @@ def create_version(
         derived_from=derived_from,
         model=model,
         reasoning=reasoning,
+        length_control=length_control,
+        repair_templates=repair_templates,
     )
     registry.setdefault("versions", []).append(version)
     save_registry(registry, path)
@@ -474,6 +509,8 @@ def revise_version(
     user_template: Optional[str] = None,
     model: Optional[str] = None,
     reasoning: Optional[Mapping[str, Any]] = None,
+    length_control: Optional[Mapping[str, Any]] = None,
+    repair_templates: Optional[Mapping[str, Any]] = None,
     created_by: str = "operator",
     path: Optional[Path] = None,
 ) -> Dict[str, Any]:
@@ -517,6 +554,8 @@ def revise_version(
         path=path,
         model=model if model is not None else str(source.get("model") or ""),
         reasoning=reasoning if reasoning is not None else (source.get("reasoning") or None),
+        length_control=length_control if length_control is not None else (source.get("length_control") or None),
+        repair_templates=repair_templates if repair_templates is not None else (source.get("repair_templates") or None),
     )
 
 

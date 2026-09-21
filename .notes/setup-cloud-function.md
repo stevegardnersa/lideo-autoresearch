@@ -632,10 +632,15 @@ honours when the request omits them:
 | `model` | `openai/gpt-5.6-luna` | CF resolves the model; the app sends no `model`. Reported as `meta.model`. |
 | `reasoning` | `{"enabled": false}` | Default reasoning directive; an explicit request `reasoning`/`reasoning_effort`/`thinking` still wins. |
 | `user_template` | bundled chapter template | Rendered with `{{source_md}}`, `{{chapter_title}}`, `{{target_words}}` (+`low`/`high`/`s_target`); no client `user_prompt` needed. |
+| `length_control` | loop/repair knobs | Drives `auto_length`: tolerance, `max_passes`, early-stop, repair targeting. Falls back to built-in defaults. |
+| `repair_templates` | `{"more", "less"}` templates | Repair prompts for `auto_length`, with policy + format instructions inlined. Rendered by `core/repair_prompt.py`. |
+
+Bake `length_control` + `repair_templates` with `python3 tools/bake_length_control.py`
+(idempotent, additive), then `python3 tools/sync_prompts.py` to stage the bundle.
 
 Credentials in the version record are never secrets (model ids / booleans /
-templates only). `core/prompt_registry.py` carries `model`/`reasoning` through
-`create_version`/`revise_version`/`resolve_prompt`.
+templates only). `core/prompt_registry.py` carries `model`/`reasoning`/`length_control`/`repair_templates`
+through `create_version`/`revise_version`/`resolve_prompt`.
 
 > **History (why this block was corrected):** an earlier revision documented the
 > secret as `llm-api-key`, omitted `LLM_BASE_URL`, and pointed at a deleted

@@ -91,6 +91,11 @@ try:
 except ImportError:  # pragma: no cover - hosts without core on sys.path
     _prompt_template = None
 
+try:
+    from core import repair_prompt as _repair_prompt
+except ImportError:  # pragma: no cover - hosts without core on sys.path
+    _repair_prompt = None
+
 
 # Models whose providers reject ``reasoning={"enabled": false}`` and still reason
 # on a plain request. A ``_notthinking`` profile is impossible for them; the
@@ -922,62 +927,36 @@ def render_repair_user(
         if direction == "more"
         else REPAIR_LESS_POLICIES[spec.length_control.repair_less_prompt_id]
     )
-    low, high = visible_word_range(target_words, spec.length_control.tolerance_pct)
     lc = spec.length_control
-    numeric_delta = ""
-    if current_word_count is not None:
-        if direction == "less":
-            ceiling = low if lc.repair_target_mode == "low" else high
-            gap = max(0, current_word_count - ceiling)
-            min_cut = math.ceil(current_word_count * lc.repair_min_reduction_pct) if lc.repair_min_reduction_pct > 0 else 0
-            cut = max(gap, min_cut)
-            landing = (
-                f"land at or below {low}" if lc.repair_target_mode == "low"
-                else f"land inside [{low}, {high}]"
-            )
-            numeric_delta = (
-                f"Current summary is {current_word_count} visible words; target is {target_words} "
-                f"(range {low}-{high}). Delete at least {cut} words so the final markdown does {landing}. "
-                f"Your output MUST be strictly shorter than {current_word_count} visible words; a revision "
-                "that is not shorter is rejected. Count the visible words of your output before finishing "
-                "and delete more if needed."
-            )
-        else:
-            numeric_delta = (
-                f"Current summary is {current_word_count} visible words; target is {target_words} "
-                f"(range {low}-{high}). Add approximately {max(0, low - current_word_count)} words so "
-                f"the final markdown lands inside [{low}, {high}]. Count the visible words of your output "
-                "before finishing and adjust if needed."
-            )
-        if spec.chapter_stage.prompt_components.get("length_policy"):
-            stage = spec.chapter_stage
-            numeric_delta += (
-                f" The sentence budget is {sentence_budget(target_words, words_per_sentence=_sentence_target_words(stage), scale=_sentence_budget_scale(stage))}; adjust sentence count as well "
-                "as word count."
-            )
-        if direction == "less" and lc.repair_sentence_delete:
-            numeric_delta += (
-                " Prefer deleting whole sentences, lowest-value first, over rewording; do not add new "
-                "sentences."
-            )
-    return "\n\n".join(
-        block
-        for block in [
-            "Revise the existing chapter summary to hit the target length more accurately.",
-            f"Book title: {book_title}" if book_title else "",
-            f"Chapter title: {chapter_title}" if chapter_title else "",
-            (
-                f"Target visible words: {target_words}. Acceptable range: {low}-{high}. "
-                f"This repair direction is: {direction}."
-            ),
-            numeric_delta if numeric_delta else "",
-            policy,
-            FORMAT_INSTRUCTIONS[spec.chapter_stage.format_mode],
-            "Keep the result faithful to the source.",
-            "Current summary:\n" + current_summary_md.strip(),
-            "Source chapter markdown:\n" + source_md.strip(),
-        ]
-        if block
+    sentence_budget_note = ""
+    if current_word_count is not None and spec.chapter_stage.prompt_components.get("length_policy"):
+        stage = spec.chapter_stage
+        s_target = sentence_budget(
+            target_words,
+            words_per_sentence=_sentence_target_words(stage),
+            scale=_sentence_budget_scale(stage),
+        )
+        sentence_budget_note = (
+            f" The sentence budget is {s_target}; adjust sentence count as well as word count."
+        )
+    template = _repair_prompt.chapter_repair_template(
+        policy=policy,
+        format_instructions=FORMAT_INSTRUCTIONS[spec.chapter_stage.format_mode],
+    )
+    return _repair_prompt.render_repair_prompt(
+        template,
+        direction=direction,
+        target_words=target_words,
+        current_word_count=current_word_count,
+        current_summary_md=current_summary_md,
+        source_md=source_md,
+        book_title=book_title,
+        chapter_title=chapter_title,
+        tolerance_pct=lc.tolerance_pct,
+        repair_target_mode=lc.repair_target_mode,
+        repair_min_reduction_pct=lc.repair_min_reduction_pct,
+        repair_sentence_delete=lc.repair_sentence_delete,
+        sentence_budget_note=sentence_budget_note or None,
     )
 
 

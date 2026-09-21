@@ -2,10 +2,10 @@
 
 Two components:
 
-- **`cloud_function/`** — deployable HTTP endpoint. Validates, calls any OpenAI-compatible API (OpenRouter, OpenAI, etc.), scores, judges. One summary per request.
+- **`cloud_function/`** — deployable HTTP endpoint. Validates, calls any OpenAI-compatible API (OpenRouter, OpenAI, etc.), scores, judges. One summary per request by default; with `auto_length: true` it runs the generate → measure → repair loop and returns the best pass.
 - **`tools/batch_summarize.py`** — consumer-side batch worker. Reads bench JSONL, fans out to CF (or direct API), collects samples+traces, runs `score_dataset`, writes run artifacts.
 
-Both share the same prompt rendering, rubric parsing, and scoring pipeline via imports from `candidate_spec.py` and `scoring.py`.
+Both share the same prompt rendering, rubric parsing, and scoring pipeline via imports from `candidate_spec.py` and `scoring.py`. The `auto_length` loop and its repair prompts are shared with the offline pipeline via transport-agnostic `core/length_control.py` + `core/repair_prompt.py`, so the CF never imports the tuned candidate file for them.
 
 > **First time deploying?** See `.notes/setup-cloud-function.md` for the complete walkthrough from zero to deployed.
 
@@ -18,10 +18,12 @@ Both share the same prompt rendering, rubric parsing, and scoring pipeline via i
                                                         │
                                                     cloud_function/handler.py
                                                         │
-                                                    core/openrouter_client.py
-                                                        │
-                                                    core/judge.py (optional)
-                                                        │
+                              ┌─────────────────────────┼─────────────────────────┐
+                              │ auto_length only        │                         │
+                    core/length_control.py      core/openrouter_client.py   core/repair_prompt.py
+                    (generate/measure/repair)         │                   (repair templates)
+                              │                 core/judge.py (optional)
+                              └─────────────────────────┤
                                                     scoring.py
                                                         │
                                                 Response JSON ──→ samples.jsonl
@@ -32,7 +34,10 @@ Both share the same prompt rendering, rubric parsing, and scoring pipeline via i
 | File | Role |
 |------|------|
 | `cloud_function/main.py` | `@functions_framework.http` entry. Validates JSON body, checks required fields, wraps errors in JSON. |
-| `cloud_function/handler.py` | `run_summarize()` — builds LLM payload, calls client, parses structured JSON response, optionally scores + judges, returns flat dict. |
+| `cloud_function/handler.py` | `run_summarize()` — builds LLM payload, calls client, parses structured JSON response, optionally scores + judges, returns flat dict. With `auto_length`, delegates to `_run_auto_length` (`core/length_control.run_length_control`). |
+| `core/length_control.py` | Transport-agnostic generate → measure → repair loop (tolerance bands, direction flip, early stop, truncation retry, best-pass selection). Shared by the CF and `core/run_candidate.py`. |
+| `core/repair_prompt.py` | Repair prompt templates + `{{placeholder}}` rendering (`chapter_repair_template`, `composer_repair_template`, `render_repair_prompt`). |
+| `tools/bake_length_control.py` | Bakes `length_control` + `repair_templates` into registry versions (additive, idempotent). Run before `tools/sync_prompts.py`. |
 | `cloud_function/requirements.txt` | `functions-framework==3.*` — only pip dep. Everything else is stdlib. |
 | `cloud_function/README.md` | Full API ref, deployment commands, env vars, integration examples. |
 | `tools/batch_summarize.py` | Parallel batch worker. Two modes: `--function-url` (async httpx) or direct API (sync). |
@@ -60,6 +65,8 @@ Content-Type: application/json
   "reasoning": { "effort": "high" }, // optional — native OpenRouter reasoning object (wins over the above)
   "use_json_schema": true,        // optional — structured JSON output
   "target_words": 400,            // optional — triggers deterministic scoring
+  "auto_length": false,           // optional — run the generate/measure/repair loop (needs target_words > 0)
+  "length_control": { "max_passes": 3 },  // optional — override the version's baked loop config
   "judge": false,                 // optional — run LLM judge
   "judge_model": "openai/gpt-4o-mini",  // optional — judge model ID
   "rubric": { ... }               // optional — rubric fields for scoring
@@ -94,17 +101,29 @@ Content-Type: application/json
   "summary": { "summary_md": "...", "estimated_visible_words": 412 },
   "usage": { "prompt_tokens": 1234, "generation_cost": 0.000123 },
   "scoring": { ... },    // present if rubric + target_words provided
-  "judge_scores": { ... } // present if judge=true
+  "judge_scores": { ... }, // present if judge=true
+  "meta": {
+    // present only when auto_length ran:
+    "auto_length": true,
+    "passes_used": 2,
+    "first_pass_visible_words": 500,
+    "final_visible_words": 350
+  }
 }
 ```
+
+With `auto_length`, `usage.generation_cost` (and the token counters) is the sum
+across all passes, and `summary.summary_md` is the **best pass** — the one whose
+visible word count is closest to `target_words`, earliest wins ties.
 
 ### Flow
 
 1. `run_summarize()` in `handler.py` — builds payload via `_build_openrouter_payload()` (stdlib — no `requests`/`openai`)
 2. `_build_client()` — `OpenRouterClient.from_env()` (reads API key from request body, else `LLM_API_KEY` env; base URL from request, else `LLM_BASE_URL` env, else OpenRouter default; 600s timeout, 3 retries). Reasoning params are translated to native OpenRouter form (see Request note above).
 3. Parse structured JSON response (handles `use_json_schema=true/false`)
-4. If rubric + target_words present → create `SummarySample`, call `score_sample()`, optionally `judge_summary_absolute()`
-5. Return aggregated dict
+4. If `auto_length` → `_run_auto_length`: resolve loop config (request `length_control` > version-baked > defaults) and repair templates (version-baked, else fallback), then `core/length_control.run_length_control` with a per-pass `max_tokens` cap derived from the pass target. Returns the best pass; cost is summed.
+5. If rubric + target_words present → create `SummarySample`, call `score_sample()`, optionally `judge_summary_absolute()`
+6. Return aggregated dict (with `meta.auto_length`/`passes_used`/word counts when the loop ran)
 
 ### Development
 
@@ -256,6 +275,22 @@ result = requests.post(FUNCTION_URL, json={
 
 Convention: `use_json_schema=true` prepends `"Respond using JSON format exactly matching the provided schema.\n\n"` to the system prompt (both in CF handler and batch tool).
 
+**`auto_length` is the exception to "prompts composed before the function".** The
+first pass still uses the caller's `user_prompt` (or the version's
+`user_template`), but the repair passes are rendered *inside* the CF from the
+version's baked `repair_templates`. Those templates, and the loop's
+`length_control` config, are carried on the version record and produced offline:
+
+```bash
+python3 tools/bake_length_control.py     # fill length_control + repair_templates (idempotent)
+python3 tools/sync_prompts.py            # stage the CF bundle; registry_sha changes
+```
+
+The bake step is additive — it never rewrites `template` / `user_template`, so
+prompt fingerprints are stable; only `registry_sha` changes. Versions without
+baked fields still work: the CF falls back to `LengthControlConfig` defaults and
+a default repair template.
+
 ---
 
 ## Scoring & Judging
@@ -321,6 +356,7 @@ Rubrics are generated offline by `tools/build_rubrics.py` and stored at `artifac
 - `thinking=true` roughly doubles output tokens (reasoning tokens billed separately)
 - 30-book corpus × 10 chapters × 3 profile candidates = 900 samples ≈ $0.60 (no judge)
 - 8 concurrent requests: CF latency ~30-120s per request (dominated by LLM time)
+- `auto_length` multiplies cost by `passes_used` (each pass is a separate billed completion; `usage.generation_cost` is the sum). A live probe at `target_words=350` used 3 passes ≈ $0.0023; at `target_words=120` a single in-band pass ≈ $0.0003. Treat `auto_length` / `length_control` as operator-controlled — a caller setting a high `max_passes` can amplify cost on the billed account, so don't pass them straight through from the browser.
 
 ---
 

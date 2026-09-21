@@ -6,11 +6,13 @@ from datetime import datetime, timezone
 import math
 import os
 from pathlib import Path
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Dict, Mapping, Optional, Tuple
 
 from core.judge import judge_summary_absolute
+from core.length_control import LengthControlConfig, run_length_control
 from core.openrouter_client import GenerationResult, OpenRouterClient
-from core import prompt_registry, prompt_template
+from core.reasoning import visible_max_tokens
+from core import prompt_registry, prompt_template, repair_prompt
 from scoring import (
     DEFAULT_SCORING_CONFIG,
     Rubric,
@@ -456,6 +458,222 @@ def _judge_scores_dict(judge_result) -> Dict[str, Any]:
     }
 
 
+def _positive_int(raw: Any, default: Optional[int] = None) -> Optional[int]:
+    try:
+        value = int(str(raw).strip())
+    except (TypeError, ValueError):
+        return default
+    return value if value > 0 else default
+
+
+def _positive_float(raw: Any, default: float = 1.0) -> float:
+    try:
+        value = float(str(raw).strip())
+    except (TypeError, ValueError):
+        return default
+    return value if value > 0 else default
+
+
+def _effective_reasoning_effort(
+    reasoning: Optional[Mapping[str, Any]], reasoning_effort: Optional[str]
+) -> Optional[str]:
+    """Best-effort reasoning-effort label for the target-aware token cap."""
+    if isinstance(reasoning, Mapping):
+        effort = str(reasoning.get("effort") or "").strip()
+        if effort and effort.lower() != "none":
+            return effort
+        if reasoning.get("enabled") is False:
+            return None
+    if reasoning_effort is not None:
+        effort = str(reasoning_effort).strip()
+        if effort and effort.lower() != "none":
+            return effort
+    return None
+
+
+def _target_aware_max_tokens(
+    target_words: int,
+    reasoning: Optional[Mapping[str, Any]],
+    reasoning_effort: Optional[str],
+) -> int:
+    """Derive a per-pass max_tokens from the visible-word target.
+
+    Mirrors `core.run_candidate`: the reasoning-aware cap, floored so a short
+    sentence budget cannot starve the JSON payload, never above the CF budget.
+    """
+    cap = int(os.environ.get("CF_MAX_TOKENS", "").strip() or 8192)
+    base = visible_max_tokens(
+        target_words,
+        effort=_effective_reasoning_effort(reasoning, reasoning_effort),
+        cap=cap,
+    )
+    floor = max(1, int(round(target_words * 1.35 * 1.15)))
+    return min(cap, max(base, floor))
+
+
+def _resolve_length_control(
+    version: Optional[Mapping[str, Any]], body: Mapping[str, Any]
+) -> LengthControlConfig:
+    """Loop config: request override > baked version > built-in defaults."""
+    merged: Dict[str, Any] = dict((version or {}).get("length_control") or {})
+    override = body.get("length_control")
+    if isinstance(override, Mapping):
+        merged.update(dict(override))
+    return LengthControlConfig.from_mapping(merged)
+
+
+def _resolve_repair_templates(
+    version: Optional[Mapping[str, Any]], stage: str
+) -> Dict[str, str]:
+    """Baked repair templates for the version's stage (may be empty)."""
+    templates = (version or {}).get("repair_templates")
+    if not isinstance(templates, Mapping):
+        return {}
+    return {str(k): str(v) for k, v in templates.items() if str(v).strip()}
+
+
+def _fallback_repair_template(stage: str, direction: str, length_control: LengthControlConfig) -> str:
+    """Repair template when a version carries no baked one (older versions)."""
+    policy = (
+        repair_prompt.DEFAULT_REPAIR_MORE_POLICY
+        if direction == "more"
+        else repair_prompt.DEFAULT_REPAIR_LESS_POLICY
+    )
+    build = repair_prompt.composer_repair_template if stage == "composer" else repair_prompt.chapter_repair_template
+    return build(policy=policy, format_instructions="Return markdown only.")
+
+
+def _sentence_budget_note(
+    version: Optional[Mapping[str, Any]], target_words: int
+) -> Optional[str]:
+    """Sentence-budget addendum for the repair delta (None when not applicable)."""
+    components = (version or {}).get("components") or {}
+    if not components.get("length_policy"):
+        return None
+    words_per_sentence = (
+        _positive_int(components.get("sentence_target_words"))
+        or _positive_int(components.get("target_sentence_words"))
+        or FALLBACK_SENTENCE_WORDS
+    )
+    scale = _positive_float(components.get("sentence_budget_scale"), 1.0)
+    budget = repair_prompt.sentence_budget(target_words, words_per_sentence, scale)
+    return f" The sentence budget is {budget}; adjust sentence count as well as word count."
+
+
+def _empty_token_totals() -> Dict[str, int]:
+    return {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "reasoning_tokens": 0,
+        "cached_prompt_tokens": 0,
+    }
+
+
+def _run_auto_length(
+    *,
+    client: OpenRouterClient,
+    model: str,
+    system_prompt: str,
+    user_prompt: str,
+    source_md: str,
+    target_words: int,
+    use_json: bool,
+    thinking: Optional[bool],
+    reasoning: Optional[Mapping[str, Any]],
+    reasoning_effort: Optional[str],
+    resolved_version: Optional[Mapping[str, Any]],
+    stage: str,
+    body: Mapping[str, Any],
+    book_title: str,
+    chapter_title: str,
+) -> Tuple[str, int, str, Dict[str, Any], float, float, int]:
+    """Run the generate -> measure -> repair loop and return the summary.
+
+    Returns ``(summary_md, estimated_words, first_pass_summary_md, usage,
+    generation_cost, uncached_generation_cost, passes_used)``.
+    """
+    length_control = _resolve_length_control(resolved_version, body)
+    repair_templates = _resolve_repair_templates(resolved_version, stage)
+    sentence_budget_note = _sentence_budget_note(resolved_version, target_words)
+    token_totals = _empty_token_totals()
+    last_meta = {"generation_id": "", "provider_name": "", "model_id": model}
+
+    def generate(prompt_text: str, attempt_target: int, current_for_mock: str) -> GenerationResult:
+        payload = _build_openrouter_payload(
+            model=model,
+            system_prompt=system_prompt,
+            user_prompt=prompt_text,
+            use_json_schema=use_json,
+            thinking=thinking,
+            reasoning=reasoning,
+            reasoning_effort=reasoning_effort,
+            max_tokens=_target_aware_max_tokens(attempt_target, reasoning, reasoning_effort),
+        )
+        gen = client.chat_completion(payload)
+        record = gen.usage
+        token_totals["prompt_tokens"] += record.prompt_tokens or 0
+        token_totals["completion_tokens"] += record.completion_tokens or 0
+        token_totals["total_tokens"] += record.total_tokens or 0
+        token_totals["reasoning_tokens"] += record.reasoning_tokens or 0
+        token_totals["cached_prompt_tokens"] += record.cached_prompt_tokens or 0
+        last_meta["generation_id"] = record.generation_id or last_meta["generation_id"]
+        last_meta["provider_name"] = record.provider_name or last_meta["provider_name"]
+        last_meta["model_id"] = record.model_id or last_meta["model_id"]
+        return gen
+
+    def render_repair(direction: str, current_summary_md: str, target: int, current_word_count: int) -> str:
+        template = repair_templates.get(direction) or _fallback_repair_template(stage, direction, length_control)
+        return repair_prompt.render_repair_prompt(
+            template,
+            direction=direction,
+            target_words=target,
+            current_word_count=current_word_count,
+            current_summary_md=current_summary_md,
+            source_md=source_md,
+            book_title=book_title,
+            chapter_title=chapter_title,
+            tolerance_pct=length_control.tolerance_pct,
+            repair_target_mode=length_control.repair_target_mode,
+            repair_min_reduction_pct=length_control.repair_min_reduction_pct,
+            repair_sentence_delete=length_control.repair_sentence_delete,
+            sentence_budget_note=sentence_budget_note,
+        )
+
+    loop = run_length_control(
+        generate=generate,
+        render_repair=render_repair,
+        word_range=repair_prompt.visible_word_range,
+        initial_user_prompt=user_prompt,
+        target_words=target_words,
+        length_control=length_control,
+        visible_words=visible_word_count,
+    )
+    summary_md = loop.summary_md
+    estimated_words = visible_word_count(summary_md)
+    usage: Dict[str, Any] = {
+        "prompt_tokens": token_totals["prompt_tokens"],
+        "completion_tokens": token_totals["completion_tokens"],
+        "total_tokens": token_totals["total_tokens"],
+        "reasoning_tokens": token_totals["reasoning_tokens"],
+        "cached_prompt_tokens": token_totals["cached_prompt_tokens"],
+        "generation_cost": loop.generation_cost,
+        "uncached_generation_cost": loop.uncached_generation_cost,
+        "generation_id": last_meta["generation_id"],
+        "provider_name": last_meta["provider_name"],
+        "model_id": last_meta["model_id"],
+    }
+    return (
+        summary_md,
+        estimated_words,
+        loop.first_pass_summary_md,
+        usage,
+        loop.generation_cost,
+        loop.uncached_generation_cost,
+        loop.passes_used,
+    )
+
+
 def run_summarize(body: Dict[str, Any]) -> Dict[str, Any]:
     source_md = str(body.get("source_md") or body.get("chapter") or "").strip()
     summary_md_input = str(body.get("summary_md") or "").strip()
@@ -478,6 +696,20 @@ def run_summarize(body: Dict[str, Any]) -> Dict[str, Any]:
     judge_model = str(body.get("judge_model", "openai/gpt-4o-mini")).strip() or "openai/gpt-4o-mini"
     judge_source_char_limit = int(body.get("judge_source_char_limit", 32000) or 32000)
     rubric_raw = body.get("rubric")
+
+    auto_length = bool(body.get("auto_length", False))
+    if auto_length and summary_md_input:
+        raise PromptVersionError(
+            "auto_length is not supported with summary_md (judge/scoring-only) mode",
+            error="invalid_auto_length",
+            status_code=400,
+        )
+    if auto_length and target_words <= 0:
+        raise PromptVersionError(
+            "auto_length requires target_words > 0",
+            error="invalid_auto_length",
+            status_code=400,
+        )
 
     rubric = _parse_rubric(rubric_raw)
     client = _build_client(api_key=api_key, base_url=base_url)
@@ -502,6 +734,11 @@ def run_summarize(body: Dict[str, Any]) -> Dict[str, Any]:
         system_prompt = system_prompt_text
         prompt_meta["model"] = model
 
+    stage = str(body.get("prompt_stage") or "chapter").strip() or "chapter"
+    book_title = str(body.get("book_title") or "").strip()
+    chapter_title = str(body.get("chapter_title") or body.get("title") or "").strip()
+    passes_used = 1
+
     if judge_only:
         summary_md = summary_md_input
         estimated_words = visible_word_count(summary_md)
@@ -520,27 +757,47 @@ def run_summarize(body: Dict[str, Any]) -> Dict[str, Any]:
                 error="missing_user_prompt",
                 status_code=422,
             )
-        payload = _build_openrouter_payload(
-            model=model,
-            system_prompt=system_prompt,
-            user_prompt=user_prompt,
-            use_json_schema=use_json,
-            thinking=thinking,
-            reasoning=reasoning,
-            reasoning_effort=reasoning_effort,
-        )
-        gen: GenerationResult = client.chat_completion(payload)
-        summary_md = gen.summary_md.strip()
-        estimated_words = gen.estimated_visible_words
-        if use_json and gen.parsed_json:
-            summary_md = str(gen.parsed_json.get("summary_md") or summary_md).strip()
-            estimated_words = int(gen.parsed_json.get("estimated_visible_words") or estimated_words or 0)
-        if not estimated_words:
-            estimated_words = visible_word_count(summary_md)
-        usage = _usage_dict(gen)
-        first_pass_summary_md = _first_pass_summary_md(gen, use_json)
-        generation_cost = gen.usage.generation_cost
-        uncached_generation_cost = gen.usage.uncached_generation_cost
+
+        if auto_length:
+            summary_md, estimated_words, first_pass_summary_md, usage, generation_cost, uncached_generation_cost, passes_used = _run_auto_length(
+                client=client,
+                model=model,
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                source_md=source_md,
+                target_words=target_words,
+                use_json=use_json,
+                thinking=thinking,
+                reasoning=reasoning,
+                reasoning_effort=reasoning_effort,
+                resolved_version=resolved_version,
+                stage=stage,
+                body=body,
+                book_title=book_title,
+                chapter_title=chapter_title,
+            )
+        else:
+            payload = _build_openrouter_payload(
+                model=model,
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                use_json_schema=use_json,
+                thinking=thinking,
+                reasoning=reasoning,
+                reasoning_effort=reasoning_effort,
+            )
+            gen: GenerationResult = client.chat_completion(payload)
+            summary_md = gen.summary_md.strip()
+            estimated_words = gen.estimated_visible_words
+            if use_json and gen.parsed_json:
+                summary_md = str(gen.parsed_json.get("summary_md") or summary_md).strip()
+                estimated_words = int(gen.parsed_json.get("estimated_visible_words") or estimated_words or 0)
+            if not estimated_words:
+                estimated_words = visible_word_count(summary_md)
+            usage = _usage_dict(gen)
+            first_pass_summary_md = _first_pass_summary_md(gen, use_json)
+            generation_cost = gen.usage.generation_cost
+            uncached_generation_cost = gen.usage.uncached_generation_cost
 
     result: Dict[str, Any] = {
         "success": True,
@@ -588,7 +845,7 @@ def run_summarize(body: Dict[str, Any]) -> Dict[str, Any]:
             source_md=source_md,
             group_id="cloud_function",
             first_pass_summary_md=first_pass_summary_md,
-            passes_used=1,
+            passes_used=passes_used,
             generation_cost=generation_cost,
             uncached_generation_cost=uncached_generation_cost,
             malformed=False,
@@ -608,6 +865,11 @@ def run_summarize(body: Dict[str, Any]) -> Dict[str, Any]:
     if judge_error is not None:
         result["judge_error"] = judge_error
     result["meta"] = _meta_block(prompt_meta, registry)
+    if auto_length:
+        result["meta"]["auto_length"] = True
+        result["meta"]["passes_used"] = passes_used
+        result["meta"]["final_visible_words"] = estimated_words
+        result["meta"]["first_pass_visible_words"] = visible_word_count(first_pass_summary_md)
 
     return result
 

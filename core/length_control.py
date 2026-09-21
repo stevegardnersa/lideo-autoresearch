@@ -33,19 +33,55 @@ class LengthControlConfig:
     """Loop config with the same fields/defaults as ``candidate_spec``.
 
     ``core.run_candidate`` passes the live ``candidate_spec`` config object
-    (duck-typed); the Cloud Function can build one of these directly without
-    importing the tuned candidate file.
+    (duck-typed); the Cloud Function can build one of these directly from a
+    version's baked ``length_control`` mapping without importing the tuned
+    candidate file.
     """
 
     max_passes: int = 5
     tolerance_pct: float = 0.05
     hard_tolerance_pct: float = 0.10
     repair_strategy: str = "edit_existing"
+    repair_more_prompt_id: str = "expand_missing_detail"
+    repair_less_prompt_id: str = "shrink_dedup_first"
     max_truncation_retries: int = 1
+    repair_target_mode: str = "target"
+    repair_sentence_delete: bool = False
+    repair_min_reduction_pct: float = 0.0
     early_stop_patience: int = 0
     early_stop_epsilon: int = 0
     stop_on_direction_flip: bool = False
     accept_within_hard_tolerance: bool = False
+
+    @classmethod
+    def from_mapping(cls, raw: Optional[Mapping[str, Any]]) -> "LengthControlConfig":
+        """Build a config from a (possibly partial) baked mapping.
+
+        Unknown keys are ignored and malformed values fall back to the field
+        default, so a registry record can never crash the loop.
+        """
+        config = cls()
+        if not isinstance(raw, Mapping):
+            return config
+        for name in cls.__dataclass_fields__:  # type: ignore[attr-defined]
+            if name not in raw:
+                continue
+            default = getattr(config, name)
+            value = raw[name]
+            try:
+                if isinstance(default, bool):
+                    setattr(config, name, bool(value))
+                elif isinstance(default, int):
+                    setattr(config, name, int(value))
+                elif isinstance(default, float):
+                    setattr(config, name, float(value))
+                elif isinstance(default, str):
+                    text = str(value).strip()
+                    if text:
+                        setattr(config, name, text)
+            except (TypeError, ValueError):
+                continue
+        return config
 
 
 @dataclass(frozen=True)

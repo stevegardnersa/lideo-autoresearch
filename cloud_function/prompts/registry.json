@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "registry_sha": "0112c42001e842cf56281bb51b7dc9a674e1f87328328908ee706a7249600c5e",
-  "updated_at": "2026-09-20T05:48:02.743052Z",
+  "registry_sha": "a98e576d1677c49334638ec8c68e6d2f304b85f05d3ea304f8cdd0a8d264a116",
+  "updated_at": "2026-09-20T18:14:49.268518Z",
   "versions": [
     {
       "id": "chapter-p1",
@@ -18,7 +18,27 @@
       "scope": {
         "kind": "general"
       },
-      "component_text": {}
+      "component_text": {},
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "chapter-p2",
@@ -37,7 +57,27 @@
       "scope": {
         "kind": "general"
       },
-      "component_text": {}
+      "component_text": {},
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "composer-p1",
@@ -54,7 +94,27 @@
       "scope": {
         "kind": "general"
       },
-      "component_text": {}
+      "component_text": {},
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the whole-book summary to hit the target length more accurately.\n\n{{book_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the chapter summaries and any retrieved source excerpts.\n\nCurrent whole-book summary:\n{{current_summary_md}}\n\n{{toc_line}}\n\n{{metadata_line}}\n\nChapter summaries:\n{{chapter_summaries_md}}\n\n{{excerpts_line}}",
+        "less": "Revise the whole-book summary to hit the target length more accurately.\n\n{{book_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the chapter summaries and any retrieved source excerpts.\n\nCurrent whole-book summary:\n{{current_summary_md}}\n\n{{toc_line}}\n\n{{metadata_line}}\n\nChapter summaries:\n{{chapter_summaries_md}}\n\n{{excerpts_line}}"
+      }
     },
     {
       "id": "chapter-p3",
@@ -79,7 +139,27 @@
       "created_by": "operator",
       "notes": "Shipped FK<10 summary: plain_readable style + sentence_split_hard + words/sentence 13. Renamed from test chapter-p6.",
       "immutable": true,
-      "derived_from": "chapter-p2"
+      "derived_from": "chapter-p2",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "chapter-p4",
@@ -103,7 +183,27 @@
       "created_by": "operator-test",
       "notes": "Length experiment B1: sentence count primary at 11 words/sentence. Derived from chapter-p2.",
       "immutable": true,
-      "derived_from": "chapter-p2"
+      "derived_from": "chapter-p2",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "chapter-p5",
@@ -128,7 +228,27 @@
       "created_by": "operator-test",
       "notes": "Length experiment B2: sentence-primary 11w/s with 0.9 sentence-budget scale. Derived from chapter-p2.",
       "immutable": true,
-      "derived_from": "chapter-p2"
+      "derived_from": "chapter-p2",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "chapter-p6",
@@ -152,7 +272,27 @@
       "created_by": "operator-test",
       "notes": "Length experiment C: first-pass target aims at low edge of acceptable range. Derived from chapter-p2.",
       "immutable": true,
-      "derived_from": "chapter-p2"
+      "derived_from": "chapter-p2",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "chapter-p7",
@@ -178,7 +318,27 @@
       "created_by": "operator-test",
       "notes": "Shipped readable prompt (p3) + aim-low first-pass target. Derived from chapter-p3.",
       "immutable": true,
-      "derived_from": "chapter-p3"
+      "derived_from": "chapter-p3",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "chapter-p8",
@@ -204,7 +364,27 @@
       "created_by": "operator-test",
       "notes": "Shipped readable prompt (p3) + first-pass aim at 0.90*target. Derived from chapter-p3.",
       "immutable": true,
-      "derived_from": "chapter-p3"
+      "derived_from": "chapter-p3",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "chapter-p9",
@@ -229,7 +409,27 @@
       "created_by": "operator-test",
       "notes": "Readable style but word-budget discipline (explicit_budget_first) instead of sentence_split_hard. Derived from chapter-p3.",
       "immutable": true,
-      "derived_from": "chapter-p3"
+      "derived_from": "chapter-p3",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "chapter-p10",
@@ -255,7 +455,27 @@
       "created_by": "operator-test",
       "notes": "p9 plus first-pass aim at 0.90*target. Derived from chapter-p3.",
       "immutable": true,
-      "derived_from": "chapter-p3"
+      "derived_from": "chapter-p3",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "chapter-p11",
@@ -281,7 +501,27 @@
       "created_by": "operator-test",
       "notes": "p9 + aim at low edge. Derived from chapter-p3.",
       "immutable": true,
-      "derived_from": "chapter-p3"
+      "derived_from": "chapter-p3",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "chapter-p12",
@@ -307,7 +547,27 @@
       "created_by": "operator-test",
       "notes": "p10 + tighter 12-word sentence cap for FK<10. Derived from chapter-p3.",
       "immutable": true,
-      "derived_from": "chapter-p3"
+      "derived_from": "chapter-p3",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "chapter-p13",
@@ -333,7 +593,27 @@
       "created_by": "operator-test",
       "notes": "p10 + 11-word sentence cap for FK<10. Derived from chapter-p3.",
       "immutable": true,
-      "derived_from": "chapter-p3"
+      "derived_from": "chapter-p3",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "chapter-p14",
@@ -359,7 +639,27 @@
       "created_by": "operator",
       "notes": "Length + readability: word-budget-first policy (replaces sentence_split_hard), first-pass aim at 0.90*target, 12-word sentence cap. Halves length error vs chapter-p3 while keeping FK<10. Derived from chapter-p3.",
       "immutable": true,
-      "derived_from": "chapter-p3"
+      "derived_from": "chapter-p3",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "chapter-p15",
@@ -385,7 +685,27 @@
       "created_by": "operator",
       "notes": "Base prompt: sentence-count primary. S = target_words / sentence_target_words (11 w/s); 13-word FK sentence cap via plain_readable + target_sentence_words.",
       "immutable": true,
-      "derived_from": "chapter-p3"
+      "derived_from": "chapter-p3",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "chapter-p16",
@@ -410,7 +730,27 @@
       "created_by": "operator",
       "notes": "Base prompt: word budget first, sentence-split hard, plain_readable, 13 w/s.",
       "immutable": true,
-      "derived_from": "chapter-p3"
+      "derived_from": "chapter-p3",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "chapter-p17",
@@ -436,7 +776,27 @@
       "created_by": "operator",
       "notes": "Base prompt: readable + word budget first + first-pass aim 0.90*target + 12 w/s.",
       "immutable": true,
-      "derived_from": "chapter-p14"
+      "derived_from": "chapter-p14",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     },
     {
       "id": "chapter-p18",
@@ -465,13 +825,33 @@
       "reasoning": {
         "enabled": false
       },
-      "derived_from": "chapter-p16"
+      "derived_from": "chapter-p16",
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      }
     }
   ],
   "slots": {
     "chapter": {
       "general": {
-        "local": "chapter-p15",
+        "local": "chapter-p18",
         "production": "chapter-p18"
       },
       "models": {}

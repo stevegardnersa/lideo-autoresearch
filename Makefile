@@ -17,6 +17,7 @@ test:
 	$(PYTHON) tests/test_reasoning_migration.py
 	$(PYTHON) tests/test_prompt_registry.py
 	$(PYTHON) tests/test_cf_prompt_version.py
+	$(PYTHON) tests/test_cf_auto_length.py
 	$(PYTHON) tests/test_deploy_entrypoint.py
 	$(PYTHON) tests/test_sentence_budget.py
 	$(PYTHON) tests/test_base_prompts.py

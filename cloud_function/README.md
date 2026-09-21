@@ -192,6 +192,15 @@ This requires a `Dockerfile` (not included; CF 2nd gen auto-detects Python runti
   "reasoning_effort": "minimal",      // Native scalar reasoning effort ("none" → reasoning.enabled=false)
   "use_json_schema": true,      // Request structured JSON output (default: true)
 
+  // ── Optional — Automatic length control ───────────────────
+  // When true, the function runs the generate -> measure -> repair loop
+  // (`core.length_control`) and returns the best pass. Requires target_words > 0
+  // and is incompatible with summary_md (judge/scoring-only) mode.
+  // Loop config + repair templates come from the resolved version's baked
+  // `length_control` / `repair_templates`; `length_control` here overrides.
+  "auto_length": false,
+  "length_control": { "max_passes": 3, "tolerance_pct": 0.08 },  // optional override
+
   // ── Optional — Scoring ────────────────────────────────────
   "target_words": 400,          // Target word count (triggers deterministic scoring)
   "score": true,                // Skip server-side deterministic scoring when false (default: true)
@@ -249,7 +258,12 @@ This requires a `Dockerfile` (not included; CF 2nd gen auto-detects Python runti
   "meta": {
     "scoring_version": "sha256 of scoring.py at deploy",
     "handler_version": "sha256 of cloud_function/handler.py at deploy",
-    "deployed_at_utc": "ISO-8601"
+    "deployed_at_utc": "ISO-8601",
+    // Present only when auto_length ran:
+    "auto_length": true,
+    "passes_used": 2,
+    "first_pass_visible_words": 500,
+    "final_visible_words": 350
   },
 
   // ── Scoring (present only if rubric + target_words provided) ──
@@ -296,12 +310,42 @@ This requires a `Dockerfile` (not included; CF 2nd gen auto-detects Python runti
 }
 ```
 
+### Automatic Length Control (`auto_length`)
+
+By default the function performs a single generation. Set `"auto_length": true`
+(with `target_words > 0`) to run the same generate → measure → repair loop the
+offline pipeline uses:
+
+1. Generate pass 1 at `target_words`.
+2. Measure visible words. If outside `target_words ± tolerance_pct`, issue a
+   repair pass with a measured delta ("delete at least N words" / "add ~N
+   words") in the required direction.
+3. Stop on: in-range, `max_passes`, diminishing returns, direction flip, or
+   hard-tolerance accept — the same termination rules as `core.length_control`.
+4. Return the **best pass** (visible word count closest to target; earliest wins
+   ties), not necessarily the last.
+
+Loop config and repair prompt templates are baked into the served version record
+(`length_control`, `repair_templates`) so the function does not import the
+autoresearch candidate module. A request-level `length_control` object overrides
+the baked config. Versions without baked fields fall back to defaults.
+
+Cost: each pass is a separate billed completion. `usage.generation_cost` is the
+sum across passes; `meta.passes_used` reports how many ran. Treat `auto_length`
+and a request-level `length_control` as operator/server-controlled (like
+`system_prompt_override`): a caller who sets `max_passes` high can amplify cost
+on your billed account. Do not pass them straight through from the browser.
+
+`auto_length` returns HTTP 400 when `target_words <= 0` or when `summary_md`
+(judge/scoring-only mode) is present.
+
 ### Error Responses
 
 | Status | Condition |
 |--------|-----------|
 | 405 | Non-POST request method |
 | 400 | Invalid JSON / missing required fields |
+| 400 | `invalid_auto_length` — `auto_length` with `target_words <= 0` or `summary_md` |
 | 500 | Unhandled server error (call OpenRouter failed, etc.) |
 | (502) | OpenRouter returns non-200 (host-level error, not at function layer) |
 
@@ -531,4 +575,7 @@ LLM calls can take 30–180 seconds. Set client timeout to at least 300 seconds 
 | `cloud_function/sample_request.json` | Example payload for manual testing |
 | `core/openrouter_client.py` | (imported) stdlib OpenRouter client |
 | `core/judge.py` | (imported) LLM-based absolute judge |
+| `core/length_control.py` | (imported) transport-agnostic generate/repair loop (`auto_length`) |
+| `core/repair_prompt.py` | (imported) repair prompt templates + rendering |
 | `scoring.py` | (imported) Deterministic and resolved scoring |
+| `tools/bake_length_control.py` | (local) bake `length_control` + `repair_templates` into registry versions |
