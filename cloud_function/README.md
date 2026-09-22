@@ -223,7 +223,13 @@ This requires a `Dockerfile` (not included; CF 2nd gen auto-detects Python runti
     "important_examples": ["string"],
     "key_entities_or_numbers": ["string"],
     "key_terms": ["string"]
-  }
+  },
+
+  // ── Optional — Debug logging ──────────────────────────────
+  // Opt in to full request/response logging for THIS call. Only honoured when
+  // the deployment has CF_DEBUG_LOG_BODIES enabled; the flag alone can never
+  // turn logging on. See "Debug Logging" below.
+  "debug_log": false
 }
 ```
 
@@ -368,6 +374,25 @@ On error:
 | `LLM_BASE_URL` | No | Default OpenAI-compatible API base URL (falls back to `https://openrouter.ai/api/v1`) |
 | `OPENROUTER_HTTP_REFERER` | No | HTTP Referer header sent to provider |
 | `OPENROUTER_APP_TITLE` | No | App title sent to provider for analytics |
+| `CF_DEBUG_LOG_BODIES` | No | Master gate for request/response body logging (`0` by default) |
+
+### Debug Logging
+
+Body logging is **off by default** and requires two independent signals:
+
+1. **Deployment gate** — `CF_DEBUG_LOG_BODIES` must be truthy (`1`/`true`/`yes`/`on`). `tools/deploy_cf.py` sets it to `0`; override at deploy time, e.g.
+   `--set-env-vars CF_DEBUG_LOG_BODIES=1`.
+2. **Per-request opt-in** — the caller sends `"debug_log": true` in the body.
+
+The request flag can only opt in *within* an open gate — a client can never turn logging on by itself. When both are set, the function prints one JSON line per event to stdout (`event=cf_request` / `cf_response`, plus `status`), which Cloud Logging parses into `jsonPayload`:
+
+```bash
+gcloud logging read \
+  'resource.type="cloud_run_revision" AND resource.labels.service_name="summarize" AND jsonPayload.event="cf_request"' \
+  --limit 20 --format json
+```
+
+Safety: string values are clipped (400 chars, `…[+N chars]` marker), the whole entry is capped at 8 KB, and `api_key` is redacted (`***redacted***`) before serialization. Treat logged bodies as sensitive — the source chapter and summary are still present in full up to the clip.
 
 The function resolves the API key in this order:
 1. `api_key` from request body (highest priority)
@@ -575,6 +600,7 @@ LLM calls can take 30–180 seconds. Set client timeout to at least 300 seconds 
 |------|---------|
 | `cloud_function/main.py` | CF entry point — validates, dispatches, wraps errors |
 | `cloud_function/handler.py` | Core orchestration — LLM call → scoring → judging |
+| `cloud_function/cf_log.py` | Gated debug logging — redaction, clipping, JSON events |
 | `cloud_function/requirements.txt` | Single dep: `functions-framework==3.*` |
 | `cloud_function/.gcloudignore` | Deployment exclusions |
 | `cloud_function/sample_request.json` | Example payload for manual testing |

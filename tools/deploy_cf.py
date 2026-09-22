@@ -46,6 +46,7 @@ DEFAULT_SUPABASE_URL = "https://apnsbsxifvwaxrlfklko.supabase.co"
 DEFAULT_SECRET = "LLM_API_KEY=openrouter-api-key:latest,SUPABASE_SERVICE_ROLE_KEY=supabase-service-role:latest"
 DEFAULT_ENV_VARS = (
     "LLM_BASE_URL=https://openrouter.ai/api/v1,LOG_EXECUTION_ID=true,"
+    "CF_DEBUG_LOG_BODIES=0,"
     f"SUPABASE_URL={os.environ.get('SUPABASE_URL', DEFAULT_SUPABASE_URL)}"
 )
 

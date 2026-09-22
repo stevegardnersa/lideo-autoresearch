@@ -11,7 +11,7 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 import functions_framework
-from cloud_function import storage
+from cloud_function import cf_log, storage
 from cloud_function.handler import PromptVersionError, build_response, run_summarize
 
 
@@ -23,16 +23,30 @@ def _json_error(status: int, message: str) -> tuple:
 @functions_framework.http
 def summarize(request):
     if request.method != "POST":
-        return _json_error(405, f"Method {request.method} not allowed")
+        result = _json_error(405, f"Method {request.method} not allowed")
+        cf_log.log_response(result)
+        return result
 
     try:
         body: Optional[Dict[str, Any]] = request.get_json(silent=True)
     except Exception:
-        return _json_error(400, "Invalid JSON body")
+        result = _json_error(400, "Invalid JSON body")
+        cf_log.log_response(result)
+        return result
 
     if not body or not isinstance(body, dict):
-        return _json_error(400, "Request body must be a JSON object")
+        result = _json_error(400, "Request body must be a JSON object")
+        cf_log.log_response(result)
+        return result
 
+    debug_flag = body.get("debug_log")
+    cf_log.log_request(body, debug_flag)
+    result = _handle(body)
+    cf_log.log_response(result, debug_flag)
+    return result
+
+
+def _handle(body: Dict[str, Any]) -> tuple:
     # model and user_prompt are optional: the CF resolves the production
     # version (chapter-p18), which bakes the model, reasoning default, and a
     # bundled user_template rendered from source_md/chapter_title/target_words.
