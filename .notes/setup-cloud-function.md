@@ -264,7 +264,7 @@ gcloud functions deploy summarize \
   --region us-central1 \
   --project $PROJECT_ID \
   --set-secrets 'LLM_API_KEY=openrouter-api-key:latest' \
-  --set-env-vars 'LLM_BASE_URL=https://openrouter.ai/api/v1,LOG_EXECUTION_ID=true' \
+  --set-env-vars 'LLM_BASE_URL=https://openrouter.ai/api/v1,LOG_EXECUTION_ID=true,CF_DEBUG_LOG_BODIES=0' \
   --timeout 3600 \
   --memory 1024Mi \
   --no-allow-unauthenticated
@@ -282,6 +282,7 @@ gcloud functions deploy summarize \
 | `--region` | `us-central1` | Iowa. Closest to west coast. Cheapest. |
 | `--set-secrets` | `KEY=secret-name:latest` | Binds the Secret Manager secret as env var `LLM_API_KEY` |
 | `--set-env-vars` | `LLM_BASE_URL=...` | Plain env vars. `LLM_BASE_URL` points the client at the provider (OpenRouter direct here) |
+| `--set-env-vars` | `CF_DEBUG_LOG_BODIES=0` | Master gate for body logging. Keep `0`; set `1` (and send `"debug_log": true`) to log full request/response bodies |
 | `--timeout` | `3600` | Maximum 60 minutes (LLM calls can take minutes per request) |
 | `--memory` | `1024Mi` | 1 GB RAM. Increase to 2048Mi for thinking/reasoning models |
 | `--no-allow-unauthenticated` | _(flag)_ | Require auth. No public internet access without OIDC token |
@@ -442,7 +443,7 @@ gcloud functions deploy summarize \
   --region us-central1 \
   --project $PROJECT_ID \
   --set-secrets 'LLM_API_KEY=openrouter-api-key:latest' \
-  --set-env-vars 'LLM_BASE_URL=https://openrouter.ai/api/v1,LOG_EXECUTION_ID=true' \
+  --set-env-vars 'LLM_BASE_URL=https://openrouter.ai/api/v1,LOG_EXECUTION_ID=true,CF_DEBUG_LOG_BODIES=0' \
   --timeout 3600 \
   --memory 1024Mi \
   --no-allow-unauthenticated
@@ -582,7 +583,7 @@ gcloud functions deploy summarize --gen2 --runtime python312 \
   --trigger-http --entry-point summarize --source . \
   --region us-central1 \
   --set-secrets 'LLM_API_KEY=openrouter-api-key:latest' \
-  --set-env-vars 'LLM_BASE_URL=https://openrouter.ai/api/v1,LOG_EXECUTION_ID=true' \
+  --set-env-vars 'LLM_BASE_URL=https://openrouter.ai/api/v1,LOG_EXECUTION_ID=true,CF_DEBUG_LOG_BODIES=0' \
   --timeout 3600 --memory 1024Mi --no-allow-unauthenticated
 
 # Get URL

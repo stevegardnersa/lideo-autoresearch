@@ -6,7 +6,7 @@
   "region": "us-central1",
   "function": "summarize",
   "url": "https://summarize-q2dzk4wjva-uc.a.run.app",
-  "revision": "summarize-00020-xar",
+  "revision": "summarize-00021-hup",
   "smoke": {
     "ok": true,
     "status": 200,
