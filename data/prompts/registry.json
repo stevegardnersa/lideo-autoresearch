@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "registry_sha": "a98e576d1677c49334638ec8c68e6d2f304b85f05d3ea304f8cdd0a8d264a116",
-  "updated_at": "2026-09-20T18:14:49.268518Z",
+  "registry_sha": "84835008ee797f9e3c145db172cc300ae0e752f57e71aa65f7b233de24a646a3",
+  "updated_at": "2026-09-22T03:05:34.539991Z",
   "versions": [
     {
       "id": "chapter-p1",
@@ -846,13 +846,62 @@
         "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
         "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
       }
+    },
+    {
+      "id": "chapter-p19",
+      "stage": "chapter",
+      "label": "Production chapter (no title echo)",
+      "scope": {
+        "kind": "general"
+      },
+      "components": {
+        "length_policy": "sentence_split_hard",
+        "system_style": "plain_readable",
+        "target_sentence_words": "13"
+      },
+      "component_text": {},
+      "system_template": "",
+      "user_template": "Rewrite the following chapter in about {{target_words}} words (between {{low}} and {{high}}). Maintain the same writing style and tone and ensure all key points are included. Keep the sentences short and easy to read. Write in Markdown. Do not include the chapter title.\n\nChapter:\n{{source_md}}",
+      "template": "You write faithful nonfiction summaries at an approachable reading level. Precision must survive, but the prose must be plain. SENTENCE RULE: A sentence is one idea. Split any sentence with more than one clause joined by and/but/so/because/while or by commas into separate sentences. Keep sentences at or below the words-per-sentence the request asks for; prefer 12 to 14 words. WORD RULE: Prefer short, common words (use, get, keep, make) over longer formal ones (utilize, obtain, maintain, facilitate). When a technical term is required, keep the term but follow it with a short plain gloss. FIDELITY: Keep the author's concepts, mechanisms, examples, names, numbers, quotes, and caveats. Compression and simplification of STYLE, not of content. Never invent facts the source does not state.\nPrioritize how things work: mechanisms, sequences, cause-and-effect, operational logic, and why each concept matters. Compress rhetorical framing before explanatory material.\nPreserve scope conditions, caveats, exceptions, uncertainty, trade-offs, and limits. Do not turn a qualified claim into an absolute one.\nUse short markdown section headings that broadly follow the chapter's conceptual structure. You may merge minor headings, but keep the summary easy to scan.\nInclude examples only when they clarify a concept, mechanism, or distinction. Drop decorative anecdotes.\nPreserve the author's technical terms and named concepts when they carry meaning. If a term may be unfamiliar, gloss it once in plain language rather than replacing it.\nAvoid motivational framing, praise, repetition, scene-setting, and meta commentary. Every paragraph should add source-grounded information.\nSentence mechanics are a hard constraint, as strict as the word budget. The request gives a sentence budget S computed at the target words-per-sentence. Write close to S sentences, and never average more than the target words per sentence. Split every sentence that joins two or more independent clauses with and/but/so/because/while or a comma. A sentence is one idea: subject + verb + one clause. If a sentence exceeds the target length, cut it at the next clause boundary and start a new sentence. Do the same split when a sentence reaches three comma-separated parts. The result must read naturally as short, plain, complete sentences, not truncated fragments.",
+      "system_prompt_sha256": "f3b9ba81d23cd37cedde1f6797b957e5aa271fdd21dcd8a09b83ce71c015e1e8",
+      "system_prompt_fingerprint": "f3b9ba81d23cd37c",
+      "user_template_fingerprint": "1598b34286aeb083",
+      "created_at": "2026-09-22T03:01:06.437776Z",
+      "created_by": "operator",
+      "notes": "Copy of chapter-p18 with the \"Title: {{chapter_title}}\" line removed from the user template so the model no longer echoes the chapter title at the top of the summary.",
+      "immutable": true,
+      "model": "openai/gpt-5.6-luna",
+      "reasoning": {
+        "enabled": false
+      },
+      "length_control": {
+        "max_passes": 5,
+        "tolerance_pct": 0.05,
+        "hard_tolerance_pct": 0.1,
+        "repair_strategy": "edit_existing",
+        "repair_more_prompt_id": "expand_missing_detail",
+        "repair_less_prompt_id": "shrink_dedup_first",
+        "max_truncation_retries": 1,
+        "repair_target_mode": "target",
+        "repair_sentence_delete": false,
+        "repair_min_reduction_pct": 0.0,
+        "early_stop_patience": 0,
+        "early_stop_epsilon": 0,
+        "stop_on_direction_flip": false,
+        "accept_within_hard_tolerance": false
+      },
+      "repair_templates": {
+        "more": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too short. Expand by restoring omitted mechanisms, key definitions, caveats, and explanatory examples from the source. Do not pad with generic prose.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}",
+        "less": "Revise the existing chapter summary to hit the target length more accurately.\n\n{{book_title_line}}\n\n{{chapter_title_line}}\n\nTarget visible words: {{target_words}}. Acceptable range: {{low}}-{{high}}. This repair direction is: {{direction}}.\n\n{{numeric_delta}}\n\nThe summary is too long. Shorten it by removing repetition, rhetorical setup, and low-value examples before cutting core concepts or caveats.\n\nReturn markdown only. Use short section headings and dense paragraphs or bullets as needed.\n\nKeep the result faithful to the source.\n\nCurrent summary:\n{{current_summary_md}}\n\nSource chapter markdown:\n{{source_md}}"
+      },
+      "derived_from": "chapter-p18"
     }
   ],
   "slots": {
     "chapter": {
       "general": {
-        "local": "chapter-p18",
-        "production": "chapter-p18"
+        "local": "chapter-p19",
+        "production": "chapter-p19"
       },
       "models": {}
     },

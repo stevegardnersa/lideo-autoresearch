@@ -1,12 +1,12 @@
 {
   "ok": true,
   "deployed": true,
-  "registry_sha": "a98e576d1677c49334638ec8c68e6d2f304b85f05d3ea304f8cdd0a8d264a116",
+  "registry_sha": "84835008ee797f9e3c145db172cc300ae0e752f57e71aa65f7b233de24a646a3",
   "project": "lideo-387b7",
   "region": "us-central1",
   "function": "summarize",
   "url": "https://summarize-q2dzk4wjva-uc.a.run.app",
-  "revision": "summarize-00021-hup",
+  "revision": "summarize-00022-naf",
   "smoke": {
     "ok": true,
     "status": 200,
@@ -14,11 +14,11 @@
       "scoring_version": "3af66486b27d11ddef60d90d2cc5fb101115a9d51a2c4e2502a6883195d3b873",
       "handler_version": "a0a1c487563b131236c6075a89c0d489d5ecd7d4d03f44cbe68a8e218e0798dd",
       "deployed_at_utc": "1980-01-01T00:00:01+00:00",
-      "prompt_registry_sha": "a98e576d1677c49334638ec8c68e6d2f304b85f05d3ea304f8cdd0a8d264a116"
+      "prompt_registry_sha": "84835008ee797f9e3c145db172cc300ae0e752f57e71aa65f7b233de24a646a3"
     }
   },
-  "probe_registry_sha": "a98e576d1677c49334638ec8c68e6d2f304b85f05d3ea304f8cdd0a8d264a116",
-  "prompt_version": "chapter-p18",
+  "probe_registry_sha": "84835008ee797f9e3c145db172cc300ae0e752f57e71aa65f7b233de24a646a3",
+  "prompt_version": "chapter-p19",
   "prompt_fingerprint": "f3b9ba81d23cd37c",
   "prompt_source": "deploy_smoke",
   "prompt_model": "",
