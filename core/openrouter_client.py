@@ -8,8 +8,47 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional, Tuple
+
+
+def _normalize_headers(headers: Optional[Mapping[str, Any]]) -> Dict[str, str]:
+    """Lowercase-keyed copy of response headers for case-insensitive lookup."""
+    if not headers:
+        return {}
+    return {str(key).lower(): str(value) for key, value in headers.items()}
+
+
+def _parse_retry_after_seconds(headers: Mapping[str, str]) -> Optional[float]:
+    """Parse a retry hint from response headers into seconds.
+
+    Prefers ``Retry-After`` (delta-seconds or HTTP-date), then falls back to the
+    ``X-RateLimit-Reset`` epoch-seconds hint. Returns ``None`` when absent or
+    unparseable, and never a negative value.
+    """
+    raw = headers.get("retry-after")
+    if raw:
+        text = raw.strip()
+        try:
+            seconds = float(text)
+        except ValueError:
+            try:
+                reset_at = parsedate_to_datetime(text).timestamp()
+            except (TypeError, ValueError, OverflowError):
+                seconds = None
+            else:
+                seconds = reset_at - time.time()
+        if seconds is not None:
+            return max(0.0, float(seconds))
+
+    reset_raw = headers.get("x-ratelimit-reset")
+    if reset_raw:
+        try:
+            return max(0.0, float(reset_raw.strip()) - time.time())
+        except ValueError:
+            return None
+    return None
 
 
 class OpenRouterAPIError(RuntimeError):
@@ -27,12 +66,39 @@ class OpenRouterHTTPError(OpenRouterAPIError):
         *,
         response_text: str = "",
         error_payload: Optional[Mapping[str, Any]] = None,
+        response_headers: Optional[Mapping[str, Any]] = None,
     ) -> None:
         self.status_code = int(status_code)
         self.path = str(path)
         self.response_text = str(response_text)
         self.error_payload = dict(error_payload) if isinstance(error_payload, Mapping) else None
+        self.response_headers = _normalize_headers(response_headers)
         super().__init__(f"OpenRouter HTTP {self.status_code} for {self.path}: {message}")
+
+    @property
+    def retry_after_seconds(self) -> Optional[float]:
+        return _parse_retry_after_seconds(self.response_headers)
+
+    @property
+    def metadata(self) -> Dict[str, Any]:
+        if not isinstance(self.error_payload, Mapping):
+            return {}
+        error_block = self.error_payload.get("error")
+        if isinstance(error_block, Mapping):
+            metadata = error_block.get("metadata")
+            if isinstance(metadata, Mapping):
+                return dict(metadata)
+        metadata = self.error_payload.get("metadata")
+        return dict(metadata) if isinstance(metadata, Mapping) else {}
+
+    @property
+    def limit_source(self) -> str:
+        return str(self.metadata.get("limit_source") or "")
+
+    @property
+    def error_type(self) -> str:
+        return str(self.metadata.get("error_type") or "")
+
 
 
 class OpenRouterInsufficientCreditsError(OpenRouterHTTPError):
@@ -546,6 +612,7 @@ class OpenRouterClient:
                         message[:1200],
                         response_text=response_text[:4000],
                         error_payload=error_payload,
+                        response_headers=exc.headers,
                     )
                 last_error = OpenRouterHTTPError(
                     exc.code,
@@ -553,6 +620,7 @@ class OpenRouterClient:
                     message[:1200],
                     response_text=response_text[:4000],
                     error_payload=error_payload,
+                    response_headers=exc.headers,
                 )
                 if exc.code not in {408, 409, 429, 500, 502, 503, 504} or attempt >= self.max_retries:
                     body_snippet = json.dumps(payload)[:2000] if payload else "no body"
