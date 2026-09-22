@@ -380,8 +380,7 @@ On error:
 
 Body logging is **off by default** and requires two independent signals:
 
-1. **Deployment gate** — `CF_DEBUG_LOG_BODIES` must be truthy (`1`/`true`/`yes`/`on`). `tools/deploy_cf.py` sets it to `0`; override at deploy time, e.g.
-   `--set-env-vars CF_DEBUG_LOG_BODIES=1`.
+1. **Deployment gate** — `CF_DEBUG_LOG_BODIES` must be truthy (`1`/`true`/`yes`/`on`). `tools/deploy_cf.py` sets it to `0` unless you pass `--debug-log-bodies`, which sets `CF_DEBUG_LOG_BODIES=1`. The dashboard's **Deploy to Cloud Function** modal exposes this as the *Log request/response bodies* toggle. Override directly with `--env-vars ... CF_DEBUG_LOG_BODIES=1` when needed.
 2. **Per-request opt-in** — the caller sends `"debug_log": true` in the body.
 
 The request flag can only opt in *within* an open gate — a client can never turn logging on by itself. When both are set, the function prints one JSON line per event to stdout (`event=cf_request` / `cf_response`, plus `status`), which Cloud Logging parses into `jsonPayload`:

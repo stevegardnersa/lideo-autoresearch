@@ -44,11 +44,24 @@ DEFAULT_RUNTIME = "python312"
 # the URL with the SUPABASE_URL env var for a different project.
 DEFAULT_SUPABASE_URL = "https://apnsbsxifvwaxrlfklko.supabase.co"
 DEFAULT_SECRET = "LLM_API_KEY=openrouter-api-key:latest,SUPABASE_SERVICE_ROLE_KEY=supabase-service-role:latest"
-DEFAULT_ENV_VARS = (
-    "LLM_BASE_URL=https://openrouter.ai/api/v1,LOG_EXECUTION_ID=true,"
-    "CF_DEBUG_LOG_BODIES=0,"
-    f"SUPABASE_URL={os.environ.get('SUPABASE_URL', DEFAULT_SUPABASE_URL)}"
-)
+
+
+def build_env_vars(debug_log_bodies: bool = False) -> str:
+    """Build the ``--set-env-vars`` value.
+
+    ``CF_DEBUG_LOG_BODIES`` is the deployment gate for body logging; it is
+    ``0`` unless ``debug_log_bodies`` is set, in which case it is ``1``. Even
+    when on, the function only logs for requests that also opt in with
+    ``debug_log: true``.
+    """
+    return (
+        "LLM_BASE_URL=https://openrouter.ai/api/v1,LOG_EXECUTION_ID=true,"
+        f"CF_DEBUG_LOG_BODIES={1 if debug_log_bodies else 0},"
+        f"SUPABASE_URL={os.environ.get('SUPABASE_URL', DEFAULT_SUPABASE_URL)}"
+    )
+
+
+DEFAULT_ENV_VARS = build_env_vars()
 
 PROBE_PAYLOAD: Dict[str, Any] = {
     "source_md": "## Intro\n\nFeedback loops matter.",
@@ -198,7 +211,7 @@ def write_report(report: Dict[str, Any]) -> None:
         _log(f"WARN: could not write cf report: {exc}")
 
 
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project", default="", help="GCP project id (default: env or gcloud config).")
     parser.add_argument("--region", default=DEFAULT_REGION)
@@ -208,13 +221,29 @@ def main() -> int:
     parser.add_argument("--memory", default=DEFAULT_MEMORY)
     parser.add_argument("--timeout", type=int, default=int(DEFAULT_TIMEOUT))
     parser.add_argument("--secret", default=DEFAULT_SECRET, help="--set-secrets value.")
-    parser.add_argument("--env-vars", default=DEFAULT_ENV_VARS, help="--set-env-vars value.")
+    parser.add_argument(
+        "--env-vars",
+        default=None,
+        help="--set-env-vars value (default: built, honoring --debug-log-bodies).",
+    )
+    parser.add_argument(
+        "--debug-log-bodies",
+        action="store_true",
+        help="Set CF_DEBUG_LOG_BODIES=1 so the deployed function can log request/response bodies.",
+    )
     parser.add_argument("--no-sync", action="store_true", help="Deploy the existing bundle without syncing.")
     parser.add_argument("--allow-drift", action="store_true", help="Deploy even if the bundle differs from the local registry.")
     parser.add_argument("--no-smoke", action="store_true", help="Skip the post-deploy smoke probe.")
     parser.add_argument("--dry-run", action="store_true", help="Print the deploy command without running it.")
     parser.add_argument("--confirm", action="store_true", help="Required to actually deploy.")
-    args = parser.parse_args()
+    return parser
+
+
+def main() -> int:
+    args = build_parser().parse_args()
+
+    if args.env_vars is None:
+        args.env_vars = build_env_vars(args.debug_log_bodies)
 
     if not args.dry_run and not args.confirm:
         _log("ERROR: refusing to deploy without --confirm (or pass --dry-run).")

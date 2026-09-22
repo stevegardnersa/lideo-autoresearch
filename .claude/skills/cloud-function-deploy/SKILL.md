@@ -169,6 +169,21 @@ Notes:
 - Bump `--memory 2048Mi` if deploying for thinking/reasoning models.
 - Initial deploy 2-5 min; re-deploy ~60 s.
 
+### Dashboard / scripted deploy
+
+The Prompts tab's **Deploy to Cloud Function** button opens a params modal
+(target project, region, function, memory, timeout, and a *Log request/response
+bodies* toggle) and submits `tools/deploy_cf.py`, which syncs the bundle, runs
+`gcloud functions deploy`, then smoke-tests it. That script is also the CLI path:
+
+```bash
+.venv/bin/python tools/deploy_cf.py --confirm                 # deploy, bodies logging off
+.venv/bin/python tools/deploy_cf.py --confirm --debug-log-bodies
+```
+
+`--debug-log-bodies` sets `CF_DEBUG_LOG_BODIES=1` (the deployment gate for body
+logging; off by default). `--env-vars` still overrides the whole env-var string.
+
 ## Post-deploy smoke (OIDC)
 
 1. Get the URL + a fresh identity token:

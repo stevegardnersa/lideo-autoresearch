@@ -340,6 +340,14 @@
 .dlg-run-widget { min-width: 0; }
 .dlg-run .tool-card { margin-bottom: 0; background: var(--panel-2, #f6f7f9); }
 
+/* deploy-form shows only the deploy params widget (no model form, no footer);
+   the card's own Deploy button is the confirmation. */
+#modelDialogOverlay.deploy-form .settings-dialog { width: min(680px, calc(100vw - 48px)); }
+#modelDialogOverlay.deploy-form .dialog-body { display: block; }
+#modelDialogOverlay.deploy-form .dlg-left { display: none; }
+#modelDialogOverlay.deploy-form .dlg-run { border-left: none; padding-left: 0; }
+#modelDialogOverlay.deploy-form .dialog-footer { display: none; }
+
 /* deploy-mode shows only the run/progress pane (no model form). */
 #modelDialogOverlay.deploy-mode .settings-dialog { width: min(760px, calc(100vw - 48px)); }
 #modelDialogOverlay.deploy-mode .dialog-body { display: block; }
@@ -347,6 +355,7 @@
 #modelDialogOverlay.deploy-mode .dlg-run { border-left: none; padding-left: 0; }
 #modelDialogOverlay.deploy-mode .dlg-run-widget { display: none; }
 #modelDialogOverlay.deploy-mode .dlg-run-progress { border-top: none; margin-top: 0; padding-top: 0; }
+#modelDialogOverlay.deploy-mode .dialog-footer { display: none; }
 
 @media (max-width: 720px) {
   #modelDialogOverlay.has-run-form .settings-dialog { width: min(600px, calc(100vw - 48px)); }

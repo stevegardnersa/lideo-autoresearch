@@ -202,16 +202,30 @@ test('/api/registry exposes grouped tools', async () => {
 test('deploy_cf builds the gcloud deploy argv and passes confirmation', async () => {
   const { server, base, procs } = await startServer()
   try {
-    const res = await call(base, '/api/jobs', { method: 'POST', body: { toolId: 'deploy_cf', args: { confirm: true, project: 'lideo-387b7' } } })
+    // The dashboard deploy modal omits `confirm`; the registry default (fixed
+    // true) must supply --confirm so the script's safety gate is satisfied.
+    const res = await call(base, '/api/jobs', { method: 'POST', body: { toolId: 'deploy_cf', args: { project: 'lideo-387b7' } } })
     assert.equal(res.status, 201)
     const argv = procs[0].argv
     assert.equal(argv[0], 'tools/deploy_cf.py')
-    assert.ok(argv.includes('--confirm'))
+    assert.ok(argv.includes('--confirm'), 'confirm defaulted on')
     assert.equal(argv[argv.indexOf('--project') + 1], 'lideo-387b7')
     assert.equal(argv[argv.indexOf('--region') + 1], 'us-central1')
     assert.equal(argv[argv.indexOf('--function') + 1], 'summarize')
+    assert.ok(!argv.includes('--debug-log-bodies'), 'body logging off by default')
     assert.ok(!argv.includes('--no-sync'), 'sync runs by default')
     assert.ok(!argv.includes('--no-smoke'), 'smoke runs by default')
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('deploy_cf forwards --debug-log-bodies when the toggle is on', async () => {
+  const { server, base, procs } = await startServer()
+  try {
+    const res = await call(base, '/api/jobs', { method: 'POST', body: { toolId: 'deploy_cf', args: { project: 'lideo-387b7', 'debug-log-bodies': true } } })
+    assert.equal(res.status, 201)
+    assert.ok(procs[0].argv.includes('--debug-log-bodies'))
   } finally {
     await closeServer(server)
   }

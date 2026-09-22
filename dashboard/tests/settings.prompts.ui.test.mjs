@@ -41,6 +41,27 @@ const VERSIONS = [
   { id: 'composer-p1', stage: 'composer', label: 'v1 baseline (profile defaults)', scope: { kind: 'general' }, components: {}, system_prompt_fingerprint: '95516b89af43c275', created_at: '2026-09-12T00:00:00Z' },
 ]
 
+const DEPLOY_TOOL = {
+  id: 'deploy_cf',
+  group: 'candidates',
+  title: 'Deploy Cloud Function',
+  description: 'Sync the prompt registry into the bundle, run gcloud functions deploy, and smoke-test.',
+  script: 'tools/deploy_cf.py',
+  runtimeClass: 'write',
+  outputs: ['data/prompts/cf_last_report.json'],
+  args: [
+    { name: 'project', label: 'GCP project', type: 'text', hint: 'GCP project id. Defaults to env or gcloud config.' },
+    { name: 'region', label: 'Region', type: 'text', default: 'us-central1', hint: 'Cloud Functions region.' },
+    { name: 'function', label: 'Function name', type: 'text', default: 'summarize' },
+    { name: 'memory', label: 'Memory', type: 'enum', default: '1024Mi', choices: ['512Mi', '1024Mi'] },
+    { name: 'timeout', label: 'Timeout (seconds)', type: 'int', default: 3600, min: 60, max: 3600 },
+    { name: 'debug-log-bodies', label: 'Log request/response bodies', type: 'bool', default: false, hint: 'Master gate for CF body logging (sets CF_DEBUG_LOG_BODIES).' },
+    { name: 'confirm', label: 'Confirmed (required to deploy)', type: 'bool', default: true, fixed: true, advanced: true, ui: false },
+    { name: 'no-sync', label: 'Skip bundle sync', type: 'bool', default: false, advanced: true },
+    { name: 'dry-run', label: 'Dry run', type: 'bool', default: false, advanced: true },
+  ],
+}
+
 function json(payload, status = 200) {
   return Promise.resolve({
     ok: status >= 200 && status < 300,
@@ -119,6 +140,11 @@ function makeHarness() {
       })
     }
     if (url === '/api/prompts/sync' && method === 'POST') return json({ ok: true, copied: 'cloud_function/prompts/registry.json', production_version: 'chapter-p1', registry_sha: 'sha-1' })
+    if (url === '/api/registry' && method === 'GET') return json({ ok: true, tools: [DEPLOY_TOOL] })
+    if (url === '/api/jobs?limit=60' && method === 'GET') {
+      const job = state.lastJob
+      return json({ ok: true, jobs: job ? [{ id: 'job-deploy-1', toolId: job.toolId, status: 'queued' }] : [] })
+    }
     if (url === '/api/jobs' && method === 'POST') {
       state.lastJob = state.calls[state.calls.length - 1].body
       return json({ job: { id: 'job-deploy-1', toolId: 'deploy_cf', status: 'queued' } }, 201)
@@ -190,23 +216,35 @@ test('Sync button calls the sync endpoint once and reports the result', async ()
   assert.match(h.doc.getElementById('promptsBanner').textContent, /Synced registry/)
 })
 
-test('Deploy button arms on first click and starts the deploy_cf job on confirm', async () => {
+test('Deploy opens a params modal with hints and posts deploy_cf on submit', async () => {
   await openPrompts()
   const deployBtn = h.doc.querySelector('[data-action="deploy"]')
   assert.ok(deployBtn)
   h.click(deployBtn)
-  await new Promise(r => setImmediate(r))
-  assert.equal(h.state.calls.filter(c => c.url === '/api/jobs').length, 0, 'first click only arms')
-  assert.equal(deployBtn.dataset.armed, '1')
-  assert.match(deployBtn.textContent, /confirm deploy/i)
-  h.click(deployBtn)
-  await new Promise(r => setImmediate(r))
-  await new Promise(r => setImmediate(r))
-  const jobCalls = h.state.calls.filter(c => c.url === '/api/jobs')
+  await flush()
+  await flush()
+  const overlay = h.doc.getElementById('modelDialogOverlay')
+  assert.equal(overlay.classList.contains('cm-hidden'), false, 'modal opens')
+  assert.equal(overlay.classList.contains('deploy-form'), true, 'deploy-form mode')
+
+  const card = h.doc.querySelector('#dlgRunWidget .mm-tool-widget[data-tool="deploy_cf"]')
+  assert.ok(card, 'deploy card rendered in the modal')
+  assert.ok(card.querySelector('[data-arg="project"]'), 'project param')
+  assert.ok(card.querySelector('[data-arg="debug-log-bodies"]'), 'debug-log-bodies param')
+  assert.match(card.textContent, /CF_DEBUG_LOG_BODIES/, 'debug-log hint shown')
+  assert.ok(card.querySelector('.field-hint'), 'field hints rendered')
+  assert.equal(card.querySelector('[data-arg="confirm"]'), null, 'internal confirm arg is hidden')
+
+  const submit = card.querySelector('.tool-run-submit')
+  assert.equal(submit.textContent, 'Deploy')
+  h.click(submit)
+  await flush()
+  await flush()
+
+  const jobCalls = h.state.calls.filter(c => c.url === '/api/jobs' && c.method === 'POST')
   assert.equal(jobCalls.length, 1)
   assert.equal(jobCalls[0].body.toolId, 'deploy_cf')
-  assert.equal(jobCalls[0].body.args.confirm, true)
-  assert.match(h.doc.getElementById('promptsBanner').textContent, /deploy started/i)
+  assert.equal(overlay.classList.contains('deploy-mode'), true, 'progress mode after submit')
 })
 
 test('Prompts section shows an error with Retry when the API fails', async () => {

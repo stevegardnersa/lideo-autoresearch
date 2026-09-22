@@ -21,6 +21,7 @@ test:
 	$(PYTHON) tests/test_cf_source_ref.py
 	$(PYTHON) tests/test_cf_debug_log.py
 	$(PYTHON) tests/test_deploy_entrypoint.py
+	$(PYTHON) tests/test_deploy_cf.py
 	$(PYTHON) tests/test_sentence_budget.py
 	$(PYTHON) tests/test_base_prompts.py
 

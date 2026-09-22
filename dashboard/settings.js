@@ -1051,6 +1051,7 @@ function clearInlineRunWidget() {
   resetDlgPane()
   dialog.classList.remove('has-run-form')
   dialog.classList.remove('deploy-mode')
+  dialog.classList.remove('deploy-form')
   dialog.dataset.runSlug = ''
   const holder = document.getElementById('dlgRunForm')
   const widget = document.getElementById('dlgRunWidget')
@@ -2369,7 +2370,7 @@ function fieldHtml(a, idPrefix = 'run-fld') {
   const wrap = (inner) => `<div class="field run-field ${a.advanced ? 'run-advanced' : ''}" data-group="${a.group || 'main'}">${inner}</div>`
   switch (a.type) {
     case 'bool':
-      return wrap(`<label class="cb"><input type="checkbox" data-arg="${a.name}" id="${idPrefix}-${a.name}" ${a.default ? 'checked' : ''} /> ${esc(a.label)}</label>`)
+      return wrap(`<label class="cb"><input type="checkbox" data-arg="${a.name}" id="${idPrefix}-${a.name}" ${a.default ? 'checked' : ''} /> ${esc(a.label)}</label>${hint}`)
     case 'enum':
       if (a.multiple) {
         const opts = (a.choices || []).map(c =>
@@ -2399,8 +2400,8 @@ function fieldHtml(a, idPrefix = 'run-fld') {
 function toolCardHtml(tool, opts = {}) {
   const idPrefix = opts.idPrefix || 'run-fld'
   const visible = tool.args.filter(a => (a.fixed && a.ui === false) ? false : !a.advanced)
-  const advanced = tool.args.filter(a => a.advanced)
-  const hasAdvanced = advanced.some(a => !(a.fixed && a.ui === false))
+  const advanced = tool.args.filter(a => a.advanced && !(a.fixed && a.ui === false))
+  const hasAdvanced = advanced.length > 0
   const destructive = tool.destructive
   const warning = destructive
     ? `<div class="tool-warning" role="alert"><strong>Deletes artifacts/runs, results.tsv, data/candidates.json, bench/book_gate.jsonl and snapshots. Irreversible.</strong></div>`
@@ -2578,6 +2579,7 @@ async function runToolSubmit(card, tool) {
     const resJob = res.job
     if (inDialog && resJob) {
       handleDialogJobResult(res, tool.id, values)
+      if (tool.id === 'deploy_cf' && !DLG_TERMINAL.includes(resJob.status)) enterDeployProgressMode()
       if (DLG_TERMINAL.includes(resJob.status)) {
         setDialogNotice(`<strong>${esc(tool.title || tool.id)}</strong> failed to start: ${esc(resJob.error || 'unknown error')}`, 'error')
       } else if (res.duplicate) {
@@ -4186,59 +4188,58 @@ async function syncPrompts() {
   }
 }
 
-const DEPLOY_BTN_LABEL = 'Deploy to Cloud Function'
-
-function resetDeployButton(btn) {
-  if (!btn) return
-  delete btn.dataset.armed
-  btn.classList.remove('armed')
-  btn.textContent = btn.dataset.origLabel || DEPLOY_BTN_LABEL
-  btn.disabled = false
+async function loadDeployTool() {
+  if (RUN_TOOLS_BY_ID.has('deploy_cf')) return RUN_TOOLS_BY_ID.get('deploy_cf')
+  const reg = await api('/api/registry')
+  RUN_STATE.tools = reg.tools || []
+  RUN_TOOLS_BY_ID.clear()
+  for (const t of RUN_STATE.tools) RUN_TOOLS_BY_ID.set(t.id, t)
+  return RUN_TOOLS_BY_ID.get('deploy_cf') || null
 }
 
-async function deployCf(btn) {
-  if (btn && !btn.dataset.armed) {
-    btn.dataset.armed = '1'
-    btn.dataset.origLabel = btn.dataset.origLabel || btn.textContent || DEPLOY_BTN_LABEL
-    btn.textContent = 'Confirm deploy to production?'
-    btn.classList.add('armed')
-    setPromptsBanner('Deploy runs gcloud functions deploy (~2–5 min) then smoke-tests it. Click again to confirm.')
-    setTimeout(() => { if (btn.dataset.armed) resetDeployButton(btn) }, 6000)
+async function openDeployDialog() {
+  const overlay = document.getElementById('modelDialogOverlay')
+  if (!overlay) return
+  let tool
+  try {
+    tool = await loadDeployTool()
+  } catch (e) {
+    setPromptsBanner(`Could not load the deploy tool: ${e.message}`)
     return
   }
-  if (btn) { btn.disabled = true; btn.classList.remove('armed'); btn.textContent = 'Deploying…' }
-  try {
-    const res = await api('/api/jobs', { method: 'POST', body: JSON.stringify({ toolId: 'deploy_cf', args: { confirm: true } }) })
-    const job = res.job
-    const shortId = job && job.id ? job.id.slice(0, 8) : ''
-    if (job) openDeployProgress(job)
-    setPromptsBanner(`Cloud Function deploy started (job ${shortId}…). Live progress is open.`)
-    if (typeof refreshJobs === 'function') refreshJobs().catch(() => {})
-  } catch (e) {
-    setPromptsBanner(`Deploy failed to start: ${e.message}`)
-  } finally {
-    resetDeployButton(btn)
-  }
-}
-
-function openDeployProgress(job) {
-  const overlay = document.getElementById('modelDialogOverlay')
-  if (!overlay || !job) return
+  if (!tool) { setPromptsBanner('Deploy tool unavailable — hard refresh (&#8984;&#8679;R) and try again.'); return }
   clearInlineRunWidget()
   overlay.dataset.mode = 'run'
-  overlay.classList.add('deploy-mode')
-  overlay.classList.add('has-run-form')
+  overlay.classList.add('deploy-form')
   const title = document.getElementById('dlgTitle')
   if (title) title.textContent = 'Deploy Cloud Function'
-  const holder = document.getElementById('dlgRunForm')
-  if (holder) holder.classList.remove('cm-hidden')
   const widget = document.getElementById('dlgRunWidget')
-  if (widget) widget.innerHTML = ''
+  const holder = document.getElementById('dlgRunForm')
+  if (!widget || !holder) {
+    setPromptsBanner('Deploy form is missing — hard refresh (&#8984;&#8679;R) and try again.')
+    return
+  }
+  widget.innerHTML = toolCardHtml(tool, { idPrefix: 'dlg-deploy-fld' })
+  const card = widget.querySelector('.mm-tool-widget')
+  wireToolCard(card, tool)
+  const submit = card.querySelector('.tool-run-submit')
+  if (submit) submit.textContent = 'Deploy'
+  card.querySelector('.tool-form').classList.remove('cm-hidden')
+  const runTitle = document.getElementById('dlgRunTitle')
+  if (runTitle) runTitle.textContent = 'Deploy to Cloud Function'
+  overlay.classList.add('has-run-form')
+  holder.classList.remove('cm-hidden')
+  overlay.classList.remove('cm-hidden')
+  setDialogNotice('Set the target and options, then hit <strong>Deploy</strong> — that is the final confirmation. Runs <code>gcloud functions deploy</code> (~2–5 min) then smoke-tests it. Safe to close: the job keeps running in <strong>Scripts</strong>.')
+  updateToolGuards()
+}
+
+function enterDeployProgressMode() {
+  const overlay = document.getElementById('modelDialogOverlay')
+  if (!overlay) return
+  overlay.classList.add('deploy-mode')
   const runTitle = document.getElementById('dlgRunTitle')
   if (runTitle) runTitle.textContent = 'Cloud Function deploy'
-  setDialogNotice('Syncing the registry, deploying via gcloud, then smoke-testing — ~2–5 minutes. Safe to close: the job keeps running in <strong>Scripts</strong>.')
-  overlay.classList.remove('cm-hidden')
-  openDialogProgress(job, 'deploy_cf', job.args || { confirm: true })
 }
 
 function toggleBaseSweepForm() {
@@ -4340,7 +4341,7 @@ function runPromptAction(action, id, model, stage, btn) {
     else if (action === 'delete') { deletePromptVersion(id) }
     else if (action === 'smoke') { runPromptSmokeTest(id) }
     else if (action === 'sync') { syncPrompts() }
-    else if (action === 'deploy') { deployCf(btn) }
+    else if (action === 'deploy') { openDeployDialog() }
     else if (action === 'copy-preview') { if (PROMPTS_STATE.previewText) navigator.clipboard.writeText(PROMPTS_STATE.previewText) }
   } catch (err) {
     setPromptsBanner(err.message)
