@@ -13,6 +13,7 @@ from core.length_control import LengthControlConfig, run_length_control
 from core.openrouter_client import GenerationResult, OpenRouterClient
 from core.reasoning import visible_max_tokens
 from core import prompt_registry, prompt_template, repair_prompt
+from cloud_function import storage
 from scoring import (
     DEFAULT_SCORING_CONFIG,
     Rubric,
@@ -674,8 +675,25 @@ def _run_auto_length(
     )
 
 
+def _resolve_source_md(body: Mapping[str, Any]) -> str:
+    """Return the chapter source markdown for a request.
+
+    Prefers inline ``source_md``/``chapter``; otherwise resolves a structured
+    ``source_ref`` from storage (the CF downloads the file itself). Raises
+    :class:`storage.SourceRefError` for a bad/missing object and
+    :class:`storage.SourceFetchError` for a transient storage failure.
+    """
+    inline = str(body.get("source_md") or body.get("chapter") or "").strip()
+    if inline:
+        return inline
+    ref = body.get("source_ref")
+    if isinstance(ref, Mapping):
+        return storage.resolve_source_ref(ref).strip()
+    return ""
+
+
 def run_summarize(body: Dict[str, Any]) -> Dict[str, Any]:
-    source_md = str(body.get("source_md") or body.get("chapter") or "").strip()
+    source_md = _resolve_source_md(body)
     summary_md_input = str(body.get("summary_md") or "").strip()
     api_key = str(body.get("api_key", "")).strip()
     base_url = str(body.get("base_url", "")).strip()
@@ -857,6 +875,10 @@ def run_summarize(body: Dict[str, Any]) -> Dict[str, Any]:
     usage["judge_generation_cost"] = judge_cost
     if judge_only:
         usage["generation_cost"] = judge_cost
+    # total_cost = every billed completion (generation passes + judge call).
+    # In judge-only mode `generation_cost` is 0.0 locally, so this is judge_cost.
+    usage["total_cost"] = generation_cost + judge_cost
+    usage["iterations"] = passes_used
     result["usage"] = usage
     if scoring_result is not None:
         result["scoring"] = scoring_result

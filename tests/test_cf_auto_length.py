@@ -270,6 +270,8 @@ def test_auto_length_loop_returns_best_pass_and_aggregates_cost():
     assert result["meta"]["first_pass_visible_words"] == 500
     assert result["meta"]["final_visible_words"] == 350
     assert abs(result["usage"]["generation_cost"] - 0.002) < 1e-9
+    assert abs(result["usage"]["total_cost"] - 0.002) < 1e-9
+    assert result["usage"]["iterations"] == 2
     # The repair pass carried the measured delta.
     repair_user = client.requests[1]["messages"][1]["content"]
     assert "Current summary is 500 visible words" in repair_user
@@ -312,6 +314,77 @@ def test_auto_length_validation():
     print("test_auto_length_validation: OK")
 
 
+def test_single_pass_reports_iterations_and_total_cost():
+    client = FakeClient([350])
+    original = _patch_client(client)
+    try:
+        result = handler.run_summarize(
+            {"source_md": "src", "target_words": 353, "prompt_version": "chapter-p18"}
+        )
+    finally:
+        handler._build_client = original
+    assert result["usage"]["iterations"] == 1
+    assert abs(result["usage"]["generation_cost"] - 0.001) < 1e-9
+    assert abs(result["usage"]["total_cost"] - 0.001) < 1e-9
+    print("test_single_pass_reports_iterations_and_total_cost: OK")
+
+
+class JudgeFakeClient(FakeClient):
+    """Returns a valid absolute-judge payload with a known raw usage cost."""
+
+    def chat_completion(self, payload):
+        self.requests.append(payload)
+        self.calls += 1
+        parsed = {
+            "faithfulness": 0.9,
+            "concept_coverage": 0.8,
+            "qualifier_preservation": 0.7,
+            "no_fluff": 0.6,
+            "structure_quality": 0.5,
+            "rationale": "ok",
+        }
+        return GenerationResult(
+            summary_md="",
+            estimated_visible_words=0,
+            raw_content=json.dumps(parsed),
+            usage=UsageRecord(
+                prompt_tokens=10,
+                completion_tokens=20,
+                total_tokens=30,
+                generation_cost=0.0,
+                uncached_generation_cost=0.0,
+                generation_id="judge-1",
+                provider_name="fake",
+                model_id="fake/judge",
+            ),
+            raw_response={"usage": {"cost": 0.001}},
+            parsed_json=parsed,
+            finish_reason="stop",
+            json_recovery="exact",
+        )
+
+
+def test_judge_only_total_cost_includes_judge():
+    client = JudgeFakeClient([350])
+    original = _patch_client(client)
+    try:
+        result = handler.run_summarize(
+            {
+                "source_md": "src",
+                "summary_md": "word " * 100,
+                "judge": True,
+                "rubric": {"key_terms": ["word"]},
+                "prompt_version": "chapter-p18",
+            }
+        )
+    finally:
+        handler._build_client = original
+    assert result["usage"]["iterations"] == 1
+    assert abs(result["usage"]["judge_generation_cost"] - 0.001) < 1e-9
+    assert abs(result["usage"]["total_cost"] - 0.001) < 1e-9
+    print("test_judge_only_total_cost_includes_judge: OK")
+
+
 def main() -> None:
     tests = [
         test_repair_templates_match_candidate_spec,
@@ -321,6 +394,8 @@ def main() -> None:
         test_auto_length_loop_returns_best_pass_and_aggregates_cost,
         test_auto_length_body_override_max_passes,
         test_auto_length_validation,
+        test_single_pass_reports_iterations_and_total_cost,
+        test_judge_only_total_cost_includes_judge,
     ]
     for test in tests:
         test()

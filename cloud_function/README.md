@@ -248,6 +248,8 @@ This requires a `Dockerfile` (not included; CF 2nd gen auto-detects Python runti
     "cached_prompt_tokens": 0,
     "generation_cost": 0.000123,
     "uncached_generation_cost": 0.000123,
+    "total_cost": 0.000164,             // generation_cost + judge_generation_cost
+    "iterations": 2,                    // billed completions: passes_used (1 when not auto_length)
     "generation_id": "gen-abc123",
     "provider_name": "DeepSeek",
     "model_id": "deepseek/deepseek-v4-flash"
@@ -331,7 +333,10 @@ autoresearch candidate module. A request-level `length_control` object overrides
 the baked config. Versions without baked fields fall back to defaults.
 
 Cost: each pass is a separate billed completion. `usage.generation_cost` is the
-sum across passes; `meta.passes_used` reports how many ran. Treat `auto_length`
+sum across passes; `meta.passes_used` reports how many ran. `usage.total_cost`
+is the full billed total (`generation_cost` + `judge_generation_cost`) and
+`usage.iterations` mirrors `meta.passes_used` (`1` when `auto_length` is off,
+so callers always have both figures without inspecting `meta`). Treat `auto_length`
 and a request-level `length_control` as operator/server-controlled (like
 `system_prompt_override`): a caller who sets `max_passes` high can amplify cost
 on your billed account. Do not pass them straight through from the browser.

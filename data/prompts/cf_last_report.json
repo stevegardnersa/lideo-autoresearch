@@ -6,13 +6,13 @@
   "region": "us-central1",
   "function": "summarize",
   "url": "https://summarize-q2dzk4wjva-uc.a.run.app",
-  "revision": "summarize-00017-ron",
+  "revision": "summarize-00020-xar",
   "smoke": {
     "ok": true,
     "status": 200,
     "meta": {
       "scoring_version": "3af66486b27d11ddef60d90d2cc5fb101115a9d51a2c4e2502a6883195d3b873",
-      "handler_version": "c28d0e4356b972467131224ffe6d6114054b1dc48e141c281c06eb741aefc51a",
+      "handler_version": "a0a1c487563b131236c6075a89c0d489d5ecd7d4d03f44cbe68a8e218e0798dd",
       "deployed_at_utc": "1980-01-01T00:00:01+00:00",
       "prompt_registry_sha": "a98e576d1677c49334638ec8c68e6d2f304b85f05d3ea304f8cdd0a8d264a116"
     }

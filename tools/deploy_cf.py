@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -38,8 +39,15 @@ DEFAULT_REGION = "us-central1"
 DEFAULT_FUNCTION = "summarize"
 DEFAULT_ENTRY_POINT = "summarize"
 DEFAULT_RUNTIME = "python312"
-DEFAULT_SECRET = "LLM_API_KEY=openrouter-api-key:latest"
-DEFAULT_ENV_VARS = "LLM_BASE_URL=https://openrouter.ai/api/v1,LOG_EXECUTION_ID=true"
+# The CF resolves chapter `source_ref` objects from Supabase Storage, so the
+# deploy must carry both the project URL and the service-role secret. Override
+# the URL with the SUPABASE_URL env var for a different project.
+DEFAULT_SUPABASE_URL = "https://apnsbsxifvwaxrlfklko.supabase.co"
+DEFAULT_SECRET = "LLM_API_KEY=openrouter-api-key:latest,SUPABASE_SERVICE_ROLE_KEY=supabase-service-role:latest"
+DEFAULT_ENV_VARS = (
+    "LLM_BASE_URL=https://openrouter.ai/api/v1,LOG_EXECUTION_ID=true,"
+    f"SUPABASE_URL={os.environ.get('SUPABASE_URL', DEFAULT_SUPABASE_URL)}"
+)
 
 PROBE_PAYLOAD: Dict[str, Any] = {
     "source_md": "## Intro\n\nFeedback loops matter.",
@@ -82,7 +90,6 @@ def local_registry() -> Dict[str, Any]:
 def resolve_project(explicit: str) -> str:
     if explicit:
         return explicit
-    import os
 
     for key in ("PROJECT_ID", "GOOGLE_CLOUD_PROJECT", "GCLOUD_PROJECT"):
         val = os.environ.get(key, "").strip()
