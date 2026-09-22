@@ -1944,6 +1944,8 @@ function createJobManager(opts = {}) {
       }
     } else if (tool.id === 'gen_profile_literal' || tool.id === 'agent') {
       hints.specPyChanged = job.status === 'succeeded'
+    } else if (tool.id === 'deploy_cf') {
+      if (job.status === 'succeeded') hints.promptsChanged = true
     } else if (tool.id === 'snapshot_catalog' && job.status === 'succeeded') {
       try {
         hints.snapshotsCreated = readdirSync(join(repoRoot, 'snapshots', 'catalog'))

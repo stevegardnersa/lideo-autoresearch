@@ -231,6 +231,32 @@ test('deploy_cf forwards --debug-log-bodies when the toggle is on', async () => 
   }
 })
 
+test('deploy_cf success advertises a promptsChanged hint for the drift badges', async () => {
+  const { server, base, procs } = await startServer()
+  try {
+    const a = await call(base, '/api/jobs', { method: 'POST', body: { toolId: 'deploy_cf', args: { project: 'lideo-387b7' } } })
+    procs[0].exit(0, null)
+    const job = await awaitTerminal(base, a.body.job.id)
+    assert.equal(job.status, 'succeeded')
+    assert.equal(job.resultHints.promptsChanged, true, 'deploy refreshes the Cloud Function drift column')
+  } finally {
+    await closeServer(server)
+  }
+})
+
+test('deploy_cf failure does not advertise a promptsChanged hint', async () => {
+  const { server, base, procs } = await startServer()
+  try {
+    const a = await call(base, '/api/jobs', { method: 'POST', body: { toolId: 'deploy_cf', args: { project: 'lideo-387b7' } } })
+    procs[0].exit(1, null)
+    const job = await awaitTerminal(base, a.body.job.id)
+    assert.equal(job.status, 'failed')
+    assert.ok(!job.resultHints.promptsChanged, 'failed deploy leaves the drift column untouched')
+  } finally {
+    await closeServer(server)
+  }
+})
+
 // ── queue / serialization ─────────────────────────────────────
 
 test('llm jobs serialize FIFO — second one queues until first finishes', async () => {

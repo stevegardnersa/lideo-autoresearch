@@ -3037,6 +3037,10 @@ function dispatchHints(job, hints) {
     RUN_STATE.hintedJobs.add(job)
     window.dispatchEvent(new window.Event('dashboard:candidates-refreshed'))
   }
+  if (hints.promptsChanged) {
+    RUN_STATE.hintedJobs.add(job)
+    window.dispatchEvent(new window.Event('dashboard:prompts-refreshed'))
+  }
 }
 
 // ── floating run widget (bottom-right live cards) ──────────────
@@ -3527,7 +3531,7 @@ function renderPrompts(data) {
             <option value="">${noneLabel}</option>${_promptVersionOptions(scopedVersions, stage, keepIds)}
           </select></td>
         <td><button class="mini-btn" data-action="save-slot" data-stage="${esc(stage)}" data-model="${esc(activeScope === 'general' ? '' : activeScope)}" disabled>Save</button></td>
-        <td>${_driftBadge(status)}</td>
+        <td data-drift-stage="${esc(stage)}" data-drift-scope="${esc(activeScope)}">${_driftBadge(status)}</td>
       </tr>`
   }).join('')
 
@@ -3674,7 +3678,7 @@ function renderPrompts(data) {
         <table class="prompt-table">
           <caption class="cm-visually-hidden">Prompt version slots per stage</caption>
           <thead><tr><th>Stage</th><th>local</th><th>production</th><th></th><th>Cloud Function drift</th></tr></thead>
-          <tbody>${slotRows}</tbody>
+          <tbody id="promptsSlotBody">${slotRows}</tbody>
         </table>
       </div>
       <div class="prompt-actions">
@@ -3787,6 +3791,27 @@ async function loadPrompts() {
     const btn = document.getElementById('promptsRetry')
     if (btn) btn.addEventListener('click', loadPrompts)
   }
+}
+
+// After a deploy the CF report on disk changes, but a full re-render would
+// discard the user's unsaved slot selections. Refetch the payload and swap
+// only the per-stage drift cells, keyed by the scope the row was rendered with.
+async function refreshPromptsDrift() {
+  if (!document.getElementById('promptsPanel')) return
+  try {
+    const data = await api('/api/prompts')
+    PROMPTS_STATE.data = data
+    const body = document.getElementById('promptsSlotBody')
+    if (!body) return
+    for (const cell of body.querySelectorAll('td[data-drift-stage]')) {
+      const stage = cell.dataset.driftStage
+      const scope = cell.dataset.driftScope
+      const status = (data.production_status || []).find(
+        r => r.stage === stage && (r.model || '') === (scope === 'general' ? '' : scope)
+      )
+      cell.innerHTML = _driftBadge(status)
+    }
+  } catch { /* keep the stale badge if the refetch fails */ }
 }
 
 async function savePromptSlot(stage, model) {
@@ -4352,6 +4377,7 @@ function bindPromptsPanel() {
   const panel = document.getElementById('promptsPanel')
   if (!panel || panel.dataset.bound) return
   panel.dataset.bound = '1'
+  window.addEventListener('dashboard:prompts-refreshed', () => { refreshPromptsDrift() })
   panel.addEventListener('click', (e) => {
     const optBtn = e.target.closest('.vc-opt-btn')
     if (optBtn) {

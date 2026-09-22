@@ -72,7 +72,7 @@ function json(payload, status = 200) {
 }
 
 function makeHarness() {
-  const state = { calls: [], listStatus: 200, lastCreate: null, lastRevise: null, lastSlot: null, promptCalls: 0, slotSha: 'sha-1', slotWrites: 0 }
+  const state = { calls: [], listStatus: 200, lastCreate: null, lastRevise: null, lastSlot: null, promptCalls: 0, slotSha: 'sha-1', slotWrites: 0, prodStatus: null }
   const dom = new JSDOM(`<!doctype html><html><head></head><body>
     <div class="page-header"><div class="header-right"><button data-settings-toggle>gear</button></div></div>
   </body></html>`, { url: 'http://localhost/' })
@@ -133,7 +133,7 @@ function makeHarness() {
           chapter: { general: { local: 'chapter-p1', production: 'chapter-p1' }, models: {} },
           composer: { general: { local: 'composer-p1', production: 'composer-p1' }, models: {} },
         },
-        production_status: [
+        production_status: state.prodStatus || [
           { stage: 'chapter', model: '', selected_id: 'chapter-p1', reported_id: '', reported_fingerprint: '', reported_at: '', in_sync: false, never_reported: true },
           { stage: 'composer', model: '', selected_id: 'composer-p1', reported_id: '', reported_fingerprint: '', reported_at: '', in_sync: false, never_reported: true },
         ],
@@ -245,6 +245,26 @@ test('Deploy opens a params modal with hints and posts deploy_cf on submit', asy
   assert.equal(jobCalls.length, 1)
   assert.equal(jobCalls[0].body.toolId, 'deploy_cf')
   assert.equal(overlay.classList.contains('deploy-mode'), true, 'progress mode after submit')
+})
+
+test('a deploy completion hint refetches and repaints only the drift column', async () => {
+  await openPrompts()
+  const cell = h.doc.querySelector('td[data-drift-stage="chapter"]')
+  assert.ok(cell, 'drift cell carries stage/scope data for targeted refresh')
+  assert.match(cell.textContent, /Never reported/)
+
+  setValue(h.doc, 'promptLocal_chapter', 'chapter-p2')
+  h.state.prodStatus = [
+    { stage: 'chapter', model: '', selected_id: 'chapter-p2', reported_id: 'chapter-p2', reported_fingerprint: 'ce79c4d35f92de9a', reported_at: '2026-09-22T00:00:00Z', in_sync: true, never_reported: false },
+    { stage: 'composer', model: '', selected_id: 'composer-p1', reported_id: '', reported_fingerprint: '', reported_at: '', in_sync: false, never_reported: true },
+  ]
+  h.window.dispatchEvent(new h.window.Event('dashboard:prompts-refreshed'))
+  await flush()
+  await flush()
+
+  assert.match(h.doc.querySelector('td[data-drift-stage="chapter"]').textContent, /In sync/)
+  assert.match(h.doc.querySelector('td[data-drift-stage="composer"]').textContent, /Never reported/)
+  assert.equal(h.doc.getElementById('promptLocal_chapter').value, 'chapter-p2', 'unsaved slot selection survives the drift repaint')
 })
 
 test('Prompts section shows an error with Retry when the API fails', async () => {
